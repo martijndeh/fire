@@ -1,0 +1,31 @@
+{
+  "description": "An opinionated, convention-based Node web framework focused on developer productivity.",
+  "keywords": [
+    "fire",
+    "framework",
+    "web",
+    "rest",
+    "router",
+    "app",
+    "api"
+  ],
+  "version": "0.0.2",
+  "author": "Martijn de Haan <martijn@ff00ff.nl>",
+  "dependencies": {
+    "q": "1.0",
+    "jade": "~1.2.0",
+    "orm": "~2.1.0",
+    "sqlite3": "~2.2.0",
+    "mime": "~1.2.11",
+    "less": "~1.7.0",
+    "keygrip": "~1.0.0",
+    "cookies": "~0.4.0"
+  },
+  "main": "lib/fire",
+  "bin": "bin/fire",
+  "devDependencies": {
+    "mocha": "~1.17.1",
+    "chai": "~1.9.0",
+    "supertest": "~0.9.0"
+  }
+}
