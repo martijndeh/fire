@@ -12,6 +12,10 @@ var should = require('chai').should()
 describe('routes', function() {
 	var controllers;
 
+	afterEach(function() {
+		controllers = null;
+	})
+
 	beforeEach(function() {
 		Config.basePath = path.dirname(__dirname);
 		controllers = new Controllers();
@@ -23,10 +27,10 @@ describe('routes', function() {
 		controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
 
 		var route = controllers.routes[0];
-		
+
 		route.path.toString().should.equal('/^/$/i');
 		route.verb.should.equal('get');
-		
+
 		done();
 	})
 
@@ -36,10 +40,10 @@ describe('routes', function() {
 		controllers.loadClass(TestController, Config.basePath + '/controllers/sub/test.js', null);
 
 		var route = controllers.routes[0];
-		
+
 		route.path.toString().should.equal('/^/(sub)(?:/)?$/i');
 		route.verb.should.equal('get');
-		
+
 		done();
 	})
 
@@ -49,10 +53,10 @@ describe('routes', function() {
 		controllers.loadClass(TestController, Config.basePath + '/controllers/sub1/sub2/test.js', null);
 
 		var route = controllers.routes[0];
-		
+
 		route.path.toString().should.equal('/^/(sub1)/(sub2)(?:/)?$/i');
 		route.verb.should.equal('get');
-		
+
 		done();
 	})
 
@@ -62,10 +66,10 @@ describe('routes', function() {
 		controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
 
 		var route = controllers.routes[0];
-		
+
 		route.path.toString().should.equal('/^/$/i');
 		route.verb.should.equal('post');
-		
+
 		done();
 	})
 
@@ -75,7 +79,7 @@ describe('routes', function() {
 		controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
 
 		var route = controllers.routes[0];
-		
+
 		route.path.toString().should.equal('/^/([^/]+)(?:/)?$/i');
 		route.verb.should.equal('get');
 		route.match('get', '/test', {}).should.not.be.null;
@@ -91,7 +95,7 @@ describe('routes', function() {
 		controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
 
 		var route = controllers.routes[0];
-		
+
 		route.path.toString().should.equal('/^/([^/]+)/([^/]+)(?:/)?$/i');
 		route.verb.should.equal('get');
 		route.match('get', '/val1/val2', {}).should.not.be.null;
@@ -110,7 +114,7 @@ describe('routes', function() {
 
 		var route = controllers.routes[0];
 		route = route.match('get', '/val1', {});
-		
+
 		route.method.apply(new TestController(), Array.prototype.slice.call(route.matches, 1));
 
 		done();
@@ -126,7 +130,7 @@ describe('routes', function() {
 
 		var route = controllers.routes[0];
 		route = route.match('get', '/Dinosaur/Koala', {});
-		
+
 		route.method.apply(new TestController(), Array.prototype.slice.call(route.matches, 1));
 
 		done();

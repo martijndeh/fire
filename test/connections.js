@@ -11,28 +11,41 @@ var request = require('supertest')
 describe('connections', function() {
 	var app;
 
-	before(function() {
+	after(function(done) {
+		app.server.close();
+		done();
+	})
+
+	before(function(done) {
 		Config.basePath = path.dirname(__dirname);
 
 		app = fire();
-		app.run();
+		app.run()
+			.then(function() {
+				// Let's create some controllers
+				function ApiController() {}
+				ApiController.prototype.contentType = 'application/json';
+				ApiController.prototype.render = function(filePath, objects) {
+					return JSON.stringify(objects);
+				}
 
-		// Let's create some controllers
-		function ApiController() {}
-		ApiController.prototype.contentType = 'application/json';
-		ApiController.prototype.render = function(filePath, objects) {
-			return JSON.stringify(objects);
-		}
+				ApiController.prototype.before = function() {
+					// TODO: check if before is called
+				}
 
-		ApiController.prototype.getTest = function(test) {
-			return {
-				title: 'Hello, test.'
-			};
-		}
+				ApiController.prototype.getTest = function(test) {
+					return {
+						title: 'Hello, test.'
+					};
+				}
 
-		// TODO: implement Controllers#addController to easier add controllers
+				// TODO: implement Controllers#addController to easier add controllers
 
-		app.controllers.loadClass(ApiController, Config.basePath + '/controllers/1/api/controller.js', null);
+				app.controllers.loadClass(ApiController, Config.basePath + '/controllers/1/api/controller.js', null);
+
+				done();
+			})
+			.done();
 	})
 
 	it('respond with 404', function(done) {
@@ -53,5 +66,13 @@ describe('connections', function() {
 			.expect(200, done);
 	})
 
+	it('should call before', function(done) {
+		request(app.server)
+			.get('/1/api/test')
+			.expect(200, function() {
+				// TODO: check if before is called
 
+				done();
+			});
+	})
 })

@@ -25,6 +25,9 @@ describe('migrations', function() {
                         name: [this.String]
                     });
                 };
+                FirstMigration.prototype.down = function() {
+                    return this.destroyModel('FirstTest');
+                };
 
                 function SecondMigration() {}
                 SecondMigration.prototype.up = function() {
@@ -32,12 +35,18 @@ describe('migrations', function() {
                         name: [this.String]
                     });
                 };
+                SecondMigration.prototype.down = function() {
+                    return this.destroyModel('SecondTest');
+                };
 
                 function ThirdMigration() {}
                 ThirdMigration.prototype.up = function() {
                     return this.createModel('ThirdTest', {
                         name: [this.String]
                     });
+                };
+                ThirdMigration.prototype.down = function() {
+                    return this.destroyModel('ThirdTest');
                 };
 
                 migrations.addMigration(FirstMigration, 1);
@@ -76,7 +85,7 @@ describe('migrations', function() {
             .done();
     })
 
-    it('can migrate thrice', function() {
+    it('can migrate thrice', function(done) {
         migrations.migrate(0, 3)
             .then(function() {
                 return migrations.currentVersion();
@@ -88,13 +97,21 @@ describe('migrations', function() {
             .done();
     });
 
-    it('can migrate to 3 rollback to 0', function() {
+    it('can migrate to 3 rollback to 0', function(done) {
         migrations.migrate(0, 3)
             .then(function() {
                 return migrations.currentVersion();
             })
             .then(function(currentVersion) {
-                return assert.equal(currentVersion, 3);
+                assert.equal(currentVersion, 3);
+                return true;
+            })
+            .then(function() {
+                // Let's clear all the models
+                models['FirstTest'] = null;
+                models['SecondTest'] = null;
+                models['ThirdTest'] = null;
+                return true;
             })
             .then(function() {
                 return migrations.migrate(3, 0);
