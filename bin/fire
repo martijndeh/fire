@@ -4,8 +4,6 @@
 var dotenv = require('dotenv');
 dotenv.load();
 
-console.dir(process.env);
-
 var path = require('path');
 var fs = require('fs');
 
@@ -49,34 +47,8 @@ else if(argv._[0] == 'migrate') {
 			return migrations.setup(path.join(basePath, 'migrations'), models);
 		})
 		.then(function() {
-			return models.Schema.exists();
-		})
-		.then(function(exists) {
-			if(!exists) {
-				return models.Schema.setup();
-			}
-			else {
-				return true;
-			}
-		})
-		.then(function() {
 			// Let's find which database version we're at
-			return models.Schema.findOne({}, {version:'asc'});
-		})
-		.then(function(schema) {
-			return schema && schema.version || 0;
-		})
-		.then(function(currentVersion) {
-			console.log('*** Migrating models to version `' + currentVersion + '`.');
-
-			var changes = migrations._.filter(function(migration) {
-				return (migration.version <= currentVersion);
-			});
-
-			return utils.invokeSeries(changes, 'soft')
-				.then(function() {
-					return currentVersion;
-				});
+			return migrations.currentVersion();
 		})
 		.then(function(currentVersion) {
 			if(typeof argv.v != 'undefined') {
@@ -89,56 +61,20 @@ else if(argv._[0] == 'migrate') {
 				targetVersion = migrations._[migrations._.length - 1].version;
 			}
 
-			//e.g.	current 1 -> target 4
-			//		current 4 -> target 1
-			//1 2 3 4 5
-
-			var direction 	 = '';
-			var changes		= [];
-
-			if(currentVersion < targetVersion) {
-				direction = 'up';
-
-				changes = migrations._.filter(function(migration) {
-					return (migration.version > currentVersion && migration.version <= targetVersion);
-				});
-			}
-			else if(currentVersion > targetVersion) {
-				//we're going down
-				direction = 'down';
-
-				changes = migrations._.reverse().filter(function(migration) {
-					return (migration.version <= currentVersion && migration.version > targetVersion);
-				});
-			}
-			else {
-				throw new Error('The current database is already at version `' + targetVersion + '`.');
-			}
-
 			console.log('*** Migrating from `' + currentVersion + '` to `' + targetVersion + '`.');
-			changes.forEach(function(change) {
-				console.log('*** `' + change.fileName + '` to version `' + change.version + '`.');
-			});
-
-			return utils.invokeSeries(changes, 'go', direction);
+			return migrations.migrate(currentVersion, targetVersion);
 		})
 		.then(function() {
-			// All tests are done and we'll just verify if our target version is really where we are now
-			return models.Schema.findOne({}, {version: 'asc'});
+			return migrations.currentVersion();
 		})
-		.then(function(schema) {
-			if(schema && schema.version == targetVersion || !schema && targetVersion == 0) {
+		.then(function(currentVersion) {
+			if(currentVersion == targetVersion) {
 				//everything went alright
 				console.log('*** Migration successful to `' + targetVersion + '`.');
 				return true;
 			}
 			else {
-				if(!schema) {
-					throw new Error('No schema found at all.');
-				}
-				else {
-					throw new Error('Database version after migration `' + schema.version + '` does not match target version `' + targetVersion + '`.');
-				}
+				throw new Error('Database version after migration `' + currentVersion + '` does not match target version `' + targetVersion + '`.');
 			}
 		})
 		.fail(function(error) {
