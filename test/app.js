@@ -1,10 +1,13 @@
 var fire = require('..');
 
-describe('first test', function() {
-	it('should be supported', function(done) {
+describe('app', function() {
+	it('should start & stop', function(done) {
 		var app = fire();
-		app.run();
-		
-		done();
+		return app.run()
+			.then(function() {
+				app.server.close();
+
+				return done();
+			});
 	})
 })

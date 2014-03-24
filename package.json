@@ -9,23 +9,32 @@
     "app",
     "api"
   ],
-  "version": "0.0.2",
+  "version": "0.0.9",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
-  "dependencies": {
-    "q": "1.0",
-    "jade": "~1.2.0",
-    "orm": "~2.1.0",
-    "sqlite3": "~2.2.0",
-    "mime": "~1.2.11",
-    "less": "~1.7.0",
-    "keygrip": "~1.0.0",
-    "cookies": "~0.4.0"
-  },
-  "main": "lib/fire",
+  "main": "index.js",
   "bin": "bin/fire",
   "devDependencies": {
-    "mocha": "~1.17.1",
-    "chai": "~1.9.0",
-    "supertest": "~0.9.0"
+    "chai-as-promised": "~4.1.1",
+    "supertest": "~0.9.0",
+    "jscoverage": "^0.3.8"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test ./node_modules/.bin/mocha --reporter spec ./test/*.js"
+  },
+  "dependencies": {
+    "minimist": "0.0.8",
+    "amqplib": "~0.1.3",
+    "sqlite3": "^2.2.0",
+    "commander": "^2.1.0",
+    "mu2": "^0.5.20",
+    "moment": "^2.5.1",
+    "q": "^1.0.1",
+    "inflection": "^1.3.5",
+    "pg": "^2.11.1",
+    "mime": "^1.2.11",
+    "cookies": "^0.4.0",
+    "less": "^1.7.0",
+    "jade": "^1.3.0",
+    "mocha": "^1.18.2"
   }
 }

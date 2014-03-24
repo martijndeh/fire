@@ -1,0 +1,259 @@
+#!/usr/bin/env node
+'use strict';
+
+var path = require('path');
+var fs = require('fs');
+
+var argv = require('minimist')(process.argv.slice(2));
+var inflection = require('inflection');
+
+var Models = require('./../lib/models');
+var Table = require('./../lib/table');
+var Migrations = require('./../lib/migrations');
+var Q = require('q');
+var moment = require('moment');
+var mu = require('mu2');
+mu.root = path.join(__dirname, '..', 'cli', 'templates');
+
+var utils = require('./../lib/utils');
+
+var basePath = path.resolve('./');
+
+
+if(argv._.length == 0) {
+	//TODO: Show help.
+
+	throw new Error('Hey. Not enough commands.')
+}
+
+if(argv._[0] == 'new') {
+	var appName = inflection.camelize(argv._[1]);
+
+	// TODO: create an app
+}
+else if(argv._[0] == 'migrate') {
+	var models = new Models();
+	var migrations = new Migrations();
+
+	var targetVersion = 0;
+
+	// Set-up without reading any of the models
+	// We will create the models based on all migrations
+	return models.setup(null)
+		.then(function() {
+			return migrations.setup(path.join(basePath, 'migrations'), models);
+		})
+		.then(function() {
+			return models.Schema.exists();
+		})
+		.then(function(exists) {
+			if(!exists) {
+				return models.Schema.setup();
+			}
+			else {
+				return true;
+			}
+		})
+		.then(function() {
+			// Let's find which database version we're at
+			return models.Schema.findOne({}, {version:'asc'});
+		})
+		.then(function(schema) {
+			return schema && schema.version || 0;
+		})
+		.then(function(currentVersion) {
+			console.log('*** Migrating models to version `' + currentVersion + '`.');
+
+			var changes = migrations._.filter(function(migration) {
+				return (migration.version <= currentVersion);
+			});
+
+			return utils.invokeSeries(changes, 'soft')
+				.then(function() {
+					return currentVersion;
+				});
+		})
+		.then(function(currentVersion) {
+			if(typeof argv.v != 'undefined') {
+				targetVersion = argv.v;
+			}
+			else if(typeof argv.version != 'undefined') {
+				targetVersion = argv.version;
+			}
+			else {
+				targetVersion = migrations._[migrations._.length - 1].version;
+			}
+
+			//e.g.	current 1 -> target 4
+			//		current 4 -> target 1
+			//1 2 3 4 5
+
+			var direction 	 = '';
+			var changes		= [];
+
+			if(currentVersion < targetVersion) {
+				direction = 'up';
+
+				changes = migrations._.filter(function(migration) {
+					return (migration.version > currentVersion && migration.version <= targetVersion);
+				});
+			}
+			else if(currentVersion > targetVersion) {
+				//we're going down
+				direction = 'down';
+
+				changes = migrations._.reverse().filter(function(migration) {
+					return (migration.version <= currentVersion && migration.version > targetVersion);
+				});
+			}
+			else {
+				throw new Error('The current database is already at version `' + targetVersion + '`.');
+			}
+
+			console.log('*** Migrating from `' + currentVersion + '` to `' + targetVersion + '`.');
+			changes.forEach(function(change) {
+				console.log('*** `' + change.fileName + '` to version `' + change.version + '`.');
+			});
+
+			return utils.invokeSeries(changes, 'go', direction);
+		})
+		.then(function() {
+			// All tests are done and we'll just verify if our target version is really where we are now
+			return models.Schema.findOne({}, {version: 'asc'});
+		})
+		.then(function(schema) {
+			if(schema && schema.version == targetVersion || !schema && targetVersion == 0) {
+				//everything went alright
+				console.log('*** Migration successful to `' + targetVersion + '`.');
+				return true;
+			}
+			else {
+				if(!schema) {
+					throw new Error('No schema found at all.');
+				}
+				else {
+					throw new Error('Database version after migration `' + schema.version + '` does not match target version `' + targetVersion + '`.');
+				}
+			}
+		})
+		.fail(function(error) {
+			console.log(error.message);
+
+			if(argv.d || argv.debug) {
+				console.log(error.stack);
+			}
+
+			return error;
+		})
+		.done();
+}
+else if(argv._[0] == 'generate' || argv._[0] == 'g') {
+	if(argv._.length == 1) {
+		throw new Error('You did not specify enough parameters. What do you want to generate? A `migration`?');
+	}
+
+	if(argv._[1] == 'model') {
+		/*
+		if(argv._.length == 2) {
+			throw new Error('You did not enter a name for your model.');
+		}
+
+		var models = new Models();
+		models.setup(path.join(basePath, 'models'));
+
+		var modelName 		= inflection.camelize(argv._[2]);
+
+		// Check if this model name exists already, if so, we bail
+		if(models[modelName]) {
+			throw new Error('Uh. Model with name `' + modelName + '` already exists.');
+		}
+
+		// Generate the name for the migration class: the timestamp is seperated by dashes for extra readability
+		var migrationName 	= inflection.camelize('Create' + modelName);
+		var migrationFilePath = moment().format('YY-MM-DD-HHmm') + '-' + inflection.dasherize('create-' + modelName).toLowerCase() + '.js';
+
+		// Check if this migration already exists
+		if(fs.existsSync(path.join(__dirname, 'migrations', migrationFilePath))) {
+			throw new Error('Oh. Migration already exists at `' + migrationFilePath + '`.');
+		}
+
+		var columns = argv._.slice(3);
+
+		var properties = columns.map(function(column) {
+			var set = column.split(':');
+
+			if(set.length != 2) {
+				throw new Error('Invalid definition for column `' + column + '`.');
+			}
+
+			var name = inflection.camelize(set[0], true);
+			var type = inflection.camelize(set[1]);
+
+			// If type is a model, we'll replace it with type:Reference
+			if(models[type]) {
+				type = 'Reference(models.' + type + ')';
+			}
+			// If type is this model, we'll set type to SelfRefence
+			else if(type == modelName) {
+				type = 'SelfReference';
+			}
+			// If anything else, we need to verify if this is a valid property type
+			else {
+				if(!Table.propertyTypes[type]) {
+					throw new Error('Invalid property type or model reference for property `' + name + '`.');
+				}
+			}
+
+			return {
+				name: name,
+				type: type
+			}
+		});
+
+		var modelsPath = path.join(basePath, 'models');
+		if(!fs.existsSync(modelsPath)) {
+			fs.mkdirSync(modelsPath);
+		}
+
+		var migrationsPath = path.join(basePath, 'migrations');
+		if(!fs.existsSync(migrationsPath)) {
+			fs.mkdirSync(migrationsPath);
+		}
+
+		var modelFileName = path.join(modelsPath, inflection.dasherize(modelName).toLowerCase() + '.js');
+		if(fs.existsSync(modelFileName)) {
+			throw new Error('Mm. File for model already exists at `' + modelFileName + '`.');
+		}
+
+		mu.compileAndRender('create-model.mu', {
+			modelName: modelName,
+			properties: properties
+		}).pipe(fs.createWriteStream(modelFileName));
+
+		mu.compileAndRender('create-migration.mu', {
+			migrationFilePath: migrationFilePath,
+			migrationName: migrationName,
+			modelName: modelName,
+			properties: properties
+		}).pipe(fs.createWriteStream(path.join(migrationsPath, migrationFilePath)));
+		*/
+	}
+	else if(argv._[1] == 'migration') {
+		/*
+		var models = new Models();
+		models.setup(path.join(basePath, 'models'));
+
+		var migrations = new Migrations();
+		migrations.setup(path.join(basePath, 'migrations'));
+		*/
+	}
+	else {
+		// TODO: Generate a controller, worker, middleware (?), responder, etc
+	}
+}
+else if(argv._[0] == '') {
+
+}
+else {
+	// TODO: generate a database migration.
+}
