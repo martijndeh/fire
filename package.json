@@ -1,4 +1,5 @@
 {
+  "name": "fire",
   "description": "An opinionated, convention-based Node web framework focused on developer productivity.",
   "keywords": [
     "fire",
