@@ -1,6 +1,7 @@
 var fire = require('..');
 var Models = require('./../lib/models');
 var assert = require('assert');
+var Q = require('q');
 
 describe('models', function() {
     var models;
@@ -14,9 +15,21 @@ describe('models', function() {
     });
 
     afterEach(function(done) {
-        models = null;
+        // TODO: We should drop everything in beforeEach instead.
+        Q.all([
+            models.Schema && models.Schema.destroy(),
+            models.ModelThree && models.ModelThree.destroy()
+        ])
+        .then(function() {
+            models = null;
+            done();
+        })
+        .fail(function(error) {
+            console.log(error);
+            console.log(error.stack);
 
-        done();
+            throw error;
+        })
     });
 
     it('can reference model', function(done) {
@@ -36,14 +49,14 @@ describe('models', function() {
     });
 
     it('can create model when calling findOrCreateOne()', function(done) {
-        function ModelOne() {
+        function ModelThree() {
             this.name = [this.String];
             this.value = [this.Integer];
         }
-        models.addModel(ModelOne);
-        return models.ModelOne.setup()
+        models.addModel(ModelThree);
+        return models.ModelThree.setup()
             .then(function() {
-                return models.ModelOne.findOrCreateOne({name: 'Test'}, {value: 123});
+                return models.ModelThree.findOrCreateOne({name: 'Test'}, {value: 123});
             })
             .then(function(model) {
                 assert.equal(model.name, 'Test');

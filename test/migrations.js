@@ -4,10 +4,31 @@ var fire = require('..');
 var Models = require('./../lib/models');
 var Migrations = require('./../lib/migrations');
 var assert = require('assert');
+var Q = require('q');
 
 describe('migrations', function() {
     var models;
     var migrations;
+
+    afterEach(function(done) {
+        // We should drop everything
+        Q.all([
+            models.Schema && models.Schema.destroy(),
+            models.FirstTest && models.FirstTest.destroy(),
+            models.SecondTest && models.SecondTest.destroy(),
+            models.ThirdTest && models.ThirdTest.destroy(),
+            models.User && models.User.destroy()
+        ])
+        .then(function() {
+            done();
+        })
+        .fail(function(error) {
+            console.log(error);
+            console.log(error.stack);
+
+            throw error;
+        })
+    });
 
     beforeEach(function(done) {
         models = new Models();
@@ -59,10 +80,32 @@ describe('migrations', function() {
                     return this.removeProperties(this.models.ThirdTest, ['value']);
                 }
 
+                function FifthMigration() {}
+                FifthMigration.prototype.up = function() {
+                    return this.createModel('User', {
+                        name: [this.String]
+                    });
+                }
+                FifthMigration.prototype.down = function() {
+                    return this.destroyModel('User');
+                }
+
+                function SixthMigration() {}
+                SixthMigration.prototype.up = function() {
+                    return this.addProperties(this.models.ThirdTest, {
+                        user: [this.Reference(this.models.User)]
+                    });
+                }
+                SixthMigration.prototype.down = function() {
+                    return this.removeProperties(this.models.ThirdTest, ['user']);
+                }
+
                 migrations.addMigration(FirstMigration, 1);
                 migrations.addMigration(SecondMigration, 2);
                 migrations.addMigration(ThirdMigration, 3);
                 migrations.addMigration(FourthMigration, 4);
+                migrations.addMigration(FifthMigration, 5);
+                migrations.addMigration(SixthMigration, 6);
 
                 done();
             })
@@ -170,6 +213,36 @@ describe('migrations', function() {
             })
             .then(function(currentVersion) {
                 assert.equal(currentVersion, 3);
+                done();
+            })
+            .done();
+    });
+
+    it('can add relation', function(done) {
+        migrations.migrate(0, 6)
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 6);
+                return true;
+            })
+            .then(function() {
+                // Let's clear all the models
+                models.FirstTest = null;
+                models.SecondTest = null;
+                models.ThirdTest = null;
+                models.User = null;
+                return true;
+            })
+            .then(function() {
+                return migrations.migrate(6, 0);
+            })
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 0);
                 done();
             })
             .done();
