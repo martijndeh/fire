@@ -6,4 +6,4 @@ addons:
 before_script:
   - psql -c 'create database fire;' -U postgres
 env:
-  - DATABASE_URL=postgres://postgres:localhost/fire.
+  - DATABASE_URL=postgres://postgres@localhost/fire
