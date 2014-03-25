@@ -158,4 +158,48 @@ describe('models', function() {
             done(error);
         })
     })
+
+    it('can query on date', function(done) {
+        function ModelThree() {
+            this.name       = [this.String];
+            this.createdAt  = [this.DateTime];
+        }
+        models.addModel(ModelThree);
+
+        var startDate = new Date(2014, 10, 23);
+        var endDate = new Date(2014, 10, 24);
+        var outsideDate = new Date(2015, 0, 1);
+
+        return models.ModelThree.setup()
+        .then(function() {
+            return models.ModelThree.createOne({
+                createdAt: startDate
+            });
+        })
+        .then(function() {
+            return models.ModelThree.createOne({
+                createdAt: endDate
+            });
+        })
+        .then(function() {
+            return models.ModelThree.createOne({
+                createdAt: outsideDate
+            });
+        })
+        .then(function() {
+            return models.ModelThree.findOne({
+                createdAt: {
+                    $gte: startDate,
+                    $lt: endDate
+                }
+            });
+        })
+        .then(function(model) {
+            assert.notEqual(model, null);
+            done();
+        })
+        .fail(function(error) {
+            done(error);
+        })
+    });
 });
