@@ -49,9 +49,20 @@ describe('migrations', function() {
                     return this.destroyModel('ThirdTest');
                 };
 
+                function FourthMigration() {}
+                FourthMigration.prototype.up = function() {
+                    return this.addProperties(this.models.ThirdTest, {
+                        value: [this.Integer]
+                    });
+                }
+                FourthMigration.prototype.down = function() {
+                    return this.removeProperties(this.models.ThirdTest, ['value']);
+                }
+
                 migrations.addMigration(FirstMigration, 1);
                 migrations.addMigration(SecondMigration, 2);
                 migrations.addMigration(ThirdMigration, 3);
+                migrations.addMigration(FourthMigration, 4);
 
                 done();
             })
@@ -126,5 +137,41 @@ describe('migrations', function() {
             .done();
     });
 
-
+    it('can edit existing models', function(done) {
+        migrations.migrate(0, 4)
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 4);
+                return true;
+            })
+            .then(function() {
+                return models.ThirdTest.createOne({
+                    name: 'Test :-)',
+                    value: 123
+                });
+            })
+            .then(function(model) {
+                return assert.equal(model.value, 123);
+            })
+            .then(function() {
+                // Let's clear all the models
+                models.FirstTest = null;
+                models.SecondTest = null;
+                models.ThirdTest = null;
+                return true;
+            })
+            .then(function() {
+                return migrations.migrate(4, 3);
+            })
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 3);
+                done();
+            })
+            .done();
+    });
 });
