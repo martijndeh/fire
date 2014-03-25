@@ -41,7 +41,7 @@ describe('routes', function() {
 
 		var route = controllers.routes[0];
 
-		route.path.toString().should.equal('/^/(sub)(?:/)?$/i');
+		route.path.toString().should.equal('/^/sub(?:/)?$/i');
 		route.verb.should.equal('get');
 
 		done();
@@ -54,7 +54,7 @@ describe('routes', function() {
 
 		var route = controllers.routes[0];
 
-		route.path.toString().should.equal('/^/(sub1)/(sub2)(?:/)?$/i');
+		route.path.toString().should.equal('/^/sub1/sub2(?:/)?$/i');
 		route.verb.should.equal('get');
 
 		done();

@@ -4,9 +4,7 @@ var Config = require('../lib/config');
 var should = require('chai').should()
 var path =  require('path');
 var request = require('supertest')
-
-//todo: test w/https://www.npmjs.org/package/supertest
-//json responses, matches, etc
+var assert = require('assert');
 
 describe('connections', function() {
 	var app;
@@ -36,6 +34,12 @@ describe('connections', function() {
 				ApiController.prototype.getTest = function(test) {
 					return {
 						title: 'Hello, test.'
+					};
+				}
+
+				ApiController.prototype.getTest2 = function(test, $id) {
+					return {
+						id: $id
 					};
 				}
 
@@ -74,5 +78,14 @@ describe('connections', function() {
 
 				done();
 			});
+	});
+
+	it('should match parameter', function(done) {
+		request(app.server)
+			.get('/1/api/test/10')
+			.expect(200, function(error, response) {
+				assert.equal(response.text, '{"id":"10"}');
+				done();
+			})
 	})
 })
