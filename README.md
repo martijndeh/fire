@@ -1,5 +1,6 @@
 #### Under active development. Things break & will likely not work yet.
 
+[![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
 ### Node on Fire
 A productive & convention-based web framework.
 
