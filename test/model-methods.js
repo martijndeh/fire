@@ -16,10 +16,14 @@ describe('models', function() {
 
     afterEach(function(done) {
         // TODO: We should drop everything in beforeEach instead.
-        Q.all([
-            models.Schema && models.Schema.destroy(),
-            models.ModelThree && models.ModelThree.destroy()
-        ])
+
+        Q.when(models.Schema && models.Schema.destroy())
+        .then(function() {
+            return models.ModelFour && models.ModelFour.destroy();
+        })
+        .then(function() {
+            return models.ModelThree && models.ModelThree.destroy();
+        })
         .then(function() {
             models = null;
             done();
@@ -103,4 +107,55 @@ describe('models', function() {
             done(error);
         })
     });
+
+    it('can update with relation', function(done) {
+        function ModelThree() {
+            this.name = [this.String];
+        }
+        models.addModel(ModelThree);
+
+        function ModelFour() {
+            this.name = [this.String];
+            this.three = [this.Reference(models.ModelThree)];
+        }
+        models.addModel(ModelFour);
+
+        return models.ModelThree.setup()
+        .then(function() {
+            return models.ModelFour.setup();
+        })
+        .then(function() {
+            return models.ModelThree.createOne({
+                name: 'Test 1'
+            });
+        })
+        .then(function(modelThree) {
+            assert.notEqual(modelThree, null);
+            assert.equal(modelThree.name, 'Test 1');
+
+            return models.ModelFour.createOne({
+                three: modelThree
+            })
+            .then(function(modelFour) {
+                assert.notEqual(modelFour, null);
+                assert.equal(modelFour.three, 1);
+
+                return models.ModelFour.updateOne({
+                    id: modelFour.id,
+                    three: modelThree
+                }, {name:'Test 2'});
+            })
+        })
+        .then(function(modelFour) {
+            assert.notEqual(modelFour, null);
+            assert.equal(modelFour.name, 'Test 2');
+            done();
+        })
+        .fail(function(error) {
+            console.log(error);
+            console.log(error.stack);
+
+            done(error);
+        })
+    })
 });
