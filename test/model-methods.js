@@ -66,4 +66,41 @@ describe('models', function() {
             })
             .done();
     })
+
+    it('can find model with null column', function(done) {
+        function ModelThree() {
+            this.name = [this.String];
+        }
+        models.addModel(ModelThree);
+        return models.ModelThree.setup()
+        .then(function() {
+            return models.ModelThree.createOne({name:null});
+        })
+        .then(function() {
+            return models.ModelThree.findOne({});
+        })
+        .then(function(model) {
+            assert.notEqual(model, null);
+            assert.equal(model.name, null);
+            return true;
+        })
+        .then(function() {
+            return models.ModelThree.execute('SELECT * FROM "model_threes" WHERE "name" IS NULL LIMIT 1');
+        })
+        .then(function(model) {
+            assert.notEqual(model, null);
+            assert.equal(model.name, null);
+            return true;
+        })
+        .then(function() {
+            return models.ModelThree.findOne({name:null});
+        })
+        .then(function(model) {
+            assert.notEqual(model, null);
+            done();
+        })
+        .fail(function(error) {
+            done(error);
+        })
+    });
 });
