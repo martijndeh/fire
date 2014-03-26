@@ -1,6 +1,6 @@
 #### Under active development. Things break & will likely not work yet.
 
-### Node on Fire
+## Node on Fire
 A productive & convention-based web framework.
 
 ### Installation
