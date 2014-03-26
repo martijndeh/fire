@@ -241,9 +241,7 @@ describe('models', function() {
         .then(function() {
             return models.ModelFour.findOne({});
         })
-        .then(function(model) {
-            console.dir(model);
-            
+        .then(function(model) {            
             assert.equal(model.name, 'Four is a Test');
             assert.equal(model.three.name, 'Three is a Test');
             done();
@@ -251,6 +249,72 @@ describe('models', function() {
         .fail(function(error) {
             console.log(error);
             console.log(error.stack);
+        })
+        .done();
+    });
+
+    it('can find models with auto fetches', function(done) {
+        function ModelThree() {
+            this.name = [this.String];
+        }
+        ModelThree.prototype.toJSON = function() {
+            return {
+                id: this.id,
+                name: this.name,
+                test: 'haha'
+            };
+        }
+        models.addModel(ModelThree);
+
+        function ModelFour() {
+            this.name = [this.String];
+            this.three = [this.Reference(models.ModelThree), this.AutoFetch()];
+        }
+        ModelFour.prototype.toJSON = function() {
+            return {
+                id: this.id,
+                name: this.name,
+                three: this.three
+            };
+        }
+        models.addModel(ModelFour);
+
+        models.ModelThree.setup()
+        .then(function() {
+            return models.ModelFour.setup();
+        })
+        .then(function() {
+            return models.ModelThree.createOne({
+                name: 'Three is a Test'
+            });
+        })
+        .then(function(modelThree) {
+            var creations = [];
+
+            for(var i = 0; i < 10; i++) {
+                creations.push(models.ModelFour.createOne({
+                    three: modelThree,
+                    name: 'Four is a Test'
+                }));
+            }
+
+            return Q.all(creations);
+        })
+        .then(function() {
+            return models.ModelFour.find({});
+        })
+        .then(function(modelFours) {
+            assert.equal(modelFours.length, 10);
+
+            modelFours.forEach(function(modelFour) {
+                assert.equal(modelFour.name, 'Four is a Test');
+                assert.equal(modelFour.three.id, 1);
+                assert.equal(modelFour.three.name, 'Three is a Test');
+            });
+
+            assert.notEqual(JSON.stringify(modelFours), null);
+
+            done();
         })
         .done();
     })
