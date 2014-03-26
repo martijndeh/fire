@@ -1,7 +1,9 @@
 var fire = require('..');
 var Models = require('./../lib/models');
 var assert = require('assert');
+
 var Q = require('q');
+Q.longStackSupport = true;
 
 describe('models', function() {
     var models;
@@ -16,6 +18,8 @@ describe('models', function() {
 
     afterEach(function(done) {
         // TODO: We should drop everything in beforeEach instead.
+        // But make sure we don't drop /everything/: only whatever the tests use
+        // We don't want to delete any real tables because of a misconfiguration
 
         Q.when(models.Schema && models.Schema.destroy())
         .then(function() {
@@ -202,4 +206,52 @@ describe('models', function() {
             done(error);
         })
     });
+
+    it('can create foreign key association', function(done) {
+        function ModelThree() {
+            this.name = [this.String];
+        }
+        models.addModel(ModelThree);
+
+        function ModelFour() {
+            this.name = [this.String];
+            this.three = [this.Reference(models.ModelThree), this.AutoFetch()];
+        }
+        models.addModel(ModelFour);
+
+        models.ModelThree.setup()
+        .then(function() {
+            return models.ModelFour.setup();
+        })
+        .then(function() {
+            return models.ModelThree.createOne({
+                name: 'Three is a Test'
+            });
+        })
+        .then(function(modelThree) {
+            return models.ModelFour.createOne({
+                three: modelThree,
+                name: 'Four is a Test'
+            });
+        })
+        .then(function(modelFour) {
+            assert.notEqual(modelFour, null);
+            return true;
+        })
+        .then(function() {
+            return models.ModelFour.findOne({});
+        })
+        .then(function(model) {
+            console.dir(model);
+            
+            assert.equal(model.name, 'Four is a Test');
+            assert.equal(model.three.name, 'Three is a Test');
+            done();
+        })
+        .fail(function(error) {
+            console.log(error);
+            console.log(error.stack);
+        })
+        .done();
+    })
 });
