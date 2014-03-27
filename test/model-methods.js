@@ -29,15 +29,28 @@ describe('models', function() {
             return models.ModelThree && models.ModelThree.destroy();
         })
         .then(function() {
+            return models.Project && models.Project.exists();
+        })
+        .then(function(exists) {
+            if(exists) {
+                return models.Project.destroy();
+            }
+            return true;
+        })
+        .then(function() {
+            return models.Client && models.Client.exists();
+        })
+        .then(function(exists) {
+            if(exists) {
+                return models.Client.destroy();
+            }
+            return true;
+        })
+        .then(function() {
             models = null;
             done();
         })
-        .fail(function(error) {
-            console.log(error);
-            console.log(error.stack);
-
-            throw error;
-        })
+        .done();
     });
 
     it('can reference model', function(done) {
@@ -155,12 +168,7 @@ describe('models', function() {
             assert.equal(modelFour.name, 'Test 2');
             done();
         })
-        .fail(function(error) {
-            console.log(error);
-            console.log(error.stack);
-
-            done(error);
-        })
+        .done();
     })
 
     it('can query on date', function(done) {
@@ -246,10 +254,6 @@ describe('models', function() {
             assert.equal(model.three.name, 'Three is a Test');
             done();
         })
-        .fail(function(error) {
-            console.log(error);
-            console.log(error.stack);
-        })
         .done();
     });
 
@@ -317,5 +321,129 @@ describe('models', function() {
             done();
         })
         .done();
-    })
+    });
+
+    it('can add auto-fetched many reference', function(done) {
+        function Project() {
+            this.name = [this.String];
+        }
+        models.addModel(Project);
+
+        function Client() {
+            this.name       = [this.String];
+            this.projects   = [this.AutoFetch(), this.Many(models.Project)];
+        }
+        models.addModel(Client);
+
+        models.Client.setup()
+        .then(function() {
+            return models.Project.setup();
+        })
+        .then(function() {
+            assert.notEqual(models.Client.getAssociations()['projects'], null);
+            assert.notEqual(models.Project.getAssociations()['client'], null);
+            return true;
+        })
+        .then(function() {
+            var _ = [];
+
+            for(var i = 0; i < 3; i++) {
+                _.push(models.Client.createOne({
+                    name: 'Client #' + i
+                }));
+            }
+
+            return Q.all(_);
+        })
+        .then(function() {
+            return models.Client.find({});
+        })
+        .then(function(clients) {
+            assert.equal(clients.length, 3);
+
+            var _ = [];
+
+            for(var i = 0; i < 30; i++) {
+                _.push(models.Project.createOne({
+                    name: 'Project #' + i,
+                    client: clients[i % 3]
+                }));
+            }
+
+            return Q.all(_);
+        })
+        .then(function() {
+            return models.Client.findOne({});
+        })
+        .then(function(client) {
+            assert.equal(client.projects.length, 10);
+            return models.Client.find({}, {name:'ASC'});
+        })
+        .then(function(clients) {
+            assert.equal(clients.length, 3);
+            clients.forEach(function(client) {
+                assert.equal(client.projects.length, 10);
+            });
+            done();
+        })
+        .done();
+    });
+
+    it('can add NON-auto-fetched many reference', function(done) {
+        function Project() {
+            this.name = [this.String];
+        }
+        models.addModel(Project);
+
+        function Client() {
+            this.name       = [this.String];
+            this.projects   = [this.Many(models.Project)];
+        }
+        models.addModel(Client);
+
+        models.Client.setup()
+        .then(function() {
+            return models.Project.setup();
+        })
+        .then(function() {
+            var _ = [];
+
+            for(var i = 0; i < 3; i++) {
+                _.push(models.Client.createOne({
+                    name: 'Client #' + i
+                }));
+            }
+
+            return Q.all(_);
+        })
+        .then(function() {
+            return models.Client.find({});
+        })
+        .then(function(clients) {
+            assert.equal(clients.length, 3);
+
+            var _ = [];
+
+            for(var i = 0; i < 30; i++) {
+                _.push(models.Project.createOne({
+                    name: 'Project #' + i,
+                    client: clients[i % 3]
+                }));
+            }
+
+            return Q.all(_);
+        })
+        .then(function() {
+            return models.Client.findOne({});
+        })
+        .then(function(client) {
+            assert.equal(client.projects, null);
+            return client.getProjects();
+        })
+        .then(function(projects) {
+            assert.equal(projects.length, 10);
+            done();
+        })
+        .done();
+    });
 });

@@ -16,9 +16,11 @@ describe('migrations', function() {
             models.Schema && models.Schema.destroy(),
             models.FirstTest && models.FirstTest.destroy(),
             models.SecondTest && models.SecondTest.destroy(),
-            models.ThirdTest && models.ThirdTest.destroy(),
-            models.User && models.User.destroy()
+            models.ThirdTest && models.ThirdTest.destroy()
         ])
+        .then(function() {
+            return models.User && models.User.destroy();
+        })
         .then(function() {
             done();
         })

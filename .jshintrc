@@ -1,4 +1,7 @@
 {
 	"node": true,
-	"unused": false
+	"unused": false,
+	"smarttabs": true,
+	"-W099": true,
+	"undef": true
 }
