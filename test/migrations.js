@@ -11,8 +11,6 @@ describe('migrations', function() {
     var migrations;
 
     afterEach(function(done) {
-        console.log('After each kicking in');
-
         // We should drop everything
         Q.all([
             models.Schema && models.Schema.destroy(),
@@ -33,20 +31,15 @@ describe('migrations', function() {
     });
 
     beforeEach(function(done) {
-        console.log('beforeEach()');
-
         models = new Models();
         models.setup(null);
 
         migrations = new Migrations();
         migrations.setup(null, models)
             .then(function() {
-                console.log('Removing all schemas');
                 return models.Schema.removeAll();
             })
             .then(function() {
-                console.log('Creating migrations');
-
                 function FirstMigration() {}
                 FirstMigration.prototype.up = function() {
                     this.models.createModel('FirstTest', {
@@ -148,8 +141,6 @@ describe('migrations', function() {
                 done();
             })
             .fail(function(error) {
-                console.log('error');
-                console.log(error);
                 done(error);
             })
             .done();
