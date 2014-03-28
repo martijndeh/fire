@@ -106,7 +106,7 @@ describe('models', function() {
             return true;
         })
         .then(function() {
-            return models.ModelThree.execute('SELECT * FROM "model_threes" WHERE "name" IS NULL LIMIT 1');
+            return models.execute('SELECT * FROM "model_threes" WHERE "name" IS NULL LIMIT 1');
         })
         .then(function(model) {
             assert.notEqual(model, null);

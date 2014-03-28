@@ -11,6 +11,8 @@ describe('migrations', function() {
     var migrations;
 
     afterEach(function(done) {
+        console.log('After each kicking in');
+
         // We should drop everything
         Q.all([
             models.Schema && models.Schema.destroy(),
@@ -25,81 +27,113 @@ describe('migrations', function() {
             done();
         })
         .fail(function(error) {
-            console.log(error);
-            console.log(error.stack);
-
-            throw error;
+            done(error);
         })
+        .done();
     });
 
     beforeEach(function(done) {
+        console.log('beforeEach()');
+
         models = new Models();
         models.setup(null);
 
         migrations = new Migrations();
         migrations.setup(null, models)
             .then(function() {
+                console.log('Removing all schemas');
                 return models.Schema.removeAll();
             })
             .then(function() {
+                console.log('Creating migrations');
+
                 function FirstMigration() {}
                 FirstMigration.prototype.up = function() {
-                    return this.createModel('FirstTest', {
+                    this.models.createModel('FirstTest', {
                         name: [this.String]
                     });
                 };
                 FirstMigration.prototype.down = function() {
-                    return this.destroyModel('FirstTest');
+                    this.models.destroyModel('FirstTest');
                 };
 
                 function SecondMigration() {}
                 SecondMigration.prototype.up = function() {
-                    return this.createModel('SecondTest', {
+                    this.models.createModel('SecondTest', {
                         name: [this.String]
                     });
                 };
                 SecondMigration.prototype.down = function() {
-                    return this.destroyModel('SecondTest');
+                    this.models.destroyModel('SecondTest');
                 };
 
                 function ThirdMigration() {}
                 ThirdMigration.prototype.up = function() {
-                    return this.createModel('ThirdTest', {
+                    this.models.createModel('ThirdTest', {
                         name: [this.String]
                     });
                 };
                 ThirdMigration.prototype.down = function() {
-                    return this.destroyModel('ThirdTest');
+                    this.models.destroyModel('ThirdTest');
                 };
 
                 function FourthMigration() {}
                 FourthMigration.prototype.up = function() {
-                    return this.addProperties(this.models.ThirdTest, {
+                    this.models.ThirdTest.addProperties({
                         value: [this.Integer]
                     });
                 }
                 FourthMigration.prototype.down = function() {
-                    return this.removeProperties(this.models.ThirdTest, ['value']);
+                    this.models.ThirdTest.removeProperties(['value']);
                 }
 
                 function FifthMigration() {}
                 FifthMigration.prototype.up = function() {
-                    return this.createModel('User', {
+                    this.models.createModel('User', {
                         name: [this.String]
                     });
                 }
                 FifthMigration.prototype.down = function() {
-                    return this.destroyModel('User');
+                    this.models.destroyModel('User');
                 }
 
                 function SixthMigration() {}
                 SixthMigration.prototype.up = function() {
-                    return this.addProperties(this.models.ThirdTest, {
+                    this.models.ThirdTest.addProperties({
                         user: [this.Reference(this.models.User)]
                     });
                 }
                 SixthMigration.prototype.down = function() {
-                    return this.removeProperties(this.models.ThirdTest, ['user']);
+                    this.models.ThirdTest.removeProperties(['user']);
+                }
+
+                function Migration7() {}
+                Migration7.prototype.up = function() {
+                    this.models.createModel('Project', {
+                        name: [this.String]
+                    });
+
+                    this.models.createModel('Client', {
+                        name: [this.String],
+                        projects: [this.Many(this.models.Project), this.AutoFetch()]
+                    });
+                };
+
+                Migration7.prototype.down = function() {
+                    this.models.destroyModel('Project');
+                    this.models.destroyModel('Client');
+                }
+
+                function Migration8() {}
+                Migration8.prototype.up = function() {
+                    this.models.createModel('Workspace', {
+                        name: [this.String],
+                        clients: [this.Many(this.models.Client), this.AutoFetch()]
+                    });
+                };
+
+                Migration8.prototype.down = function() {
+                    this.models.destroyModel('Workspace');
                 }
 
                 migrations.addMigration(FirstMigration, 1);
@@ -108,10 +142,14 @@ describe('migrations', function() {
                 migrations.addMigration(FourthMigration, 4);
                 migrations.addMigration(FifthMigration, 5);
                 migrations.addMigration(SixthMigration, 6);
+                migrations.addMigration(Migration7, 7);
+                migrations.addMigration(Migration8, 8);
 
                 done();
             })
             .fail(function(error) {
+                console.log('error');
+                console.log(error);
                 done(error);
             })
             .done();
@@ -245,6 +283,38 @@ describe('migrations', function() {
             })
             .then(function(currentVersion) {
                 assert.equal(currentVersion, 0);
+                done();
+            })
+            .done();
+    });
+
+    it('can create many assocation', function(done) {
+        migrations.migrate(0, 7)
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 7);
+                return true;
+            })
+            .then(function() {
+                // Let's clear all the models
+                models.FirstTest = null;
+                models.SecondTest = null;
+                models.ThirdTest = null;
+                models.User = null;
+                models.Project = null;
+                models.Client = null;
+                return true;
+            })
+            .then(function() {
+                return migrations.migrate(7, 4);
+            })
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 4);
                 done();
             })
             .done();
