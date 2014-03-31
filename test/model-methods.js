@@ -446,4 +446,38 @@ describe('models', function() {
         })
         .done();
     });
+
+    it('can create model with many reference in reverse order', function(done) {
+        function Client(models) {
+            this.name = [this.String];
+            this.projects = [this.AutoFetch(), this.Many(models.Project)];
+        }
+
+        function Project(models) {
+            this.name = [this.String];
+        }
+
+        models.loadClass(Client);
+        models.loadClass(Project);
+
+        console.log('_addModels')
+
+        for(var modelName in models.internals) {
+            var ModelClass = models.internals[modelName];
+
+            models._addModel(ModelClass, modelName);
+        }
+
+        console.log('add Properties to models')
+
+        for(var modelName in models.internals) {
+            var model = models.internals[modelName];
+
+            console.log('Add properties to ' + modelName);
+
+            model.getTable().addProperties(model.getAllProperties(), false);
+        }
+
+        done();
+    })
 });

@@ -12,15 +12,7 @@ describe('migrations', function() {
 
     afterEach(function(done) {
         // We should drop everything
-        Q.all([
-            models.Schema && models.Schema.destroy(),
-            models.FirstTest && models.FirstTest.destroy(),
-            models.SecondTest && models.SecondTest.destroy(),
-            models.ThirdTest && models.ThirdTest.destroy()
-        ])
-        .then(function() {
-            return models.User && models.User.destroy();
-        })
+        migrations.destroyAllModels()
         .then(function() {
             done();
         })
@@ -129,6 +121,39 @@ describe('migrations', function() {
                     this.models.destroyModel('Workspace');
                 }
 
+                function Migration9() {}
+                Migration9.prototype.up = function() {
+                    this.models.ThirdTest.addProperties({
+                        clients: [this.Many(this.models.Client), this.AutoFetch()]
+                    });
+                }
+                Migration9.prototype.down = function() {
+                    this.models.ThirdTest.removeProperties(['clients']);
+                }
+
+                function Migration10() {}
+                Migration10.prototype.up = function() {
+                    this.models.ThirdTest.addProperties({
+                        type: [this.String, this.Default('\'Test\'')]
+                    });
+
+                    this.models.ThirdTest.update({}, {type:'Not a Test'});
+                }
+                Migration10.prototype.down = function() {
+                    this.models.ThirdTest.removeProperties(['type']);
+                }
+
+                function Migration11() {}
+                Migration11.prototype.up = function() {
+                    this.models.createModel('TestRelation', {
+                        name: [this.String],
+                        thirdTests: [this.AutoFetch(), this.Many(this.models.ThirdTest)]
+                    });
+                };
+                Migration11.prototype.down = function() {
+                    this.models.destroyModel('TestRelation');
+                }
+
                 migrations.addMigration(FirstMigration, 1);
                 migrations.addMigration(SecondMigration, 2);
                 migrations.addMigration(ThirdMigration, 3);
@@ -137,6 +162,9 @@ describe('migrations', function() {
                 migrations.addMigration(SixthMigration, 6);
                 migrations.addMigration(Migration7, 7);
                 migrations.addMigration(Migration8, 8);
+                migrations.addMigration(Migration9, 9);
+                migrations.addMigration(Migration10, 10);
+                migrations.addMigration(Migration11, 11);
 
                 done();
             })
@@ -231,10 +259,7 @@ describe('migrations', function() {
             })
             .then(function() {
                 // Let's clear all the models
-                models.FirstTest = null;
-                models.SecondTest = null;
-                models.ThirdTest = null;
-                return true;
+                return migrations.resetAllModels();
             })
             .then(function() {
                 return migrations.migrate(4, 3);
@@ -260,11 +285,7 @@ describe('migrations', function() {
             })
             .then(function() {
                 // Let's clear all the models
-                models.FirstTest = null;
-                models.SecondTest = null;
-                models.ThirdTest = null;
-                models.User = null;
-                return true;
+                return migrations.resetAllModels();
             })
             .then(function() {
                 return migrations.migrate(6, 0);
@@ -290,13 +311,7 @@ describe('migrations', function() {
             })
             .then(function() {
                 // Let's clear all the models
-                models.FirstTest = null;
-                models.SecondTest = null;
-                models.ThirdTest = null;
-                models.User = null;
-                models.Project = null;
-                models.Client = null;
-                return true;
+                return migrations.resetAllModels();
             })
             .then(function() {
                 return migrations.migrate(7, 4);
@@ -310,4 +325,83 @@ describe('migrations', function() {
             })
             .done();
     });
+
+    it('can implicitly edit model', function(done) {
+        migrations.migrate(0, 8)
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 8);
+                done();
+            })
+            .done();
+    });
+
+    it('can implicitly edit model without affecting actual model', function(done) {
+        migrations.migrate(0, 9)
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 9);
+                done();
+            })
+            .done();
+    });
+
+    it('can migrate and execute query', function(done) {
+        migrations.migrate(0, 9)
+            .then(function() {
+                return models.ThirdTest.createOne({name:'Test 1'});
+            })
+            .then(function() {
+                return migrations.resetAllModels();
+            })
+            .then(function() {
+                return migrations.migrate(9, 10);
+            })
+            .then(function() {
+                return models.ThirdTest.createOne({name:'Test 2'});
+            })
+            .then(function() {
+                return models.ThirdTest.find({});
+            })
+            .then(function(tests) {
+                assert.equal(tests.length, 2);
+
+                assert.equal(tests[0].id, 1);
+                assert.equal(tests[0].name, 'Test 1');
+                assert.equal(tests[0].type, 'Not a Test');
+
+                assert.equal(tests[1].id, 2);
+                assert.equal(tests[1].name, 'Test 2');
+                assert.equal(tests[1].type, 'Test');
+
+                return migrations.resetAllModels();
+            })
+            .then(function() {
+                return migrations.migrate(10, 6);
+            })
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 6);
+                done();
+            })
+            .done();
+    })
+
+    it('can create model and add many association', function(done) {
+        migrations.migrate(0, 11)
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 11);
+                return done();
+            })
+            .done();
+    })
 });
