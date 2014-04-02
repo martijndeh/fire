@@ -21,32 +21,22 @@ describe('models', function() {
         // But make sure we don't drop /everything/: only whatever the tests use
         // We don't want to delete any real tables because of a misconfiguration
 
-        Q.when(models.Schema && models.Schema.destroy())
-        .then(function() {
-            return models.ModelFour && models.ModelFour.destroy();
-        })
-        .then(function() {
-            return models.ModelThree && models.ModelThree.destroy();
-        })
-        .then(function() {
-            return models.Project && models.Project.exists();
-        })
-        .then(function(exists) {
-            if(exists) {
-                return models.Project.destroy();
-            }
-            return true;
-        })
-        .then(function() {
-            return models.Client && models.Client.exists();
-        })
-        .then(function(exists) {
-            if(exists) {
-                return models.Client.destroy();
-            }
-            return true;
-        })
-        .then(function() {
+        var result = Q.when(true);
+
+        models.forEach(function(model) {
+            result = result.then(function() {
+                return model.exists().then(function(exists) {
+                    if(exists) {
+                        return model.forceDestroy();
+                    }
+                    else {
+                        return Q.when(true);
+                    }
+                });
+            });
+        });
+
+        result.then(function() {
             models = null;
             done();
         })
@@ -60,8 +50,8 @@ describe('models', function() {
 
         models.addModel(ModelOne);
 
-        function ModelTwo(models) {
-            this.ref = [this.Reference(models.ModelOne)];
+        function ModelTwo() {
+            this.ref = [this.Reference(this.models.ModelOne)];
         }
 
         models.addModel(ModelTwo);
@@ -448,19 +438,17 @@ describe('models', function() {
     });
 
     it('can create model with many reference in reverse order', function(done) {
-        function Client(models) {
+        function Client() {
             this.name = [this.String];
-            this.projects = [this.AutoFetch(), this.Many(models.Project)];
+            this.projects = [this.AutoFetch(), this.Many(this.models.Project)];
         }
 
-        function Project(models) {
+        function Project() {
             this.name = [this.String];
         }
 
         models.loadClass(Client);
         models.loadClass(Project);
-
-        console.log('_addModels')
 
         for(var modelName in models.internals) {
             var ModelClass = models.internals[modelName];
@@ -468,12 +456,8 @@ describe('models', function() {
             models._addModel(ModelClass, modelName);
         }
 
-        console.log('add Properties to models')
-
         for(var modelName in models.internals) {
             var model = models.internals[modelName];
-
-            console.log('Add properties to ' + modelName);
 
             model.getTable().addProperties(model.getAllProperties(), false);
         }

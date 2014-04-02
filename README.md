@@ -112,16 +112,16 @@ p.
 
 #### Introduction
 
-In Node on Fire ... models ... migrations.
+In Node on Fire the datastore is abstracted away for you. You only work on models. Changes to your models reflect in your migrations and migrations actually create your datastore's schema.
 
-Generate migrations. Optional. Can auto-create migrations & execute when your app starts. Generally not a good idea: fine for rapid prototyping but not when launching your product.
+The good news is that you can generate migrations based on your models—or you can even let Node on Fire auto-migrate your database for you. This is generally not a good idea: fine for rapid prototyping but not when launching your product.
 
 Place models in models directory. Migrations in migrations folder.
 
 #### Definition
 The below defines a basic User model:
 ```js
-function User(models) {
+function User() {
 	this.name 		= [this.String];
 	this.password 	= [this.String];
 	this.email 		= [this.String];
@@ -150,17 +150,14 @@ See below the list of all property types.
 - Id: Set the property's data type in the table definition to SERIAL PRIMARY KEY. Generally, this shouldn't be set manually, as Node on Fire automatically adds an id property to every model with only this property type.
 - Reference(model): Set the property's data type in the table definition to INTEGER REFERENCES model(id). In addition, this creates an accessor method so you can easily retrieve references. For example, the below illustrates how to define a Pet model with a Person reference:
 
-TODO: align Reference and Many naming styles: should be e.g. this.One and this.Many.
-TODO: why is `models` an argument in the constructor, and why can't we simply to this.models?
-
 ```js
-function Person(models) {
+function Person() {
 	this.name = [this.String];
 }
 
-function Pet(models) {
+function Pet() {
 	this.name = [this.String];
-	this.person = [this.Reference(models.Person)];
+	this.person = [this.Reference(this.models.Person)];
 }
 ```
 
@@ -173,22 +170,22 @@ return this.models.Pet.findOne({name:'Cat'})
 - Many(model): create a many-to-one association. This does not create a column. This actually creates a new property on `model`. For example, imagine you have a person with multiple pets, you can do the following:
 
 ```js
-function Pet(models) {
+function Pet() {
 	this.name = [this.String];
 }
 
-function Person(models) {
+function Person() {
 	this.name = [this.String];
-	this.pets = [this.Many(models.Pet)];
+	this.pets = [this.Many(this.models.Pet)];
 }
 ```
 
 This creates a reference on pet to person, just like you would write the below:
 
 ```js
-function Pet(models) {
+function Pet() {
 	this.name = [this.String];
-	this.person = [this.Reference(models.Person)];
+	this.person = [this.Reference(this.models.Person)];
 }
 ```
 
@@ -208,13 +205,13 @@ return this.models.Person.findOne({name:'Martijn'})
 This changes the way you access the relationship from calling a get-accessor to being able to directly work on an property (Reference) or array (Many). Imagine a person having multiple pets (with auto fetch enabled):
 
 ```js
-function Pet(models) {
+function Pet() {
 	this.name = [this.String];
 }
 
-function Person(models) {
+function Person() {
 	this.name = [this.String];
-	this.pets = [this.Many(models.Pet), this.AutoFetch];
+	this.pets = [this.Many(this.models.Pet), this.AutoFetch];
 }
 ```
 
@@ -230,15 +227,24 @@ return this.models.Person.findOne({name:'Martijn'})
 The focus when designing the API was to reduce boilerplate code to a bare minimum.
 
 #### Migrations
-To actual .. datastore .. generate database .. optional. Auto-migrate or migrations. Generate . Models could be optional, by design, chosen not to make them optional.
+Changes to your datastore's schema are applied through migrations. You can manually write migrations—or you can use Node on Fire to generate migrations (based on the changes to your models) for you.
 
--> define model
+Imagine the following user model with a name and password.
+
 ```js
-function User(models) {
+function User() {
 	this.name = [this.String];
 	this.password = [this.String];
 }
 ```
+
+To create a migration, you simply create a new class with an `up` and `down` method. The `up` method is invoked when you are migrating your schema and the `down` method is invoked once your changes need to be reverted. Both the up and the down method are required.
+
+In these migration methods you can invoke migration tasks. For example, Models#createModel, creates a model in your datastore.
+
+Todo: compile a list of migration tasks.
+
+The example below creates the user model.
 
 ```js
 function CreateUserMigration() {}
@@ -253,13 +259,26 @@ CreateUserMigration.prototype.up = function() {
 	this.models.destroyModel('User');
 };
 ```
-TODO: create test to check what happens if two of the same migration numbers.
+
+The order of the migration tasks in your migrations isn't guaranteed to be in the order you invoke them. Under the hood, Node on Fire first analyses your tasks and then sorts them.
+
+Take for instance the below migration.
+```js
+Migration.prototype.up = function() {
+    this.models.createModel('Project', {
+        name: [this.String]
+    });
+
+    this.models.createModel('Client', {
+        name: [this.String],
+        projects: [this.Many(this.models.Project), this.AutoFetch()]
+    });
+};
+```
+We create two models, first a Project model and then a Client model. The Client model contains a Many reference to Project thus the Project models gets a One reference to Client. Therefor first the Client model is created as the Project model references to it.
+
+If the order of your migration tasks are important, you should separate tasks in different migrations.
+
+Node on Fire can easen the migration process for you: it can automatically generate migrations based on all your models and your existing migrations; or it can auto-migrate your datastore.
 
 
-
-
--> create migration
--> explain references (many)
--> execution order (and method swizzling?)
--> auto create migrations
--> auto migrate

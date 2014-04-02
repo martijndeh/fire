@@ -12,6 +12,8 @@ var inflection = require('inflection');
 
 var Models = require('./../lib/models');
 var Table = require('./../lib/table');
+var Model = require('./../lib/model');
+var Migration = require('./../lib/migration');
 var Migrations = require('./../lib/migrations');
 var Q = require('q');
 var moment = require('moment');
@@ -20,8 +22,9 @@ mu.root = path.join(__dirname, '..', 'cli', 'templates');
 
 var utils = require('./../lib/utils');
 
-var basePath = path.resolve('./');
+var Generate = require('./../lib/generate');
 
+var basePath = path.resolve('./');
 
 if(argv._.length == 0) {
 	//TODO: Show help.
@@ -180,13 +183,8 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 		*/
 	}
 	else if(argv._[1] == 'migration') {
-		/*
-		var models = new Models();
-		models.setup(path.join(basePath, 'models'));
-
-		var migrations = new Migrations();
-		migrations.setup(path.join(basePath, 'migrations'));
-		*/
+		var generate = new Generate();
+		generate.createMigrations();
 	}
 	else {
 		// TODO: Generate a controller, worker, middleware (?), responder, etc
