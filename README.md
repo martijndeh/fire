@@ -146,9 +146,9 @@ See below the list of all property types.
 - Serial: Set the property's data type in the table definition to SERIAL.
 - PrimaryKey: Add PRIMARY KEY to the property's data type in the table definition.
 - Unique: Add UNIQUE to the property's data type in the table definition.
-- Required: Add NOT NULL to the property's data type in the table definition. In addition, if this is part of a relation (e.g. `Reference` or `Many`), under-the-hood Node on Fire will use an `INNER JOIN` when automatically fetching this relation.
+- Required: Add NOT NULL to the property's data type in the table definition. In addition, if this is part of a relation (e.g. `HasOne` or `HasMany`), under-the-hood Node on Fire will use an `INNER JOIN` when automatically fetching this relation.
 - Id: Set the property's data type in the table definition to SERIAL PRIMARY KEY. Generally, this shouldn't be set manually, as Node on Fire automatically adds an id property to every model with only this property type.
-- Reference(model): Set the property's data type in the table definition to INTEGER REFERENCES model(id). In addition, this creates an accessor method so you can easily retrieve references. For example, the below illustrates how to define a Pet model with a Person reference:
+- HasOne(model): Set the property's data type in the table definition to INTEGER REFERENCES model(id). In addition, this creates an accessor method so you can easily retrieve references. For example, the below illustrates how to define a Pet model with a Person reference:
 
 ```js
 function Person() {
@@ -167,7 +167,7 @@ return this.models.Pet.findOne({name:'Cat'})
 		// pet.getPerson()
 	});
 ```
-- Many(model): create a many-to-one association. This does not create a column. This actually creates a new property on `model`. For example, imagine you have a person with multiple pets, you can do the following:
+- HasMany(model): create a many-to-one association. This does not create a column. This actually creates a new property on `model`. For example, imagine you have a person with multiple pets, you can do the following:
 
 ```js
 function Pet() {
@@ -185,11 +185,11 @@ This creates a reference on pet to person, just like you would write the below:
 ```js
 function Pet() {
 	this.name = [this.String];
-	this.person = [this.Reference(this.models.Person)];
+	this.person = [this.HasOne(this.models.Person)];
 }
 ```
 
-The advantage is that, next to it being a bit more straight forward, when using the `Many(model)` method you are creating accessors on the model so you can do the below:
+The advantage is that, next to it being a bit more straight forward, when using the `HasMany(model)` method you are creating accessors on the model so you can do the below:
 
 ```js
 return this.models.Person.findOne({name:'Martijn'})
@@ -211,7 +211,7 @@ function Pet() {
 
 function Person() {
 	this.name = [this.String];
-	this.pets = [this.Many(this.models.Pet), this.AutoFetch];
+	this.pets = [this.HasMany(this.models.Pet), this.AutoFetch];
 }
 ```
 

@@ -2,6 +2,7 @@
 
 var fire = require('..');
 var Models = require('./../lib/models');
+var Model = require('./../lib/model');
 var Migrations = require('./../lib/migrations');
 var assert = require('assert');
 var Q = require('q');
