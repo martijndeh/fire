@@ -463,5 +463,36 @@ describe('models', function() {
         }
 
         done();
-    })
+    });
+
+    it('can get model with empty childs', function(done) {
+        function Project() {
+            this.name = [this.String];
+        }
+        models.addModel(Project);
+
+        function Client() {
+            this.name       = [this.String];
+            this.projects   = [this.Many(models.Project), this.AutoFetch];
+        }
+        models.addModel(Client);
+
+        models.Client.setup()
+        .then(function() {
+            return models.Project.setup();
+        })
+        .then(function() {
+            return models.Client.createOne({name:'Test'});
+        })
+        .then(function(client) {
+            assert.equal(client.projects.length, 0);
+
+            return models.Client.findOne({});
+        })
+        .then(function(client) {
+            assert.equal(client.projects.length, 0);
+            done();            
+        })
+        .done();
+    });
 });

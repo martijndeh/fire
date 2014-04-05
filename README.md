@@ -21,6 +21,10 @@ npm install fire
 - Auto loads controllers, models, etc.
 - Promise-based (Q).
 
+### Philosophy
+
+Vanilla javascript & minimal boilerplate-code.
+
 ### Introduction
 
 In your main file e.g. `index.js`:
@@ -129,7 +133,7 @@ function User() {
 ```
 This user model contains three properties each of type String: name, password and email. Every property can have multiple types. It is up to you to add sane property types e.g. Node on Fire will not throw an error if you add a Text and an Integer type.
 
-Each property often represents a column. The expection is a many-to-one reference, see `Many` below.
+Each property often represents a column. The expection is a many-to-one reference, see `HasMany` below.
 
 See below the list of all property types.
 
@@ -271,7 +275,7 @@ Migration.prototype.up = function() {
 
     this.models.createModel('Client', {
         name: [this.String],
-        projects: [this.Many(this.models.Project), this.AutoFetch()]
+        projects: [this.Many(this.models.Project), this.AutoFetch]
     });
 };
 ```
@@ -279,6 +283,12 @@ We create two models, first a Project model and then a Client model. The Client 
 
 If the order of your migration tasks are important, you should separate tasks in different migrations.
 
-Node on Fire can easen the migration process for you: it can automatically generate migrations based on all your models and your existing migrations; or it can auto-migrate your datastore.
+Node on Fire can easen the migration process for you: it can automatically generate migrations based on all your models and your existing migrations. To do so, run the following command in your app's folder:
 
+```
+$ fire generate migration
+```
+or run `./node_modules/fire/bin/fire generate migration`.
+
+This will generate a migration file in your `migrations/` folder with all pending migration tasks.
 
