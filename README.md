@@ -281,6 +281,20 @@ Migration.prototype.up = function() {
 ```
 We create two models, first a Project model and then a Client model. The Client model contains a Many reference to Project thus the Project models gets a One reference to Client. Therefor first the Client model is created as the Project model references to it.
 
+Another example is shown below:
+```
+Migration.prototype.up = function() {
+	this.models.User.addProperties({
+		team: [this.HasOne(this.models.Team)]
+	});
+
+	this.models.createModel('Team', {
+		name: [this.String]
+	});
+}
+```
+We first create a reference to a new Team model in the User model, and then we create the Team model. This simply works in Node on Fire as, internally, first a soft-run is executed and analyses new models, and then a real migration is executed. Please note no proxy features are used.
+
 If the order of your migration tasks are important, you should separate tasks in different migrations.
 
 Node on Fire can easen the migration process for you: it can automatically generate migrations based on all your models and your existing migrations. To do so, run the following command in your app's folder:

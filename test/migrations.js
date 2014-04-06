@@ -155,6 +155,24 @@ describe('migrations', function() {
                     this.models.destroyModel('TestRelation');
                 }
 
+                function Migration12() {}
+                Migration12.prototype.up = function() {
+                    console.log('In Migration12');
+                    console.log('Team is: ' + this.models.Team);
+                    
+                    this.models.Project.addProperties({
+                        team: [this.HasOne(this.models.Team), this.Required]
+                    })
+                    this.models.createModel('Team', {
+                        id: [this.Id],
+                        name: [this.String]
+                    });
+                }
+                Migration12.prototype.down = function() {
+                    this.models.Project.removeProperties(['team']);
+                    this.models.destroyModel('Team');
+                }
+
                 migrations.addMigration(FirstMigration, 1);
                 migrations.addMigration(SecondMigration, 2);
                 migrations.addMigration(ThirdMigration, 3);
@@ -166,6 +184,7 @@ describe('migrations', function() {
                 migrations.addMigration(Migration9, 9);
                 migrations.addMigration(Migration10, 10);
                 migrations.addMigration(Migration11, 11);
+                migrations.addMigration(Migration12, 12);
 
                 done();
             })
@@ -404,5 +423,17 @@ describe('migrations', function() {
                 return done();
             })
             .done();
-    })
+    });
+
+    it('can add one-reference and create model afterwards', function(done) {
+         migrations.migrate(0, 12)
+            .then(function() {
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                assert.equal(currentVersion, 12);
+                return done();
+            })
+            .done();
+    });
 });
