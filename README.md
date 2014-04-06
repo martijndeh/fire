@@ -161,7 +161,7 @@ function Person() {
 
 function Pet() {
 	this.name = [this.String];
-	this.person = [this.Reference(this.models.Person)];
+	this.person = [this.HasOne(this.models.Person)];
 }
 ```
 

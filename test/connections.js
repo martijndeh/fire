@@ -43,6 +43,18 @@ describe('connections', function() {
 					};
 				}
 
+				ApiController.prototype.createTest = function(tests) {
+					return {
+						id: 123
+					}
+				}
+
+				ApiController.prototype.updateTest = function(tests, $id) {
+					return {
+						id: $id
+					};
+				}
+
 				// TODO: implement Controllers#addController to easier add controllers
 
 				app.controllers.loadClass(ApiController, Config.basePath + '/controllers/1/api/controller.js', null);
@@ -87,5 +99,17 @@ describe('connections', function() {
 				assert.equal(response.text, '{"id":"10"}');
 				done();
 			})
+	});
+
+	it('should map create to post', function(done) {
+		request(app.server)
+			.post('/1/api/tests')
+			.expect(200, done);
+	});
+
+	it('should map update to put', function(done) {
+		request(app.server)
+			.put('/1/api/tests/123')
+			.expect(200, done);
 	})
 })
