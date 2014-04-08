@@ -156,10 +156,7 @@ describe('migrations', function() {
                 }
 
                 function Migration12() {}
-                Migration12.prototype.up = function() {
-                    console.log('In Migration12');
-                    console.log('Team is: ' + this.models.Team);
-                    
+                Migration12.prototype.up = function() {                    
                     this.models.Project.addProperties({
                         team: [this.HasOne(this.models.Team), this.Required]
                     })
@@ -432,6 +429,40 @@ describe('migrations', function() {
             })
             .then(function(currentVersion) {
                 assert.equal(currentVersion, 12);
+                return done();
+            })
+            .done();
+    });
+
+    it('can rollback migrations', function(done) {
+        function Migration13() {}
+        Migration13.prototype.up = function() {
+            this.models.createModel('TestModel', {
+                id: [this.Id],
+                name: [this.String]
+            });
+            this.models.execute('SELCT * FROM test_models FROM 1');
+        }
+        Migration13.prototype.down = function() {
+            this.models.Project.removeProperties(['team']);
+            this.models.destroyModel('Team');
+        }
+
+        migrations.addMigration(Migration13, 13);
+
+        migrations.migrate(0, 13)
+            .fail(function(error) {
+                assert.equal(error.toString(), 'error: syntax error at or near "SELCT"');
+                return migrations.currentVersion();
+            })
+            .then(function(currentVersion) {
+                // The migration should fail, so we check a lower version number
+                assert.equal(currentVersion, 12);
+
+                return models.execute('SELECT * FROM test_models');
+            })
+            .fail(function(error) {
+                assert.equal(error.toString(), 'error: relation "test_models" does not exist');
                 return done();
             })
             .done();

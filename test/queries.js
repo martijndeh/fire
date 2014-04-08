@@ -2,4 +2,9 @@ var fire = require('..');
 
 var should = require('chai').should()
 
-//test the orm query creation
+var fire = require('..');
+var Models = require('./../lib/models');
+var assert = require('assert');
+var Q = require('q');
+
+//
