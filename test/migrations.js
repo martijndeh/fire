@@ -467,4 +467,38 @@ describe('migrations', function() {
             })
             .done();
     });
+
+    it('can create required reference via has many', function(done) {
+        function Migration13() {}
+        Migration13.prototype.up = function() {
+            this.models.createModel('TestChild', {
+                id: [this.Id],
+                name: [this.String]
+            });
+
+            this.models.createModel('TestParent', {
+                id: [this.Id],
+                name: [this.String],
+                childs: [this.Required, this.HasMany(this.models.TestChild)]
+            });
+        }
+        Migration13.prototype.down = function() {
+            this.models.destroyModel('TestParent');
+            this.models.destroyModel('TestChild');
+        }
+
+        migrations.addMigration(Migration13, 13);
+
+        migrations.migrate(0, 13)
+            .then(function() {
+                return models.TestChild.createOne({
+                    name: 'This should fail as we\'re not setting a parent'
+                });
+            })
+            .fail(function(error) {
+                assert.equal(error.toString(), 'error: null value in column "test_parent_id" violates not-null constraint');
+                done();
+            })
+            .done();
+    });
 });

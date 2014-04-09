@@ -126,12 +126,12 @@ Place models in models directory. Migrations in migrations folder.
 The below defines a basic User model:
 ```js
 function User() {
-	this.name 		= [this.String];
-	this.password 	= [this.String];
+	this.name 		= [this.String, this.Required];
+	this.password 	= [this.String, this.Required];
 	this.email 		= [this.String];
 }
 ```
-This user model contains three properties each of type String: name, password and email. Every property can have multiple types. It is up to you to add sane property types e.g. Node on Fire will not throw an error if you add a Text and an Integer type.
+This user model contains three properties each of type String: name, password and email. Every property can have multiple types e.g. name and password also contain a property type of required. It doesn't matter in what order you set the property types as, internally, Node on Fire sorts the property types.
 
 Each property often represents a column. The expection is a many-to-one reference, see `HasMany` below.
 
@@ -282,7 +282,7 @@ Migration.prototype.up = function() {
 We create two models, first a Project model and then a Client model. The Client model contains a Many reference to Project thus the Project models gets a One reference to Client. Therefor first the Client model is created as the Project model references to it.
 
 Another example is shown below:
-```
+```js
 Migration.prototype.up = function() {
 	this.models.User.addProperties({
 		team: [this.HasOne(this.models.Team)]
