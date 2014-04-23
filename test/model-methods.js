@@ -43,22 +43,6 @@ describe('models', function() {
         .done();
     });
 
-    it('can reference model', function(done) {
-        function ModelOne() {
-            this.name = [this.Text];
-        }
-
-        models.addModel(ModelOne);
-
-        function ModelTwo() {
-            this.ref = [this.Reference(this.models.ModelOne)];
-        }
-
-        models.addModel(ModelTwo);
-
-        done();
-    });
-
     it('can create model when calling findOrCreateOne()', function(done) {
         function ModelThree() {
             this.name = [this.String];
@@ -116,14 +100,18 @@ describe('models', function() {
     });
 
     it('can update with relation', function(done) {
+        models.ModelThree = 'ModelThree';
+        models.ModelFour = 'ModelFour';
+
         function ModelThree() {
             this.name = [this.String];
+            this.modelFour = [this.HasOne(this.models.ModelFour)];
         }
         models.addModel(ModelThree);
 
         function ModelFour() {
             this.name = [this.String];
-            this.three = [this.Reference(models.ModelThree)];
+            this.three = [this.BelongsTo(this.models.ModelThree)];
         }
         models.addModel(ModelFour);
 
@@ -208,12 +196,13 @@ describe('models', function() {
     it('can create foreign key association', function(done) {
         function ModelThree() {
             this.name = [this.String];
+            this.modelFour = [this.HasOne(this.models.ModelFour)];
         }
         models.addModel(ModelThree);
 
         function ModelFour() {
             this.name = [this.String];
-            this.three = [this.Reference(models.ModelThree), this.AutoFetch()];
+            this.three = [this.BelongsTo(this.models.ModelThree), this.AutoFetch];
         }
         models.addModel(ModelFour);
 
@@ -250,6 +239,7 @@ describe('models', function() {
     it('can find models with auto fetches', function(done) {
         function ModelThree() {
             this.name = [this.String];
+            this.modelFour = [this.HasOne(this.models.ModelFour)];
         }
         ModelThree.prototype.toJSON = function() {
             return {
@@ -262,7 +252,7 @@ describe('models', function() {
 
         function ModelFour() {
             this.name = [this.String];
-            this.three = [this.Reference(models.ModelThree), this.AutoFetch()];
+            this.three = [this.BelongsTo(this.models.ModelThree), this.AutoFetch];
         }
         ModelFour.prototype.toJSON = function() {
             return {
@@ -314,14 +304,18 @@ describe('models', function() {
     });
 
     it('can add auto-fetched many reference', function(done) {
+        models.Client = 'Client';
+        models.Project = 'Project';
+        
         function Project() {
             this.name = [this.String];
+            this.client = [this.BelongsTo(this.models.Client)];
         }
         models.addModel(Project);
 
         function Client() {
             this.name       = [this.String];
-            this.projects   = [this.AutoFetch(), this.Many(models.Project)];
+            this.projects   = [this.AutoFetch, this.HasMany(this.models.Project)];
         }
         models.addModel(Client);
 
@@ -330,6 +324,8 @@ describe('models', function() {
             return models.Project.setup();
         })
         .then(function() {
+            console.dir(models.Project.getAssociations());
+
             assert.notEqual(models.Client.getAssociations()['projects'], null);
             assert.notEqual(models.Project.getAssociations()['client'], null);
             return true;
@@ -380,20 +376,28 @@ describe('models', function() {
     });
 
     it('can add NON-auto-fetched many reference', function(done) {
-        function Project() {
-            this.name = [this.String];
-        }
-        models.addModel(Project);
+        models.Client = 'Client';
+        models.Project = 'Project';
 
         function Client() {
             this.name       = [this.String];
-            this.projects   = [this.Many(models.Project)];
+            this.projects   = [this.HasMany(this.models.Project)];
         }
         models.addModel(Client);
+
+        function Project() {
+            this.name = [this.String];
+            this.client = [this.BelongsTo(this.models.Client)];
+        }
+        models.addModel(Project);
 
         models.Client.setup()
         .then(function() {
             return models.Project.setup();
+        })
+        .then(function() {
+            assert.equal(models.Project.getProperty('client').columnName, 'client_id');
+            return true;
         })
         .then(function() {
             var _ = [];
@@ -428,9 +432,14 @@ describe('models', function() {
         })
         .then(function(client) {
             assert.equal(client.projects, null);
+            assert.equal(typeof client.getProjects, 'function');
+
             return client.getProjects();
         })
         .then(function(projects) {
+            console.dir(projects);
+            
+            assert.notEqual(projects, null);
             assert.equal(projects.length, 10);
             done();
         })
@@ -440,11 +449,12 @@ describe('models', function() {
     it('can create model with many reference in reverse order', function(done) {
         function Client() {
             this.name = [this.String];
-            this.projects = [this.AutoFetch(), this.Many(this.models.Project)];
+            this.projects = [this.AutoFetch, this.HasMany(this.models.Project)];
         }
 
         function Project() {
             this.name = [this.String];
+            this.client = [this.BelongsTo(this.models.Client)];
         }
 
         models.loadClass(Client);
@@ -468,12 +478,13 @@ describe('models', function() {
     it('can get model with empty childs', function(done) {
         function Project() {
             this.name = [this.String];
+            this.client = [this.BelongsTo(this.models.Client)];
         }
         models.addModel(Project);
 
         function Client() {
             this.name       = [this.String];
-            this.projects   = [this.Many(models.Project), this.AutoFetch];
+            this.projects   = [this.HasMany(this.models.Project), this.AutoFetch];
         }
         models.addModel(Client);
 

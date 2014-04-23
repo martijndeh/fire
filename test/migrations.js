@@ -86,22 +86,28 @@ describe('migrations', function() {
                 function SixthMigration() {}
                 SixthMigration.prototype.up = function() {
                     this.models.ThirdTest.addProperties({
-                        user: [this.Reference(this.models.User)]
+                        user: [this.HasOne(this.models.User)]
+                    });
+
+                    this.models.User.addProperties({
+                        thirdTest: [this.BelongsTo(this.models.ThirdTest)]
                     });
                 }
                 SixthMigration.prototype.down = function() {
                     this.models.ThirdTest.removeProperties(['user']);
+                    this.models.User.removeProperties(['thirdTest']);
                 }
 
                 function Migration7() {}
                 Migration7.prototype.up = function() {
                     this.models.createModel('Project', {
-                        name: [this.String]
+                        name: [this.String],
+                        client: [this.BelongsTo(this.models.Client)]
                     });
 
                     this.models.createModel('Client', {
                         name: [this.String],
-                        projects: [this.Many(this.models.Project), this.AutoFetch()]
+                        projects: [this.HasMany(this.models.Project), this.AutoFetch]
                     });
                 };
 
@@ -114,22 +120,31 @@ describe('migrations', function() {
                 Migration8.prototype.up = function() {
                     this.models.createModel('Workspace', {
                         name: [this.String],
-                        clients: [this.Many(this.models.Client), this.AutoFetch()]
+                        clients: [this.HasMany(this.models.Client), this.AutoFetch]
+                    });
+                    this.models.Client.addProperties({
+                        workspace: [this.BelongsTo(this.models.Workspace)]
                     });
                 };
 
                 Migration8.prototype.down = function() {
+                    this.models.Client.removeProperties(['workspace']);
                     this.models.destroyModel('Workspace');
                 }
 
                 function Migration9() {}
                 Migration9.prototype.up = function() {
                     this.models.ThirdTest.addProperties({
-                        clients: [this.Many(this.models.Client), this.AutoFetch()]
+                        clients: [this.HasMany(this.models.Client), this.AutoFetch()]
+                    });
+
+                    this.models.Client.addProperties({
+                        thirdTest: [this.BelongsTo(this.models.Client)]
                     });
                 }
                 Migration9.prototype.down = function() {
                     this.models.ThirdTest.removeProperties(['clients']);
+                    this.models.Client.removeProperties(['thirdTest']);
                 }
 
                 function Migration10() {}
@@ -148,21 +163,27 @@ describe('migrations', function() {
                 Migration11.prototype.up = function() {
                     this.models.createModel('TestRelation', {
                         name: [this.String],
-                        thirdTests: [this.AutoFetch(), this.Many(this.models.ThirdTest)]
+                        thirdTests: [this.AutoFetch, this.HasMany(this.models.ThirdTest)]
+                    });
+
+                    this.models.ThirdTest.addProperties({
+                        testRelation: [this.BelongsTo(this.models.TestRelation)]
                     });
                 };
                 Migration11.prototype.down = function() {
+                    this.models.ThirdTest.removeProperties(['testRelation'])
                     this.models.destroyModel('TestRelation');
                 }
 
                 function Migration12() {}
                 Migration12.prototype.up = function() {                    
                     this.models.Project.addProperties({
-                        team: [this.HasOne(this.models.Team), this.Required]
+                        team: [this.HasOne(this.models.Team)]
                     })
                     this.models.createModel('Team', {
                         id: [this.Id],
-                        name: [this.String]
+                        name: [this.String],
+                        project: [this.BelongsTo(this.models.Project), this.Required]
                     });
                 }
                 Migration12.prototype.down = function() {
@@ -445,7 +466,7 @@ describe('migrations', function() {
         }
         Migration13.prototype.down = function() {
             this.models.Project.removeProperties(['team']);
-            this.models.destroyModel('Team');
+            this.models.destroyModel('TestModel');
         }
 
         migrations.addMigration(Migration13, 13);
@@ -473,13 +494,14 @@ describe('migrations', function() {
         Migration13.prototype.up = function() {
             this.models.createModel('TestChild', {
                 id: [this.Id],
-                name: [this.String]
+                name: [this.String],
+                parent: [this.BelongsTo(this.models.TestParent), this.Required]
             });
 
             this.models.createModel('TestParent', {
                 id: [this.Id],
                 name: [this.String],
-                childs: [this.Required, this.HasMany(this.models.TestChild)]
+                childs: [this.HasMany(this.models.TestChild)]
             });
         }
         Migration13.prototype.down = function() {
@@ -496,8 +518,94 @@ describe('migrations', function() {
                 });
             })
             .fail(function(error) {
-                assert.equal(error.toString(), 'error: null value in column "test_parent_id" violates not-null constraint');
+                assert.equal(error.toString(), 'error: null value in column "parent_id" violates not-null constraint');
                 done();
+            })
+            .done();
+    });
+
+    it('can add many-to-many reference', function(done) {
+        function Migration13() {}
+        Migration13.prototype.up = function() {
+            this.models.ThirdTest.addProperties({
+                teams: [this.HasMany(this.models.Team)]
+            });
+
+            this.models.Team.addProperties({
+                testChildren: [this.HasMany(this.models.ThirdTest)]
+            });
+        }
+        Migration13.prototype.down = function() {
+            this.models.Team.removeProperties(['testChildren']);
+            this.models.ThirdTest.removeProperties(['teams'])
+        }
+
+        migrations.addMigration(Migration13, 13);
+
+        migrations.migrate(0, 13)
+            .then(function() {
+                return models.Project.createOne({
+                    name: 'Test Project :)'
+                });
+            })
+            .then(function(project) {
+                return models.Team.createOne({
+                    name: 'Team Name',
+                    project: project
+                });
+            })
+            .then(function(team) {
+                assert.equal(typeof team.addTestChild, 'function');
+
+                return team.addTestChild(models.ThirdTest.createOne({name: 'Third Test 1 Name'}))
+                    .then(function() {
+                        return team.addTestChild(models.ThirdTest.createOne({name: 'Third Test 2 Name'}))
+                    })
+                    .then(function() {
+                        return team.addTestChild(models.ThirdTest.createOne({name: 'Third Test 3 Name'}))
+                    })
+                    .then(function() {
+                        return models.Team.findOne();
+                    });
+            })
+            .then(function(team) {
+                assert.notEqual(team, null);
+                return team.getTestChildren();
+            })
+            .then(function(children) {
+                assert.notEqual(children, null);
+                assert.equal(children.length, 3);
+
+                return models.Team.findOne()
+                    .then(function(team) {
+                        return children[0].addTeam(team)
+                            .then(function() {
+                                return children[1].addTeam(team);
+                            })
+                            .then(function() {
+                                return children[2].addTeam(team);
+                            });
+                    });
+            })
+            .then(function() {
+                return models.ThirdTest.find();
+            })
+            .then(function(tests) {
+                assert.notEqual(tests, null);
+                assert.equal(tests.length, 6);
+
+                return tests[0].getTeams();
+            })
+            .then(function(teams) {
+                assert.notEqual(teams, null);
+                assert.equal(teams.length, 2);
+                assert.equal(teams[0].name, 'Team Name');
+                assert.equal(teams[1].name, 'Team Name');
+
+                done();
+            })
+            .fail(function(error) {
+                done(error);
             })
             .done();
     });
