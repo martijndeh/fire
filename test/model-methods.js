@@ -506,4 +506,103 @@ describe('models', function() {
         })
         .done();
     });
+
+    it('can find model with child-child relations', function(done) {
+        function User() {
+            this.name = [this.String];
+            this.cs = [this.HasMany(this.models.C)];
+        }
+
+        function A() {
+            this.name = [this.String];
+            this.bs = [this.HasMany(this.models.B)];
+        }
+
+        function B() {
+            this.name = [this.String];
+            this.a = [this.BelongsTo(this.models.A), this.AutoFetch];
+            this.cs = [this.HasMany(this.models.C)];
+        }
+
+        function C() {
+            this.name = [this.String];
+            this.createdAt = [this.DateTime];
+            this.b = [this.BelongsTo(this.models.B), this.AutoFetch];
+            this.user = [this.BelongsTo(this.models.User), this.Required];
+        }
+
+        C.prototype.toJSON = function() {
+            return {
+                name: this.name,
+                b: {
+                    id: this.b.id,
+                    name: this.b.name
+                },
+                user: {
+                    id: this.user.id,
+                    name: this.user.name
+                }
+            };
+        };
+
+        models.addModel(User);
+        models.addModel(A);
+        models.addModel(B);
+        models.addModel(C);
+
+        var result = Q.when(true);
+
+        result = result.then(function() {
+            return models.User.setup();
+        });
+
+        result = result.then(function() {
+            return models.A.setup();
+        });
+
+        result = result.then(function() {
+            return models.B.setup();
+        });
+
+        result = result.then(function() {
+            return models.C.setup();
+        });
+
+        return result
+            .then(function() {
+                return models.User.create({name:'Martijn'});
+            })
+            .then(function(user) {
+                return models.A.create({name:'A'})
+                    .then(function(a) {
+                        return models.B.create({
+                            name: 'B',
+                            a: a
+                        });
+                    })
+                    .then(function(b) {
+                        return models.C.create({
+                            name: 'C',
+                            createdAt: null,
+                            b: b,
+                            user: user
+                        });
+                    })
+                    .then(function() {
+                        return models.C.findOne({
+                            createdAt: null,
+                            user: user
+                        });
+                    })
+                    .then(function(c) {
+                        assert.notEqual(c, null);
+                        assert.notEqual(c.b, null);
+                        assert.notEqual(c.b.a, null);
+
+                        return done();
+                    });
+            })
+            .fail(done)
+            .done();
+    });
 });
