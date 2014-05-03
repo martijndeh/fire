@@ -112,5 +112,48 @@ describe('model hooks', function() {
 				done();
 			})
 			.done();
+	});
+
+	it('can set relation in beforeCreate', function(done) {
+		function Team() {
+			this.name = [this.String];
+			this.users = [this.HasMany(this.models.User)];
+		}
+
+		function User() {
+			this.name = [this.String];
+			this.team = [this.BelongsTo(this.models.Team), this.Required, this.AutoFetch];
+		}
+
+		User.prototype.beforeCreate = function() {
+			var self = this;
+			return self.models.Team.create({name:'First Team'})
+				.then(function(team) {
+					self.team = team;
+					return true;
+				});
+		}
+
+		models.addModel(Team);
+		models.addModel(User);
+
+		return models.Team.setup()
+			.then(function() {
+				return models.User.setup();
+			})
+			.then(function() {
+				return models.User.create({name: 'Martijn'});
+			})
+			.then(function(user) {
+				assert.equal(user.id, 1);
+				assert.equal(user.name, 'Martijn');
+				assert.notEqual(user.team, null);
+				assert.equal(user.team.id, 1);
+				assert.equal(user.team.name, 'First Team');
+
+				return done();
+			})
+			.fail(done)
+			.done();
 	})
 });
