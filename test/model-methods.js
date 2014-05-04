@@ -43,7 +43,7 @@ describe('models', function() {
         .done();
     });
 
-    it('can create model when calling findOrCreateOne()', function(done) {
+    it('can create model when calling findOrCreate()', function(done) {
         function ModelThree() {
             this.name = [this.String];
             this.value = [this.Integer];
@@ -51,7 +51,7 @@ describe('models', function() {
         models.addModel(ModelThree);
         return models.ModelThree.setup()
             .then(function() {
-                return models.ModelThree.findOrCreateOne({name: 'Test'}, {value: 123});
+                return models.ModelThree.findOrCreate({name: 'Test'}, {value: 123});
             })
             .then(function(model) {
                 assert.equal(model.name, 'Test');
@@ -69,7 +69,7 @@ describe('models', function() {
         models.addModel(ModelThree);
         return models.ModelThree.setup()
         .then(function() {
-            return models.ModelThree.createOne({name:null});
+            return models.ModelThree.create({name:null});
         })
         .then(function() {
             return models.ModelThree.findOne({});
@@ -120,7 +120,7 @@ describe('models', function() {
             return models.ModelFour.setup();
         })
         .then(function() {
-            return models.ModelThree.createOne({
+            return models.ModelThree.create({
                 name: 'Test 1'
             });
         })
@@ -128,7 +128,7 @@ describe('models', function() {
             assert.notEqual(modelThree, null);
             assert.equal(modelThree.name, 'Test 1');
 
-            return models.ModelFour.createOne({
+            return models.ModelFour.create({
                 three: modelThree
             })
             .then(function(modelFour) {
@@ -162,17 +162,17 @@ describe('models', function() {
 
         return models.ModelThree.setup()
         .then(function() {
-            return models.ModelThree.createOne({
+            return models.ModelThree.create({
                 createdAt: startDate
             });
         })
         .then(function() {
-            return models.ModelThree.createOne({
+            return models.ModelThree.create({
                 createdAt: endDate
             });
         })
         .then(function() {
-            return models.ModelThree.createOne({
+            return models.ModelThree.create({
                 createdAt: outsideDate
             });
         })
@@ -211,12 +211,12 @@ describe('models', function() {
             return models.ModelFour.setup();
         })
         .then(function() {
-            return models.ModelThree.createOne({
+            return models.ModelThree.create({
                 name: 'Three is a Test'
             });
         })
         .then(function(modelThree) {
-            return models.ModelFour.createOne({
+            return models.ModelFour.create({
                 three: modelThree,
                 name: 'Four is a Test'
             });
@@ -268,7 +268,7 @@ describe('models', function() {
             return models.ModelFour.setup();
         })
         .then(function() {
-            return models.ModelThree.createOne({
+            return models.ModelThree.create({
                 name: 'Three is a Test'
             });
         })
@@ -276,7 +276,7 @@ describe('models', function() {
             var creations = [];
 
             for(var i = 0; i < 10; i++) {
-                creations.push(models.ModelFour.createOne({
+                creations.push(models.ModelFour.create({
                     three: modelThree,
                     name: 'Four is a Test'
                 }));
@@ -334,7 +334,7 @@ describe('models', function() {
             var _ = [];
 
             for(var i = 0; i < 3; i++) {
-                _.push(models.Client.createOne({
+                _.push(models.Client.create({
                     name: 'Client #' + i
                 }));
             }
@@ -350,7 +350,7 @@ describe('models', function() {
             var _ = [];
 
             for(var i = 0; i < 30; i++) {
-                _.push(models.Project.createOne({
+                _.push(models.Project.create({
                     name: 'Project #' + i,
                     client: clients[i % 3]
                 }));
@@ -403,7 +403,7 @@ describe('models', function() {
             var _ = [];
 
             for(var i = 0; i < 3; i++) {
-                _.push(models.Client.createOne({
+                _.push(models.Client.create({
                     name: 'Client #' + i
                 }));
             }
@@ -419,7 +419,7 @@ describe('models', function() {
             var _ = [];
 
             for(var i = 0; i < 30; i++) {
-                _.push(models.Project.createOne({
+                _.push(models.Project.create({
                     name: 'Project #' + i,
                     client: clients[i % 3]
                 }));
@@ -493,7 +493,7 @@ describe('models', function() {
             return models.Project.setup();
         })
         .then(function() {
-            return models.Client.createOne({name:'Test'});
+            return models.Client.create({name:'Test'});
         })
         .then(function(client) {
             assert.equal(client.projects.length, 0);
@@ -605,4 +605,67 @@ describe('models', function() {
             .fail(done)
             .done();
     });
+
+    it('can update model with relation in where', function(done) {
+        function Project() {
+            this.name = [this.String];
+            this.client = [this.BelongsTo(this.models.Client), this.AutoFetch, this.Required];
+        }
+        Project.prototype.toJSON = function() {
+            return {
+                id: this.id,
+                name: this.name
+            };
+        };
+
+        function Client() {
+            this.name       = [this.String];
+            this.projects   = [this.HasMany(this.models.Project)];
+        }
+        Client.prototype.toJSON = function() {
+            return {
+                id: this.id,
+                name: this.name
+            };
+        }
+        models.addModel(Client);
+        models.addModel(Project);
+
+        models.Client.setup()
+        .then(function() {
+            return models.Project.setup();
+        })
+        .then(function() {
+            return Q.all([
+                models.Client.create({name:'Client 1'}),
+                models.Client.create({name:'Client 2'})
+            ]);
+        })
+        .spread(function(client1, client2) {
+            return models.Project.create({
+                    name: 'Project 1',
+                    client: client1
+                })
+                .then(function(project) {
+                    return models.Project.update({
+                        client: client1
+                    }, {
+                        client: client2,
+                        name: 'Project 2'
+                    });
+                })
+                .then(function() {
+                    return models.Project.findOne();
+                })
+        })
+        .then(function(project) {
+            assert.notEqual(project, null);
+            assert.equal(project.name, 'Project 2');
+            assert.equal(project.client.name, 'Client 2');
+
+            done();            
+        })
+        .fail(done)
+        .done();
+    })
 });
