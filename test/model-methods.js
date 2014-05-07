@@ -654,6 +654,11 @@ describe('models', function() {
                         name: 'Project 2'
                     });
                 })
+                .then(function(project) {
+                    assert.notEqual(project, null);
+                    assert.equal(project.name, 'Project 2');
+                    assert.equal(project.client.name, 'Client 2');
+                })
                 .then(function() {
                     return models.Project.findOne();
                 })
