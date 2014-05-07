@@ -324,8 +324,6 @@ describe('models', function() {
             return models.Project.setup();
         })
         .then(function() {
-            console.dir(models.Project.getAssociations());
-
             assert.notEqual(models.Client.getAssociations()['projects'], null);
             assert.notEqual(models.Project.getAssociations()['client'], null);
             return true;
@@ -436,9 +434,7 @@ describe('models', function() {
 
             return client.getProjects();
         })
-        .then(function(projects) {
-            console.dir(projects);
-            
+        .then(function(projects) {            
             assert.notEqual(projects, null);
             assert.equal(projects.length, 10);
             done();
