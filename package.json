@@ -14,7 +14,7 @@
     "type": "git",
     "url": "https://github.com/martijndeh/fire.git"
   },
-  "version": "0.0.21",
+  "version": "0.0.22",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "main": "index.js",
   "bin": "bin/fire",
