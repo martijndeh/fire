@@ -668,5 +668,36 @@ describe('models', function() {
         })
         .fail(done)
         .done();
-    })
+    });
+
+    it('can transform parameters to property value', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.text = [this.String, this.Required, this.Transform(function(title, subtitle) {
+                return (title + ' ' + subtitle);
+            })];
+        }
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return models.Object1.create({
+                    name: 'Martijn',
+                    title: 'Title',
+                    subtitle: 'Subtitle'
+                });
+            })
+            .then(function(object1) {
+                assert.notEqual(object1, null);
+                assert.equal(object1.title, 'Martijn');
+                assert.equal(object1.text, 'Title Subtitle');
+                assert.equal(object1.title, undefined);
+                assert.equal(object1.subtitle, undefined);
+                
+                done();
+            })
+            .done();
+
+    });
 });
