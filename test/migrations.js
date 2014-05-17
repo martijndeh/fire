@@ -287,7 +287,7 @@ describe('migrations', function() {
                 return true;
             })
             .then(function() {
-                return models.ThirdTest.createOne({
+                return models.ThirdTest.create({
                     name: 'Test :-)',
                     value: 123
                 });
@@ -391,7 +391,7 @@ describe('migrations', function() {
     it('can migrate and execute query', function(done) {
         migrations.migrate(0, 9)
             .then(function() {
-                return models.ThirdTest.createOne({name:'Test 1'});
+                return models.ThirdTest.create({name:'Test 1'});
             })
             .then(function() {
                 return migrations.resetAllModels();
@@ -400,7 +400,7 @@ describe('migrations', function() {
                 return migrations.migrate(9, 10);
             })
             .then(function() {
-                return models.ThirdTest.createOne({name:'Test 2'});
+                return models.ThirdTest.create({name:'Test 2'});
             })
             .then(function() {
                 return models.ThirdTest.find({});
@@ -513,7 +513,7 @@ describe('migrations', function() {
 
         migrations.migrate(0, 13)
             .then(function() {
-                return models.TestChild.createOne({
+                return models.TestChild.create({
                     name: 'This should fail as we\'re not setting a parent'
                 });
             })
@@ -544,12 +544,12 @@ describe('migrations', function() {
 
         migrations.migrate(0, 13)
             .then(function() {
-                return models.Project.createOne({
+                return models.Project.create({
                     name: 'Test Project :)'
                 });
             })
             .then(function(project) {
-                return models.Team.createOne({
+                return models.Team.create({
                     name: 'Team Name',
                     project: project
                 });
@@ -557,12 +557,12 @@ describe('migrations', function() {
             .then(function(team) {
                 assert.equal(typeof team.addTestChild, 'function');
 
-                return team.addTestChild(models.ThirdTest.createOne({name: 'Third Test 1 Name'}))
+                return team.addTestChild(models.ThirdTest.create({name: 'Third Test 1 Name'}))
                     .then(function() {
-                        return team.addTestChild(models.ThirdTest.createOne({name: 'Third Test 2 Name'}))
+                        return team.addTestChild(models.ThirdTest.create({name: 'Third Test 2 Name'}))
                     })
                     .then(function() {
-                        return team.addTestChild(models.ThirdTest.createOne({name: 'Third Test 3 Name'}))
+                        return team.addTestChild(models.ThirdTest.create({name: 'Third Test 3 Name'}))
                     })
                     .then(function() {
                         return models.Team.findOne();

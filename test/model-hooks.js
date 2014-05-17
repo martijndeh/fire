@@ -60,7 +60,7 @@ describe('model hooks', function() {
 
 		models.User.setup()
 			.then(function() {
-				return models.User.createOne({
+				return models.User.create({
 					testName: 'Martijn'
 				});
 			})
@@ -97,7 +97,7 @@ describe('model hooks', function() {
 
 		models.User.setup()
 			.then(function() {
-				return models.User.createOne({
+				return models.User.create({
 					testName: 'Martijn'
 				});
 			})
@@ -151,6 +151,97 @@ describe('model hooks', function() {
 				assert.equal(user.team.id, 1);
 				assert.equal(user.team.name, 'First Team');
 
+				return done();
+			})
+			.fail(done)
+			.done();
+	});
+
+	it('can set promise in beforeCreate', function(done) {
+		function Team() {
+			this.name = [this.String];
+			this.users = [this.HasMany(this.models.User)];
+		}
+
+		function User() {
+			this.name = [this.String];
+			this.team = [this.BelongsTo(this.models.Team), this.Required, this.AutoFetch];
+		}
+
+		User.prototype.beforeCreate = function() {
+			this.team = this.models.Team.create({name: 'Created in -beforeCreate'});
+		}
+
+		models.addModel(Team);
+		models.addModel(User);
+
+		return models.Team.setup()
+			.then(function() {
+				return models.User.setup();
+			})
+			.then(function() {
+				return models.User.create({name: 'Martijn'});
+			})
+			.then(function(user) {
+				assert.equal(user.id, 1);
+				assert.equal(user.name, 'Martijn');
+				assert.notEqual(user.team, null);
+				assert.equal(user.team.id, 1);
+				assert.equal(user.team.name, 'Created in -beforeCreate');
+
+				return done();
+			})
+			.fail(done)
+			.done();
+	})
+
+	it('cannot create user when set promise gets rejected', function(done) {
+		function Team() {
+			this.name = [this.String];
+			this.users = [this.HasMany(this.models.User)];
+		}
+
+		function User() {
+			this.name = [this.String];
+			this.team = [this.BelongsTo(this.models.Team), this.Required, this.AutoFetch];
+		}
+
+		User.prototype._createTeam = function() {
+			var defer = Q.defer();
+
+			defer.reject(new Error('Cannot create team'));
+
+			return defer.promise;
+		};
+
+		User.prototype.beforeCreate = function() {
+			this.team = this._createTeam();
+		}
+
+		models.addModel(Team);
+		models.addModel(User);
+
+		return models.Team.setup()
+			.then(function() {
+				return models.User.setup();
+			})
+			.then(function() {
+				return models.User.create({name: 'Martijn'})
+					.then(function() {
+						return null;	
+					})
+					.fail(function(error) {
+						return error;
+					});
+			})
+			.then(function(error) {
+				assert.notEqual(error, null);
+				assert.equal(error.message, 'Cannot create team');
+
+				return models.User.find();
+			})
+			.then(function(users) {
+				assert.equal(users.length, 0);
 				return done();
 			})
 			.fail(done)

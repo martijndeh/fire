@@ -94,7 +94,7 @@ describe('migrations-associations-one-to-many', function() {
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
-                return models.B.createOne({
+                return models.B.create({
                     name: 'Bert'
                 });
             })
@@ -103,7 +103,7 @@ describe('migrations-associations-one-to-many', function() {
 
                 for(var i = 0; i < 10; i++) {
                     result = result.then(function() {
-                        return models.A.createOne({
+                        return models.A.create({
                             name: 'Aart',
                             b: b
                         });

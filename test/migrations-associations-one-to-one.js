@@ -94,13 +94,13 @@ describe('migrations associations one-to-one', function() {
     	migrations.addMigration(Migration, 1);
     	migrations.migrate(0, 1)
     		.then(function() {
-    			return models.B.createOne({
+    			return models.B.create({
     				name: 'Bert'
     			});
     		})
     		.then(function(b) {
     			assert.notEqual(b, null);
-    			return models.A.createOne({
+    			return models.A.create({
     				name: 'Aart',
     				b: b
     			});
@@ -153,13 +153,13 @@ describe('migrations associations one-to-one', function() {
     	migrations.addMigration(Migration, 1);
     	migrations.migrate(0, 1)
     		.then(function() {
-    			return models.B.createOne({
+    			return models.B.create({
     				name: 'Bert'
     			});
     		})
     		.then(function(b) {
     			assert.notEqual(b, null);
-    			return models.A.createOne({
+    			return models.A.create({
     				name: 'Aart',
     				b: b
     			});

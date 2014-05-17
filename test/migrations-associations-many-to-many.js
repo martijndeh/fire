@@ -94,7 +94,7 @@ describe('migrations-associations-many-to-many', function() {
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
-                return models.A.createOne({
+                return models.A.create({
                     name: 'Aart'
                 });
             })
@@ -107,7 +107,7 @@ describe('migrations-associations-many-to-many', function() {
                 assert.equal(typeof a.removeB, 'function');
 
                 return models.B
-                    .createOne({
+                    .create({
                         name: 'Bert'
                     })
                     .then(function(b) {
@@ -181,7 +181,7 @@ describe('migrations-associations-many-to-many', function() {
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
-                return models.A.createOne({
+                return models.A.create({
                     name: 'Aart'
                 });
             })
@@ -194,7 +194,7 @@ describe('migrations-associations-many-to-many', function() {
                 assert.equal(typeof a.removeManyKey1, 'function');
 
                 return models.B
-                    .createOne({
+                    .create({
                         name: 'Bert'
                     })
                     .then(function(b) {
@@ -271,13 +271,13 @@ describe('migrations-associations-many-to-many', function() {
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
-                return models.A.createOne({
+                return models.A.create({
                     name: 'Aart'
                 });
             })
             .then(function(a) {
                 return models.B
-                    .createOne({
+                    .create({
                         name: 'Bert'
                     })
                     .then(function(b) {
@@ -347,7 +347,7 @@ describe('migrations-associations-many-to-many', function() {
 
                 names.forEach(function(name) {
                     result = result.then(function() {
-                        return models.A.createOne({name: name});
+                        return models.A.create({name: name});
                     });
                 });
 
@@ -355,7 +355,7 @@ describe('migrations-associations-many-to-many', function() {
             })
             .spread(function(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) {
                 return models.B
-                    .createOne({
+                    .create({
                         name: 'Bert'
                     })
                     .then(function(b) {
@@ -419,7 +419,7 @@ describe('migrations-associations-many-to-many', function() {
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
-                return models.C.createOne({
+                return models.C.create({
                     name: 'Cees'
                 });
             })
@@ -427,7 +427,7 @@ describe('migrations-associations-many-to-many', function() {
                 assert.equal(c.name, 'Cees');
 
                 return models.D
-                    .createOne({
+                    .create({
                         name: 'Dirk'
                     })
                     .then(function(d) {

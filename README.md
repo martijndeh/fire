@@ -71,11 +71,8 @@ User.prototype.validateEmail = function(value) {
 };
 
 User.prototype.beforeCreate = function() {
-	var self = this;
-	return this.models.Team.create({name: 'First Team'})
-		.then(function(team) {
-			self.team = team;
-		});
+	// You can set promises on your properties. Node on Fire will make sure they'll resolve accordingly.
+	this.team = this.models.Team.create({name: 'First Team'});
 };
 
 User.prototype.afterCreate = function() {
