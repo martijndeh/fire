@@ -690,10 +690,106 @@ describe('models', function() {
             })
             .then(function(object1) {
                 assert.notEqual(object1, null);
-                assert.equal(object1.title, 'Martijn');
+                assert.equal(object1.name, 'Martijn');
                 assert.equal(object1.text, 'Title Subtitle');
                 assert.equal(object1.title, undefined);
                 assert.equal(object1.subtitle, undefined);
+                
+                done();
+            })
+            .done();
+
+    });
+
+    it('can transform parameters to property value promise', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.text = [this.String, this.Required, this.Transform(function(title, subtitle) {
+                var defer = Q.defer();
+                defer.resolve(title + ' ' + subtitle);
+                return defer.promise;
+            })];
+        }
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return models.Object1.create({
+                    name: 'Martijn',
+                    title: 'Title',
+                    subtitle: 'Subtitle'
+                });
+            })
+            .then(function(object1) {
+                assert.notEqual(object1, null);
+                assert.equal(object1.name, 'Martijn');
+                assert.equal(object1.text, 'Title Subtitle');
+                assert.equal(object1.title, undefined);
+                assert.equal(object1.subtitle, undefined);
+                
+                done();
+            })
+            .done();
+
+    });
+
+    it('can transform parameters to property value without values', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.text = [this.String, this.Required, this.Transform(function(title, subtitle) {
+                return (title ? title : '') + ' ' + (subtitle ? subtitle : '');
+            })];
+        }
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return models.Object1.create({
+                    name: 'Martijn'
+                });
+            })
+            .then(function(object1) {
+                assert.notEqual(object1, null);
+                assert.equal(object1.name, 'Martijn');
+                assert.equal(object1.text, ' ');
+                assert.equal(object1.title, undefined);
+                assert.equal(object1.subtitle, undefined);
+                
+                done();
+            })
+            .done();
+    });
+
+    it('can transform parameters to property value when updating', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.three = [this.Integer, this.Required, this.Transform(function(one, two) {
+                return (one * two);
+            })];
+        }
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return models.Object1.create({
+                    name: 'Martijn',
+                    one: 2,
+                    two: 4
+                });
+            })
+            .then(function(object1) {
+                assert.notEqual(object1, null);
+                assert.equal(object1.name, 'Martijn');
+                assert.equal(object1.three, 8);
+                
+                return models.Object1.update({name: 'Martijn'}, {one: 3, two: 5});
+            })
+            .then(function(object) {
+                assert.equal(object.name, 'Martijn');
+                assert.equal(object.three, 15);
                 
                 done();
             })
