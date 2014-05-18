@@ -796,4 +796,116 @@ describe('models', function() {
             .done();
 
     });
+
+    it('can find objects using select property type', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.value = [this.Integer];
+            this.test = [this.Virtual, this.Select(function(test) {
+                return {
+                    value: {
+                        $gt: 10 * test - 5,
+                        $lt: 10 * test + 5
+                    }
+                };
+            })];
+        }
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return Q.all([
+                    models.Object1.create({
+                        name: 'Martijn 1',
+                        value: 10,
+                    }),
+                    models.Object1.create({
+                        name: 'Martijn 2',
+                        value: 20
+                    }),
+                    models.Object1.create({
+                        name: 'Martijn 3',
+                        value: 30
+                    })
+                ]);
+            })
+            .then(function(objects) {
+                assert.equal(objects.length, 3);
+                
+                return models.Object1.findOne({test:1});
+            })
+            .then(function(object) {
+                assert.equal(object.name, 'Martijn 1');
+                assert.equal(object.value, 10);
+                assert.equal(object.test, undefined);
+
+                return models.Object1.findOne({test:2});
+            })
+            .then(function(object) {
+                assert.equal(object.name, 'Martijn 2');
+                assert.equal(object.value, 20);
+                assert.equal(object.test, undefined);
+
+                return models.Object1.findOne({test:3});
+            })
+            .then(function(object) {
+                assert.equal(object.name, 'Martijn 3');
+                assert.equal(object.value, 30);
+                assert.equal(object.test, undefined);
+
+                done();
+            })
+            .done();
+
+    });
+
+    it('can update objects using select property type', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.value = [this.Integer];
+            this.test = [this.Virtual, this.Select(function(test) {
+                return {
+                    value: {
+                        $gt: 10 * test - 5,
+                        $lt: 10 * test + 5
+                    }
+                };
+            })];
+        }
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return Q.all([
+                    models.Object1.create({
+                        name: 'Martijn 1',
+                        value: 10,
+                    }),
+                    models.Object1.create({
+                        name: 'Martijn 2',
+                        value: 20
+                    }),
+                    models.Object1.create({
+                        name: 'Martijn 3',
+                        value: 30
+                    })
+                ]);
+            })
+            .then(function(objects) {
+                assert.equal(objects.length, 3);
+                
+                return models.Object1.update({test:1}, {name: 'Update 1', value: 120});
+            })
+            .then(function(object) {
+                assert.equal(object.name, 'Update 1');
+                assert.equal(object.value, 120);
+                assert.equal(object.test, undefined);
+
+                done();
+            })
+            .done();
+
+    });
 });
