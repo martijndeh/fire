@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
 ## Node on Fire
-A productive & convention-based web framework.
+A productive & convention-based web framework to get your minimum viable product ready in no-time.
 
 ### Installation
 ```

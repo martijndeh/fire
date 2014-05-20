@@ -7,10 +7,14 @@ var request = require('supertest')
 var assert = require('assert');
 
 describe('connections', function() {
-	var app;
+	var app = null;
+	var server = null;
 
 	after(function(done) {
-		app.server.close();
+		if(server) {
+			server.close();
+		}
+
 		done();
 	})
 
@@ -19,14 +23,11 @@ describe('connections', function() {
 
 		app = fire();
 		app.run()
-			.then(function() {
+			.then(function(s) {
+				server = s;
+
 				// Let's create some controllers
 				function ApiController() {}
-				ApiController.prototype.contentType = 'application/json';
-				ApiController.prototype.render = function(filePath, objects) {
-					return JSON.stringify(objects);
-				}
-
 				ApiController.prototype.before = function() {
 					// TODO: check if before is called
 				}
@@ -54,8 +55,6 @@ describe('connections', function() {
 						id: $id
 					};
 				}
-
-				// TODO: implement Controllers#addController to easier add controllers
 
 				app.controllers.loadClass(ApiController, Config.basePath + '/controllers/1/api/controller.js', null);
 
