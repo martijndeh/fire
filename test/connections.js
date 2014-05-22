@@ -31,6 +31,7 @@ describe('connections', function() {
 				ApiController.prototype.before = function() {
 					// TODO: check if before is called
 				}
+				fire.controller(ApiController);
 
 				ApiController.prototype.getTest = function(test) {
 					return {

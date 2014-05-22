@@ -22,6 +22,8 @@ describe('routes', function() {
 
 	it('should create index route', function(done) {
 		function TestController() {}
+		fire.controller(TestController);
+
 		TestController.prototype.getIndex = function() {}
 		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
 
@@ -36,6 +38,8 @@ describe('routes', function() {
 
 	it('should create route in sub-directory', function(done) {
 		function TestController() {}
+		fire.controller(TestController);
+
 		TestController.prototype.getIndex = function() {}
 		app.controllers.loadClass(TestController, Config.basePath + '/controllers/sub/test.js', null);
 
@@ -50,6 +54,8 @@ describe('routes', function() {
 
 	it('should create route in sub-sub-directory', function(done) {
 		function TestController() {}
+		fire.controller(TestController);
+
 		TestController.prototype.getIndex = function() {}
 		app.controllers.loadClass(TestController, Config.basePath + '/controllers/sub1/sub2/test.js', null);
 
@@ -64,6 +70,8 @@ describe('routes', function() {
 
 	it('should create route for post verb', function(done) {
 		function TestController() {}
+		fire.controller(TestController);
+
 		TestController.prototype.postIndex = function() {}
 		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
 
@@ -78,6 +86,8 @@ describe('routes', function() {
 
 	it('should create route for with 1 param', function(done) {
 		function TestController() {}
+		fire.controller(TestController);
+
 		TestController.prototype.getIndex = function($test) {}
 		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
 
@@ -92,6 +102,8 @@ describe('routes', function() {
 
 	it('should create route for with 2 params', function(done) {
 		function TestController() {}
+		fire.controller(TestController);
+
 		TestController.prototype.getIndex = function($test1, $test2) {}
 		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
 
@@ -106,6 +118,8 @@ describe('routes', function() {
 
 	it('should create route with 1 matching param', function(done) {
 		function TestController() {}
+		fire.controller(TestController);
+
 		TestController.prototype.getIndex = function($test1) {
 			$test1.should.equal('val1');
 
@@ -125,6 +139,8 @@ describe('routes', function() {
 
 	it('should create route with 2 matching params', function(done) {
 		function TestController() {}
+		fire.controller(TestController);
+		
 		TestController.prototype.getIndex = function($test1, $test2) {
 			$test1.should.equal('Dinosaur');
 			$test2.should.equal('Koala');
