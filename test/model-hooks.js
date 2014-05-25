@@ -49,6 +49,8 @@ describe('model hooks', function() {
 			this.testName = [this.String];
 			this.testValue = [this.Integer, this.Required];
 		}
+		fire.model(User);
+
 		User.prototype.beforeCreate = function() {
 			var self = this;
 			return Q.delay(1).then(function() {
@@ -86,6 +88,8 @@ describe('model hooks', function() {
 			this.testName = [this.String];
 			this.testValue = [this.Integer, this.Required];
 		}
+		fire.model(User);
+
 		User.prototype.beforeSave = function() {
 			var self = this;
 			return Q.delay(1).then(function() {
@@ -119,11 +123,13 @@ describe('model hooks', function() {
 			this.name = [this.String];
 			this.users = [this.HasMany(this.models.User)];
 		}
+		fire.model(Team);
 
 		function User() {
 			this.name = [this.String];
 			this.team = [this.BelongsTo(this.models.Team), this.Required, this.AutoFetch];
 		}
+		fire.model(User);
 
 		User.prototype.beforeCreate = function() {
 			var self = this;
@@ -162,11 +168,13 @@ describe('model hooks', function() {
 			this.name = [this.String];
 			this.users = [this.HasMany(this.models.User)];
 		}
+		fire.model(Team);
 
 		function User() {
 			this.name = [this.String];
 			this.team = [this.BelongsTo(this.models.Team), this.Required, this.AutoFetch];
 		}
+		fire.model(User);
 
 		User.prototype.beforeCreate = function() {
 			this.team = this.models.Team.create({name: 'Created in -beforeCreate'});
@@ -200,11 +208,13 @@ describe('model hooks', function() {
 			this.name = [this.String];
 			this.users = [this.HasMany(this.models.User)];
 		}
+		fire.model(Team);
 
 		function User() {
 			this.name = [this.String];
 			this.team = [this.BelongsTo(this.models.Team), this.Required, this.AutoFetch];
 		}
+		fire.model(User);
 
 		User.prototype._createTeam = function() {
 			var defer = Q.defer();

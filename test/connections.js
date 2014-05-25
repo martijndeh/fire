@@ -21,7 +21,7 @@ describe('connections', function() {
 	before(function(done) {
 		Config.basePath = path.dirname(__dirname);
 
-		app = fire();
+		app = fire.app();
 		app.run()
 			.then(function(s) {
 				server = s;

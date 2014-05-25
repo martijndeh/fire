@@ -10,13 +10,11 @@ npm install fire
 ```
 
 ### Features
-- Productive.
 - Naming convention-based routing system.
 - Persistent models and associations.
 - Migration-based schema creation.
-- Auto-generate migrations.
+- Automatic REST API and authentication.
 - Integrated pub-sub to workers.
-- Configurable template system.
 - Promise-based.
 
 ### Philosophy
@@ -28,7 +26,7 @@ Integrated and non-awkward public interface.
 In your main file e.g. `index.js`:
 ```js
 var fire = require('fire');
-var app = fire();
+var app = fire.app();
 app.run();
 ```
 
@@ -85,7 +83,6 @@ An example users controller which does basic (create, read, update) operations. 
 function UsersController() {
 	
 }
-UsersController.prototype.hooks = require('./json-controller');
 
 // POST /users
 UsersController.prototype.createUser = function(users) {

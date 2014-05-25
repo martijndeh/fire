@@ -1,6 +1,7 @@
 'use strict';
 
 var fire = require('..');
+
 var Models = require('./../lib/models');
 var Model = require('./../lib/model');
 var Migrations = require('./../lib/migrations');

@@ -16,7 +16,7 @@ describe('routes', function() {
 	})
 
 	beforeEach(function() {
-		app = fire();
+		app = fire.app();
 		Config.basePath = path.dirname(__dirname);
 	})
 

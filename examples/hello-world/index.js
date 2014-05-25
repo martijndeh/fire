@@ -1,3 +1,3 @@
 var fire = require('./../..');
-var app = fire();
+var app = fire.app();
 app.run();

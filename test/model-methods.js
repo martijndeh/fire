@@ -2,6 +2,8 @@ var fire = require('..');
 var Models = require('./../lib/models');
 var assert = require('assert');
 
+var crypto = require('crypto');
+
 var Q = require('q');
 Q.longStackSupport = true;
 
@@ -48,6 +50,8 @@ describe('models', function() {
             this.name = [this.String];
             this.value = [this.Integer];
         }
+        fire.model(ModelThree);
+
         models.addModel(ModelThree);
         return models.ModelThree.setup()
             .then(function() {
@@ -66,6 +70,8 @@ describe('models', function() {
         function ModelThree() {
             this.name = [this.String];
         }
+        fire.model(ModelThree);
+
         models.addModel(ModelThree);
         return models.ModelThree.setup()
         .then(function() {
@@ -107,12 +113,16 @@ describe('models', function() {
             this.name = [this.String];
             this.modelFour = [this.HasOne(this.models.ModelFour)];
         }
+        fire.model(ModelThree);
+
         models.addModel(ModelThree);
 
         function ModelFour() {
             this.name = [this.String];
             this.three = [this.BelongsTo(this.models.ModelThree)];
         }
+        fire.model(ModelFour);
+
         models.addModel(ModelFour);
 
         return models.ModelThree.setup()
@@ -154,6 +164,8 @@ describe('models', function() {
             this.name       = [this.String];
             this.createdAt  = [this.DateTime];
         }
+        fire.model(ModelThree);
+
         models.addModel(ModelThree);
 
         var startDate = new Date(2014, 10, 23);
@@ -198,12 +210,16 @@ describe('models', function() {
             this.name = [this.String];
             this.modelFour = [this.HasOne(this.models.ModelFour)];
         }
+        fire.model(ModelThree);
+
         models.addModel(ModelThree);
 
         function ModelFour() {
             this.name = [this.String];
             this.three = [this.BelongsTo(this.models.ModelThree), this.AutoFetch];
         }
+        fire.model(ModelFour);
+
         models.addModel(ModelFour);
 
         models.ModelThree.setup()
@@ -241,6 +257,8 @@ describe('models', function() {
             this.name = [this.String];
             this.modelFour = [this.HasOne(this.models.ModelFour)];
         }
+        fire.model(ModelThree);
+
         ModelThree.prototype.toJSON = function() {
             return {
                 id: this.id,
@@ -254,6 +272,8 @@ describe('models', function() {
             this.name = [this.String];
             this.three = [this.BelongsTo(this.models.ModelThree), this.AutoFetch];
         }
+        fire.model(ModelFour);
+
         ModelFour.prototype.toJSON = function() {
             return {
                 id: this.id,
@@ -311,12 +331,16 @@ describe('models', function() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
         }
+        fire.model(Project);
+
         models.addModel(Project);
 
         function Client() {
             this.name       = [this.String];
             this.projects   = [this.AutoFetch, this.HasMany(this.models.Project)];
         }
+        fire.model(Client);
+        
         models.addModel(Client);
 
         models.Client.setup()
@@ -381,12 +405,14 @@ describe('models', function() {
             this.name       = [this.String];
             this.projects   = [this.HasMany(this.models.Project)];
         }
+        fire.model(Client);
         models.addModel(Client);
 
         function Project() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
         }
+        fire.model(Project);
         models.addModel(Project);
 
         models.Client.setup()
@@ -447,11 +473,13 @@ describe('models', function() {
             this.name = [this.String];
             this.projects = [this.AutoFetch, this.HasMany(this.models.Project)];
         }
+        fire.model(Client);
 
         function Project() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
         }
+        fire.model(Project);
 
         models.loadClass(Client);
         models.loadClass(Project);
@@ -476,12 +504,16 @@ describe('models', function() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
         }
+        fire.model(Project);
+
         models.addModel(Project);
 
         function Client() {
             this.name       = [this.String];
             this.projects   = [this.HasMany(this.models.Project), this.AutoFetch];
         }
+        fire.model(Client);
+
         models.addModel(Client);
 
         models.Client.setup()
@@ -508,17 +540,20 @@ describe('models', function() {
             this.name = [this.String];
             this.cs = [this.HasMany(this.models.C)];
         }
+        fire.model(User);
 
         function A() {
             this.name = [this.String];
             this.bs = [this.HasMany(this.models.B)];
         }
+        fire.model(A);
 
         function B() {
             this.name = [this.String];
             this.a = [this.BelongsTo(this.models.A), this.AutoFetch];
             this.cs = [this.HasMany(this.models.C)];
         }
+        fire.model(B);
 
         function C() {
             this.name = [this.String];
@@ -526,6 +561,7 @@ describe('models', function() {
             this.b = [this.BelongsTo(this.models.B), this.AutoFetch];
             this.user = [this.BelongsTo(this.models.User), this.Required];
         }
+        fire.model(C);
 
         C.prototype.toJSON = function() {
             return {
@@ -607,6 +643,8 @@ describe('models', function() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client), this.AutoFetch, this.Required];
         }
+        fire.model(Project);
+
         Project.prototype.toJSON = function() {
             return {
                 id: this.id,
@@ -618,6 +656,8 @@ describe('models', function() {
             this.name       = [this.String];
             this.projects   = [this.HasMany(this.models.Project)];
         }
+        fire.model(Client);
+
         Client.prototype.toJSON = function() {
             return {
                 id: this.id,
@@ -677,6 +717,7 @@ describe('models', function() {
                 return (title + ' ' + subtitle);
             })];
         }
+        fire.model(Object1);
 
         models.addModel(Object1);
 
@@ -710,6 +751,7 @@ describe('models', function() {
                 return defer.promise;
             })];
         }
+        fire.model(Object1);
 
         models.addModel(Object1);
 
@@ -741,6 +783,7 @@ describe('models', function() {
                 return (title ? title : '') + ' ' + (subtitle ? subtitle : '');
             })];
         }
+        fire.model(Object1);
 
         models.addModel(Object1);
 
@@ -769,6 +812,7 @@ describe('models', function() {
                 return (one * two);
             })];
         }
+        fire.model(Object1);
 
         models.addModel(Object1);
 
@@ -810,6 +854,7 @@ describe('models', function() {
                 };
             })];
         }
+        fire.model(Object1);
 
         models.addModel(Object1);
 
@@ -873,6 +918,7 @@ describe('models', function() {
                 };
             })];
         }
+        fire.model(Object1);
 
         models.addModel(Object1);
 
@@ -902,6 +948,132 @@ describe('models', function() {
                 assert.equal(object.name, 'Update 1');
                 assert.equal(object.value, 120);
                 assert.equal(object.test, undefined);
+
+                done();
+            })
+            .done();
+
+    });
+
+    it('can set property with hash method', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.value = [this.String, this.Hash(function(value) {
+                var hash = crypto.createHash('md5');
+                hash.update(value);
+                return hash.digest('hex');
+            })];
+        }
+        fire.model(Object1);
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return models.Object1.create({
+                    name: 'Martijn',
+                    value: 'test'
+                })
+            })
+            .then(function(object) {
+                assert.equal(object.name, 'Martijn');
+                assert.equal(object.value, '098f6bcd4621d373cade4e832627b4f6');
+
+                done();
+            })
+            .done();
+
+    });
+
+    it('can set property with default method', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.value = [this.String, this.Default(function() {
+                return Q.delay(1).then(function() {
+                    return 123;
+                })
+            })];
+        }
+        fire.model(Object1);
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return models.Object1.create({
+                    name: 'Martijn'
+                })
+            })
+            .then(function(object) {
+                assert.equal(object.name, 'Martijn');
+                assert.equal(object.value, 123);
+
+                done();
+            })
+            .done();
+
+    });
+
+    it('can set property without default method', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.value = [this.String, this.Default(function() {
+                return Q.delay(1).then(function() {
+                    return 123;
+                })
+            })];
+        }
+        fire.model(Object1);
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return models.Object1.create({
+                    name: 'Martijn',
+                    value: 1
+                })
+            })
+            .then(function(object) {
+                assert.equal(object.name, 'Martijn');
+                assert.equal(object.value, 1);
+
+                done();
+            })
+            .done();
+
+    });
+
+    it('will not set property with default method when updating', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.value = [this.String, this.Default(function() {
+                return Q.delay(1).then(function() {
+                    return 123;
+                })
+            })];
+        }
+        fire.model(Object1);
+
+        models.addModel(Object1);
+
+        models.Object1.setup()
+            .then(function() {
+                return models.Object1.create({
+                    name: 'Martijn',
+                    value: 1
+                })
+            })
+            .then(function(object) {
+                return models.Object1.update({
+                    id: 1
+                }, {
+                    name: 'Martijn 2'
+                })
+            })
+            .then(function(object) {
+                assert.equal(object.name, 'Martijn 2');
+                assert.equal(object.value, 1);
 
                 done();
             })
