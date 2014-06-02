@@ -3,8 +3,8 @@ var fire = require('..');
 var path = require('path');
 var request = require('supertest');
 
-var Controllers = process.env.NODE_COV ? require('../lib-cov/controllers') : require('../lib/controllers');
-var Config = process.env.NODE_COV ? require('../lib-cov/config') : require('../lib/config');
+var Controllers = process.env.NODE_COV ? require('./../lib-cov/modules/controllers/controllers') : require('./../lib/modules/controllers/controllers');
+var Config = process.env.NODE_COV ? require('./../lib-cov/helpers/config') : require('./../lib/helpers/config');
 
 var should = require('chai').should()
 

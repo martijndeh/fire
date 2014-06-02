@@ -2,9 +2,9 @@
 
 var fire = require('..');
 
-var Models = require('./../lib/models');
-var Model = require('./../lib/model');
-var Migrations = require('./../lib/migrations');
+var Models = require('./../lib/modules/models/models');
+var Model = require('./../lib/modules/models/model');
+var Migrations = require('./../lib/modules/migrations/migrations');
 var assert = require('assert');
 var Q = require('q');
 
@@ -26,7 +26,7 @@ describe('migrations-associations-many-to-many', function() {
 
     beforeEach(function(done) {
         models = new Models();
-        models.setup(null);
+        models.setup('./');
 
         migrations = new Migrations();
         migrations.setup(null, models)

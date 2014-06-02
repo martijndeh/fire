@@ -1,8 +1,8 @@
 'use strict';
 
 var fire = require('..');
-var Models = require('./../lib/models');
-var Model = require('./../lib/model');
+var Models = require('./../lib/modules/models/models');
+var Model = require('./../lib/modules/models/model');
 var assert = require('assert');
 var Q = require('q');
 
@@ -10,7 +10,7 @@ describe('model hooks', function() {
 	var models;
     beforeEach(function(done) {
         models = new Models();
-        models.setup(null)
+        models.setup('./')
             .then(function() {
                 done();
             })

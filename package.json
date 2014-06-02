@@ -41,7 +41,6 @@
     "cookie-session": "^1.0.2",
     "body": "^4.4.2",
     "body-parser": "^1.2.0",
-    "less-middleware": "^1.0.3",
-    "memwatch": "^0.2.2"
+    "less-middleware": "^1.0.3"
   }
 }

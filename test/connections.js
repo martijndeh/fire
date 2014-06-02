@@ -1,5 +1,5 @@
 var fire = require('..');
-var Config = require('../lib/config');
+var Config = require('./../lib/helpers/config');
 
 var should = require('chai').should()
 var path =  require('path');

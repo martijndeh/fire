@@ -1,5 +1,5 @@
 var fire = require('..');
-var Models = require('./../lib/models');
+var Models = require('./../lib/modules/models/models');
 var assert = require('assert');
 
 var crypto = require('crypto');
@@ -11,7 +11,7 @@ describe('models', function() {
     var models;
     beforeEach(function(done) {
         models = new Models();
-        models.setup(null)
+        models.setup('./')
             .then(function() {
                 done();
             })
