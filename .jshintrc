@@ -1,6 +1,6 @@
 {
 	"node": true,
-	"unused": false,
+	"unused": true,
 	"smarttabs": true,
 	"-W099": true,
 	"undef": true

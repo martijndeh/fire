@@ -17,7 +17,7 @@ describe('model routes', function() {
 		}
 
 		app.run()
-			.then(function(s) {
+			.then(function() {
 				var result = Q.when(true);
 
 				app.models.forEach(function(model) {
@@ -25,8 +25,6 @@ describe('model routes', function() {
 						return model.setup();
 					});
 				});
-
-				server = s;
 
 				return result;
 			})
@@ -54,9 +52,7 @@ describe('model routes', function() {
 
         result
 	        .then(function() {
-	        	server.close(function() {
-	        		done();
-	        	});
+	        	app.stop();
 	        })
 	        .done();
 	});
@@ -92,14 +88,11 @@ describe('model routes', function() {
 						actions: this.actions
 					};
 				};
-
-				app.models.internals['User'] = User;
-				app.models.internals['Action'] = Action;
 			};
 		});
 
 		beforeEach(function() {
-			agent = request.agent(app.server);
+			agent = request.agent(app.express);
 		});
 
 		it('can register', function(done) {
@@ -109,6 +102,8 @@ describe('model routes', function() {
 					password: 'test'
 				})
 				.expect(200, function(error, response) {
+					console.dir(response);
+					
 					assert.equal(response.body.id, 1);
 					assert.equal(response.body.name, 'Martijn');
 
@@ -170,12 +165,12 @@ describe('model routes', function() {
 					};
 				}
 
-				app.models.internals['Model'] = Model;
+				//app.models.internals['Model'] = Model;
 			};
 		})
 
 		it('can create model', function(done) {
-			request(app.server)
+			request(app.express)
 				.post('/api/v1/models')
 				.send({
 					name: 'Martijn'
@@ -194,7 +189,7 @@ describe('model routes', function() {
 			function createModel(map) {
 				var defer = Q.defer();
 
-				request(app.server)
+				request(app.express)
 					.post('/api/v1/models')
 					.send(map)
 					.expect(200, function(error, response) {
@@ -229,7 +224,7 @@ describe('model routes', function() {
 			});
 
 			it('can get 1 model', function(done) {
-				request(app.server)
+				request(app.express)
 					.get('/api/v1/models/2')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
@@ -242,7 +237,7 @@ describe('model routes', function() {
 			});
 
 			it('can get an array of 1 model', function(done) {
-				request(app.server)
+				request(app.express)
 					.get('/api/v1/models?value=1')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
@@ -259,7 +254,7 @@ describe('model routes', function() {
 			});
 
 			it('can get an array of multiple models', function(done) {
-				request(app.server)
+				request(app.express)
 					.get('/api/v1/models?value=2')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
@@ -280,7 +275,7 @@ describe('model routes', function() {
 			});
 
 			it('can update 1 model', function(done) {
-				request(app.server)
+				request(app.express)
 					.put('/api/v1/models/3')
 					.send({
 						name: 'Martijn (Updated)'
@@ -296,7 +291,7 @@ describe('model routes', function() {
 			});
 
 			it('cannot update all models', function(done) {
-				request(app.server)
+				request(app.express)
 					.put('/api/v1/models')
 					.send({
 						name: 'Oopsie'

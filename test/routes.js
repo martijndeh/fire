@@ -1,162 +1,114 @@
-var fire = require('..');
-
-var path = require('path');
-var request = require('supertest');
-
-var Controllers = process.env.NODE_COV ? require('./../lib-cov/modules/controllers/controllers') : require('./../lib/modules/controllers/controllers');
-var Config = process.env.NODE_COV ? require('./../lib-cov/helpers/config') : require('./../lib/helpers/config');
+var fire = require('..')
+var Config = require('./../lib/helpers/config');
 
 var should = require('chai').should()
+var path =  require('path');
+var request = require('supertest')
+var assert = require('assert');
 
-describe('routes', function() {
-	var app;
+describe('controller routes', function() {
+	var app = null;
+	var server = null;
 
-	afterEach(function() {
-		app = null;
+	after(function(done) {
+		if(server) {
+			server.close();
+		}
+
+		done();
 	})
 
-	beforeEach(function() {
-		app = fire.app();
+	before(function(done) {
 		Config.basePath = path.dirname(__dirname);
-	})
 
-	it('should create index route', function(done) {
-		function TestController() {}
-		fire.controller(TestController);
+		app = fire.app();
 
-		TestController.prototype.getIndex = function() {}
-		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
+		// Let's create some controllers
+		function ApiController() {}
+		fire.controller(ApiController);
 
-		var stack = app.server._router.stack;
-		var route = stack[stack.length - 1].route;
+		ApiController.prototype.basePathComponents = ['1', 'api'];
 
-		route.path.toString().should.equal('/^/$/i');
-		route.methods['get'].should.equal(true);
-
-		done();
-	})
-
-	it('should create route in sub-directory', function(done) {
-		function TestController() {}
-		fire.controller(TestController);
-
-		TestController.prototype.getIndex = function() {}
-		app.controllers.loadClass(TestController, Config.basePath + '/controllers/sub/test.js', null);
-
-		var stack = app.server._router.stack;
-		var route = stack[stack.length - 1].route;
-
-		route.path.toString().should.equal('/^/sub(?:/)?$/i');
-		route.methods['get'].should.equal(true);
-
-		done();
-	})
-
-	it('should create route in sub-sub-directory', function(done) {
-		function TestController() {}
-		fire.controller(TestController);
-
-		TestController.prototype.getIndex = function() {}
-		app.controllers.loadClass(TestController, Config.basePath + '/controllers/sub1/sub2/test.js', null);
-
-		var stack = app.server._router.stack;
-		var route = stack[stack.length - 1].route;
-
-		route.path.toString().should.equal('/^/sub1/sub2(?:/)?$/i');
-		route.methods['get'].should.equal(true);
-
-		done();
-	})
-
-	it('should create route for post verb', function(done) {
-		function TestController() {}
-		fire.controller(TestController);
-
-		TestController.prototype.postIndex = function() {}
-		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
-
-		var stack = app.server._router.stack;
-		var route = stack[stack.length - 1].route;
-
-		route.path.toString().should.equal('/^/$/i');
-		route.methods['post'].should.equal(true);
-
-		done();
-	})
-
-	it('should create route for with 1 param', function(done) {
-		function TestController() {}
-		fire.controller(TestController);
-
-		TestController.prototype.getIndex = function($test) {}
-		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
-
-		var stack = app.server._router.stack;
-		var route = stack[stack.length - 1].route;
-
-		route.path.toString().should.equal('/^/([^/]+)(?:/)?$/i')
-		route.methods['get'].should.equal(true);
+		ApiController.prototype.configure = function() {
+			
+		};
 		
-		done();
-	})
+		ApiController.prototype.before = function() {
+			// TODO: check if before is called
+		};
 
-	it('should create route for with 2 params', function(done) {
-		function TestController() {}
-		fire.controller(TestController);
+		ApiController.prototype.getUsers = function() {
+			return [];
+		};
 
-		TestController.prototype.getIndex = function($test1, $test2) {}
-		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
-
-		var stack = app.server._router.stack;
-		var route = stack[stack.length - 1].route;
-
-		route.path.toString().should.equal('/^/([^/]+)/([^/]+)(?:/)?$/i');
-		route.methods['get'].should.equal(true);
-
-		done();
-	})
-
-	it('should create route with 1 matching param', function(done) {
-		function TestController() {}
-		fire.controller(TestController);
-
-		TestController.prototype.getIndex = function($test1) {
-			$test1.should.equal('val1');
-
+		ApiController.prototype.getUser = function($id) {
+			console.log('getUser ' + $id);
+			
 			return {
-				test1: $test1
+				id: $id
 			};
-		}
-		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
+		};
 
-		request(app.server)
-			.get('/val1')
-			.expect(200, function(error, response) {
-				response.text.should.equal('{"test1":"val1"}');
+		ApiController.prototype.createUser = function() {
+			return {
+				id: 123
+			}
+		};
+
+		ApiController.prototype.updateUser = function($id) {
+			return {
+				id: $id
+			};
+		};
+
+		ApiController.prototype.viewIndex = function() {};
+		ApiController.prototype.view = function() {};
+
+		app.run()
+			.then(function(s) {
+				server = s;
+				
 				done();
-			});
+			})
+			.done();
+	})
+
+	it('cannot find route', function(done) {
+		request(app.express)
+			.get('/404')
+			.expect(404, done)
+	})
+
+	it('can find get route', function(done) {
+		request(app.express)
+			.get('/1/api/users')
+			.expect(200, done)
+	})
+
+	it('can find get route with argument', function(done) {
+		request(app.express)
+			.get('/1/api/users/123')
+			.expect(200, done);
+	})
+
+	it('can find get route with correct argument', function(done) {
+		request(app.express)
+			.get('/1/api/users/10')
+			.expect(200, function(error, response) {
+				assert.equal(response.text, '{"id":"10"}');
+				done();
+			})
 	});
 
-	it('should create route with 2 matching params', function(done) {
-		function TestController() {}
-		fire.controller(TestController);
-		
-		TestController.prototype.getIndex = function($test1, $test2) {
-			$test1.should.equal('Dinosaur');
-			$test2.should.equal('Koala');
-
-			return {
-				test1: $test1,
-				test2: $test2
-			};
-		}
-		app.controllers.loadClass(TestController, Config.basePath + '/controllers/test.js', null);
-
-		request(app.server)
-			.get('/Dinosaur/Koala')
-			.expect(200, function(error, response) {
-				response.text.should.equal('{"test1":"Dinosaur","test2":"Koala"}');
-				done();
-			});
+	it('can do post for create route', function(done) {
+		request(app.express)
+			.post('/1/api/users')
+			.expect(200, done);
 	});
+
+	it('can do put for update route', function(done) {
+		request(app.express)
+			.put('/1/api/users/123')
+			.expect(200, done);
+	})
 })

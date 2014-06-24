@@ -10,19 +10,22 @@ var fs = require('fs');
 var argv = require('minimist')(process.argv.slice(2));
 var inflection = require('inflection');
 
-var Models = require('./../lib/models');
-var Table = require('./../lib/table');
-var Model = require('./../lib/model');
-var Migration = require('./../lib/migration');
-var Migrations = require('./../lib/migrations');
+var Models = require('./../lib/modules/models/models');
+var Table = require('./../lib/modules/models/table');
+var Model = require('./../lib/modules/models/model');
+
+var Migration = require('./../lib/modules/migrations/migration');
+var Migrations = require('./../lib/modules/migrations/migrations');
+var Generate = require('./../lib/modules/migrations/generate');
+
 var Q = require('q');
 var moment = require('moment');
 var mu = require('mu2');
 mu.root = path.join(__dirname, '..', 'cli', 'templates');
 
-var utils = require('./../lib/utils');
+var utils = require('./../lib/helpers/utils');
 
-var Generate = require('./../lib/generate');
+
 
 var basePath = path.resolve('./');
 

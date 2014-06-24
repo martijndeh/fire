@@ -1,12 +1,13 @@
 var fire = require('..');
 
 describe('app', function() {
-	it('should start & stop', function(done) {
+	it('should run & stop', function(done) {
 		var app = fire.app();
 		return app.run()
-			.then(function(server) {
-				server.close();
-
+			.then(function() {
+				return app.stop();
+			})
+			.then(function() {
 				return done();
 			});
 	})

@@ -12,10 +12,8 @@ Migration.prototype.up = function() {
 		email: [this.String],
 		value: [this.Integer, this.Default(123)]
 	});
-
 };
 
 Migration.prototype.down = function() {
 	this.models.destroyModel('User');
-
 };
