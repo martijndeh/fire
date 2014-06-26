@@ -24,7 +24,9 @@ A framework which allows you to write both client- and server-side code with as 
 
 ### Example
 
-```
-TODO: Show more examples.
+The below example shows how easy it is to create a Hacker News-like website.
+
+```js
+
 ```
 

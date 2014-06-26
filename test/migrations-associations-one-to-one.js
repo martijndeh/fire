@@ -8,12 +8,15 @@ var assert = require('assert');
 var Q = require('q');
 
 describe('migrations associations one-to-one', function() {
-
-	var models;
-    var migrations;
+    var app = null;
+	var models = null;
+    var migrations = null;
 
     afterEach(function(done) {
         migrations.destroyAllModels()
+        .then(function() {
+            return app.stop();
+        })
         .then(function() {
             done();
         })
@@ -24,21 +27,24 @@ describe('migrations associations one-to-one', function() {
     });
 
     beforeEach(function(done) {
-        models = new Models();
-        models.setup('./');
+        app = fire.app();
+        app.run()
+            .then(function() {
+                models = app.models;
 
-        migrations = new Migrations();
-        migrations.setup(null, models)
-            .then(function() {
-                return models.Schema.removeAll();
-            })
-            .then(function() {
-                done();
-            })
-            .fail(function(error) {
-                done(error);
-            })
-            .done();
+                migrations = new Migrations();
+                migrations.setup(null, models)
+                    .then(function() {
+                        return models.Schema.removeAll();
+                    })
+                    .then(function() {
+                        done();
+                    })
+                    .fail(function(error) {
+                        done(error);
+                    })
+                    .done();
+            });
     });
 
     it('can create 1:1 association', function(done) {

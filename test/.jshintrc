@@ -4,7 +4,7 @@
 	"smarttabs": true,
 	"-W099": true,
 	"-W079": true,
-	"-W055": true,
 	"undef": true,
-	"shadow": "outer"
+	"shadow": "outer",
+	"es3": false
 }

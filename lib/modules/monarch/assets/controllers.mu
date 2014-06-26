@@ -1,4 +1,4 @@
 
 {{#controllers}}
-app.controller('{{name}}', [{{params}}]);
+app.controller('{{name}}', [{{{params}}}]);
 {{/controllers}}

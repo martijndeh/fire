@@ -8,14 +8,18 @@ var assert = require('assert');
 var Q = require('q');
 
 describe('migrations create initial schema', function() {
-	var models;
-    var migrations;
+	var models = null;
+    var migrations = null;
+    var app = null;
 
     afterEach(function(done) {
         // We should drop everything
         migrations.destroyAllModels()
         .then(function() {
-            done();
+            return app.stop();
+        })
+        .then(function() {
+        	done();
         })
         .fail(function(error) {
             done(error);
@@ -24,21 +28,24 @@ describe('migrations create initial schema', function() {
     });
 
     beforeEach(function(done) {
-        models = new Models();
-        models.setup('./');
+    	app = fire.app();
+    	app.run()
+    		.then(function() {
+		        models = app.models;
 
-        migrations = new Migrations();
-        migrations.setup(null, models)
-            .then(function() {
-                return models.Schema.removeAll();
-            })
-            .then(function() {
-                done();
-            })
-            .fail(function(error) {
-                done(error);
-            })
-            .done();
+		        migrations = new Migrations();
+		        migrations.setup(null, models)
+		            .then(function() {
+		                return models.Schema.removeAll();
+		            })
+		            .then(function() {
+		                done();
+		            })
+		            .fail(function(error) {
+		                done(error);
+		            })
+		            .done();
+	        });
     });
 
 	it('creating many related models', function(done) {

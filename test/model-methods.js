@@ -1,18 +1,24 @@
-var fire = require('..');
-var Models = require('./../lib/modules/models/models');
-var assert = require('assert');
+/* global describe, beforeEach, afterEach, it */
+'use strict';
 
+var fire = require('..');
+
+var assert = require('assert');
 var crypto = require('crypto');
 
 var Q = require('q');
 Q.longStackSupport = true;
 
-describe('models', function() {
+describe('model methods', function() {
     var models;
+    var app = null;
+
     beforeEach(function(done) {
-        models = new Models();
-        models.setup('./')
+        app = fire.app();
+        app.run()
             .then(function() {
+                models = app.models;
+
                 done();
             })
             .done();
@@ -40,6 +46,9 @@ describe('models', function() {
 
         result.then(function() {
             models = null;
+            return app.stop();
+        })
+        .then(function() {
             done();
         })
         .done();
@@ -51,20 +60,21 @@ describe('models', function() {
             this.value = [this.Integer];
         }
         fire.model(ModelThree);
+        
+        setImmediate(function() {
+            return models.ModelThree.setup()
+                .then(function() {
+                    return models.ModelThree.findOrCreate({name: 'Test'}, {value: 123});
+                })
+                .then(function(model) {
+                    assert.equal(model.name, 'Test');
+                    assert.equal(model.value, 123);
 
-        models.addModel(ModelThree);
-        return models.ModelThree.setup()
-            .then(function() {
-                return models.ModelThree.findOrCreate({name: 'Test'}, {value: 123});
-            })
-            .then(function(model) {
-                assert.equal(model.name, 'Test');
-                assert.equal(model.value, 123);
-
-                done();
-            })
-            .done();
-    })
+                    done();
+                })
+                .done();
+        });
+    });
 
     it('can find model with null column', function(done) {
         function ModelThree() {
@@ -72,37 +82,38 @@ describe('models', function() {
         }
         fire.model(ModelThree);
 
-        models.addModel(ModelThree);
-        return models.ModelThree.setup()
-        .then(function() {
-            return models.ModelThree.create({name:null});
-        })
-        .then(function() {
-            return models.ModelThree.findOne({});
-        })
-        .then(function(model) {
-            assert.notEqual(model, null);
-            assert.equal(model.name, null);
-            return true;
-        })
-        .then(function() {
-            return models.execute('SELECT * FROM "model_threes" WHERE "name" IS NULL LIMIT 1');
-        })
-        .then(function(model) {
-            assert.notEqual(model, null);
-            assert.equal(model.name, null);
-            return true;
-        })
-        .then(function() {
-            return models.ModelThree.findOne({name:null});
-        })
-        .then(function(model) {
-            assert.notEqual(model, null);
-            done();
-        })
-        .fail(function(error) {
-            done(error);
-        })
+        setImmediate(function() {
+            return models.ModelThree.setup()
+            .then(function() {
+                return models.ModelThree.create({name:null});
+            })
+            .then(function() {
+                return models.ModelThree.findOne({});
+            })
+            .then(function(model) {
+                assert.notEqual(model, null);
+                assert.equal(model.name, null);
+                return true;
+            })
+            .then(function() {
+                return models.execute('SELECT * FROM "model_threes" WHERE "name" IS NULL LIMIT 1');
+            })
+            .then(function(model) {
+                assert.notEqual(model, null);
+                assert.equal(model.name, null);
+                return true;
+            })
+            .then(function() {
+                return models.ModelThree.findOne({name:null});
+            })
+            .then(function(model) {
+                assert.notEqual(model, null);
+                done();
+            })
+            .fail(function(error) {
+                done(error);
+            });
+        });
     });
 
     it('can update with relation', function(done) {
@@ -115,49 +126,47 @@ describe('models', function() {
         }
         fire.model(ModelThree);
 
-        models.addModel(ModelThree);
-
         function ModelFour() {
             this.name = [this.String];
             this.three = [this.BelongsTo(this.models.ModelThree)];
         }
         fire.model(ModelFour);
 
-        models.addModel(ModelFour);
+        setImmediate(function() {
+            return models.ModelThree.setup()
+            .then(function() {
+                return models.ModelFour.setup();
+            })
+            .then(function() {
+                return models.ModelThree.create({
+                    name: 'Test 1'
+                });
+            })
+            .then(function(modelThree) {
+                assert.notEqual(modelThree, null);
+                assert.equal(modelThree.name, 'Test 1');
 
-        return models.ModelThree.setup()
-        .then(function() {
-            return models.ModelFour.setup();
-        })
-        .then(function() {
-            return models.ModelThree.create({
-                name: 'Test 1'
-            });
-        })
-        .then(function(modelThree) {
-            assert.notEqual(modelThree, null);
-            assert.equal(modelThree.name, 'Test 1');
+                return models.ModelFour.create({
+                    three: modelThree
+                })
+                .then(function(modelFour) {
+                    assert.notEqual(modelFour, null);
+                    assert.equal(modelFour.three, 1);
 
-            return models.ModelFour.create({
-                three: modelThree
+                    return models.ModelFour.updateOne({
+                        id: modelFour.id,
+                        three: modelThree
+                    }, {name:'Test 2'});
+                });
             })
             .then(function(modelFour) {
                 assert.notEqual(modelFour, null);
-                assert.equal(modelFour.three, 1);
-
-                return models.ModelFour.updateOne({
-                    id: modelFour.id,
-                    three: modelThree
-                }, {name:'Test 2'});
+                assert.equal(modelFour.name, 'Test 2');
+                done();
             })
-        })
-        .then(function(modelFour) {
-            assert.notEqual(modelFour, null);
-            assert.equal(modelFour.name, 'Test 2');
-            done();
-        })
-        .done();
-    })
+            .done();
+        });
+    });
 
     it('can query on date', function(done) {
         function ModelThree() {
@@ -166,43 +175,43 @@ describe('models', function() {
         }
         fire.model(ModelThree);
 
-        models.addModel(ModelThree);
-
         var startDate = new Date(2014, 10, 23);
         var endDate = new Date(2014, 10, 24);
         var outsideDate = new Date(2015, 0, 1);
 
-        return models.ModelThree.setup()
-        .then(function() {
-            return models.ModelThree.create({
-                createdAt: startDate
+        setImmediate(function() {
+            return models.ModelThree.setup()
+            .then(function() {
+                return models.ModelThree.create({
+                    createdAt: startDate
+                });
+            })
+            .then(function() {
+                return models.ModelThree.create({
+                    createdAt: endDate
+                });
+            })
+            .then(function() {
+                return models.ModelThree.create({
+                    createdAt: outsideDate
+                });
+            })
+            .then(function() {
+                return models.ModelThree.findOne({
+                    createdAt: {
+                        $gte: startDate,
+                        $lt: endDate
+                    }
+                });
+            })
+            .then(function(model) {
+                assert.notEqual(model, null);
+                done();
+            })
+            .fail(function(error) {
+                done(error);
             });
-        })
-        .then(function() {
-            return models.ModelThree.create({
-                createdAt: endDate
-            });
-        })
-        .then(function() {
-            return models.ModelThree.create({
-                createdAt: outsideDate
-            });
-        })
-        .then(function() {
-            return models.ModelThree.findOne({
-                createdAt: {
-                    $gte: startDate,
-                    $lt: endDate
-                }
-            });
-        })
-        .then(function(model) {
-            assert.notEqual(model, null);
-            done();
-        })
-        .fail(function(error) {
-            done(error);
-        })
+        });
     });
 
     it('can create foreign key association', function(done) {
@@ -212,44 +221,42 @@ describe('models', function() {
         }
         fire.model(ModelThree);
 
-        models.addModel(ModelThree);
-
         function ModelFour() {
             this.name = [this.String];
             this.three = [this.BelongsTo(this.models.ModelThree), this.AutoFetch];
         }
         fire.model(ModelFour);
 
-        models.addModel(ModelFour);
-
-        models.ModelThree.setup()
-        .then(function() {
-            return models.ModelFour.setup();
-        })
-        .then(function() {
-            return models.ModelThree.create({
-                name: 'Three is a Test'
-            });
-        })
-        .then(function(modelThree) {
-            return models.ModelFour.create({
-                three: modelThree,
-                name: 'Four is a Test'
-            });
-        })
-        .then(function(modelFour) {
-            assert.notEqual(modelFour, null);
-            return true;
-        })
-        .then(function() {
-            return models.ModelFour.findOne({});
-        })
-        .then(function(model) {            
-            assert.equal(model.name, 'Four is a Test');
-            assert.equal(model.three.name, 'Three is a Test');
-            done();
-        })
-        .done();
+        setImmediate(function() {
+            models.ModelThree.setup()
+            .then(function() {
+                return models.ModelFour.setup();
+            })
+            .then(function() {
+                return models.ModelThree.create({
+                    name: 'Three is a Test'
+                });
+            })
+            .then(function(modelThree) {
+                return models.ModelFour.create({
+                    three: modelThree,
+                    name: 'Four is a Test'
+                });
+            })
+            .then(function(modelFour) {
+                assert.notEqual(modelFour, null);
+                return true;
+            })
+            .then(function() {
+                return models.ModelFour.findOne({});
+            })
+            .then(function(model) {            
+                assert.equal(model.name, 'Four is a Test');
+                assert.equal(model.three.name, 'Three is a Test');
+                done();
+            })
+            .done();
+        });
     });
 
     it('can find models with auto fetches', function(done) {
@@ -265,8 +272,7 @@ describe('models', function() {
                 name: this.name,
                 test: 'haha'
             };
-        }
-        models.addModel(ModelThree);
+        };
 
         function ModelFour() {
             this.name = [this.String];
@@ -280,47 +286,48 @@ describe('models', function() {
                 name: this.name,
                 three: this.three
             };
-        }
-        models.addModel(ModelFour);
+        };
 
-        models.ModelThree.setup()
-        .then(function() {
-            return models.ModelFour.setup();
-        })
-        .then(function() {
-            return models.ModelThree.create({
-                name: 'Three is a Test'
-            });
-        })
-        .then(function(modelThree) {
-            var creations = [];
+        setImmediate(function() {
+            models.ModelThree.setup()
+            .then(function() {
+                return models.ModelFour.setup();
+            })
+            .then(function() {
+                return models.ModelThree.create({
+                    name: 'Three is a Test'
+                });
+            })
+            .then(function(modelThree) {
+                var creations = [];
 
-            for(var i = 0; i < 10; i++) {
-                creations.push(models.ModelFour.create({
-                    three: modelThree,
-                    name: 'Four is a Test'
-                }));
-            }
+                for(var i = 0; i < 10; i++) {
+                    creations.push(models.ModelFour.create({
+                        three: modelThree,
+                        name: 'Four is a Test'
+                    }));
+                }
 
-            return Q.all(creations);
-        })
-        .then(function() {
-            return models.ModelFour.find({});
-        })
-        .then(function(modelFours) {
-            assert.equal(modelFours.length, 10);
+                return Q.all(creations);
+            })
+            .then(function() {
+                return models.ModelFour.find({});
+            })
+            .then(function(modelFours) {
+                assert.equal(modelFours.length, 10);
 
-            modelFours.forEach(function(modelFour) {
-                assert.equal(modelFour.name, 'Four is a Test');
-                assert.equal(modelFour.three.id, 1);
-                assert.equal(modelFour.three.name, 'Three is a Test');
-            });
+                modelFours.forEach(function(modelFour) {
+                    assert.equal(modelFour.name, 'Four is a Test');
+                    assert.equal(modelFour.three.id, 1);
+                    assert.equal(modelFour.three.name, 'Three is a Test');
+                });
 
-            assert.notEqual(JSON.stringify(modelFours), null);
+                assert.notEqual(JSON.stringify(modelFours), null);
 
-            done();
-        })
-        .done();
+                done();
+            })
+            .done();
+        });
     });
 
     it('can add auto-fetched many reference', function(done) {
@@ -333,68 +340,66 @@ describe('models', function() {
         }
         fire.model(Project);
 
-        models.addModel(Project);
-
         function Client() {
             this.name       = [this.String];
             this.projects   = [this.AutoFetch, this.HasMany(this.models.Project)];
         }
         fire.model(Client);
         
-        models.addModel(Client);
+        setImmediate(function() {
+            models.Client.setup()
+            .then(function() {
+                return models.Project.setup();
+            })
+            .then(function() {
+                assert.notEqual(models.Client.getAssociations().projects, null);
+                assert.notEqual(models.Project.getAssociations().client, null);
+                return true;
+            })
+            .then(function() {
+                var _ = [];
 
-        models.Client.setup()
-        .then(function() {
-            return models.Project.setup();
-        })
-        .then(function() {
-            assert.notEqual(models.Client.getAssociations()['projects'], null);
-            assert.notEqual(models.Project.getAssociations()['client'], null);
-            return true;
-        })
-        .then(function() {
-            var _ = [];
+                for(var i = 0; i < 3; i++) {
+                    _.push(models.Client.create({
+                        name: 'Client #' + i
+                    }));
+                }
 
-            for(var i = 0; i < 3; i++) {
-                _.push(models.Client.create({
-                    name: 'Client #' + i
-                }));
-            }
+                return Q.all(_);
+            })
+            .then(function() {
+                return models.Client.find({});
+            })
+            .then(function(clients) {
+                assert.equal(clients.length, 3);
 
-            return Q.all(_);
-        })
-        .then(function() {
-            return models.Client.find({});
-        })
-        .then(function(clients) {
-            assert.equal(clients.length, 3);
+                var _ = [];
 
-            var _ = [];
+                for(var i = 0; i < 30; i++) {
+                    _.push(models.Project.create({
+                        name: 'Project #' + i,
+                        client: clients[i % 3]
+                    }));
+                }
 
-            for(var i = 0; i < 30; i++) {
-                _.push(models.Project.create({
-                    name: 'Project #' + i,
-                    client: clients[i % 3]
-                }));
-            }
-
-            return Q.all(_);
-        })
-        .then(function() {
-            return models.Client.findOne({});
-        })
-        .then(function(client) {
-            assert.equal(client.projects.length, 10);
-            return models.Client.find({}, {name:'ASC'});
-        })
-        .then(function(clients) {
-            assert.equal(clients.length, 3);
-            clients.forEach(function(client) {
+                return Q.all(_);
+            })
+            .then(function() {
+                return models.Client.findOne({});
+            })
+            .then(function(client) {
                 assert.equal(client.projects.length, 10);
-            });
-            done();
-        })
-        .done();
+                return models.Client.find({}, {name:'ASC'});
+            })
+            .then(function(clients) {
+                assert.equal(clients.length, 3);
+                clients.forEach(function(client) {
+                    assert.equal(client.projects.length, 10);
+                });
+                done();
+            })
+            .done();
+        });
     });
 
     it('can add NON-auto-fetched many reference', function(done) {
@@ -406,66 +411,66 @@ describe('models', function() {
             this.projects   = [this.HasMany(this.models.Project)];
         }
         fire.model(Client);
-        models.addModel(Client);
 
         function Project() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
         }
         fire.model(Project);
-        models.addModel(Project);
 
-        models.Client.setup()
-        .then(function() {
-            return models.Project.setup();
-        })
-        .then(function() {
-            assert.equal(models.Project.getProperty('client').columnName, 'client_id');
-            return true;
-        })
-        .then(function() {
-            var _ = [];
+        setImmediate(function() {
+            models.Client.setup()
+            .then(function() {
+                return models.Project.setup();
+            })
+            .then(function() {
+                assert.equal(models.Project.getProperty('client').columnName, 'client_id');
+                return true;
+            })
+            .then(function() {
+                var _ = [];
 
-            for(var i = 0; i < 3; i++) {
-                _.push(models.Client.create({
-                    name: 'Client #' + i
-                }));
-            }
+                for(var i = 0; i < 3; i++) {
+                    _.push(models.Client.create({
+                        name: 'Client #' + i
+                    }));
+                }
 
-            return Q.all(_);
-        })
-        .then(function() {
-            return models.Client.find({});
-        })
-        .then(function(clients) {
-            assert.equal(clients.length, 3);
+                return Q.all(_);
+            })
+            .then(function() {
+                return models.Client.find({});
+            })
+            .then(function(clients) {
+                assert.equal(clients.length, 3);
 
-            var _ = [];
+                var _ = [];
 
-            for(var i = 0; i < 30; i++) {
-                _.push(models.Project.create({
-                    name: 'Project #' + i,
-                    client: clients[i % 3]
-                }));
-            }
+                for(var i = 0; i < 30; i++) {
+                    _.push(models.Project.create({
+                        name: 'Project #' + i,
+                        client: clients[i % 3]
+                    }));
+                }
 
-            return Q.all(_);
-        })
-        .then(function() {
-            return models.Client.findOne({});
-        })
-        .then(function(client) {
-            assert.equal(client.projects, null);
-            assert.equal(typeof client.getProjects, 'function');
+                return Q.all(_);
+            })
+            .then(function() {
+                return models.Client.findOne({});
+            })
+            .then(function(client) {
+                assert.equal(client.projects, null);
+                assert.equal(typeof client.getProjects, 'function');
 
-            return client.getProjects();
-        })
-        .then(function(projects) {            
-            assert.notEqual(projects, null);
-            assert.equal(projects.length, 10);
-            done();
-        })
-        .done();
+                return client.getProjects();
+            })
+            .then(function(projects) {            
+                assert.notEqual(projects, null);
+                assert.equal(projects.length, 10);
+                done();
+            })
+            .done();
+        });
     });
 
     it('can create model with many reference in reverse order', function(done) {
@@ -481,22 +486,24 @@ describe('models', function() {
         }
         fire.model(Project);
 
-        models.loadClass(Client);
-        models.loadClass(Project);
+        setImmediate(function() {
+            models.loadClass(Client);
+            models.loadClass(Project);
 
-        for(var modelName in models.internals) {
-            var ModelClass = models.internals[modelName];
+            for(var modelName in models.internals) {
+                var ModelClass = models.internals[modelName];
 
-            models._addModel(ModelClass, modelName);
-        }
+                models._addModel(ModelClass, modelName);
+            }
 
-        for(var modelName in models.internals) {
-            var model = models.internals[modelName];
+            for(var modelName in models.internals) {
+                var model = models.internals[modelName];
 
-            model.getTable().addProperties(model.getAllProperties(), false);
-        }
+                model.getTable().addProperties(model.getAllProperties(), false);
+            }
 
-        done();
+            done();
+        });
     });
 
     it('can get model with empty childs', function(done) {
@@ -506,33 +513,31 @@ describe('models', function() {
         }
         fire.model(Project);
 
-        models.addModel(Project);
-
         function Client() {
             this.name       = [this.String];
             this.projects   = [this.HasMany(this.models.Project), this.AutoFetch];
         }
         fire.model(Client);
 
-        models.addModel(Client);
+        setImmediate(function() {
+            models.Client.setup()
+            .then(function() {
+                return models.Project.setup();
+            })
+            .then(function() {
+                return models.Client.create({name:'Test'});
+            })
+            .then(function(client) {
+                assert.equal(client.projects.length, 0);
 
-        models.Client.setup()
-        .then(function() {
-            return models.Project.setup();
-        })
-        .then(function() {
-            return models.Client.create({name:'Test'});
-        })
-        .then(function(client) {
-            assert.equal(client.projects.length, 0);
-
-            return models.Client.findOne({});
-        })
-        .then(function(client) {
-            assert.equal(client.projects.length, 0);
-            done();            
-        })
-        .done();
+                return models.Client.findOne({});
+            })
+            .then(function(client) {
+                assert.equal(client.projects.length, 0);
+                done();            
+            })
+            .done();
+        });
     });
 
     it('can find model with child-child relations', function(done) {
@@ -577,68 +582,69 @@ describe('models', function() {
             };
         };
 
-        models.addModel(User);
-        models.addModel(A);
-        models.addModel(B);
-        models.addModel(C);
+        setImmediate(function() {
+            var result = Q.when(true);
 
-        var result = Q.when(true);
+            result = result.then(function() {
+                return models.User.setup();
+            });
 
-        result = result.then(function() {
-            return models.User.setup();
-        });
+            result = result.then(function() {
+                return models.A.setup();
+            });
 
-        result = result.then(function() {
-            return models.A.setup();
-        });
+            result = result.then(function() {
+                return models.B.setup();
+            });
 
-        result = result.then(function() {
-            return models.B.setup();
-        });
+            result = result.then(function() {
+                return models.C.setup();
+            });
 
-        result = result.then(function() {
-            return models.C.setup();
-        });
+            return result
+                .then(function() {
+                    return models.User.create({name:'Martijn'});
+                })
+                .then(function(user) {
+                    return models.A.create({name:'A'})
+                        .then(function(a) {
+                            return models.B.create({
+                                name: 'B',
+                                a: a
+                            });
+                        })
+                        .then(function(b) {
+                            return models.C.create({
+                                name: 'C',
+                                createdAt: null,
+                                b: b,
+                                user: user
+                            });
+                        })
+                        .then(function() {
+                            return models.C.findOne({
+                                createdAt: null,
+                                user: user
+                            });
+                        })
+                        .then(function(c) {
+                            assert.notEqual(c, null);
+                            assert.notEqual(c.b, null);
+                            assert.notEqual(c.b.a, null);
 
-        return result
-            .then(function() {
-                return models.User.create({name:'Martijn'});
-            })
-            .then(function(user) {
-                return models.A.create({name:'A'})
-                    .then(function(a) {
-                        return models.B.create({
-                            name: 'B',
-                            a: a
+                            return done();
                         });
-                    })
-                    .then(function(b) {
-                        return models.C.create({
-                            name: 'C',
-                            createdAt: null,
-                            b: b,
-                            user: user
-                        });
-                    })
-                    .then(function() {
-                        return models.C.findOne({
-                            createdAt: null,
-                            user: user
-                        });
-                    })
-                    .then(function(c) {
-                        assert.notEqual(c, null);
-                        assert.notEqual(c.b, null);
-                        assert.notEqual(c.b.a, null);
-
-                        return done();
-                    });
-            })
-            .fail(done)
-            .done();
+                })
+                .fail(done)
+                .done();
+        });
     });
 
     it('can update model with relation in where', function(done) {
+        // We set these to make sure forward-references work.
+        models.Client = 'Client';
+        models.Project = 'Project';
+
         function Project() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client), this.AutoFetch, this.Required];
@@ -663,51 +669,52 @@ describe('models', function() {
                 id: this.id,
                 name: this.name
             };
-        }
-        models.addModel(Client);
-        models.addModel(Project);
+        };
 
-        models.Client.setup()
-        .then(function() {
-            return models.Project.setup();
-        })
-        .then(function() {
-            return Q.all([
-                models.Client.create({name:'Client 1'}),
-                models.Client.create({name:'Client 2'})
-            ]);
-        })
-        .spread(function(client1, client2) {
-            return models.Project.create({
-                    name: 'Project 1',
-                    client: client1
-                })
-                .then(function(project) {
-                    return models.Project.update({
+        setImmediate(function() {
+            models.Client.setup()
+            .then(function() {
+                return models.Project.setup();
+            })
+            .then(function() {
+                return Q.all([
+                    models.Client.create({name:'Client 1'}),
+                    models.Client.create({name:'Client 2'})
+                ]);
+            })
+            .spread(function(client1, client2) {
+                return models.Project.create({
+                        name: 'Project 1',
                         client: client1
-                    }, {
-                        client: client2,
-                        name: 'Project 2'
+                    })
+                    .then(function() {
+                        return models.Project.update({
+                            client: client1
+                        }, {
+                            client: client2,
+                            name: 'Project 2'
+                        });
+                    })
+                    .then(function(project) {
+                        console.dir(project);
+                        assert.notEqual(project, null);
+                        assert.equal(project.name, 'Project 2');
+                        assert.equal(project.client.name, 'Client 2');
+                    })
+                    .then(function() {
+                        return models.Project.findOne();
                     });
-                })
-                .then(function(project) {
-                    assert.notEqual(project, null);
-                    assert.equal(project.name, 'Project 2');
-                    assert.equal(project.client.name, 'Client 2');
-                })
-                .then(function() {
-                    return models.Project.findOne();
-                })
-        })
-        .then(function(project) {
-            assert.notEqual(project, null);
-            assert.equal(project.name, 'Project 2');
-            assert.equal(project.client.name, 'Client 2');
+            })
+            .then(function(project) {
+                assert.notEqual(project, null);
+                assert.equal(project.name, 'Project 2');
+                assert.equal(project.client.name, 'Client 2');
 
-            done();            
-        })
-        .fail(done)
-        .done();
+                done();            
+            })
+            .fail(done)
+            .done();
+        });
     });
 
     it('can transform parameters to property value', function(done) {
@@ -719,27 +726,26 @@ describe('models', function() {
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
-
-        models.Object1.setup()
-            .then(function() {
-                return models.Object1.create({
-                    name: 'Martijn',
-                    title: 'Title',
-                    subtitle: 'Subtitle'
-                });
-            })
-            .then(function(object1) {
-                assert.notEqual(object1, null);
-                assert.equal(object1.name, 'Martijn');
-                assert.equal(object1.text, 'Title Subtitle');
-                assert.equal(object1.title, undefined);
-                assert.equal(object1.subtitle, undefined);
-                
-                done();
-            })
-            .done();
-
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return models.Object1.create({
+                        name: 'Martijn',
+                        title: 'Title',
+                        subtitle: 'Subtitle'
+                    });
+                })
+                .then(function(object1) {
+                    assert.notEqual(object1, null);
+                    assert.equal(object1.name, 'Martijn');
+                    assert.equal(object1.text, 'Title Subtitle');
+                    assert.equal(object1.title, undefined);
+                    assert.equal(object1.subtitle, undefined);
+                    
+                    done();
+                })
+                .done();
+        });
     });
 
     it('can transform parameters to property value promise', function(done) {
@@ -753,27 +759,26 @@ describe('models', function() {
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
-
-        models.Object1.setup()
-            .then(function() {
-                return models.Object1.create({
-                    name: 'Martijn',
-                    title: 'Title',
-                    subtitle: 'Subtitle'
-                });
-            })
-            .then(function(object1) {
-                assert.notEqual(object1, null);
-                assert.equal(object1.name, 'Martijn');
-                assert.equal(object1.text, 'Title Subtitle');
-                assert.equal(object1.title, undefined);
-                assert.equal(object1.subtitle, undefined);
-                
-                done();
-            })
-            .done();
-
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return models.Object1.create({
+                        name: 'Martijn',
+                        title: 'Title',
+                        subtitle: 'Subtitle'
+                    });
+                })
+                .then(function(object1) {
+                    assert.notEqual(object1, null);
+                    assert.equal(object1.name, 'Martijn');
+                    assert.equal(object1.text, 'Title Subtitle');
+                    assert.equal(object1.title, undefined);
+                    assert.equal(object1.subtitle, undefined);
+                    
+                    done();
+                })
+                .done();
+        });
     });
 
     it('can transform parameters to property value without values', function(done) {
@@ -785,24 +790,24 @@ describe('models', function() {
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
-
-        models.Object1.setup()
-            .then(function() {
-                return models.Object1.create({
-                    name: 'Martijn'
-                });
-            })
-            .then(function(object1) {
-                assert.notEqual(object1, null);
-                assert.equal(object1.name, 'Martijn');
-                assert.equal(object1.text, ' ');
-                assert.equal(object1.title, undefined);
-                assert.equal(object1.subtitle, undefined);
-                
-                done();
-            })
-            .done();
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return models.Object1.create({
+                        name: 'Martijn'
+                    });
+                })
+                .then(function(object1) {
+                    assert.notEqual(object1, null);
+                    assert.equal(object1.name, 'Martijn');
+                    assert.equal(object1.text, ' ');
+                    assert.equal(object1.title, undefined);
+                    assert.equal(object1.subtitle, undefined);
+                    
+                    done();
+                })
+                .done();
+        });
     });
 
     it('can transform parameters to property value when updating', function(done) {
@@ -814,31 +819,30 @@ describe('models', function() {
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
-
-        models.Object1.setup()
-            .then(function() {
-                return models.Object1.create({
-                    name: 'Martijn',
-                    one: 2,
-                    two: 4
-                });
-            })
-            .then(function(object1) {
-                assert.notEqual(object1, null);
-                assert.equal(object1.name, 'Martijn');
-                assert.equal(object1.three, 8);
-                
-                return models.Object1.update({name: 'Martijn'}, {one: 3, two: 5});
-            })
-            .then(function(object) {
-                assert.equal(object.name, 'Martijn');
-                assert.equal(object.three, 15);
-                
-                done();
-            })
-            .done();
-
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return models.Object1.create({
+                        name: 'Martijn',
+                        one: 2,
+                        two: 4
+                    });
+                })
+                .then(function(object1) {
+                    assert.notEqual(object1, null);
+                    assert.equal(object1.name, 'Martijn');
+                    assert.equal(object1.three, 8);
+                    
+                    return models.Object1.update({name: 'Martijn'}, {one: 3, two: 5});
+                })
+                .then(function(object) {
+                    assert.equal(object.name, 'Martijn');
+                    assert.equal(object.three, 15);
+                    
+                    done();
+                })
+                .done();
+        });
     });
 
     it('can find objects using select property type', function(done) {
@@ -856,53 +860,52 @@ describe('models', function() {
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return Q.all([
+                        models.Object1.create({
+                            name: 'Martijn 1',
+                            value: 10,
+                        }),
+                        models.Object1.create({
+                            name: 'Martijn 2',
+                            value: 20
+                        }),
+                        models.Object1.create({
+                            name: 'Martijn 3',
+                            value: 30
+                        })
+                    ]);
+                })
+                .then(function(objects) {
+                    assert.equal(objects.length, 3);
+                    
+                    return models.Object1.findOne({test:1});
+                })
+                .then(function(object) {
+                    assert.equal(object.name, 'Martijn 1');
+                    assert.equal(object.value, 10);
+                    assert.equal(object.test, undefined);
 
-        models.Object1.setup()
-            .then(function() {
-                return Q.all([
-                    models.Object1.create({
-                        name: 'Martijn 1',
-                        value: 10,
-                    }),
-                    models.Object1.create({
-                        name: 'Martijn 2',
-                        value: 20
-                    }),
-                    models.Object1.create({
-                        name: 'Martijn 3',
-                        value: 30
-                    })
-                ]);
-            })
-            .then(function(objects) {
-                assert.equal(objects.length, 3);
-                
-                return models.Object1.findOne({test:1});
-            })
-            .then(function(object) {
-                assert.equal(object.name, 'Martijn 1');
-                assert.equal(object.value, 10);
-                assert.equal(object.test, undefined);
+                    return models.Object1.findOne({test:2});
+                })
+                .then(function(object) {
+                    assert.equal(object.name, 'Martijn 2');
+                    assert.equal(object.value, 20);
+                    assert.equal(object.test, undefined);
 
-                return models.Object1.findOne({test:2});
-            })
-            .then(function(object) {
-                assert.equal(object.name, 'Martijn 2');
-                assert.equal(object.value, 20);
-                assert.equal(object.test, undefined);
+                    return models.Object1.findOne({test:3});
+                })
+                .then(function(object) {
+                    assert.equal(object.name, 'Martijn 3');
+                    assert.equal(object.value, 30);
+                    assert.equal(object.test, undefined);
 
-                return models.Object1.findOne({test:3});
-            })
-            .then(function(object) {
-                assert.equal(object.name, 'Martijn 3');
-                assert.equal(object.value, 30);
-                assert.equal(object.test, undefined);
-
-                done();
-            })
-            .done();
-
+                    done();
+                })
+                .done();
+        });
     });
 
     it('can update objects using select property type', function(done) {
@@ -920,39 +923,38 @@ describe('models', function() {
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return Q.all([
+                        models.Object1.create({
+                            name: 'Martijn 1',
+                            value: 10,
+                        }),
+                        models.Object1.create({
+                            name: 'Martijn 2',
+                            value: 20
+                        }),
+                        models.Object1.create({
+                            name: 'Martijn 3',
+                            value: 30
+                        })
+                    ]);
+                })
+                .then(function(objects) {
+                    assert.equal(objects.length, 3);
+                    
+                    return models.Object1.update({test:1}, {name: 'Update 1', value: 120});
+                })
+                .then(function(object) {
+                    assert.equal(object.name, 'Update 1');
+                    assert.equal(object.value, 120);
+                    assert.equal(object.test, undefined);
 
-        models.Object1.setup()
-            .then(function() {
-                return Q.all([
-                    models.Object1.create({
-                        name: 'Martijn 1',
-                        value: 10,
-                    }),
-                    models.Object1.create({
-                        name: 'Martijn 2',
-                        value: 20
-                    }),
-                    models.Object1.create({
-                        name: 'Martijn 3',
-                        value: 30
-                    })
-                ]);
-            })
-            .then(function(objects) {
-                assert.equal(objects.length, 3);
-                
-                return models.Object1.update({test:1}, {name: 'Update 1', value: 120});
-            })
-            .then(function(object) {
-                assert.equal(object.name, 'Update 1');
-                assert.equal(object.value, 120);
-                assert.equal(object.test, undefined);
-
-                done();
-            })
-            .done();
-
+                    done();
+                })
+                .done();
+        });
     });
 
     it('can set property with hash method', function(done) {
@@ -966,23 +968,22 @@ describe('models', function() {
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
-
-        models.Object1.setup()
-            .then(function() {
-                return models.Object1.create({
-                    name: 'Martijn',
-                    value: 'test'
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return models.Object1.create({
+                        name: 'Martijn',
+                        value: 'test'
+                    });
                 })
-            })
-            .then(function(object) {
-                assert.equal(object.name, 'Martijn');
-                assert.equal(object.value, '098f6bcd4621d373cade4e832627b4f6');
+                .then(function(object) {
+                    assert.equal(object.name, 'Martijn');
+                    assert.equal(object.value, '098f6bcd4621d373cade4e832627b4f6');
 
-                done();
-            })
-            .done();
-
+                    done();
+                })
+                .done();
+        });
     });
 
     it('can set property with default method', function(done) {
@@ -991,27 +992,26 @@ describe('models', function() {
             this.value = [this.String, this.Default(function() {
                 return Q.delay(1).then(function() {
                     return 123;
-                })
+                });
             })];
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
-
-        models.Object1.setup()
-            .then(function() {
-                return models.Object1.create({
-                    name: 'Martijn'
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return models.Object1.create({
+                        name: 'Martijn'
+                    });
                 })
-            })
-            .then(function(object) {
-                assert.equal(object.name, 'Martijn');
-                assert.equal(object.value, 123);
+                .then(function(object) {
+                    assert.equal(object.name, 'Martijn');
+                    assert.equal(object.value, 123);
 
-                done();
-            })
-            .done();
-
+                    done();
+                })
+                .done();
+        });
     });
 
     it('can set property without default method', function(done) {
@@ -1020,28 +1020,27 @@ describe('models', function() {
             this.value = [this.String, this.Default(function() {
                 return Q.delay(1).then(function() {
                     return 123;
-                })
+                });
             })];
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
-
-        models.Object1.setup()
-            .then(function() {
-                return models.Object1.create({
-                    name: 'Martijn',
-                    value: 1
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return models.Object1.create({
+                        name: 'Martijn',
+                        value: 1
+                    });
                 })
-            })
-            .then(function(object) {
-                assert.equal(object.name, 'Martijn');
-                assert.equal(object.value, 1);
+                .then(function(object) {
+                    assert.equal(object.name, 'Martijn');
+                    assert.equal(object.value, 1);
 
-                done();
-            })
-            .done();
-
+                    done();
+                })
+                .done();
+        });
     });
 
     it('will not set property with default method when updating', function(done) {
@@ -1050,34 +1049,33 @@ describe('models', function() {
             this.value = [this.String, this.Default(function() {
                 return Q.delay(1).then(function() {
                     return 123;
-                })
+                });
             })];
         }
         fire.model(Object1);
 
-        models.addModel(Object1);
-
-        models.Object1.setup()
-            .then(function() {
-                return models.Object1.create({
-                    name: 'Martijn',
-                    value: 1
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return models.Object1.create({
+                        name: 'Martijn',
+                        value: 1
+                    });
                 })
-            })
-            .then(function(object) {
-                return models.Object1.update({
-                    id: 1
-                }, {
-                    name: 'Martijn 2'
+                .then(function() {
+                    return models.Object1.update({
+                        id: 1
+                    }, {
+                        name: 'Martijn 2'
+                    });
                 })
-            })
-            .then(function(object) {
-                assert.equal(object.name, 'Martijn 2');
-                assert.equal(object.value, 1);
+                .then(function(object) {
+                    assert.equal(object.name, 'Martijn 2');
+                    assert.equal(object.value, 1);
 
-                done();
-            })
-            .done();
-
+                    done();
+                })
+                .done();
+        });
     });
 });

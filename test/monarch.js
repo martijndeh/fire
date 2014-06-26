@@ -1,22 +1,46 @@
+/* global describe, beforeEach, afterEach, it */
+'use strict';
+
 var fire = require('..');
 var util = require('util');
-var tmp = require('tmp');
+var streams = require('memory-streams');
+var request = require('supertest');
+var assert = require('assert');
 
 var Monarch = require('./../lib/modules/monarch');
 
 describe('monarch', function() {
-	function Controller(fire, $scope) {
+	var app = null;
+	var monarch = null;
 
-	}
+	beforeEach(function(done) {
+		app = fire.app('example', {});
+		monarch = new Monarch(app);
+
+		app.run()
+			.then(function() {
+				done();
+			})
+			.done();
+	});
+
+	afterEach(function(done) {
+		app.stop()
+			.then(function() {
+				done();
+			})
+			.done();
+	});
 
 	it('can replace constructor', function(done) {
 		var called = false;
 
-		var TemporaryController = function() {}
+		var TemporaryController = function() {};
 
-		function TestController(arg1, arg2) {
+		function TestController(arg1, arg2) { //jshint ignore:line
 			called = true;
 		}
+		
 
 		TestController.prototype.test = function() {
 			return 123;
@@ -26,12 +50,12 @@ describe('monarch', function() {
 		var controller = new TemporaryController();
 		controller.should.be.instanceof(TestController);
 		controller.test().should.equal(123);
-		called.should.be.false;
+		assert.equal(called, false);
 
 		TestController.name.should.equal('TestController');
 
 		TestController.toString().should.equal(
-		'function TestController(arg1, arg2) {\n' +
+		'function TestController(arg1, arg2) { //jshint ignore:line\n' +
 		'			called = true;\n' +
 		'		}');
 
@@ -53,7 +77,7 @@ describe('monarch', function() {
 			this.name = [this.String];
 		}
 
-		function TestController ( $scope, fire/*), test*/ ){$scope.user = null;
+		function TestController ( $scope, fire/*), test*/ ){/* jshint ignore:start */$scope.user = null; //jshint ignore:line
 			// Test comment.
 
 			$scope.submit = function() {
@@ -62,6 +86,8 @@ describe('monarch', function() {
 
 					});
 			};
+
+			/* jshint ignore:end */
 		}
 
 		// This is just an API call.
@@ -70,32 +96,38 @@ describe('monarch', function() {
 		};
 
 		// .. to ..
-		var monarch = new Monarch();
-
 		function fn3
 			// Test
-			(param1,
+			(param1, //jshint ignore:line
 			// Test
-			param2) {
+			param2) { //jshint ignore:line
+			/* jshint ignore:start */
 			alert('"There."');
+			/* jshint ignore:end */
 		}
 
 		// Luckily this isn't possible: function Split/*test*/Controller() { alert('test'); }
 
-		function/*post-keyword*/fn0/*post-name*/(param1, param2)/*post-parens*/{
+		function/*post-keyword*/fn0/*post-name*/(param1, param2)/*post-parens*/{ //jshint ignore:line
         	/*inside*/
+        	/* jshint ignore:start */
         	execute(param2, param1);
+        	/* jshint ignore:end */
     	}
 
     	function fn1() {
+    		/* jshint ignore:start */
         	alert("/*This is not a comment, it's a string literal*/");
+        	/* jshint ignore:end */
      	}
 
     	function fn2() {
+    		/* jshint ignore:start */
     		test();
-     	};
+    		/* jshint ignore:end */
+     	}
 
-     	function fn4(/*{start bracket in comment}*/) {
+     	function fn4(/*{start bracket in comment}*/) { //jshint ignore:line
      		// Comments remains untouched.
      	}
 
@@ -109,7 +141,7 @@ describe('monarch', function() {
 			//{
 		}
 
-		var monarch = new Monarch();
+		
 		monarch.addModel(User);
 		monarch.addModel(Pet);
 
@@ -123,12 +155,32 @@ describe('monarch', function() {
      	monarch.addController(fn1);
      	monarch.addController(fn0);
 
-		//monarch.generate(writeStream);
+     	var writeStream = new streams.WritableStream();
+		
+		monarch.generate(writeStream)
+			.then(function() {
+				assert.equal(writeStream.toString().length, 3140);
 
-		//console.log(writeStream.toString());
+				done();
+			})
+			.done();
+	});
 
-		//console.log(monarch.generate());
+	it('can respond to view route', function(done) {
+		function ViewController() {}
+		fire.controller(ViewController);
 
-		done();
-	})
+		ViewController.prototype.view = function() {
+			return 'This is a test. :-)';
+		};
+
+		setImmediate(function() {
+			var agent = request.agent(app.express);
+			agent.get('/').send().expect(200, function(error, response) {
+				assert.equal(response.text.length, 193);
+
+				done(error);
+			});
+		});
+	});
 });

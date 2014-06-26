@@ -9,12 +9,15 @@ var assert = require('assert');
 var Q = require('q');
 
 describe('migrations-associations-many-to-many', function() {
-
-	var models;
-    var migrations;
+    var app = null;
+	var models = null;
+    var migrations = null;
 
     afterEach(function(done) {
         migrations.destroyAllModels()
+        .then(function() {
+            return app.stop();
+        })
         .then(function() {
             done();
         })
@@ -25,21 +28,28 @@ describe('migrations-associations-many-to-many', function() {
     });
 
     beforeEach(function(done) {
-        models = new Models();
-        models.setup('./');
+        app = fire.app();
+        app.run()
+            .then(function() {
+                models = app.models;
 
-        migrations = new Migrations();
-        migrations.setup(null, models)
-            .then(function() {
-                return models.Schema.removeAll();
-            })
-            .then(function() {
-                done();
+                migrations = new Migrations();
+                migrations.setup(null, models)
+                    .then(function() {
+                        return models.Schema.removeAll();
+                    })
+                    .then(function() {
+                        done();
+                    })
+                    .fail(function(error) {
+                        done(error);
+                    })
+                    .done();
             })
             .fail(function(error) {
+                console.log(error);
                 done(error);
             })
-            .done();
     });
 
     it('can create model with M:N association', function(done) {

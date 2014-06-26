@@ -1,12 +1,13 @@
+/* global describe, beforeEach, afterEach, before, it */
+'use strict';
+
 var fire = require('..');
 var request = require('supertest');
 var Q = require('q');
 var assert = require('assert');
-var crypto = require('crypto');
 
 describe('model routes', function() {
 	var app = null;
-	var server = null;
 	var createModels = null;
 
 	beforeEach(function(done) {
@@ -29,7 +30,10 @@ describe('model routes', function() {
 				return result;
 			})
 			.then(function() {
-				done();
+				setTimeout(function() {
+					done();
+				}, 500)
+				
 			})
 			.done();
 	});
@@ -52,7 +56,10 @@ describe('model routes', function() {
 
         result
 	        .then(function() {
-	        	app.stop();
+	        	return app.stop();
+	        })
+	        .then(function() {
+	        	done();
 	        })
 	        .done();
 	});
@@ -62,19 +69,6 @@ describe('model routes', function() {
 
 		before(function() {
 			createModels = function() {
-				function Action() {
-					this.type = [this.String];
-					this.user = [this.BelongsTo(this.models.User), this.Required];
-				}
-				fire.model(Action);
-
-				Action.prototype.toJSON = function() {
-					return {
-						id: this.id,
-						type: this.type
-					};
-				};
-
 				function User() {
 					this.name 		= [this.String, this.Authenticate];
 					this.actions 	= [this.HasMany(this.models.Action), this.AutoFetch, this.Virtual];
@@ -88,26 +82,47 @@ describe('model routes', function() {
 						actions: this.actions
 					};
 				};
+
+				function Action() {
+					this.type = [this.String];
+					this.user = [this.BelongsTo(this.models.User), this.Required];
+				}
+				fire.model(Action);
+
+				Action.prototype.toJSON = function() {
+					return {
+						id: this.id,
+						type: this.type
+					};
+				};
+
+				
 			};
 		});
 
 		beforeEach(function() {
+			assert.notEqual(app, null);
+			assert.notEqual(app.express, null);
+
+			console.log('creating agent')
+
 			agent = request.agent(app.express);
 		});
 
 		it('can register', function(done) {
+			console.log('agent.post');
+
 			agent.post('/api/v1/users')
 				.send({
 					name: 'Martijn',
 					password: 'test'
 				})
 				.expect(200, function(error, response) {
-					console.dir(response);
-					
+					assert.equal(error, null);
 					assert.equal(response.body.id, 1);
 					assert.equal(response.body.name, 'Martijn');
 
-					done();
+					done(error);
 				});
 		});
 
@@ -117,21 +132,38 @@ describe('model routes', function() {
 					name: 'Martijn',
 					password: 'test'
 				})
-				.expect(200, function(error, response) {
+				.expect(200, function(error) {
+					assert.equal(error, null);
+
 					agent.post('/api/v1/authorize')
 						.send({
 							name: 'Martijn',
 							password: 'test'
 						})
-						.expect(200, function(error, response) {
+						.expect(200, function(err, response) {
+							assert.equal(err, null);
 							assert.equal(response.body.id, 1);
 							assert.equal(response.body.name, 'Martijn');
 
-							done();
+							done(err);
 						});
 				});
 		});
 
+		/*
+		it('cannot get user', function(done) {
+			app.models.User.create({name: 'Martijn', password: 'test'})
+				.then(function(user) {
+					assert.notEqual(user, null);
+					assert.equal(user.id, 1);
+
+					agent.get('/api/v1/users/' + user.id).send().expect(403, function(error, response) {
+						console.dir(response.body);
+					});
+				});
+		});
+		*/
+		
 		describe('authorize', function() {
 			beforeEach(function(done) {
 				agent.post('/api/v1/users')
@@ -139,8 +171,8 @@ describe('model routes', function() {
 						name: 'Martijn',
 						password: 'test'
 					})
-					.expect(200, function(error, response) {
-						done();
+					.expect(200, function(error) {
+						done(error);
 					});
 			});
 
@@ -163,7 +195,7 @@ describe('model routes', function() {
 						name: this.name,
 						value: this.value
 					};
-				}
+				};
 
 				//app.models.internals['Model'] = Model;
 			};

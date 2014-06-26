@@ -1,5 +1,4 @@
-
-app.service('$models', ['$q', '$http', function($q, $http) {
+app.service('fire', ['$q', '$http', function($q, $http) {
 	function NoF_Model() {
 
 	}
@@ -65,12 +64,14 @@ app.service('$models', ['$q', '$http', function($q, $http) {
 			});
 		return defer.promise;
 	};
+
+	this.models = {};
 	{{#models}}
 	function {{name}}() {
 		this.endpoint = '/api/v1/{{resource}}';
 	}
 	{{name}}.prototype = new NoF_Model();
 
-	this.{{name}} = new {{name}}();
+	this.models.{{name}} = new {{name}}();
 	{{/models}}
 }]);

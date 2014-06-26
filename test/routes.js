@@ -11,11 +11,10 @@ describe('controller routes', function() {
 	var server = null;
 
 	after(function(done) {
-		if(server) {
-			server.close();
-		}
-
-		done();
+		app.stop()
+			.then(function() {
+				done();
+			});
 	})
 
 	before(function(done) {
