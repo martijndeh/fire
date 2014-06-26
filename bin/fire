@@ -24,7 +24,7 @@ var mu = require('mu2');
 mu.root = path.join(__dirname, '..', 'cli', 'templates');
 
 var utils = require('./../lib/helpers/utils');
-
+var fire = require('./..');
 
 
 var basePath = path.resolve('./');
@@ -50,7 +50,7 @@ else if(argv._[0] == 'migrate') {
 	// We will create the models based on all migrations
 	return models.setup(null)
 		.then(function() {
-			return migrations.setup(path.join(basePath, 'migrations'), models);
+			return migrations.setup(path.join(basePath, '_migrations'), models);
 		})
 		.then(function() {
 			// Let's find which database version we're at
@@ -186,7 +186,7 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 		*/
 	}
 	else if(argv._[1] == 'migration') {
-		var generate = new Generate();
+		var generate = new Generate(argv._[2]);
 		generate.createMigrations();
 	}
 	else {

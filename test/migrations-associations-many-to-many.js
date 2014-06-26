@@ -52,6 +52,48 @@ describe('migrations-associations-many-to-many', function() {
             })
     });
 
+    it('can create model with multiple associations', function(done) {
+        function Migration() {
+            //
+        }
+
+        Migration.prototype.up = function() {
+            this.models.createModel('User', {
+                id: [this.Id],
+                name: [this.String, this.Required],
+                articles: [this.HasMany(this.models.Article, "submitter")],
+                votes: [this.HasMany(this.models.Article, "voters")]
+            });
+            this.models.createModel('Article', {
+                id: [this.Id],
+                title: [this.String, this.Required],
+                url: [this.String, this.Required],
+                createdAt: [this.DateTime, this.Default("CURRENT_DATE")],
+                submitter: [this.BelongsTo(this.models.User, "articles"), this.Required, this.AutoFetch],
+                voters: [this.HasMany(this.models.User, "votes")]
+            });
+        };
+
+        Migration.prototype.down = function() {
+            this.models.destroyModel('User');
+            this.models.destroyModel('Article');
+        };
+
+        migrations.addMigration(Migration, 1);
+        migrations.migrate(0, 1)
+            .then(function() {
+                assert.notEqual(models.ArticlesUsers, null);
+                return models.ArticlesUsers.exists();
+            })
+            .then(function(exists) {
+                assert.equal(exists, true);
+                done();
+            })
+            .fail(function(error) {
+                done(error);
+            });
+    })
+
     it('can create model with M:N association', function(done) {
     	function Migration() {}
         Migration.prototype.up = function() {
