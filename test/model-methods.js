@@ -54,6 +54,59 @@ describe('model methods', function() {
         .done();
     });
 
+    it('can create model with multiple associations of the same model', function(done) {
+        models.Article = 'Article';
+        models.User = 'User';
+        models.UsersArticles = 'UsersArticles';
+
+        function Article() {
+            this.title = [this.String, this.Required];
+            this.url = [this.String, this.Required];
+            this.createdAt = [this.DateTime, this.Default('CURRENT_DATE')];
+            this.submitter = [this.BelongsTo(this.models.User, 'submittedArticles'), this.AutoFetch, this.Required];
+            this.voters = [this.HasMany(this.models.User, 'votedArticles'), this.AutoFetch];
+        }
+        fire.model(Article);
+
+        function User() {
+            this.name = [this.String, this.Required];
+            this.votedArticles = [this.HasMany(this.models.Article, 'voters')];
+            this.submittedArticles = [this.HasMany(this.models.Article, 'submitter')];
+        }
+        fire.model(User);
+
+        setImmediate(function() {
+            return models.User.setup()
+                .then(function() {
+                    return models.Article.setup();
+                })
+                .then(function() {
+                    return models.UsersArticles.setup();
+                })
+                .then(function() {
+                    return models.User.create({
+                        name: 'Test Creator'
+                    })
+                })
+                .then(function(user) {
+                    return models.Article.create({
+                        title: 'Test title.',
+                        url: 'https://github.com/martijndeh/fire',
+                        submitter: user
+                    })
+                        .then(function(article) {
+                            return article.addVoter(user)
+                                .then(function() {
+                                    assert.equal(article.submitter.name, 'Test Creator');
+                                    assert.equal(article.voters.length, 1);
+
+                                    done();
+                                })
+                        })
+                })
+        });
+    });
+
     it('can create model when calling findOrCreate()', function(done) {
         function ModelThree() {
             this.name = [this.String];

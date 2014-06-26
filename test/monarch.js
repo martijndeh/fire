@@ -40,7 +40,6 @@ describe('monarch', function() {
 		function TestController(arg1, arg2) { //jshint ignore:line
 			called = true;
 		}
-		
 
 		TestController.prototype.test = function() {
 			return 123;
