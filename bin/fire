@@ -8,36 +8,28 @@ var path = require('path');
 var fs = require('fs');
 
 var argv = require('minimist')(process.argv.slice(2));
-var inflection = require('inflection');
 
 var Models = require('./../lib/modules/models/models');
-var Table = require('./../lib/modules/models/table');
-var Model = require('./../lib/modules/models/model');
 
-var Migration = require('./../lib/modules/migrations/migration');
 var Migrations = require('./../lib/modules/migrations/migrations');
 var Generate = require('./../lib/modules/migrations/generate');
+var Monarch = require('./../lib/modules/monarch');
 
-var Q = require('q');
-var moment = require('moment');
 var mu = require('mu2');
 mu.root = path.join(__dirname, '..', 'cli', 'templates');
 
-var utils = require('./../lib/helpers/utils');
 var fire = require('./..');
 
 
 var basePath = path.resolve('./');
 
-if(argv._.length == 0) {
+if(argv._.length === 0) {
 	//TODO: Show help.
 
-	throw new Error('Hey. Not enough commands.')
+	throw new Error('Hey. Not enough commands.');
 }
 
 if(argv._[0] == 'new') {
-	var appName = inflection.camelize(argv._[1]);
-
 	// TODO: create an app
 }
 else if(argv._[0] == 'migrate') {
@@ -99,102 +91,46 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 		throw new Error('You did not specify enough parameters. What do you want to generate? A `migration`?');
 	}
 
-	if(argv._[1] == 'model') {
-		/*
-		if(argv._.length == 2) {
-			throw new Error('You did not enter a name for your model.');
-		}
+	if(argv._[1] == 'migration') {
+		var generate = new Generate(argv._[2]);
+		generate.createMigration();
+	}
+	else if(argv._[1] == 'script' || argv._[1] == 'monarch') {
+		var startPath = argv._[2] ? path.resolve(argv._[2]) : basePath;
 
-		var models = new Models();
-		models.setup(path.join(basePath, 'models'));
+		fire.disabled = true;
 
-		var modelName 		= inflection.camelize(argv._[2]);
-
-		// Check if this model name exists already, if so, we bail
-		if(models[modelName]) {
-			throw new Error('Uh. Model with name `' + modelName + '` already exists.');
-		}
-
-		// Generate the name for the migration class: the timestamp is seperated by dashes for extra readability
-		var migrationName 	= inflection.camelize('Create' + modelName);
-		var migrationFilePath = moment().format('YY-MM-DD-HHmm') + '-' + inflection.dasherize('create-' + modelName).toLowerCase() + '.js';
-
-		// Check if this migration already exists
-		if(fs.existsSync(path.join(__dirname, 'migrations', migrationFilePath))) {
-			throw new Error('Oh. Migration already exists at `' + migrationFilePath + '`.');
-		}
-
-		var columns = argv._.slice(3);
-
-		var properties = columns.map(function(column) {
-			var set = column.split(':');
-
-			if(set.length != 2) {
-				throw new Error('Invalid definition for column `' + column + '`.');
-			}
-
-			var name = inflection.camelize(set[0], true);
-			var type = inflection.camelize(set[1]);
-
-			// If type is a model, we'll replace it with type:Reference
-			if(models[type]) {
-				type = 'Reference(models.' + type + ')';
-			}
-			// If type is this model, we'll set type to SelfRefence
-			else if(type == modelName) {
-				type = 'SelfReference';
-			}
-			// If anything else, we need to verify if this is a valid property type
-			else {
-				if(!Table.propertyTypes[type]) {
-					throw new Error('Invalid property type or model reference for property `' + name + '`.');
+		fs.readdirSync(startPath).forEach(function(resourceFileName) {
+			if(resourceFileName.length && resourceFileName[0] != '_' && resourceFileName[0] != '.') {
+				var fullPath = path.join(basePath, resourceFileName);
+				if(!fs.lstatSync(fullPath).isDirectory()) {
+					require(fullPath);
 				}
-			}
-
-			return {
-				name: name,
-				type: type
 			}
 		});
 
-		var modelsPath = path.join(basePath, 'models');
-		if(!fs.existsSync(modelsPath)) {
-			fs.mkdirSync(modelsPath);
-		}
+		var app = fire.app();
+		app.controllers.setup(basePath)
+			.then(function() {
+				return app.models.setup(basePath);
+			})
+			.then(function() {
+				setImmediate(function() {
+					var monarch = new Monarch(app);
+					monarch.load();
 
-		var migrationsPath = path.join(basePath, 'migrations');
-		if(!fs.existsSync(migrationsPath)) {
-			fs.mkdirSync(migrationsPath);
-		}
+					fs.mkdir(path.join(basePath, '_assets'), function() {
+						var writeStream = fs.createWriteStream(path.join(basePath, '_assets', 'fire.js'));
 
-		var modelFileName = path.join(modelsPath, inflection.dasherize(modelName).toLowerCase() + '.js');
-		if(fs.existsSync(modelFileName)) {
-			throw new Error('Mm. File for model already exists at `' + modelFileName + '`.');
-		}
-
-		mu.compileAndRender('create-model.mu', {
-			modelName: modelName,
-			properties: properties
-		}).pipe(fs.createWriteStream(modelFileName));
-
-		mu.compileAndRender('create-migration.mu', {
-			migrationFilePath: migrationFilePath,
-			migrationName: migrationName,
-			modelName: modelName,
-			properties: properties
-		}).pipe(fs.createWriteStream(path.join(migrationsPath, migrationFilePath)));
-		*/
-	}
-	else if(argv._[1] == 'migration') {
-		var generate = new Generate(argv._[2]);
-		generate.createMigrations();
+						monarch.generate(writeStream);
+					});
+				});		
+			})
+			.done();
 	}
 	else {
 		// TODO: Generate a controller, worker, middleware (?), responder, etc
 	}
-}
-else if(argv._[0] == '') {
-
 }
 else {
 	// TODO: generate a database migration.

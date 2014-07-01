@@ -81,7 +81,7 @@ describe('model methods', function() {
                     return models.Article.setup();
                 })
                 .then(function() {
-                    return models.UsersArticles.setup();
+                    return models.ArticlesUsers.setup();
                 })
                 .then(function() {
                     return models.User.create({
@@ -104,6 +104,7 @@ describe('model methods', function() {
                                 })
                         })
                 })
+                .done();
         });
     });
 
@@ -749,7 +750,6 @@ describe('model methods', function() {
                         });
                     })
                     .then(function(project) {
-                        console.dir(project);
                         assert.notEqual(project, null);
                         assert.equal(project.name, 'Project 2');
                         assert.equal(project.client.name, 'Client 2');

@@ -176,10 +176,18 @@ describe('monarch', function() {
 		setImmediate(function() {
 			var agent = request.agent(app.express);
 			agent.get('/').send().expect(200, function(error, response) {
-				assert.equal(response.text.length, 193);
+				assert.equal(response.text.length, 306);
 
 				done(error);
 			});
 		});
 	});
+
+	it('can export angular-methods', function(done) {
+		app.directive('myCustomer', function() {
+    		return {
+      			template: 'Name: {{customer.name}} Address: {{customer.address}}'
+    		};
+  		});
+	})
 });

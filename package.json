@@ -20,13 +20,13 @@
   "bin": "bin/fire",
   "devDependencies": {
     "chai-as-promised": "~4.1.1",
-    "supertest": "~0.9.0",
+    "supertest": "^0.13.0",
     "jscoverage": "^0.3.8",
     "mocha": "^1.18.2",
     "memory-streams": "0.0.3"
   },
   "scripts": {
-    "test": "NODE_ENV=test ./node_modules/.bin/mocha -g 'migrations-associations-many-to-many can create model with multiple associations' --reporter spec ./test/*.js"
+    "test": "NODE_ENV=test ./node_modules/.bin/mocha -g 'access control article access control update article cannot update article when unauthorized' --reporter spec ./test/*.js"
   },
   "dependencies": {
     "minimist": "0.0.8",

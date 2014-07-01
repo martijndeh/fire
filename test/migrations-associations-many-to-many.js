@@ -62,7 +62,8 @@ describe('migrations-associations-many-to-many', function() {
                 id: [this.Id],
                 name: [this.String, this.Required],
                 articles: [this.HasMany(this.models.Article, "submitter")],
-                votes: [this.HasMany(this.models.Article, "voters")]
+                votes: [this.HasMany(this.models.Article, "voters")],
+                comments: [this.HasMany(this.models.Comment)]
             });
             this.models.createModel('Article', {
                 id: [this.Id],
@@ -70,13 +71,21 @@ describe('migrations-associations-many-to-many', function() {
                 url: [this.String, this.Required],
                 createdAt: [this.DateTime, this.Default("CURRENT_DATE")],
                 submitter: [this.BelongsTo(this.models.User, "articles"), this.Required, this.AutoFetch],
-                voters: [this.HasMany(this.models.User, "votes")]
+                voters: [this.HasMany(this.models.User, "votes"), this.AutoFetch],
+                comments: [this.HasMany(this.models.Comment), this.AutoFetch]
+            });
+            this.models.createModel('Comment', {
+                id: [this.Id],
+                article: [this.BelongsTo(this.models.Article)],
+                author: [this.BelongsTo(this.models.User), this.AutoFetch],
+                text: [this.String, this.Required]
             });
         };
 
         Migration.prototype.down = function() {
             this.models.destroyModel('User');
             this.models.destroyModel('Article');
+            this.models.destroyModel('Comment');
         };
 
         migrations.addMigration(Migration, 1);
@@ -87,6 +96,39 @@ describe('migrations-associations-many-to-many', function() {
             })
             .then(function(exists) {
                 assert.equal(exists, true);
+
+                return Q.all([
+                    models.User.create({name: 'Test 1'}),
+                    models.User.create({name: 'Test 2'})
+                ]);
+            })
+            .spread(function(user1, user2) {
+                return models.Article.create({title: 'Test', url: 'https://github.com/martijndeh/fire', submitter: user1})
+                    .then(function(article) {
+                        return article.addVoter(user2)
+                            .then(function() {
+                                return models.Comment.create({article: article, author: user2, text: 'This is a comment!'});
+                            });
+                    });
+            })
+            .then(function() {
+                return models.Article.findOne();
+            })
+            .then(function(article) {
+                assert.notEqual(article, null);
+                assert.equal(article.title, 'Test');
+
+                assert.equal(article.submitter.name, 'Test 1');
+                assert.equal(article.voters.length, 1);
+                assert.equal(article.comments.length, 1);
+
+                var comment = article.comments[0];
+                assert.equal(comment.author.name, 'Test 2');
+                assert.equal(comment.text, 'This is a comment!');
+
+                var voter = article.voters[0];
+                assert.equal(voter.name, 'Test 2');
+
                 done();
             })
             .fail(function(error) {

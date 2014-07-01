@@ -1,4 +1,15 @@
 app.service('fire', ['$q', '$http', function($q, $http) {
+	function unwrap(promise, initialValue) {
+		var value = initialValue;
+
+		promise.then(function(newValue) {
+			angular.copy(newValue, value);
+		});
+
+		return value;
+	};
+	fire.unwrap = unwrap;
+
 	function NoF_Model() {
 
 	}
@@ -40,6 +51,7 @@ app.service('fire', ['$q', '$http', function($q, $http) {
 	NoF_Model.prototype.find = function(fields) {
 		return this._get(this.endpoint, fields);
 	};
+	
 	NoF_Model.prototype.findOne = function(fields) {
 		return this._get(this.endpoint, fields)
 			.then(function(list) {

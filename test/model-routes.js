@@ -104,14 +104,10 @@ describe('model routes', function() {
 			assert.notEqual(app, null);
 			assert.notEqual(app.express, null);
 
-			console.log('creating agent')
-
 			agent = request.agent(app.express);
 		});
 
 		it('can register', function(done) {
-			console.log('agent.post');
-
 			agent.post('/api/v1/users')
 				.send({
 					name: 'Martijn',

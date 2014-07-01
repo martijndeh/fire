@@ -40,9 +40,7 @@ describe('controller routes', function() {
 			return [];
 		};
 
-		ApiController.prototype.getUser = function($id) {
-			console.log('getUser ' + $id);
-			
+		ApiController.prototype.getUser = function($id) {			
 			return {
 				id: $id
 			};

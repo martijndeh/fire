@@ -3,51 +3,25 @@
 /* jshint undef: true, unused: true */
 /* global angular */
 
-var app = angular.module('fire', []);
+var app = angular.module('Hacker News', []);
 
-app.controller('TestController', ['$scope', 'fire', function($scope, fire) {$scope.user = null;
-			// Test comment.
+app.controller('NewsController', ['fire', '$scope', '$q', '$timeout', function(fire, $scope, $q, $timeout) {
+	$scope.articles = fire.bind(fire.models.Article.find());
 
-			$scope.submit = function() {
-				fire.TestController.test()
-					.then(function(result) {
+	$scope.createArticle = function(article) {
+		return fire.models.Article.create(article)
+			.then(function() {
+				$scope.articles = fire.bind(fire.models.Article.find());
+			})
+			.catch(function(error) {
+				alert(error);
+			});
+	};
+}]);
 
-					});
-			};
-		}]);
+app.controller('ModelController', [function() {}]);
 
-app.controller('fn7', [function() {
-			// Test :) 
-			//{
-		}]);
-
-app.controller('fn6', [function() {}]);
-
-app.controller('fn5', [function() {}]);
-
-app.controller('fn4', [function() {
-     		// Comments remains untouched.
-     	}]);
-
-app.controller('fn3', ['param1', 'param2', function(param1, param2) {
-			alert('&quot;There.&quot;');
-		}]);
-
-app.controller('fn2', [function() {
-    		test();
-     	}]);
-
-app.controller('fn1', [function() {
-        	alert(&quot;/*This is not a comment, it's a string literal*/&quot;);
-     	}]);
-
-app.controller('fn0', ['param1', 'param2', function(param1, param2) {
-        	/*inside*/
-        	execute(param2, param1);
-    	}]);
-
-
-app.service('$models', ['$q', '$http', function($q, $http) {
+app.service('fire', ['$q', '$http', function($q, $http) {	
 	function NoF_Model() {
 
 	}
@@ -113,19 +87,21 @@ app.service('$models', ['$q', '$http', function($q, $http) {
 			});
 		return defer.promise;
 	};
-	
-	function User() {
-		this.endpoint = '/api/v1/users';
-	}
-	User.prototype = new NoF_Model();
 
-	this.User = new User();
+	this.models = {};
 	
-	function Pet() {
-		this.endpoint = '/api/v1/pets';
+	function Article() {
+		this.endpoint = '/api/v1/articles';
 	}
-	Pet.prototype = new NoF_Model();
+	Article.prototype = new NoF_Model();
 
-	this.Pet = new Pet();
+	this.models.Article = new Article();
+	
+	function Comment() {
+		this.endpoint = '/api/v1/comments';
+	}
+	Comment.prototype = new NoF_Model();
+
+	this.models.Comment = new Comment();
 	
 }]);

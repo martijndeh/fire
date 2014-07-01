@@ -1,0 +1,23 @@
+doctype html
+html(ng-app=_fire.appName)
+head
+	meta(charset="utf-8")
+	title Hacker News
+
+body(ng-controller=_fire.controllerName)
+	header(style="background:#ff6600")
+		p Hacker News 
+
+	form(ng-submit="createArticle(article)")
+		input(type="text" ng-model="article.title" placeholder="Title")
+		input(type="text" ng-model="article.url" placeholder="URL")
+		input(type="submit" value="Submit")
+
+	ul
+		li(ng-repeat="article in articles | orderBy:" ng-href="article.url" ng-click="voteArticle(article)")
+			h1 {{article.title}}
+			p {{article.url}}
+			div {{article.votes}}
+
+script(src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.13/angular.min.js")
+script(src=_fire.script)
