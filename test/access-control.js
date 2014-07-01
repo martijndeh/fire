@@ -40,6 +40,9 @@ describe('access control', function() {
 			.then(function() {
 				done();
 			})
+			.fail(function(error) {
+				done(error);
+			})
 			.done();
 	});
 
@@ -124,6 +127,9 @@ describe('access control', function() {
 							done();
 						});
 				})
+				.fail(function(error) {
+					done(error);
+				})
 				.done();
 		});
 
@@ -148,7 +154,7 @@ describe('access control', function() {
 				.send({
 					title: 'Malicious'
 				})
-				.expect(401, function(error, response) {
+				.expect(401, function(error) {
 					done(error);
 				});
 		});
@@ -157,7 +163,7 @@ describe('access control', function() {
 			var smith = request.agent(app.express);
 
 			app.models.User.create({name: 'Agent Smith', password: 'test'})
-				.then(function(user) {
+				.then(function() {
 					smith.post('/api/authorize')
 						.send({name: 'Agent Smith', password: 'test'})
 						.expect(200, function() {
@@ -165,9 +171,9 @@ describe('access control', function() {
 								.send({title: '+1 + -1'})
 								.expect(403, function(error) {
 									done(error);
-								})
+								});
 						});
-				})
+				});
 		});
 
 		describe('update article', function() {
@@ -177,13 +183,10 @@ describe('access control', function() {
 				agent.post('/api/articles')
 					.send({title: 'Test'})
 					.expect(200, function(error, response) {
-						console.dir(error);
-						console.dir(response);
-
 						assert.equal(response.body.id > 0, true);
 
 						articleId = response.body.id;
-						
+
 						done(error);
 					});
 			});
@@ -221,16 +224,17 @@ describe('access control', function() {
 
 				app.models.User.create({name: 'Agent Smith', password: 'test'})
 					.then(function() {
-						smith.put('/api/authorize')
+						smith.post('/api/authorize')
 							.send({name: 'Agent Smith', password: 'test'})
-							.expect(200, function() {
+							.expect(200, function(error1) {
+								assert.equal(error1, null);
 								smith.put('/api/articles/' + articleId)
 									.send({title: '+1 + -1'})
-									.expect(403, function(error) {
-										done(error);
-									})
+									.expect(403, function(error2) {
+										done(error2);
+									});
 							});
-					})
+					});
 			});
 		});
 
@@ -238,7 +242,7 @@ describe('access control', function() {
 			agent
 				.get('/api/articles')
 				.send()
-				.expect(200, function(error, response) {
+				.expect(200, function(error) {
 					done(error);
 				});
 		});

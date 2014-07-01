@@ -17,7 +17,7 @@ app.model(Article);
 
 // Create the NewsController. This is run on the client-context in angular.
 function NewsController(fire, $scope) {
-	// fire is an angular service. Throught models, it exposes all public models from the server-context to the client-context. Under the hood, a RESTful API is generate on the server-context, which the client-context queries to create, read, update and delete models.
+	// fire is an angular service. Through models, it exposes all public models from the server-context to the client-context. Under the hood, a RESTful API is generate on the server-context, which the client-context queries to create, read, update and delete models.
 	$scope.articles = fire.models.Article.find();
 	$scope.article	= {};
 

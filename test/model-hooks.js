@@ -1,8 +1,7 @@
+/* global describe, beforeEach, afterEach, it */
 'use strict';
 
 var fire = require('..');
-var Models = require('./../lib/modules/models/models');
-var Model = require('./../lib/modules/models/model');
 var assert = require('assert');
 var Q = require('q');
 
@@ -75,6 +74,7 @@ describe('model hooks', function() {
 				})
 				.then(function(user) {
 					assert.equal(user.testValue, 123);
+					
 					return models.User.findOne({testName: 'Martijn'});
 				})
 				.then(function(user) {
@@ -108,6 +108,8 @@ describe('model hooks', function() {
 		setImmediate(function() {
 			models.User.setup()
 				.then(function() {
+					console.log('create!');
+
 					return models.User.create({
 						testName: 'Martijn'
 					});
@@ -116,6 +118,8 @@ describe('model hooks', function() {
 					assert.equal(user.testValue, 111);
 
 					user.testValue = 123;
+
+					console.log('updating');
 					return user.save();
 				})
 				.then(function(user) {
@@ -242,7 +246,7 @@ describe('model hooks', function() {
 				.then(function() {
 					return models.User.create({name: 'Martijn'})
 						.then(function() {
-							return null;	
+							return null;
 						})
 						.fail(function(error) {
 							return error;
