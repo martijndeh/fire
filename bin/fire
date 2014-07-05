@@ -91,11 +91,11 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 		throw new Error('You did not specify enough parameters. What do you want to generate? A `migration`?');
 	}
 
-	if(argv._[1] == 'migration') {
+	if(argv._[1] == 'migration' || argv._[1] == 'migrations') {
 		var generate = new Generate(argv._[2]);
 		generate.createMigration();
 	}
-	else if(argv._[1] == 'script' || argv._[1] == 'monarch') {
+	else if(argv._[1] == 'script' || argv._[1] == 'scripts' || argv._[1] == 'monarch') {
 		var startPath = argv._[2] ? path.resolve(argv._[2]) : basePath;
 
 		fire.disabled = true;
@@ -124,7 +124,7 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 
 						monarch.generate(writeStream);
 					});
-				});		
+				});
 			})
 			.done();
 	}

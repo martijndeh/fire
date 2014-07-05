@@ -34,9 +34,7 @@ The below annotated example shows how easy it is to create a Hacker News-esque w
 var fire = require('../..');
 
 // Initialize the app.
-var app = fire.app('Hacker News', {
-	autoMigrate: true
-});
+var app = fire.app('Hacker News', {});
 
 // Create the Article model.
 function Article() {
