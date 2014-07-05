@@ -77,6 +77,26 @@ NewsController.prototype.view = function() {
 app.run();
 ```
 
+To run this example, Node on Fire :fire: first needs to generate some files. For now, you need to do this manually by executing the below two commands:
+
+```
+$ fire generate migrations
+$ fire generate scripts
+```
+
+To create the database, execute the below command:
+```
+$ DATABASE_URL=... fire migrate
+```
+where the value of `DATABASE_URL` is the url to your database.
+
+Now, you can start your application by calling:
+```
+$ node controller.js
+```
+
+To view the demo, go to http://127.0.0.1:3000/.
+
 ### Next Steps
 
 Node on Fire :fire: still has a long way to go. Head over to the `examples/` to start playing with them and read through the library's source code, help us improve it or write documentation.

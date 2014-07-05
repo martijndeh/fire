@@ -6,7 +6,7 @@ head
 
 body(ng-controller=_fire.controllerName)
 	header(style="background:#ff6600")
-		p Hacker News 
+		p Hacker News
 
 	form(ng-submit="createArticle(article)")
 		input(type="text" ng-model="article.title" placeholder="Title")
@@ -14,7 +14,7 @@ body(ng-controller=_fire.controllerName)
 		input(type="submit" value="Submit")
 
 	ul
-		li(ng-repeat="article in articles | orderBy:" ng-href="article.url" ng-click="voteArticle(article)")
+		li(ng-repeat="article in articles | orderBy:votes" ng-href="article.url" ng-click="voteArticle(article)")
 			h1 {{article.title}}
 			p {{article.url}}
 			div {{article.votes}}

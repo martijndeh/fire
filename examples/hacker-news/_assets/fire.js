@@ -10,7 +10,7 @@ var app = angular.module('Hacker News', []);
 
 app.controller('NewsController', ['FireNewsController', '$scope', function(fire, $scope) {
 	// fire is an angular service. Through models, it exposes all public models from the server-context to the client-context. Under the hood, a RESTful API is generate on the server-context, which the client-context queries to create, read, update and delete models.
-	$scope.articles = fire.models.Article.find();
+	$scope.articles = fire.unwrap(fire.models.Article.find(), []);
 	$scope.article	= {};
 
 	$scope.createArticle = function(article) {
@@ -30,8 +30,6 @@ app.controller('NewsController', ['FireNewsController', '$scope', function(fire,
 		fire.models.Article.update(article);
 	};
 }]);
-
-app.controller('', [function() {}]);
 
 function FireModel($http, $q) {
 	this.$http = $http;
@@ -112,108 +110,29 @@ FireModelArticle.prototype = new FireModel();
 
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
-	/*
-	function unwrap(promise, initialValue) {
-		var value = initialValue;
-
-		promise.then(function(newValue) {
-			angular.copy(newValue, value);
-		});
-
-		return value;
-	};
-	fire.unwrap = unwrap;
-	*/
-
 	
 	this.Article = new FireModelArticle($http, $q);
 	
 }]);
 
 app.service('FireNewsController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+    function unwrap(promise, initialValue) {
+        var value = initialValue;
+
+        promise.then(function(newValue) {
+            angular.copy(newValue, value);
+        });
+
+        return value;
+    };
+    this.unwrap = unwrap;
     this.models = FireModels;
 
     
-    this.view = function() {
+    this.doTest = function($id,a,b,c) {
         var defer = $q.defer();
 
-        $http['get']('/', {})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
-            });
-
-        return defer.promise;
-    };
-    
-}]);
-
-app.service('Fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.models = FireModels;
-
-    
-    this.getArticles = function() {
-        var defer = $q.defer();
-
-        $http['get']('/api/articles', {})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
-            });
-
-        return defer.promise;
-    };
-    
-    this.updateArticle = function($id) {
-        var defer = $q.defer();
-
-        $http['put']('/api/articles/' + id + '', {$id: $id})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
-            });
-
-        return defer.promise;
-    };
-    
-    this.getArticle = function($id) {
-        var defer = $q.defer();
-
-        $http['get']('/api/articles/' + id + '', {$id: $id})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
-            });
-
-        return defer.promise;
-    };
-    
-    this.createArticle = function() {
-        var defer = $q.defer();
-
-        $http['post']('/api/articles', {})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
-            });
-
-        return defer.promise;
-    };
-    
-    this.deleteModel = function($id) {
-        var defer = $q.defer();
-
-        $http['delete']('/api/models/' + id + '', {$id: $id})
+        $http['post']('/test/' + $id + '', {$id: $id, a: a, b: b, c: c})
             .success(function(result) {
                 defer.resolve(result);
             })

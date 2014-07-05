@@ -92,7 +92,7 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 	}
 
 	if(argv._[1] == 'migration' || argv._[1] == 'migrations') {
-		var generate = new Generate(argv._[2]);
+		var generate = new Generate(argv._[2] ? path.resolve(argv._[2]) : basePath);
 		generate.createMigrations();
 	}
 	else if(argv._[1] == 'script' || argv._[1] == 'scripts' || argv._[1] == 'monarch') {
@@ -103,7 +103,7 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 		fs.readdirSync(startPath).forEach(function(resourceFileName) {
 			if(resourceFileName.length && resourceFileName[0] != '_' && resourceFileName[0] != '.') {
 				var fullPath = path.join(basePath, resourceFileName);
-				if(!fs.lstatSync(fullPath).isDirectory()) {
+				if(!fs.lstatSync(fullPath).isDirectory() && path.extname(fullPath) == '.js') {
 					require(fullPath);
 				}
 			}
