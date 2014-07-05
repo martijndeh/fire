@@ -1219,4 +1219,31 @@ describe('model methods', function() {
                 .done();
         });
     });
+
+    it('hides private properties in auto toJSON', function(done) {
+        function User() {
+            this.name = [this.String, this.Required];
+            this.password = [this.String, this.Required, this.Private];
+        }
+        fire.model(User);
+
+        setImmediate(function() {
+            models.User.setup()
+                .then(function() {
+                    return models.User.create({
+                        name: 'Martijn',
+                        password: 'very secret'
+                    });
+                })
+                .then(function(user) {
+                    var json = user.toJSON();
+
+                    assert.equal(user.password, 'very secret');
+                    assert.equal(json.password, null);
+
+                    done();
+                })
+                .done();
+        });
+    });
 });
