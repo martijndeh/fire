@@ -114,7 +114,7 @@ describe('model methods', function() {
             this.value = [this.Integer];
         }
         fire.model(ModelThree);
-        
+
         setImmediate(function() {
             return models.ModelThree.setup()
                 .then(function() {
@@ -304,7 +304,7 @@ describe('model methods', function() {
             .then(function() {
                 return models.ModelFour.findOne({});
             })
-            .then(function(model) {            
+            .then(function(model) {
                 assert.equal(model.name, 'Four is a Test');
                 assert.equal(model.three.name, 'Three is a Test');
                 done();
@@ -387,7 +387,7 @@ describe('model methods', function() {
     it('can add auto-fetched many reference', function(done) {
         models.Client = 'Client';
         models.Project = 'Project';
-        
+
         function Project() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
@@ -399,7 +399,7 @@ describe('model methods', function() {
             this.projects   = [this.AutoFetch, this.HasMany(this.models.Project)];
         }
         fire.model(Client);
-        
+
         setImmediate(function() {
             models.Client.setup()
             .then(function() {
@@ -518,7 +518,7 @@ describe('model methods', function() {
 
                 return client.getProjects();
             })
-            .then(function(projects) {            
+            .then(function(projects) {
                 assert.notEqual(projects, null);
                 assert.equal(projects.length, 10);
                 done();
@@ -588,7 +588,7 @@ describe('model methods', function() {
             })
             .then(function(client) {
                 assert.equal(client.projects.length, 0);
-                done();            
+                done();
             })
             .done();
         });
@@ -763,7 +763,7 @@ describe('model methods', function() {
                 assert.equal(project.name, 'Project 2');
                 assert.equal(project.client.name, 'Client 2');
 
-                done();            
+                done();
             })
             .fail(done)
             .done();
@@ -794,7 +794,7 @@ describe('model methods', function() {
                     assert.equal(object1.text, 'Title Subtitle');
                     assert.equal(object1.title, undefined);
                     assert.equal(object1.subtitle, undefined);
-                    
+
                     done();
                 })
                 .done();
@@ -827,7 +827,7 @@ describe('model methods', function() {
                     assert.equal(object1.text, 'Title Subtitle');
                     assert.equal(object1.title, undefined);
                     assert.equal(object1.subtitle, undefined);
-                    
+
                     done();
                 })
                 .done();
@@ -856,7 +856,7 @@ describe('model methods', function() {
                     assert.equal(object1.text, ' ');
                     assert.equal(object1.title, undefined);
                     assert.equal(object1.subtitle, undefined);
-                    
+
                     done();
                 })
                 .done();
@@ -885,13 +885,13 @@ describe('model methods', function() {
                     assert.notEqual(object1, null);
                     assert.equal(object1.name, 'Martijn');
                     assert.equal(object1.three, 8);
-                    
+
                     return models.Object1.update({name: 'Martijn'}, {one: 3, two: 5});
                 })
                 .then(function(object) {
                     assert.equal(object.name, 'Martijn');
                     assert.equal(object.three, 15);
-                    
+
                     done();
                 })
                 .done();
@@ -933,7 +933,7 @@ describe('model methods', function() {
                 })
                 .then(function(objects) {
                     assert.equal(objects.length, 3);
-                    
+
                     return models.Object1.findOne({test:1});
                 })
                 .then(function(object) {
@@ -996,7 +996,7 @@ describe('model methods', function() {
                 })
                 .then(function(objects) {
                     assert.equal(objects.length, 3);
-                    
+
                     return models.Object1.update({test:1}, {name: 'Update 1', value: 120});
                 })
                 .then(function(object) {
@@ -1125,6 +1125,94 @@ describe('model methods', function() {
                 .then(function(object) {
                     assert.equal(object.name, 'Martijn 2');
                     assert.equal(object.value, 1);
+
+                    done();
+                })
+                .done();
+        });
+    });
+
+    it('creates auto toJSON', function(done) {
+        function Article() {
+            this.title = [this.String, this.Required];
+            this.url = [this.String, this.Required];
+            this.votes = [this.Integer, this.Default(0)];
+            this.longerTest = [this.Integer];
+        }
+        fire.model(Article);
+
+        setImmediate(function() {
+            models.Article.setup()
+                .then(function() {
+                    return models.Article.create({
+                        title: 'Title',
+                        url: 'https://github.com/martijndeh/fire',
+                        votes: 123,
+                        longerTest: 42
+                    });
+                })
+                .then(function(article) {
+                    var string = JSON.stringify(article);
+                    assert.equal(string, '{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","votes":123,"longerTest":42}');
+
+                    done();
+                })
+                .done();
+        });
+    });
+
+    it('creates auto toJSON with associations', function(done) {
+        models.User = 'User';
+
+        function Article() {
+            this.title = [this.String, this.Required];
+            this.url = [this.String, this.Required];
+            this.user = [this.BelongsTo(this.models.User), this.AutoFetch];
+        }
+        fire.model(Article);
+
+        function User() {
+            this.name = [this.String];
+            this.articles = [this.HasMany(this.models.Article), this.AutoFetch];
+        }
+        fire.model(User);
+
+        setImmediate(function() {
+            models.User.setup()
+                .then(function() {
+                    return models.Article.setup();
+                })
+                .then(function() {
+                    return models.User.create({
+                        name: 'Martijn'
+                    })
+                    .then(function(user) {
+                        return models.Article.create({
+                            title: 'Title',
+                            url: 'https://github.com/martijndeh/fire',
+                            user: user
+                        });
+                    });
+                })
+                .then(function(article) {
+                    var string = JSON.stringify(article);
+                    assert.equal(string, '{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":1,"name":"Martijn"}}');
+
+                    return models.User.findOne()
+                        .then(function(user) {
+                            return models.Article.create({
+                                title: 'Title 2',
+                                url: 'http://news.ycombinator.com/',
+                                user: user
+                            });
+                        })
+                        .then(function() {
+                            return models.User.findOne();
+                        });
+                })
+                .then(function(user) {
+                    var string = JSON.stringify(user);
+                    assert.equal(string, '{"id":1,"name":"Martijn","articles":[{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":1,"name":"Martijn"}},{"id":2,"title":"Title 2","url":"http://news.ycombinator.com/","user":{"id":1,"name":"Martijn"}}]}');
 
                     done();
                 })
