@@ -90,6 +90,11 @@ $ DATABASE_URL=... fire migrate
 ```
 where the value of `DATABASE_URL` is the url to your database.
 
+The example uses bower, so you need to install the components:
+```
+$ bower install
+```
+
 Now, you can start your application by calling:
 ```
 $ node controller.js

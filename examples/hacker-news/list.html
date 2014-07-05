@@ -4,6 +4,9 @@ head
 	meta(charset="utf-8")
 	title Hacker News
 
+	script(src="/bower_components/angular/angular.min.js")
+	script(src=_fire.script)
+
 body(ng-controller=_fire.controllerName)
 	header(style="background:#ff6600")
 		p Hacker News
@@ -14,10 +17,7 @@ body(ng-controller=_fire.controllerName)
 		input(type="submit" value="Submit")
 
 	ul
-		li(ng-repeat="article in articles | orderBy:votes" ng-href="article.url" ng-click="voteArticle(article)")
+		li(ng-repeat="article in articles | orderBy: 'votes':true" ng-href="article.url" ng-click="voteArticle(article)")
 			h1 {{article.title}}
 			p {{article.url}}
 			div {{article.votes}}
-
-script(src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.13/angular.min.js")
-script(src=_fire.script)

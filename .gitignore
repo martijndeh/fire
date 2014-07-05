@@ -17,3 +17,4 @@ notes.md
 .env
 coverage.html
 .DS_Store
+bower_components

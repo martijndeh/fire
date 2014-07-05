@@ -88,7 +88,7 @@ else if(argv._[0] == 'migrate') {
 }
 else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 	if(argv._.length == 1) {
-		throw new Error('You did not specify enough parameters. What do you want to generate? A `migration`?');
+		throw new Error('You did not specify enough parameters. What do you want to generate? `migrations`?');
 	}
 
 	if(argv._[1] == 'migration' || argv._[1] == 'migrations') {

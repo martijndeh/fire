@@ -33,7 +33,7 @@ function NewsController(fire, $scope) {
 	$scope.voteArticle = function(article) {
 		article.votes++;
 
-		fire.models.Article.update(article);
+		fire.models.Article.update(article.id, {votes: article.votes});
 	};
 }
 app.controller(NewsController);

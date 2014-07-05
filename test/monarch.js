@@ -181,7 +181,6 @@ describe('monarch', function() {
 
 		monarch.generate(writeStream)
 			.then(function() {
-				console.log(writeStream.toString());
 				assert.equal(writeStream.toString().length, 6881);
 
 				done();
