@@ -115,7 +115,6 @@ describe('model routes', function() {
 					password: 'test'
 				})
 				.expect(200, function(error, response) {
-					console.log(error);
 					assert.equal(error, null);
 					assert.equal(response.body.id, 1);
 					assert.equal(response.body.name, 'Martijn');

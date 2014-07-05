@@ -4,19 +4,16 @@
 var fire = require('..');
 var util = require('util');
 var streams = require('memory-streams');
-var request = require('supertest');
+//var request = require('supertest');
 var assert = require('assert');
-
-var Monarch = require('./../lib/modules/monarch');
 
 describe('monarch', function() {
 	var app = null;
 	var monarch = null;
 
 	beforeEach(function(done) {
-		app = fire.app('example', {});
-		monarch = new Monarch(app);
-
+		app = fire.app('example', {disabled: true});
+		monarch = app.monarch;
 		app.run()
 			.then(function() {
 				done();
@@ -62,9 +59,35 @@ describe('monarch', function() {
 	});
 
 	it('can generate controller methods', function(done) {
-		//
+		function TestController() {}
 
-		done();
+		TestController.prototype.doTest = function(foo, bar, baz) { //jshint ignore:line
+			return 123;
+		};
+
+		TestController.prototype._doTest2 = function() {
+			return 333;
+		};
+
+		TestController.prototype.doTest3 = function(a) {
+			return a;
+		};
+
+		TestController.prototype.getTest4 = function($id) {
+			return $id;
+		};
+
+		monarch.addController(TestController);
+
+		var writeStream = new streams.WritableStream();
+
+		monarch.generate(writeStream)
+			.then(function() {
+				assert.equal(writeStream.toString().length, 3063);
+
+				done();
+			})
+			.done();
 	});
 
 	it('can generate model methods', function(done) {
@@ -158,14 +181,14 @@ describe('monarch', function() {
 
 		monarch.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 3334);
+				console.log(writeStream.toString());
+				assert.equal(writeStream.toString().length, 4984);
 
 				done();
 			})
 			.done();
 	});
 
-	/*
 	it('can export angular-methods', function(done) {
 		app.directive('myCustomer', function() {
     		return {
@@ -173,14 +196,23 @@ describe('monarch', function() {
     		};
   		});
 
+		app.config(['$scope', 'fire', function($scope, fire) { //jshint ignore:line
+
+		}]);
+
+		app.service(function TestService($scope) { //jshint ignore:line
+			// This is the service.
+			return this;
+		});
+
 		var writeStream = new streams.WritableStream();
 
 		monarch.generate(writeStream)
 			.then(function() {
-				console.log(writeStream.toString());
+				assert.equal(writeStream.toString().length, 2182);
 
-				done(new Error());
-			});
+				done();
+			})
+			.done();
 	});
-	*/
 });
