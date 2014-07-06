@@ -40,7 +40,7 @@ describe('access control', function() {
 			.then(function() {
 				done();
 			})
-			.fail(function(error) {
+			.catch(function(error) {
 				done(error);
 			})
 			.done();
@@ -127,7 +127,7 @@ describe('access control', function() {
 							done();
 						});
 				})
-				.fail(function(error) {
+				.catch(function(error) {
 					done(error);
 				})
 				.done();

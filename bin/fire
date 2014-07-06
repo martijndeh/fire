@@ -75,7 +75,7 @@ else if(argv._[0] == 'migrate') {
 				throw new Error('Database version after migration `' + currentVersion + '` does not match target version `' + targetVersion + '`.');
 			}
 		})
-		.fail(function(error) {
+		.catch(function(error) {
 			console.log(error.message);
 
 			if(argv.d || argv.debug) {

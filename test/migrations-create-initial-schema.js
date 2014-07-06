@@ -21,7 +21,7 @@ describe('migrations create initial schema', function() {
         .then(function() {
         	done();
         })
-        .fail(function(error) {
+        .catch(function(error) {
             done(error);
         })
         .done();
@@ -41,7 +41,7 @@ describe('migrations create initial schema', function() {
 		            .then(function() {
 		                done();
 		            })
-		            .fail(function(error) {
+		            .catch(function(error) {
 		                done(error);
 		            })
 		            .done();
@@ -122,7 +122,7 @@ describe('migrations create initial schema', function() {
 				return assert.equal(currentVersion, 1);
 			})
 			.then(done)
-			.fail(done)
+			.catch(done)
 			.done();
 	})
 
@@ -212,7 +212,7 @@ describe('migrations create initial schema', function() {
 				return assert.equal(currentVersion, 0);
 			})
 			.then(done)
-			.fail(done)
+			.catch(done)
 			.done();
 	})
 });

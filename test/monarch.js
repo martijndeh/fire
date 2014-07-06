@@ -83,7 +83,7 @@ describe('monarch', function() {
 
 		monarch.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 3097);
+				assert.equal(writeStream.toString().length, 3095);
 
 				done();
 			})
@@ -181,7 +181,7 @@ describe('monarch', function() {
 
 		monarch.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 6881);
+				assert.equal(writeStream.toString().length, 6879);
 
 				done();
 			})
@@ -208,7 +208,7 @@ describe('monarch', function() {
 
 		monarch.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 1982);
+				assert.equal(writeStream.toString().length, 1980);
 
 				done();
 			})

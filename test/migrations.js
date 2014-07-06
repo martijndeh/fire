@@ -21,7 +21,7 @@ describe('migrations', function() {
         .then(function() {
             done();
         })
-        .fail(function(error) {
+        .catch(function(error) {
             done(error);
         })
         .done();
@@ -212,7 +212,7 @@ describe('migrations', function() {
 
                         done();
                     })
-                    .fail(function(error) {
+                    .catch(function(error) {
                         done(error);
                     })
                     .done();
@@ -479,7 +479,7 @@ describe('migrations', function() {
         migrations.addMigration(Migration13, 13);
 
         migrations.migrate(0, 13)
-            .fail(function(error) {
+            .catch(function(error) {
                 assert.equal(error.toString(), 'error: syntax error at or near "SELCT"');
                 return migrations.currentVersion();
             })
@@ -489,7 +489,7 @@ describe('migrations', function() {
 
                 return models.execute('SELECT * FROM test_models');
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 assert.equal(error.toString(), 'error: relation "test_models" does not exist');
                 return done();
             })
@@ -524,7 +524,7 @@ describe('migrations', function() {
                     name: 'This should fail as we\'re not setting a parent'
                 });
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 assert.equal(error.toString(), 'error: null value in column "parent_id" violates not-null constraint');
                 done();
             })
@@ -611,7 +611,7 @@ describe('migrations', function() {
 
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             })
             .done();

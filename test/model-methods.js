@@ -164,7 +164,7 @@ describe('model methods', function() {
                 assert.notEqual(model, null);
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             });
         });
@@ -262,7 +262,7 @@ describe('model methods', function() {
                 assert.notEqual(model, null);
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             });
         });
@@ -689,7 +689,7 @@ describe('model methods', function() {
                             return done();
                         });
                 })
-                .fail(done)
+                .catch(done)
                 .done();
         });
     });
@@ -765,7 +765,7 @@ describe('model methods', function() {
 
                 done();
             })
-            .fail(done)
+            .catch(done)
             .done();
         });
     });

@@ -20,7 +20,7 @@ describe('migrations-associations-one-to-many', function() {
         .then(function() {
             done();
         })
-        .fail(function(error) {
+        .catch(function(error) {
             done(error);
         })
         .done();
@@ -40,7 +40,7 @@ describe('migrations-associations-one-to-many', function() {
                     .then(function() {
                         done();
                     })
-                    .fail(function(error) {
+                    .catch(function(error) {
                         done(error);
                     })
                     .done();
@@ -72,7 +72,7 @@ describe('migrations-associations-one-to-many', function() {
             .then(function() {
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             });
     });
@@ -131,7 +131,7 @@ describe('migrations-associations-one-to-many', function() {
 
                 return done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             });
     });

@@ -21,7 +21,7 @@ describe('migrations-associations-many-to-many', function() {
         .then(function() {
             done();
         })
-        .fail(function(error) {
+        .catch(function(error) {
             done(error);
         })
         .done();
@@ -41,12 +41,12 @@ describe('migrations-associations-many-to-many', function() {
                     .then(function() {
                         done();
                     })
-                    .fail(function(error) {
+                    .catch(function(error) {
                         done(error);
                     })
                     .done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 console.log(error);
                 done(error);
             })
@@ -131,7 +131,7 @@ describe('migrations-associations-many-to-many', function() {
 
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             });
     })
@@ -161,7 +161,7 @@ describe('migrations-associations-many-to-many', function() {
             .then(function() {
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             });
     });
@@ -248,7 +248,7 @@ describe('migrations-associations-many-to-many', function() {
             .then(function() {
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             });
     });
@@ -337,7 +337,7 @@ describe('migrations-associations-many-to-many', function() {
             .then(function() {
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             })
             .done();
@@ -381,7 +381,7 @@ describe('migrations-associations-many-to-many', function() {
                                 // This should happen ... obviously
                                 assert.equal(1, 2);
                             })
-                            .fail(function(error) {
+                            .catch(function(error) {
                                 assert.notEqual(error, null);
                             })
                             .then(function() {
@@ -396,7 +396,7 @@ describe('migrations-associations-many-to-many', function() {
             .then(function() {
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             })
             .done();
@@ -485,7 +485,7 @@ describe('migrations-associations-many-to-many', function() {
             .then(function() {
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             })
             .done();
@@ -563,7 +563,7 @@ describe('migrations-associations-many-to-many', function() {
             .then(function() {
                 done();
             })
-            .fail(function(error) {
+            .catch(function(error) {
                 done(error);
             });
     });

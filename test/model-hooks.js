@@ -169,7 +169,7 @@ describe('model hooks', function() {
 
 					return done();
 				})
-				.fail(done)
+				.catch(done)
 				.done();
 		});
 	});
@@ -208,7 +208,7 @@ describe('model hooks', function() {
 
 					return done();
 				})
-				.fail(done)
+				.catch(done)
 				.done();
 		});
 	})
@@ -248,7 +248,7 @@ describe('model hooks', function() {
 						.then(function() {
 							return null;
 						})
-						.fail(function(error) {
+						.catch(function(error) {
 							return error;
 						});
 				})
@@ -262,7 +262,7 @@ describe('model hooks', function() {
 					assert.equal(users.length, 0);
 					return done();
 				})
-				.fail(done)
+				.catch(done)
 				.done();
 		});
 	})

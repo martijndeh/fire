@@ -20,7 +20,7 @@ describe('migrations associations one-to-one', function() {
         .then(function() {
             done();
         })
-        .fail(function(error) {
+        .catch(function(error) {
             done(error);
         })
         .done();
@@ -40,7 +40,7 @@ describe('migrations associations one-to-one', function() {
                     .then(function() {
                         done();
                     })
-                    .fail(function(error) {
+                    .catch(function(error) {
                         done(error);
                     })
                     .done();
@@ -72,7 +72,7 @@ describe('migrations associations one-to-one', function() {
     		.then(function() {
     			done();
     		})
-    		.fail(function(error) {
+    		.catch(function(error) {
     			done(error);
     		});
     });
@@ -130,7 +130,7 @@ describe('migrations associations one-to-one', function() {
 
     			return done();
     		})
-    		.fail(function(error) {
+    		.catch(function(error) {
     			done(error);
     		})
     		.done();
@@ -196,7 +196,7 @@ describe('migrations associations one-to-one', function() {
     			assert.equal(a.name, 'Aart');
     			return done();
     		})
-    		.fail(function(error) {
+    		.catch(function(error) {
     			done(error);
     		})
     		.done();
