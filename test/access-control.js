@@ -202,6 +202,17 @@ describe('access control', function() {
 					});
 			});
 
+			it('cannot update id', function(done) {
+				agent
+					.put('/api/articles/' + articleId)
+					.send({
+						id: 123
+					})
+					.expect(400, function(error) {
+						done(error);
+					});
+			});
+
 			it('cannot update article when unauthorized', function(done) {
 				var newTitle = 'Not Possible ' + Math.floor(Math.random() * 1000);
 
