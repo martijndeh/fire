@@ -1,0 +1,11 @@
+doctype html
+html(ng-app=_fire.appName)
+head
+    meta(charset="utf-8")
+    title Getting Started
+
+    script(src="/bower_components/angular/angular.min.js")
+    script(src=_fire.script)
+
+body(ng-controller=_fire.controllerName)
+    h1 Hello, {{name}}

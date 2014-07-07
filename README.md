@@ -6,7 +6,7 @@ A productive & convention-based web framework to get your minimum viable product
 
 ### Installation
 ```
-npm install fire
+npm install -g fire
 ```
 
 ### Features
@@ -102,6 +102,10 @@ $ node controller.js
 
 To view the demo, go to http://127.0.0.1:3000/.
 
-### Next Steps
+### Documentation
 
-Node on Fire :fire: still has a long way to go. Head over to the `examples/` to start playing with them and read through the library's source code, help us improve it or write documentation.
+...
+
+### Help
+
+Node on Fire :fire: still has a long way to go and needs your help. Please fork and help us improve it in any way you can.

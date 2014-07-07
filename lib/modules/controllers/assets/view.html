@@ -1,0 +1,9 @@
+doctype html
+html(ng-app=_fire.appName)
+	head
+		meta(charset="utf-8")
+		title= _fire.title
+		script(src="/bower_components/angular/angular.min.js")
+		script(src="/bower_components/angular-route/angular-route.min.js")
+		script(src="/scripts/fire.js")
+	body(ng-view)
