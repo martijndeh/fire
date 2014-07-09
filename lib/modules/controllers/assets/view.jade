@@ -7,4 +7,8 @@ html(ng-app=_fire.appName)
 		script(src="/bower_components/angular/angular.min.js")
 		script(src="/bower_components/angular-route/angular-route.min.js")
 		script(src="/scripts/fire.js")
+		for style in stylesheets
+			link(rel="stylesheet" type="text/css" href=style)
+		for script in scripts
+			script(type="text/javascript" src=script)
 	body(ng-view)

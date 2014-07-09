@@ -1,0 +1,50 @@
+body {
+    font-family:Verdana;
+}
+ul {
+    margin:0;
+    padding:0;
+}
+li.article {
+    list-style-type:none;
+}
+div.line1 {
+    height:19px;
+}
+div.line2 {
+    clear:left;
+    height:11px;
+}
+div.index, div.vote, div.title {
+    float:left;
+}
+div.index {
+    color:#828282;
+    font-size:13px;
+}
+div.vote {
+    cursor:pointer;
+    width:14px;
+    height:19px;
+    background:url(data:image/gif;base64,R0lGODlhCgAKALMJANPT06enp/b29r+/v52dnfn5+bq6usLCwpqamv///wAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAkALAAAAAAKAAoAAAQcMMlJq712GIzQDV1QFV0nUETZTYDaAdIhz3ISAQA7) no-repeat center;
+}
+div.title {
+    height:19px;
+}
+div.title a {
+    font-size:13px;
+    text-decoration:none;
+}
+div.title span {
+    font-size:11px;
+}
+div.subtext {
+    height:11px;
+}
+div.subtext p {
+    margin-left:
+    font-size:9px;
+}
+div.clear {
+    clear:both;
+}

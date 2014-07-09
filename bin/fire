@@ -81,7 +81,7 @@ else if(argv._[0] == 'create') {
 
 	fs.mkdirSync(appPath);
 
-	var directories = ['templates', 'controllers', 'models'];
+	var directories = ['templates', 'controllers', 'models', 'public'];
 	directories.forEach(function(directory) {
 		var directoryPath = path.join(appPath, directory);
 		console.log('Creating `' + directoryPath + '`.');
@@ -164,8 +164,15 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 	}
 
 	if(argv._[1] == 'migrations') {
-		var generate = new Generate(argv._[2] ? path.resolve(argv._[2]) : basePath);
-		generate.createMigrations();
+		fs.mkdir(path.join(basePath, '_migrations'), function() {
+			var generate = new Generate(argv._[2] ? path.resolve(argv._[2]) : basePath);
+			generate.delegate = {
+				addMigration: function(fileName, stream) {
+					stream.pipe(fs.createWriteStream(path.join(basePath, '_migrations', fileName)));
+				}
+			};
+			generate.createMigrations();
+		});
 	}
 	else if(argv._[1] == 'scripts') {
 		fire.disabled = true;

@@ -1,14 +1,18 @@
+link(rel="stylesheet" type="text/css" href="/styles/default.css")
 div(ng-controller="NewsController")
 	header(style="background:#ff6600")
-		p Hacker News
-
-	form(ng-submit="createArticle(article)")
-		input(type="text" ng-model="article.title" placeholder="Title")
-		input(type="text" ng-model="article.url" placeholder="URL")
-		input(type="submit" value="Submit")
+		p Hacker News |
+		a(href="/submit") Submit
 
 	ul
-		li(ng-repeat="article in articles | orderBy: 'votes':true" ng-href="article.url" ng-click="voteArticle(article)")
-			h1 {{article.title}}
-			p {{article.url}}
-			div {{article.votes}}
+		li.article(ng-repeat="article in articles | orderBy: 'votes':true")
+			div.line1
+				div.index {{$index + 1}}.
+				div.vote(ng-click="voteArticle(article)")
+				div.title
+					a(ng-href="{{article.url}}") {{article.title}}
+					span ({{article.url}})
+			div.line2
+				div.subtext
+					p {{article.votes}} votes
+			div.clear

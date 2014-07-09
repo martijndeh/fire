@@ -182,7 +182,7 @@ describe('migrations', function() {
                         }
 
                         function Migration12() {}
-                        Migration12.prototype.up = function() {                    
+                        Migration12.prototype.up = function() {
                             this.models.Project.addProperties({
                                 team: [this.HasOne(this.models.Team)]
                             })
@@ -530,7 +530,7 @@ describe('migrations', function() {
             })
             .done();
     });
-
+    
     it('can add many-to-many reference', function(done) {
         function Migration13() {}
         Migration13.prototype.up = function() {

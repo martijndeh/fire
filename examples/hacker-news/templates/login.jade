@@ -1,0 +1,5 @@
+div(ng-controller="LoginController")
+    input(type="text" ng-model="user.name")
+    input(type="password" ng-model="user.password")
+    button(ng-click="loginUser(user)") Login
+    button(ng-click="registerUser(user)") Register

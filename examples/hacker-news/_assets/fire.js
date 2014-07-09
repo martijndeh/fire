@@ -11,18 +11,7 @@ var app = angular.module('Hacker News', ['ngRoute']);
 app.controller('NewsController', ['FireNewsController', '$scope', function(fire, $scope) {
 	// fire is an angular service. Through models, it exposes all public models from the server-context to the client-context. Under the hood, a RESTful API is generate on the server-context, which the client-context queries to create, read, update and delete models.
 	$scope.articles = fire.unwrap(fire.models.Article.find(), []);
-	$scope.article	= {};
-
-	$scope.createArticle = function(article) {
-		return fire.models.Article.create(article)
-			.then(function(insertedArticle) {
-				$scope.articles.push(insertedArticle);
-				$scope.article = {};
-			})
-			.catch(function(error) {
-				alert(error);
-			});
-	};
+	$scope.user 	= fire.unwrap(fire.models.User.getMe(), {});
 
 	$scope.voteArticle = function(article) {
 		article.votes++;
@@ -31,8 +20,50 @@ app.controller('NewsController', ['FireNewsController', '$scope', function(fire,
 	};
 }]);
 
-app.controller('ArticleController', ['FireArticleController', '$scope', function(fire, $scope) {
-	$scope.article = fire.unwrap(fire.models.Article.findOne({id: $id}), {});
+app.controller('ArticleController', ['FireArticleController', '$scope', '$routeParams', function(fire, $scope, $routeParams) {
+	$scope.article = fire.unwrap(fire.models.Article.findOne({id: $routeParams.id}), {});
+}]);
+
+app.controller('SubmitController', ['FireSubmitController', '$scope', '$location', function(fire, $scope, $location) {
+	fire.models.User.getMe()
+		.then(function(user) {
+			$scope.user = user;
+		})
+		.catch(function(error) {
+			$location.path('/login');
+		});
+
+	$scope.submitArticle = function(article) {
+		fire.models.Article.create(article)
+			.then(function() {
+				$location.path('/');
+			})
+			.catch(function(error) {
+				alert(error);
+			});
+	};
+}]);
+
+app.controller('LoginController', ['FireLoginController', '$scope', '$location', function(fire, $scope, $location) {
+	$scope.loginUser = function(user) {
+		fire.models.User.authorize(user)
+			.then(function() {
+				$location.path('/submit');
+			})
+			.catch(function(error) {
+				alert(error);
+			});
+	};
+
+	$scope.registerUser = function(user) {
+		fire.models.User.create(user)
+			.then(function() {
+				$location.path('/');
+			})
+			.catch(function(error) {
+				alert(error);
+			});
+	};
 }]);
 
 function FireModel($http, $q) {
@@ -105,6 +136,38 @@ FireModel.prototype.getOne = function(fields) {
 };
 
 
+function FireModelUser($http, $q) {
+	FireModel.call(this, $http, $q);
+
+	this.endpoint = '/api/users';
+}
+FireModelUser.prototype = new FireModel();
+
+
+FireModelUser.prototype.authorize = function(fields) {
+	return this._post(this.endpoint + '/authorize', fields);
+};
+
+FireModelUser.prototype.getMe = function() {
+	var defer = this.$q.defer();
+
+	this._get(this.endpoint + '/me')
+		.then(function(authenticator) {
+			if(authenticator) {
+				defer.resolve(authenticator);
+			}
+			else {
+				defer.reject(new Error('Unauthorized'));
+			}
+		})
+		.catch(function(error) {
+			defer.reject(error);
+		});
+
+	return defer.promise;
+};
+
+
 function FireModelArticle($http, $q) {
 	FireModel.call(this, $http, $q);
 
@@ -116,6 +179,8 @@ FireModelArticle.prototype = new FireModel();
 
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
+	
+	this.User = new FireModelUser($http, $q);
 	
 	this.Article = new FireModelArticle($http, $q);
 	
@@ -137,25 +202,45 @@ app.service('FireNewsController', ['FireModels', '$http', '$q', function(FireMod
     
     
     
-    
-    this.doTest = function($id,a,b,c) {
-        var defer = $q.defer();
+}]);
 
-        $http['post']('/test/' + $id + '', {$id: $id, a: a, b: b, c: c})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
-            });
+app.service('FireArticleController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+    function unwrap(promise, initialValue) {
+        var value = initialValue;
 
-        return defer.promise;
+        promise.then(function(newValue) {
+            angular.copy(newValue, value);
+        });
+
+        return value;
     };
+    this.unwrap = unwrap;
+    this.models = FireModels;
+
+    
     
     
 }]);
 
-app.service('FireArticleController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+app.service('FireSubmitController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+    function unwrap(promise, initialValue) {
+        var value = initialValue;
+
+        promise.then(function(newValue) {
+            angular.copy(newValue, value);
+        });
+
+        return value;
+    };
+    this.unwrap = unwrap;
+    this.models = FireModels;
+
+    
+    
+    
+}]);
+
+app.service('FireLoginController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
     function unwrap(promise, initialValue) {
         var value = initialValue;
 
@@ -186,14 +271,30 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
     });
     
 
-    
-
 
 
     
     $routeProvider.when('/article/:id', {
         templateUrl: '/templates/article.jade',
         controller: 'ArticleController'
+    });
+    
+
+
+
+    
+    $routeProvider.when('/submit', {
+        templateUrl: '/templates/submit.jade',
+        controller: 'SubmitController'
+    });
+    
+
+
+
+    
+    $routeProvider.when('/login', {
+        templateUrl: '/templates/login.jade',
+        controller: 'LoginController'
     });
     
 
