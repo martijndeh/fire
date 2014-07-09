@@ -1,8 +1,10 @@
-link(rel="stylesheet" type="text/css" href="/styles/default.css")
-div(ng-controller="NewsController")
-	header(style="background:#ff6600")
-		p Hacker News |
-		a(href="/submit") Submit
+div.list(ng-controller="NewsController")
+	header
+		div.logo Hacker News
+		div.menu
+			a(href="/submit") Submit
+			a(href="#") Hi {{user.name}}
+		div.clear
 
 	ul
 		li.article(ng-repeat="article in articles | orderBy: 'votes':true")
@@ -11,8 +13,11 @@ div(ng-controller="NewsController")
 				div.vote(ng-click="voteArticle(article)")
 				div.title
 					a(ng-href="{{article.url}}") {{article.title}}
-					span ({{article.url}})
+					span  ({{article.url}})
 			div.line2
 				div.subtext
-					p {{article.votes}} votes
+					p {{article.votes}} votes by {{article.author.name}} at {{article.createdAt | date:'mediumTime'}}
 			div.clear
+
+	p.footer Hacker News-esque example in Node on Fire, see
+		a(href="https://github.com/martijndeh/fire") https://github.com/martijndeh/fire

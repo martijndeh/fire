@@ -133,6 +133,9 @@ else if(argv._[0] == 'migrate') {
 			}
 
 			console.log('*** Migrating from `' + currentVersion + '` to `' + targetVersion + '`.');
+
+			// TODO: First do a check if currentVersion and targetVersion are different OR do not throw an error in migrate when versions are the same.
+
 			return migrations.migrate(currentVersion, targetVersion);
 		})
 		.then(function() {

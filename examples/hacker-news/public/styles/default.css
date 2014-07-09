@@ -1,19 +1,48 @@
 body {
     font-family:Verdana;
 }
+div.list {
+    background:#f6f6ef;
+    margin:auto;
+    width:1168px;
+}
+header {
+    background:#ff6600;
+}
+div.menu a {
+    display:inline-block;
+    padding:5px;
+    font-size:13px;
+    color:#111;
+    text-decoration:none;
+}
+div.logo {
+    font-weight:bold;
+    float:left;
+    font-size:13px;
+    padding:5px;
+}
+div.menu {
+    float:left;
+}
 ul {
     margin:0;
     padding:0;
+    padding-bottom:20px;
+    border-bottom:2px solid #ff6600;
+}
+span.logo {
+    font-weight:bold;
+    color:#000;
 }
 li.article {
     list-style-type:none;
 }
 div.line1 {
-    height:19px;
+
 }
 div.line2 {
     clear:left;
-    height:11px;
 }
 div.index, div.vote, div.title {
     float:left;
@@ -21,6 +50,7 @@ div.index, div.vote, div.title {
 div.index {
     color:#828282;
     font-size:13px;
+    height:19px;
 }
 div.vote {
     cursor:pointer;
@@ -34,17 +64,26 @@ div.title {
 div.title a {
     font-size:13px;
     text-decoration:none;
+    color:#000;
 }
 div.title span {
     font-size:11px;
+    color:#828282;
 }
 div.subtext {
     height:11px;
 }
 div.subtext p {
-    margin-left:
+    margin-left:27px;
     font-size:9px;
+    color:#828282;
 }
 div.clear {
     clear:both;
+}
+p.footer {
+    text-align:center;
+    color:#828282;
+    font-size:10px;
+    padding-bottom:20px;
 }

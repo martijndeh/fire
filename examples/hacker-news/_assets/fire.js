@@ -9,7 +9,6 @@ var app = angular.module('Hacker News', ['ngRoute']);
 
 
 app.controller('NewsController', ['FireNewsController', '$scope', function(fire, $scope) {
-	// fire is an angular service. Through models, it exposes all public models from the server-context to the client-context. Under the hood, a RESTful API is generate on the server-context, which the client-context queries to create, read, update and delete models.
 	$scope.articles = fire.unwrap(fire.models.Article.find(), []);
 	$scope.user 	= fire.unwrap(fire.models.User.getMe(), {});
 
@@ -47,15 +46,15 @@ app.controller('SubmitController', ['FireSubmitController', '$scope', '$location
 app.controller('LoginController', ['FireLoginController', '$scope', '$location', function(fire, $scope, $location) {
 	$scope.loginUser = function(user) {
 		fire.models.User.authorize(user)
-			.then(function() {
-				$location.path('/submit');
+			.then(function(user) {
+				$location.path('/');
 			})
 			.catch(function(error) {
 				alert(error);
 			});
 	};
 
-	$scope.registerUser = function(user) {
+	$scope.createUser = function(user) {
 		fire.models.User.create(user)
 			.then(function() {
 				$location.path('/');
