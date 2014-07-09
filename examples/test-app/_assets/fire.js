@@ -1,3 +1,11 @@
+'use strict';
+
+/* jshint undef: true, unused: true */
+/* global angular */
+
+var app = angular.module('Test App', ['ngRoute']);
+
+
 function FireModel($http, $q) {
 	this.$http = $http;
 	this.$q = $q;
@@ -67,17 +75,15 @@ FireModel.prototype.getOne = function(fields) {
 	return defer.promise;
 };
 
-{{#models}}
-function FireModel{{name}}($http, $q) {
-	FireModel.call(this, $http, $q);
 
-	this.endpoint = '/api/{{resource}}';
-}
-FireModel{{name}}.prototype = new FireModel();
-{{/models}}
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
-	{{#models}}
-	this.{{name}} = new FireModel{{name}}($http, $q);
-	{{/models}}
+	
+}]);
+
+
+app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+    $locationProvider.html5Mode(true);
+
+
 }]);

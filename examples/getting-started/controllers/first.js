@@ -9,5 +9,5 @@ function FirstController($scope) {
 app.controller(FirstController);
 
 FirstController.prototype.view = function() {
-    return this.template('views/index.html');
+    return this.template('index.jade');
 };

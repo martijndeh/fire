@@ -1,0 +1,7 @@
+{
+    "name": "Test App",
+    "dependencies": {
+        "angular": "*",
+        "angular-route": "*"
+    }
+}

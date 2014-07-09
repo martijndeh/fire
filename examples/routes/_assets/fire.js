@@ -167,7 +167,7 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 
     
     $routeProvider.when('/', {
-        templateUrl: '/views/list',
+        templateUrl: '/templates/list',
         controller: 'IndexController'
     });
     
@@ -178,7 +178,7 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 
     
     $routeProvider.when('/article/:id', {
-        templateUrl: '/views/article',
+        templateUrl: '/templates/article',
         controller: 'ArticleController'
     });
     

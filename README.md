@@ -11,14 +11,13 @@ npm install -g fire
 
 ### Features
 
-1.  **Mix client- and server-side code**  
-	It's very easy to switch between the server-context and client-context from your code. Calling a server-side method from the client is as easy as calling a regular method. Everything is JavaScript.
+1.  **Everything JavaScript**  
+	You write front-end and back-end code in JavaScript. Moreover, switching between the ends is as easy as calling a regular method.
 
-2. **Models and auto-API**  
-	You configure your models and Node on Fire :fire: takes care of schema creation, database migrations, associations, automatic RESTful CRUD API generation, and client-side library creation. Plus, you can configure access control and authorization.
+2. **Database Everywhere**  
 
-4. **Promise-based, no callback hell**  
-	Callback hell? Not really. Node on Fire uses promises *mostly* everywhere.
+
+
 
 ### Philosophy
 
@@ -71,7 +70,7 @@ app.controller(NewsController);
 
 // This creates a route to GET / and returns the html. Learn more about [creating routes](https://github.com/martijndeh/fire/wiki/Routes).
 NewsController.prototype.view = function() {
-	return this.template('list.html');
+	return this.template('list.jade');
 };
 
 app.run();

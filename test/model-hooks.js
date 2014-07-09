@@ -74,7 +74,7 @@ describe('model hooks', function() {
 				})
 				.then(function(user) {
 					assert.equal(user.testValue, 123);
-					
+
 					return models.User.findOne({testName: 'Martijn'});
 				})
 				.then(function(user) {
@@ -108,8 +108,6 @@ describe('model hooks', function() {
 		setImmediate(function() {
 			models.User.setup()
 				.then(function() {
-					console.log('create!');
-
 					return models.User.create({
 						testName: 'Martijn'
 					});
@@ -118,8 +116,6 @@ describe('model hooks', function() {
 					assert.equal(user.testValue, 111);
 
 					user.testValue = 123;
-
-					console.log('updating');
 					return user.save();
 				})
 				.then(function(user) {

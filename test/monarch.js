@@ -7,13 +7,13 @@ var streams = require('memory-streams');
 //var request = require('supertest');
 var assert = require('assert');
 
-describe('monarch', function() {
+describe('bridge', function() {
 	var app = null;
-	var monarch = null;
+	var bridge = null;
 
 	beforeEach(function(done) {
 		app = fire.app('example', {disabled: true});
-		monarch = app.monarch;
+		bridge = app.bridge;
 		app.run()
 			.then(function() {
 				done();
@@ -77,13 +77,13 @@ describe('monarch', function() {
 			return $id;
 		};
 
-		monarch.addController(TestController);
+		bridge.addController(TestController);
 
 		var writeStream = new streams.WritableStream();
 
-		monarch.generate(writeStream)
+		bridge.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 3095);
+				assert.equal(writeStream.toString().length, 3289);
 
 				done();
 			})
@@ -164,24 +164,24 @@ describe('monarch', function() {
 		}
 
 
-		monarch.addModel(User);
-		monarch.addModel(Pet);
+		bridge.addModel(User);
+		bridge.addModel(Pet);
 
-     	monarch.addController(TestController);
-     	monarch.addController(fn7);
-     	monarch.addController(fn6);
-     	monarch.addController(fn5);
-     	monarch.addController(fn4);
-     	monarch.addController(fn3);
-     	monarch.addController(fn2);
-     	monarch.addController(fn1);
-     	monarch.addController(fn0);
+     	bridge.addController(TestController);
+     	bridge.addController(fn7);
+     	bridge.addController(fn6);
+     	bridge.addController(fn5);
+     	bridge.addController(fn4);
+     	bridge.addController(fn3);
+     	bridge.addController(fn2);
+     	bridge.addController(fn1);
+     	bridge.addController(fn0);
 
      	var writeStream = new streams.WritableStream();
 
-		monarch.generate(writeStream)
+		bridge.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 6879);
+				assert.equal(writeStream.toString().length, 6676);
 
 				done();
 			})
@@ -206,9 +206,9 @@ describe('monarch', function() {
 
 		var writeStream = new streams.WritableStream();
 
-		monarch.generate(writeStream)
+		bridge.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 1980);
+				assert.equal(writeStream.toString().length, 2124);
 
 				done();
 			})

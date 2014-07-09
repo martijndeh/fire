@@ -132,7 +132,7 @@ describe('model routes', function() {
 				.expect(200, function(error) {
 					assert.equal(error, null);
 
-					agent.post('/api/authorize')
+					agent.post('/api/users/authorize')
 						.send({
 							name: 'Martijn',
 							password: 'test'

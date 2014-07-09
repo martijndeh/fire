@@ -2,7 +2,7 @@
 
 var fire = require('../..');
 
-var app = fire.app('First App', {});
+var app = fire.app('First App', {modules:['ngRoute']});
 
 app.template('list', '<div ng-controller="IndexController"><ul><li ng-repeat="article in articles"><a ng-href="/article/{{article.id}}">{{article.title}}</a></li></ul></div>');
 app.template('article', '<div ng-controller="ArticleController"><h1>{{article.title}}</h1></div>');
@@ -44,8 +44,6 @@ ArticleController.prototype.viewArticle = function($id) {
 };
 
 ArticleController.prototype.getArticle = function($id) {
-    console.log('getArticle ' + $id);
-
     return articles[$id - 1];
 };
 

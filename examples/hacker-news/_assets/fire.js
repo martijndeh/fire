@@ -3,7 +3,7 @@
 /* jshint undef: true, unused: true */
 /* global angular */
 
-var app = angular.module('Hacker News', []);
+var app = angular.module('Hacker News', ['ngRoute']);
 
 
 
@@ -29,6 +29,10 @@ app.controller('NewsController', ['FireNewsController', '$scope', function(fire,
 
 		fire.models.Article.update(article.id, {votes: article.votes});
 	};
+}]);
+
+app.controller('ArticleController', ['FireArticleController', '$scope', function(fire, $scope) {
+	$scope.article = fire.unwrap(fire.models.Article.findOne({id: $id}), {});
 }]);
 
 function FireModel($http, $q) {
@@ -109,6 +113,8 @@ function FireModelArticle($http, $q) {
 FireModelArticle.prototype = new FireModel();
 
 
+
+
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 	this.Article = new FireModelArticle($http, $q);
@@ -129,6 +135,9 @@ app.service('FireNewsController', ['FireModels', '$http', '$q', function(FireMod
     this.models = FireModels;
 
     
+    
+    
+    
     this.doTest = function($id,a,b,c) {
         var defer = $q.defer();
 
@@ -143,5 +152,50 @@ app.service('FireNewsController', ['FireModels', '$http', '$q', function(FireMod
         return defer.promise;
     };
     
+    
 }]);
 
+app.service('FireArticleController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+    function unwrap(promise, initialValue) {
+        var value = initialValue;
+
+        promise.then(function(newValue) {
+            angular.copy(newValue, value);
+        });
+
+        return value;
+    };
+    this.unwrap = unwrap;
+    this.models = FireModels;
+
+    
+    
+    
+}]);
+
+
+app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+    $locationProvider.html5Mode(true);
+
+
+
+    
+    $routeProvider.when('/', {
+        templateUrl: '/templates/list.jade',
+        controller: 'NewsController'
+    });
+    
+
+    
+
+
+
+    
+    $routeProvider.when('/article/:id', {
+        templateUrl: '/templates/article.jade',
+        controller: 'ArticleController'
+    });
+    
+
+
+}]);

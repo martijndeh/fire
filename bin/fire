@@ -6,31 +6,99 @@ dotenv.load();
 
 var path = require('path');
 var fs = require('fs');
-
+var Q = require('q');
 var argv = require('minimist')(process.argv.slice(2));
 
 var Models = require('./../lib/modules/models/models');
 
 var Migrations = require('./../lib/modules/migrations/migrations');
 var Generate = require('./../lib/modules/migrations/generate');
-var Monarch = require('./../lib/modules/monarch');
 
 var mu = require('mu2');
-mu.root = path.join(__dirname, '..', 'cli', 'templates');
-
+mu.root = path.join(__dirname, 'templates');
+var inflection = require('inflection');
 var fire = require('./..');
-
-
 var basePath = path.resolve('./');
+var crypto = require('crypto');
+var spawn = require('child_process').spawn;
 
-if(argv._.length === 0) {
-	//TODO: Show help.
+function execute(command, params) {
+	var defer = Q.defer();
 
-	throw new Error('Hey. Not enough commands.');
+	console.log(command + ' ' + (params || []).join(' '));
+
+	var child = spawn(command, params, {stdio: 'inherit'});
+	child.on('exit', function() {
+		defer.resolve();
+	});
+
+	return defer.promise;
 }
 
-if(argv._[0] == 'new') {
-	// TODO: create an app
+function start(scriptName) {
+	var fireBin = process.mainModule.filename;
+
+	var startChild = function() {
+		execute(fireBin, ['generate', 'migrations'])
+			.then(function() {
+				return execute(fireBin, ['generate', 'scripts']);
+			})
+			.then(function() {
+				return execute('npm', ['install']);
+			})
+			.then(function() {
+				return execute('bower', ['install']);
+			})
+			.then(function() {
+				return execute(fireBin, ['migrate']);
+			})
+			.then(function() {
+				return execute('node', [scriptName]);
+			})
+			.then(function() {
+				return Q.delay(1000);
+			})
+			.then(function() {
+				startChild();
+			})
+			.done();
+	};
+
+	startChild();
+}
+
+if(argv._.length === 0) {
+	start('index.js');
+}
+else if(argv._[0] == 'help') {
+	console.log('todo: create a help section');
+}
+else if(argv._[0] == 'create') {
+	var appName = argv._[1];
+
+	var appPath = path.join(basePath, inflection.dasherize(appName).toLowerCase());
+	console.log('Creating `' + appPath + '`.');
+
+	fs.mkdirSync(appPath);
+
+	var directories = ['templates', 'controllers', 'models'];
+	directories.forEach(function(directory) {
+		var directoryPath = path.join(appPath, directory);
+		console.log('Creating `' + directoryPath + '`.');
+		fs.mkdirSync(directoryPath);
+	});
+
+	var files = ['bower.json', 'index.js', '.env'];
+	files.forEach(function(fileName) {
+		var filePath = path.join(appPath, fileName);
+
+		console.log('Creating `' + filePath + '`.');
+
+		mu.compileAndRender(fileName, {
+			name: appName,
+			sessionKey: crypto.randomBytes(127).toString('base64')
+		}).pipe(fs.createWriteStream(filePath));
+	});
 }
 else if(argv._[0] == 'migrate') {
 	var models = new Models();
@@ -40,9 +108,14 @@ else if(argv._[0] == 'migrate') {
 
 	// Set-up without reading any of the models
 	// We will create the models based on all migrations
-	return models.setup(null)
+	models.setup(null)
 		.then(function() {
 			return migrations.setup(path.join(basePath, '_migrations'), models);
+		})
+		.then(function() {
+			if(migrations._.length === 0) {
+				throw new Error('There are 0 migration files. Did you run `fire generate migrations`?');
+			}
 		})
 		.then(function() {
 			// Let's find which database version we're at
@@ -69,7 +142,6 @@ else if(argv._[0] == 'migrate') {
 			if(currentVersion == targetVersion) {
 				//everything went alright
 				console.log('*** Migration successful to `' + targetVersion + '`.');
-				return true;
 			}
 			else {
 				throw new Error('Database version after migration `' + currentVersion + '` does not match target version `' + targetVersion + '`.');
@@ -82,7 +154,7 @@ else if(argv._[0] == 'migrate') {
 				console.log(error.stack);
 			}
 
-			return error;
+			throw error;
 		})
 		.done();
 }
@@ -91,23 +163,19 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 		throw new Error('You did not specify enough parameters. What do you want to generate? `migrations`?');
 	}
 
-	if(argv._[1] == 'migration' || argv._[1] == 'migrations') {
+	if(argv._[1] == 'migrations') {
 		var generate = new Generate(argv._[2] ? path.resolve(argv._[2]) : basePath);
 		generate.createMigrations();
 	}
-	else if(argv._[1] == 'script' || argv._[1] == 'scripts' || argv._[1] == 'monarch') {
-		var startPath = argv._[2] ? path.resolve(argv._[2]) : basePath;
-
+	else if(argv._[1] == 'scripts') {
 		fire.disabled = true;
 
-		fs.readdirSync(startPath).forEach(function(resourceFileName) {
-			if(resourceFileName.length && resourceFileName[0] != '_' && resourceFileName[0] != '.') {
-				var fullPath = path.join(basePath, resourceFileName);
-				if(!fs.lstatSync(fullPath).isDirectory() && path.extname(fullPath) == '.js') {
-					require(fullPath);
-				}
-			}
-		});
+		var initialScript = 'index.js';
+		if(argv._.length > 2) {
+			initialScript = argv._[2];
+		}
+
+		require(path.join(basePath, initialScript));
 
 		var app = fire.app();
 		app.controllers.setup(basePath)
@@ -116,22 +184,22 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 			})
 			.then(function() {
 				setImmediate(function() {
-					var monarch = new Monarch(app);
-					monarch.load();
+					var bridge = app.bridge;
+					bridge.load();
 
 					fs.mkdir(path.join(basePath, '_assets'), function() {
 						var writeStream = fs.createWriteStream(path.join(basePath, '_assets', 'fire.js'));
 
-						monarch.generate(writeStream);
+						bridge.generate(writeStream);
 					});
 				});
 			})
 			.done();
 	}
-	else {
-		// TODO: Generate a controller, worker, middleware (?), responder, etc
-	}
+}
+else if(argv._.length == 1 && argv._[0].match(/\.js$/)) {
+	start(argv._[0]);
 }
 else {
-	// TODO: generate a database migration.
+	console.log('Unknown command...');
 }

@@ -116,7 +116,7 @@ describe('access control', function() {
 					agent = request.agent(app.express);
 
 					// We authorize. This should set a session variable.
-					agent.post('/api/authorize')
+					agent.post('/api/users/authorize')
 						.send({name: 'Martijn', password: 'test'})
 						.expect(200, function(error, response) {
 							assert.equal(error, null);
@@ -164,7 +164,7 @@ describe('access control', function() {
 
 			app.models.User.create({name: 'Agent Smith', password: 'test'})
 				.then(function() {
-					smith.post('/api/authorize')
+					smith.post('/api/users/authorize')
 						.send({name: 'Agent Smith', password: 'test'})
 						.expect(200, function() {
 							smith.post('/api/articles')
@@ -235,7 +235,7 @@ describe('access control', function() {
 
 				app.models.User.create({name: 'Agent Smith', password: 'test'})
 					.then(function() {
-						smith.post('/api/authorize')
+						smith.post('/api/users/authorize')
 							.send({name: 'Agent Smith', password: 'test'})
 							.expect(200, function(error1) {
 								assert.equal(error1, null);

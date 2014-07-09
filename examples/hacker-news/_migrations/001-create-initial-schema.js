@@ -6,7 +6,7 @@ function Migration() {
 
 Migration.prototype.up = function() {
 	this.models.createModel('Article', {
-		id: [this.Id],
+		id: [this.Id, this.Update(false)],
 		title: [this.String, this.Required],
 		url: [this.String, this.Required],
 		votes: [this.Integer, this.Default(0)]

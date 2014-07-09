@@ -3,7 +3,7 @@
 var fire = require('../..');
 
 // Initialize the app.
-var app = fire.app('Hacker News', {});
+var app = fire.app('Hacker News', {modules:['ngRoute']});
 
 // Create the Article model.
 function Article() {
@@ -40,11 +40,20 @@ app.controller(NewsController);
 
 // This creates a route to GET / and returns the html. Learn more about [creating routes](https://github.com/martijndeh/fire/wiki/Routes).
 NewsController.prototype.view = function() {
-	return this.template('list.html');
+	return this.template('list.jade');
 };
 
 NewsController.prototype.doTest = function($id, a, b, c) {
 	return (a + b + c);
+};
+
+function ArticleController(fire, $scope) {
+	$scope.article = fire.unwrap(fire.models.Article.findOne({id: $id}), {});
+}
+fire.controller(ArticleController);
+
+ArticleController.prototype.viewArticle = function($id) {
+	return this.template('article.jade');
 };
 
 app.run();

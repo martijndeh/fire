@@ -1,7 +1,7 @@
 {
-  "name": "Getting Started",
+  "name": "Todos",
   "dependencies": {
     "angular": "~1.2.19",
-    "angular-route": "*"
+    "angular-route": "~1.2.19"
   }
 }

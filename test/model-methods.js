@@ -1196,7 +1196,7 @@ describe('model methods', function() {
                 })
                 .then(function(article) {
                     var string = JSON.stringify(article);
-                    assert.equal(string, '{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":1,"name":"Martijn"}}');
+                    assert.equal(string, '{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":1,"name":"Martijn","articles":[]}}');
 
                     return models.User.findOne()
                         .then(function(user) {
@@ -1212,7 +1212,7 @@ describe('model methods', function() {
                 })
                 .then(function(user) {
                     var string = JSON.stringify(user);
-                    assert.equal(string, '{"id":1,"name":"Martijn","articles":[{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":1,"name":"Martijn"}},{"id":2,"title":"Title 2","url":"http://news.ycombinator.com/","user":{"id":1,"name":"Martijn"}}]}');
+                    assert.equal(string, '{"id":1,"name":"Martijn","articles":[{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":1,"name":"Martijn","articles":[]}},{"id":2,"title":"Title 2","url":"http://news.ycombinator.com/","user":{"id":1,"name":"Martijn","articles":[]}}]}');
 
                     done();
                 })
