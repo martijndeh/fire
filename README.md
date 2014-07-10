@@ -6,7 +6,7 @@ A productive & convention-based web framework to get your minimum viable product
 
 ### Installation
 ```
-npm install -g fire
+npm install -g fire@0.1.3
 ```
 
 ### Features
