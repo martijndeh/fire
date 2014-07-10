@@ -183,7 +183,7 @@ describe('model routes', function() {
 				function Model() {
 					this.name = [this.String];
 					this.value = [this.Integer];
-					this.accessControl = [this.Create(function() { return true; }), this.Update(function() { return true; })];
+					this.accessControl = [this.Create(function() { return true; }), this.Update(function() { return true; }), this.Read(function() { return true; })];
 				}
 				fire.model(Model);
 
