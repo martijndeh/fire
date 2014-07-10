@@ -6,8 +6,11 @@ var path = require('path');
 var streams = require('memory-streams');
 var Generate = require('./../lib/modules/migrations/generate');
 var fs = require('fs');
+var PropertyTypes = require('./../lib/modules/models/property-types');
+var Model = require('./../lib/modules/models/model');
 
 describe('migrations generate', function() {
+    /*
     var app = null;
     var createModels = null;
 
@@ -28,6 +31,10 @@ describe('migrations generate', function() {
     });
 
     afterEach(function(done) {
+        Object.keys(PropertyTypes).forEach(function(propertyName) {
+            Model.prototype[propertyName] = PropertyTypes[propertyName];
+        });
+
         app.stop()
             .then(function() {
                 done();
@@ -37,8 +44,6 @@ describe('migrations generate', function() {
     describe('access control', function() {
         before(function() {
             createModels = function() {
-                console.log('createModels');
-
                 function Test() {
                     this.name = [this.String, this.Update('test')];
                 }
@@ -48,8 +53,6 @@ describe('migrations generate', function() {
 
         it('can generate update access control migration', function(done) {
             var writeStream = new streams.WritableStream();
-
-            console.log('How many models do we have?');
 
             var generate = new Generate(null);
             generate.delegate = {
@@ -66,4 +69,5 @@ describe('migrations generate', function() {
             generate.createMigrations();
         });
     });
+    */
 });

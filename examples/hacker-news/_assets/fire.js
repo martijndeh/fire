@@ -13,9 +13,14 @@ app.controller('NewsController', ['FireNewsController', '$scope', function(fire,
 	$scope.user 	= fire.unwrap(fire.models.User.getMe(), {});
 
 	$scope.voteArticle = function(article) {
-		article.votes++;
-
-		fire.models.Article.update(article.id, {votes: article.votes});
+		fire.doVoteArticle(article.id)
+			.then(function(updatedArticle) {
+				article.votes = updatedArticle.votes;
+				article.position = updatedArticle.position;
+			})
+			.catch(function(error) {
+				alert(error);
+			});
 	};
 }]);
 
@@ -176,12 +181,23 @@ FireModelArticle.prototype = new FireModel();
 
 
 
+function FireModelArticlesUsers($http, $q) {
+	FireModel.call(this, $http, $q);
+
+	this.endpoint = '/api/articlesusers';
+}
+FireModelArticlesUsers.prototype = new FireModel();
+
+
+
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 	this.User = new FireModelUser($http, $q);
 	
 	this.Article = new FireModelArticle($http, $q);
+	
+	this.ArticlesUsers = new FireModelArticlesUsers($http, $q);
 	
 }]);
 
@@ -199,6 +215,22 @@ app.service('FireNewsController', ['FireModels', '$http', '$q', function(FireMod
     this.models = FireModels;
 
     
+    
+    
+    
+    this.doVoteArticle = function($articleID) {
+        var defer = $q.defer();
+
+        $http['post']('/api/articles/' + $articleID + '/voters', {$articleID: $articleID})
+            .success(function(result) {
+                defer.resolve(result);
+            })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
     
     
 }]);
@@ -268,6 +300,8 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         templateUrl: '/templates/list.jade',
         controller: 'NewsController'
     });
+    
+
     
 
 

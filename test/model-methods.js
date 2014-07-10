@@ -1246,4 +1246,271 @@ describe('model methods', function() {
                 .done();
         });
     });
+
+    it('can create read-only property', function(done) {
+        function Test() {
+            this.testValue = [this.Integer, this.Required];
+            this.position = [this.ReadOnly('$testValue * 3')];
+        }
+        fire.model(Test);
+
+        setImmediate(function() {
+            models.Test.setup()
+                .then(function() {
+                    return models.Test.create({
+                        testValue: 123
+                    });
+                })
+                .then(function(test) {
+                    assert.equal(test.position, 123 * 3);
+
+                    return models.Test.findOne();
+                })
+                .then(function(test) {
+                    assert.equal(test.position, 123 * 3);
+
+                    return models.Test.update(test.id, {testValue: 234});
+                })
+                .then(function(test) {
+                    assert.equal(test.position, 234 * 3);
+
+                    done();
+                });
+        });
+    });
+
+    it('can use read-only property in associations', function(done) {
+        models.Test1 = 'Test1';
+        models.Test2 = 'Test2';
+
+        function Test1() {
+            this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
+        }
+        fire.model(Test1);
+
+        function Test2() {
+            this.testValue = [this.Integer];
+            this.position = [this.ReadOnly('$testValue * 3')];
+            this.test = [this.BelongsTo(this.models.Test1)];
+        }
+        fire.model(Test2);
+
+        setImmediate(function() {
+            models.Test1.setup()
+                .then(function() {
+                    return models.Test2.setup();
+                })
+                .then(function() {
+                    return models.Test1.create({});
+                })
+                .then(function(test) {
+                    return Q.all([
+                        models.Test2.create({
+                            testValue: 1,
+                            test: test
+                        }),
+
+                        models.Test2.create({
+                            testValue: 2,
+                            test: test
+                        }),
+
+                        models.Test2.create({
+                            testValue: 3,
+                            test: test
+                        })
+                    ]);
+                })
+                .spread(function(a, b, c) {
+                    assert.equal(a.position, 1 * 3);
+                    assert.equal(b.position, 2 * 3);
+                    assert.equal(c.position, 3 * 3);
+
+                    return models.Test1.findOne();
+                })
+                .then(function(test) {
+                    assert.equal(test.tests[0].position, test.tests[0].testValue * 3);
+                    assert.equal(test.tests[1].position, test.tests[1].testValue * 3);
+                    assert.equal(test.tests[2].position, test.tests[2].testValue * 3);
+
+                    done();
+                })
+                .done();
+        });
+    });
+
+    it('can implement count property type', function(done) {
+        models.Test1 = 'Test1';
+        models.Test2 = 'Test2';
+
+        function Test1() {
+            this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
+            this.numberOfTests = [this.Count('tests')];
+        }
+        fire.model(Test1);
+
+        function Test2() {
+            this.testValue = [this.Integer];
+            this.test = [this.BelongsTo(this.models.Test1)];
+        }
+        fire.model(Test2);
+
+        setImmediate(function() {
+            models.Test1.setup()
+                .then(function() {
+                    return models.Test2.setup();
+                })
+                .then(function() {
+                    return models.Test1.create({});
+                })
+                .then(function(test) {
+                    return Q.all([
+                        models.Test2.create({
+                            testValue: 1,
+                            test: test
+                        }),
+
+                        models.Test2.create({
+                            testValue: 2,
+                            test: test
+                        }),
+
+                        models.Test2.create({
+                            testValue: 3,
+                            test: test
+                        })
+                    ]);
+                })
+                .spread(function() {
+                    return models.Test1.findOne();
+                })
+                .then(function(test) {
+                    assert.equal(test.numberOfTests, 3);
+
+                    done();
+                })
+                .done();
+        });
+    });
+
+    it('can implement count property type in many-to-many relation', function(done) {
+        models.Test1 = 'Test1';
+        models.Test2 = 'Test2';
+
+        function Test1() {
+            this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
+            this.numberOfTests = [this.Count('tests')];
+        }
+        fire.model(Test1);
+
+        function Test2() {
+            this.testValue = [this.Integer];
+            this.tests = [this.HasMany(this.models.Test1)];
+        }
+        fire.model(Test2);
+
+        setImmediate(function() {
+            models.Test1.setup()
+                .then(function() {
+                    return models.Test2.setup();
+                })
+                .then(function() {
+                    return models.Test1sTest2s.setup();
+                })
+                .then(function() {
+                    return models.Test1.create({});
+                })
+                .then(function(test) {
+                    return Q.all([
+                        models.Test2.create({
+                            testValue: 1
+                        }),
+
+                        models.Test2.create({
+                            testValue: 2
+                        }),
+
+                        models.Test2.create({
+                            testValue: 3
+                        })
+                    ]).spread(function(a, b, c) {
+                        return Q.all([
+                            test.addTest(a),
+                            test.addTest(b),
+                            test.addTest(c)
+                        ]);
+                    });
+                })
+                .then(function() {
+                    return models.Test1.findOne();
+                })
+                .then(function(test) {
+                    assert.equal(test.numberOfTests, 3);
+
+                    done();
+                })
+                .done();
+        });
+    });
+
+    it('can implement $count in read-only many-to-many relation', function(done) {
+        models.Test1 = 'Test1';
+        models.Test2 = 'Test2';
+
+        function Test1() {
+            this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
+            this.value = [this.ReadOnly('$count("tests") * 2')];
+        }
+        fire.model(Test1);
+
+        function Test2() {
+            this.testValue = [this.Integer];
+            this.tests = [this.HasMany(this.models.Test1)];
+        }
+        fire.model(Test2);
+
+        setImmediate(function() {
+            models.Test1.setup()
+                .then(function() {
+                    return models.Test2.setup();
+                })
+                .then(function() {
+                    return models.Test1sTest2s.setup();
+                })
+                .then(function() {
+                    return models.Test1.create({});
+                })
+                .then(function(test) {
+                    return Q.all([
+                        models.Test2.create({
+                            testValue: 1
+                        }),
+
+                        models.Test2.create({
+                            testValue: 2
+                        }),
+
+                        models.Test2.create({
+                            testValue: 3
+                        })
+                    ])
+                    .spread(function(a, b, c) {
+                        return Q.all([
+                            test.addTest(a),
+                            test.addTest(b),
+                            test.addTest(c)
+                        ]);
+                    });
+                })
+                .then(function() {
+                    return models.Test1.findOne();
+                })
+                .then(function(test) {
+                    assert.equal(test.value, 3 * 2);
+
+                    done();
+                })
+                .done();
+        });
+    });
 });

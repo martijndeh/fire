@@ -7,7 +7,7 @@ div.list(ng-controller="NewsController")
 		div.clear
 
 	ul
-		li.article(ng-repeat="article in articles | orderBy: 'votes':true")
+		li.article(ng-repeat="article in articles | orderBy: 'position':true")
 			div.line1
 				div.index {{$index + 1}}.
 				div.vote(ng-click="voteArticle(article)")

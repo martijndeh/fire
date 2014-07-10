@@ -8,19 +8,22 @@ var app = fire.app('Hacker News', {
 });
 
 function User() {
-	this.name = [this.String, this.Authenticate, this.Unique];
-	this.articles = [this.HasMany(this.models.Article)];
-	this.accessControl = [this.Read(function() { return true; }), this.Update(function() { return false; })];
+	this.name 			= [this.String, this.Authenticate, this.Unique];
+	this.articles 		= [this.HasMany(this.models.Article, 'author')];
+	this.votes 			= [this.HasMany(this.models.Article, 'voters')];
+	this.accessControl 	= [this.Read(function() { return false; }), this.Update(function() { return false; })];
 }
 app.model(User);
 
 function Article() {
-	this.title = [this.String, this.Required];
-	this.url = [this.String, this.Required, this.Update(false), this.Unique];
-	this.votes = [this.Integer, this.Default(0)];
-	this.createdAt = [this.DateTime, this.Default('CURRENT_DATE')];
-	this.author = [this.BelongsTo(this.models.User), this.Automatic, this.AutoFetch];
-	this.accessControl = [this.Read(function() { return true; }), this.Update('author'), this.Delete(function() { return false; })];
+	this.title 			= [this.String, this.Required];
+	this.url 			= [this.String, this.Required, this.Update(false), this.Unique];
+	this.createdAt 		= [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
+	this.author 		= [this.BelongsTo(this.models.User, 'articles'), this.Automatic, this.Required, this.AutoFetch];
+	this.voters 		= [this.HasMany(this.models.User, 'votes'), this.Private];
+	this.votes			= [this.Count('voters')];
+	this.position 		= [this.ReadOnly('($count("voters") - 1) / ((EXTRACT(EPOCH FROM current_timestamp - $createdAt) / 3600) + 2)^1.8')];
+	this.accessControl 	= [this.Read(function() { return true; }), this.Update('author'), this.Delete(function() { return false; })];
 }
 app.model(Article);
 
@@ -29,9 +32,14 @@ function NewsController(fire, $scope) {
 	$scope.user 	= fire.unwrap(fire.models.User.getMe(), {});
 
 	$scope.voteArticle = function(article) {
-		article.votes++;
-
-		fire.models.Article.update(article.id, {votes: article.votes});
+		fire.doVoteArticle(article.id)
+			.then(function(updatedArticle) {
+				article.votes = updatedArticle.votes;
+				article.position = updatedArticle.position;
+			})
+			.catch(function(error) {
+				alert(error);
+			});
 	};
 }
 app.controller(NewsController);
@@ -39,6 +47,27 @@ app.controller(NewsController);
 NewsController.prototype.view = function() {
 	return this.template('list.jade');
 };
+
+NewsController.prototype.doVoteArticle = ['/api/articles/:articleID/voters', function($articleID) {
+	var self = this;
+	return this.models.Article.getOne({id: $articleID})
+		.then(function(article) {
+			return article.findVoter(self.findAuthenticator())
+				.then(function(voter) {
+					if(voter) {
+						var error = new Error('Conflict');
+						error.status = 409;
+						throw error;
+					}
+					else {
+						return article.addVoter(self.findAuthenticator())
+							.then(function() {
+								return self.models.Article.getOne({id: $articleID});
+							});
+					}
+				});
+		});
+}];
 
 function ArticleController(fire, $scope, $routeParams) {
 	$scope.article = fire.unwrap(fire.models.Article.findOne({id: $routeParams.id}), {});
