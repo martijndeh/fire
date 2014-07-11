@@ -168,7 +168,7 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 
 	if(argv._[1] == 'migrations') {
 		fs.mkdir(path.join(basePath, '_migrations'), function() {
-			var generate = new Generate(argv._[2] ? path.resolve(argv._[2]) : basePath);
+			var generate = new Generate(argv._[2] ? path.resolve(argv._[2]) : null);
 			generate.delegate = {
 				addMigration: function(fileName, stream) {
 					stream.pipe(fs.createWriteStream(path.join(basePath, '_migrations', fileName)));
