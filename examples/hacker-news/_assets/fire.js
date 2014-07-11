@@ -9,7 +9,7 @@ var app = angular.module('Hacker News', ['ngRoute']);
 
 
 app.controller('NewsController', ['FireNewsController', '$scope', function(fire, $scope) {
-	$scope.articles = fire.unwrap(fire.models.Article.find(), []);
+	$scope.articles = fire.unwrap(fire.models.Article.find({}, {orderBy:{position:1}}), []);
 	$scope.user 	= fire.unwrap(fire.models.User.getMe(), {});
 
 	$scope.voteArticle = function(article) {
@@ -109,8 +109,14 @@ FireModel.prototype.create = function(fields) {
 	return this._post(this.endpoint, fields);
 };
 
-FireModel.prototype.find = function(fields) {
-	return this._get(this.endpoint, fields);
+FireModel.prototype.find = function(fields, options) {
+	var queryMap = fields || {};
+
+	if(options) {
+		queryMap.$options = options;
+	}
+
+	return this._get(this.endpoint, queryMap);
 };
 
 FireModel.prototype.findOne = function(fields) {

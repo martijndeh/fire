@@ -28,7 +28,7 @@ function Article() {
 app.model(Article);
 
 function NewsController(fire, $scope) {
-	$scope.articles = fire.unwrap(fire.models.Article.find(), []);
+	$scope.articles = fire.unwrap(fire.models.Article.find({}, {orderBy:{position:1}}), []);
 	$scope.user 	= fire.unwrap(fire.models.User.getMe(), {});
 
 	$scope.voteArticle = function(article) {
