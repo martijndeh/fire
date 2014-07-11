@@ -48,8 +48,6 @@ describe('controller routes', function() {
             agent.get('/test_routes.test')
                 .send()
                 .expect(200, function(error, response) {
-                    console.log(response.text);
-
                     assert.equal(response.text, '"Great."');
                     done(error);
                 });
