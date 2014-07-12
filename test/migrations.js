@@ -530,7 +530,7 @@ describe('migrations', function() {
             })
             .done();
     });
-    
+
     it('can add many-to-many reference', function(done) {
         function Migration13() {}
         Migration13.prototype.up = function() {
@@ -599,7 +599,7 @@ describe('migrations', function() {
             })
             .then(function(tests) {
                 assert.notEqual(tests, null);
-                assert.equal(tests.length, 6);
+                assert.equal(tests.length, 3);
 
                 return tests[0].getTeams();
             })

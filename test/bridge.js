@@ -83,7 +83,7 @@ describe('bridge', function() {
 
 		bridge.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 3381);
+				assert.equal(writeStream.toString().length, 3872);
 
 				done();
 			})
@@ -181,7 +181,7 @@ describe('bridge', function() {
 
 		bridge.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 6768);
+				assert.equal(writeStream.toString().length, 7259);
 
 				done();
 			})
@@ -208,7 +208,7 @@ describe('bridge', function() {
 
 		bridge.generate(writeStream)
 			.then(function() {
-				assert.equal(writeStream.toString().length, 2216);
+				assert.equal(writeStream.toString().length, 2707);
 
 				done();
 			})
