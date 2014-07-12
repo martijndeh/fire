@@ -1247,6 +1247,42 @@ describe('model methods', function() {
         });
     });
 
+    it('hides non-auto fetch associations in auto toJSON', function(done) {
+        models.Project = 'Project';
+        models.User = 'User';
+        
+        function User() {
+            this.name = [this.String, this.Required];
+            this.projects = [this.HasMany(this.models.Project)];
+        }
+        fire.model(User);
+
+        function Project() {
+            this.name = [this.String];
+            this.user = [this.BelongsTo(this.models.User)];
+        }
+        fire.model(Project);
+
+        setImmediate(function() {
+            models.User.setup()
+                .then(function() {
+                    return models.Project.setup();
+                })
+                .then(function() {
+                    return models.User.create({
+                        name: 'Martijn'
+                    });
+                })
+                .then(function(user) {
+                    var json = user.toJSON();
+                    assert.equal(typeof user.projects, 'undefined');
+
+                    done();
+                })
+                .done();
+        });
+    });
+
     it('can create read-only property', function(done) {
         function Test() {
             this.testValue = [this.Integer, this.Required];
