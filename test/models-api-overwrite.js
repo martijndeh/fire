@@ -10,6 +10,8 @@ describe('models api overwrite', function() {
 	beforeEach(helper.beforeEach());
 	afterEach(helper.afterEach());
 
+	var testerID = null;
+
 	before(function() {
 		helper.setup = function(app) {
 			function Tester() {
@@ -48,7 +50,11 @@ describe('models api overwrite', function() {
 
 			for(var i = 0, il = 20; i < il; i++) {
 				result = result.then(function() {
-					return app.models.Tester.create({name: 'Test'});
+					return app.models.Tester.create({name: 'Test'})
+						.then(function(tester) {
+							testerID = tester.id;
+							return tester;
+						});
 				});
 			}
 
@@ -70,11 +76,12 @@ describe('models api overwrite', function() {
 
 	it('can update', function(done) {
 		request(helper.app.express)
-			.put('/api/testers/1')
+			.put('/api/testers/' + testerID)
 			.send({
 				name: 'Martijn'
 			})
 			.expect(200, function(error, response) {
+				console.log(response.body);
 				assert.equal(response.body.name, 'Update');
 				done(error);
 			});
@@ -93,7 +100,7 @@ describe('models api overwrite', function() {
 
 	it('can find one', function(done) {
 		request(helper.app.express)
-			.get('/api/testers/1')
+			.get('/api/testers/' + testerID)
 			.send()
 			.expect(200, function(error, response) {
 				assert.equal(response.body.name, 'Test');

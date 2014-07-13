@@ -5,6 +5,7 @@ var fire = require('..');
 var request = require('supertest');
 var Q = require('q');
 var assert = require('assert');
+var uuid = require('node-uuid');
 
 describe('model routes', function() {
 	var app = null;
@@ -116,7 +117,6 @@ describe('model routes', function() {
 				})
 				.expect(200, function(error, response) {
 					assert.equal(error, null);
-					assert.equal(response.body.id, 1);
 					assert.equal(response.body.name, 'Martijn');
 
 					done(error);
@@ -139,7 +139,6 @@ describe('model routes', function() {
 						})
 						.expect(200, function(err, response) {
 							assert.equal(err, null);
-							assert.equal(response.body.id, 1);
 							assert.equal(response.body.name, 'Martijn');
 
 							done(err);
@@ -207,7 +206,6 @@ describe('model routes', function() {
 				})
 				.expect(200, function(error, response) {
 					assert.equal(error, null);
-					assert.equal(response.body.id, 1);
 					assert.equal(response.body.name, 'Martijn');
 					assert.equal(Object.keys(response.body).length, 3);
 
@@ -216,6 +214,10 @@ describe('model routes', function() {
 		});
 
 		describe('create multiple models', function() {
+			var model1ID = uuid.v1();
+			var model2ID = uuid.v1();
+			var model3ID = uuid.v1();
+
 			function createModel(map) {
 				var defer = Q.defer();
 
@@ -237,14 +239,17 @@ describe('model routes', function() {
 			beforeEach(function(done) {
 				Q.all([
 					createModel({
+						id: model1ID,
 						name: 'Martijn 1',
 						value: 1
 					}),
 					createModel({
+						id: model2ID,
 						name: 'Martijn 2',
 						value: 2
 					}),
 					createModel({
+						id: model3ID,
 						name: 'Martijn 3',
 						value: 2
 					})
@@ -255,10 +260,9 @@ describe('model routes', function() {
 
 			it('can get 1 model', function(done) {
 				request(app.express)
-					.get('/api/models/2')
+					.get('/api/models/' + model2ID)
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
-						assert.equal(response.body.id, 2);
 						assert.equal(response.body.name, 'Martijn 2');
 						assert.equal(response.body.value, 2);
 
@@ -275,7 +279,6 @@ describe('model routes', function() {
 						var models = response.body;
 
 						assert.equal(models.length, 1);
-						assert.equal(models[0].id, 1);
 						assert.equal(models[0].name, 'Martijn 1');
 						assert.equal(models[0].value, 1);
 
@@ -292,11 +295,9 @@ describe('model routes', function() {
 						var models = response.body;
 
 						assert.equal(models.length, 2);
-						assert.equal(models[0].id, 2);
 						assert.equal(models[0].name, 'Martijn 2');
 						assert.equal(models[0].value, 2);
 
-						assert.equal(models[1].id, 3);
 						assert.equal(models[1].name, 'Martijn 3');
 						assert.equal(models[1].value, 2);
 
@@ -306,13 +307,13 @@ describe('model routes', function() {
 
 			it('can update 1 model', function(done) {
 				request(app.express)
-					.put('/api/models/3')
+					.put('/api/models/' + model3ID)
 					.send({
 						name: 'Martijn (Updated)'
 					})
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
-						assert.equal(response.body.id, 3);
+						assert.equal(response.body.id, model3ID);
 						assert.equal(response.body.name, 'Martijn (Updated)');
 						assert.equal(response.body.value, 2);
 

@@ -2,8 +2,6 @@
 
 var fire = require('..');
 
-var Models = require('./../lib/modules/models/models');
-var Model = require('./../lib/modules/models/model');
 var Migrations = require('./../lib/modules/migrations/migrations');
 var assert = require('assert');
 var Q = require('q');
@@ -59,14 +57,14 @@ describe('migrations-associations-many-to-many', function() {
 
         Migration.prototype.up = function() {
             this.models.createModel('User', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String, this.Required],
                 articles: [this.HasMany(this.models.Article, "submitter")],
                 votes: [this.HasMany(this.models.Article, "voters")],
                 comments: [this.HasMany(this.models.Comment)]
             });
             this.models.createModel('Article', {
-                id: [this.Id],
+                id: [this.UUID],
                 title: [this.String, this.Required],
                 url: [this.String, this.Required],
                 createdAt: [this.DateTime, this.Default("CURRENT_DATE")],
@@ -75,7 +73,7 @@ describe('migrations-associations-many-to-many', function() {
                 comments: [this.HasMany(this.models.Comment), this.AutoFetch]
             });
             this.models.createModel('Comment', {
-                id: [this.Id],
+                id: [this.UUID],
                 article: [this.BelongsTo(this.models.Article)],
                 author: [this.BelongsTo(this.models.User), this.AutoFetch],
                 text: [this.String, this.Required]
@@ -140,16 +138,16 @@ describe('migrations-associations-many-to-many', function() {
     	function Migration() {}
         Migration.prototype.up = function() {
             this.models.createModel('A', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 bs: [this.HasMany(this.models.B)]
             });
 
             this.models.createModel('B', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 as: [this.HasMany(this.models.A)]
-            });         
+            });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
@@ -170,16 +168,16 @@ describe('migrations-associations-many-to-many', function() {
         function Migration() {}
         Migration.prototype.up = function() {
             this.models.createModel('A', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 bs: [this.HasMany(this.models.B)]
             });
 
             this.models.createModel('B', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 as: [this.HasMany(this.models.A)]
-            });         
+            });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
@@ -257,16 +255,16 @@ describe('migrations-associations-many-to-many', function() {
         function Migration() {}
         Migration.prototype.up = function() {
             this.models.createModel('A', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 manyKey1: [this.HasMany(this.models.B)]
             });
 
             this.models.createModel('B', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 manyKey2: [this.HasMany(this.models.A)]
-            });         
+            });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
@@ -347,16 +345,16 @@ describe('migrations-associations-many-to-many', function() {
         function Migration() {}
         Migration.prototype.up = function() {
             this.models.createModel('A', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 bs: [this.HasMany(this.models.B)]
             });
 
             this.models.createModel('B', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 as: [this.HasMany(this.models.A)]
-            });         
+            });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
@@ -406,16 +404,16 @@ describe('migrations-associations-many-to-many', function() {
         function Migration() {}
         Migration.prototype.up = function() {
             this.models.createModel('A', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 bs: [this.HasMany(this.models.B)]
             });
 
             this.models.createModel('B', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 as: [this.HasMany(this.models.A)]
-            });         
+            });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
@@ -468,21 +466,12 @@ describe('migrations-associations-many-to-many', function() {
                         result = result.then(function() { return b.addA(models.A.findOne({name:names[9]})); });
 
                         return result.then(function() {
-                            return b.getAs({id:{$gt:5}});
+                            return b.getAs();
                         });
                     });
             })
             .then(function(as) {
-                assert.equal(as.length, 5);
-
-                assert.equal(as[0].name, 'Adrian 1');
-                assert.equal(as[1].name, 'Adrian 2');
-                assert.equal(as[2].name, 'Adrian 3');
-                assert.equal(as[3].name, 'Adrian 4');
-                assert.equal(as[4].name, 'Adrian 5');
-                return true;
-            })
-            .then(function() {
+                assert.equal(as.length, 10);
                 done();
             })
             .catch(function(error) {
@@ -495,16 +484,16 @@ describe('migrations-associations-many-to-many', function() {
         function Migration() {}
         Migration.prototype.up = function() {
             this.models.createModel('C', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 ds: [this.HasMany(this.models.D)]
             });
 
             this.models.createModel('D', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 cs: [this.HasMany(this.models.C)]
-            });         
+            });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('C');

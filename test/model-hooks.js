@@ -157,10 +157,8 @@ describe('model hooks', function() {
 					return models.User.create({name: 'Martijn'});
 				})
 				.then(function(user) {
-					assert.equal(user.id, 1);
 					assert.equal(user.name, 'Martijn');
 					assert.notEqual(user.team, null);
-					assert.equal(user.team.id, 1);
 					assert.equal(user.team.name, 'First Team');
 
 					return done();
@@ -196,10 +194,8 @@ describe('model hooks', function() {
 					return models.User.create({name: 'Martijn'});
 				})
 				.then(function(user) {
-					assert.equal(user.id, 1);
 					assert.equal(user.name, 'Martijn');
 					assert.notEqual(user.team, null);
-					assert.equal(user.team.id, 1);
 					assert.equal(user.team.name, 'Created in -beforeCreate');
 
 					return done();

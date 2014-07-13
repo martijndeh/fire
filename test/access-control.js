@@ -183,7 +183,7 @@ describe('access control', function() {
 				agent.post('/api/articles')
 					.send({title: 'Test'})
 					.expect(200, function(error, response) {
-						assert.equal(response.body.id > 0, true);
+						assert.notEqual(response.body.id, null);
 
 						articleId = response.body.id;
 

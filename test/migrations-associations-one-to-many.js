@@ -51,16 +51,16 @@ describe('migrations-associations-one-to-many', function() {
     	function Migration() {}
         Migration.prototype.up = function() {
             this.models.createModel('A', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 b: [this.BelongsTo(this.models.B)]
             });
 
             this.models.createModel('B', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 as: [this.HasMany(this.models.A)]
-            });         
+            });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
@@ -81,16 +81,16 @@ describe('migrations-associations-one-to-many', function() {
         function Migration() {}
         Migration.prototype.up = function() {
             this.models.createModel('A', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 b: [this.BelongsTo(this.models.B)]
             });
 
             this.models.createModel('B', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 as: [this.HasMany(this.models.A), this.AutoFetch]
-            });         
+            });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');

@@ -187,7 +187,7 @@ describe('migrations', function() {
                                 team: [this.HasOne(this.models.Team)]
                             })
                             this.models.createModel('Team', {
-                                id: [this.Id],
+                                id: [this.UUID],
                                 name: [this.String],
                                 project: [this.BelongsTo(this.models.Project), this.Required]
                             });
@@ -410,16 +410,14 @@ describe('migrations', function() {
                 return models.ThirdTest.create({name:'Test 2'});
             })
             .then(function() {
-                return models.ThirdTest.find({});
+                return models.ThirdTest.find({}, {orderBy:{name:1}});
             })
             .then(function(tests) {
                 assert.equal(tests.length, 2);
 
-                assert.equal(tests[0].id, 1);
                 assert.equal(tests[0].name, 'Test 1');
                 assert.equal(tests[0].type, 'Not a Test');
 
-                assert.equal(tests[1].id, 2);
                 assert.equal(tests[1].name, 'Test 2');
                 assert.equal(tests[1].type, 'Test');
 
@@ -466,7 +464,7 @@ describe('migrations', function() {
         function Migration13() {}
         Migration13.prototype.up = function() {
             this.models.createModel('TestModel', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String]
             });
             this.models.execute('SELCT * FROM test_models FROM 1');
@@ -500,13 +498,13 @@ describe('migrations', function() {
         function Migration13() {}
         Migration13.prototype.up = function() {
             this.models.createModel('TestChild', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 parent: [this.BelongsTo(this.models.TestParent), this.Required]
             });
 
             this.models.createModel('TestParent', {
-                id: [this.Id],
+                id: [this.UUID],
                 name: [this.String],
                 childs: [this.HasMany(this.models.TestChild)]
             });

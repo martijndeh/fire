@@ -53,38 +53,38 @@ describe('migrations create initial schema', function() {
 
 		Migration.prototype.up = function() {
 			this.models.createModel('Activity', {
-				id: [this.Id],
+				id: [this.UUID],
 				user: [this.BelongsTo(this.models.User)],
 				app: [this.BelongsTo(this.models.App), this.AutoFetch],
 				name: [this.Text],
 				createdAt: [this.DateTime]
 			});
 			this.models.createModel('App', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.Text],
 				bundleIdentifier: [this.Text],
 				activities: [this.HasMany(this.models.Activity)]
 			});
 			this.models.createModel('Client', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.String],
 				projects: [this.HasMany(this.models.Project), this.AutoFetch],
 				team: [this.BelongsTo(this.models.Team), this.Required]
 			});
 			this.models.createModel('Project', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.String],
 				client: [this.BelongsTo(this.models.Client)],
 				timeTracks: [this.HasMany(this.models.TimeTrack)]
 			});
 			this.models.createModel('Team', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.String],
 				clients: [this.HasMany(this.models.Client)],
 				users: [this.HasMany(this.models.User)]
 			});
 			this.models.createModel('TimeTrack', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.String],
 				startedAt: [this.DateTime, this.Required],
 				endedAt: [this.DateTime],
@@ -92,7 +92,7 @@ describe('migrations create initial schema', function() {
 				user: [this.BelongsTo(this.models.User), this.Required]
 			});
 			this.models.createModel('User', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.Text],
 				accessToken: [this.Text],
 				email: [this.Text],
@@ -131,38 +131,38 @@ describe('migrations create initial schema', function() {
 
 		Migration.prototype.up = function() {
 			this.models.createModel('Activity', {
-				id: [this.Id],
+				id: [this.UUID],
 				user: [this.BelongsTo(this.models.User)],
 				app: [this.BelongsTo(this.models.App), this.AutoFetch],
 				name: [this.Text],
 				createdAt: [this.DateTime]
 			});
 			this.models.createModel('App', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.Text],
 				bundleIdentifier: [this.Text],
 				activities: [this.HasMany(this.models.Activity)]
 			});
 			this.models.createModel('Client', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.String],
 				projects: [this.HasMany(this.models.Project), this.AutoFetch],
 				team: [this.BelongsTo(this.models.Team), this.Required]
 			});
 			this.models.createModel('Project', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.String],
 				client: [this.BelongsTo(this.models.Client)],
 				timeTracks: [this.HasMany(this.models.TimeTrack)]
 			});
 			this.models.createModel('Team', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.String],
 				clients: [this.HasMany(this.models.Client)],
 				users: [this.HasMany(this.models.User)]
 			});
 			this.models.createModel('TimeTrack', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.String],
 				startedAt: [this.DateTime, this.Required],
 				endedAt: [this.DateTime],
@@ -170,7 +170,7 @@ describe('migrations create initial schema', function() {
 				user: [this.BelongsTo(this.models.User), this.Required]
 			});
 			this.models.createModel('User', {
-				id: [this.Id],
+				id: [this.UUID],
 				name: [this.Text],
 				accessToken: [this.Text],
 				email: [this.Text],

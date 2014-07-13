@@ -51,16 +51,16 @@ describe('migrations associations one-to-one', function() {
     	function Migration() {}
     	Migration.prototype.up = function() {
     		this.models.createModel('A', {
-    			id: [this.Id],
+    			id: [this.UUID],
     			name: [this.String],
     			b: [this.BelongsTo(this.models.B)]
     		});
 
 			this.models.createModel('B', {
-    			id: [this.Id],
+    			id: [this.UUID],
     			name: [this.String],
     			a: [this.HasOne(this.models.A)]
-    		});    		
+    		});
     	};
     	Migration.prototype.down = function() {
     		this.models.destroyModel('A');
@@ -81,16 +81,16 @@ describe('migrations associations one-to-one', function() {
     	function Migration() {}
     	Migration.prototype.up = function() {
 			this.models.createModel('B', {
-    			id: [this.Id],
+    			id: [this.UUID],
     			name: [this.String],
     			a: [this.HasOne(this.models.A)]
-    		});  
+    		});
 
     		this.models.createModel('A', {
-    			id: [this.Id],
+    			id: [this.UUID],
     			name: [this.String],
     			b: [this.BelongsTo(this.models.B), this.AutoFetch]
-    		});  		
+    		});
     	};
     	Migration.prototype.down = function() {
     		this.models.destroyModel('A');
@@ -140,16 +140,16 @@ describe('migrations associations one-to-one', function() {
     	function Migration() {}
     	Migration.prototype.up = function() {
 			this.models.createModel('B', {
-    			id: [this.Id],
+    			id: [this.UUID],
     			name: [this.String],
     			a: [this.HasOne(this.models.A)]
-    		});  
+    		});
 
     		this.models.createModel('A', {
-    			id: [this.Id],
+    			id: [this.UUID],
     			name: [this.String],
     			b: [this.BelongsTo(this.models.B), this.AutoFetch]
-    		});  		
+    		});
     	};
     	Migration.prototype.down = function() {
     		this.models.destroyModel('A');
@@ -179,7 +179,7 @@ describe('migrations associations one-to-one', function() {
     			assert.equal(a.name, 'Aart');
     			assert.notEqual(a.b, null);
     			assert.equal(a.b.name, 'Bert');
-    			
+
     			return models.B.findOne({});
     		})
     		.then(function(b) {

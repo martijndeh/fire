@@ -5,8 +5,11 @@ var helper = require('./support/helper');
 var assert = require('assert');
 var Q = require('q');
 var request = require('supertest');
+var uuid = require('node-uuid');
 
 describe('models api associations', function() {
+	var parentID = uuid.v1();
+
 	beforeEach(helper.beforeEach());
 	afterEach(helper.afterEach());
 
@@ -35,28 +38,24 @@ describe('models api associations', function() {
 		};
 
 		helper.createModels = function(app) {
-			var result = Q.when(true);
+			return app.models.Parent.create({id: parentID, name: 'Test'})
+				.then(function(parent) {
+					if(!parentID) {
+						parentID = parent.id;
+					}
 
-			for(var i = 0, il = 4; i < il; i++) {
-				result = result.then(function() {
-					return app.models.Parent.create({name: 'Test'})
-						.then(function(parent) {
-							return Q.all([
-								app.models.Child.create({name: 'Test', parent: parent}),
-								app.models.Child.create({name: 'Test', parent: parent}),
-								app.models.Child.create({name: 'Test', parent: parent})
-							]);
-						});
+					return Q.all([
+						app.models.Child.create({name: 'Test', parent: parent}),
+						app.models.Child.create({name: 'Test', parent: parent}),
+						app.models.Child.create({name: 'Test', parent: parent})
+					]);
 				});
-			}
-
-			return result;
 		};
 	});
 
 	it('can find many', function(done) {
 		request(helper.app.express)
-			.get('/api/parents/1/childs')
+			.get('/api/parents/' + parentID + '/childs')
 			.send()
 			.expect(200, function(error, response) {
 				assert.equal(response.body.length, 3);
@@ -66,10 +65,9 @@ describe('models api associations', function() {
 
 	it('cannot find private many', function(done) {
 		request(helper.app.express)
-			.get('/api/parents/1/privates')
+			.get('/api/parents/' + parentID + '/privates')
 			.send()
 			.expect(404, function(error, response) {
-				console.log(response.body);
 				done(error);
 			});
 	});

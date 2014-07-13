@@ -5,6 +5,7 @@ var fire = require('..');
 
 var assert = require('assert');
 var crypto = require('crypto');
+var uuid = require('node-uuid');
 
 var Q = require('q');
 Q.longStackSupport = true;
@@ -205,7 +206,7 @@ describe('model methods', function() {
                 })
                 .then(function(modelFour) {
                     assert.notEqual(modelFour, null);
-                    assert.equal(modelFour.three, 1);
+                    assert.equal(modelFour.three, modelThree.id);
 
                     return models.ModelFour.updateOne({
                         id: modelFour.id,
@@ -342,6 +343,8 @@ describe('model methods', function() {
             };
         };
 
+        var modelThreeID = uuid.v1();
+
         setImmediate(function() {
             models.ModelThree.setup()
             .then(function() {
@@ -349,6 +352,7 @@ describe('model methods', function() {
             })
             .then(function() {
                 return models.ModelThree.create({
+                    id: modelThreeID,
                     name: 'Three is a Test'
                 });
             })
@@ -372,7 +376,7 @@ describe('model methods', function() {
 
                 modelFours.forEach(function(modelFour) {
                     assert.equal(modelFour.name, 'Four is a Test');
-                    assert.equal(modelFour.three.id, 1);
+                    assert.equal(modelFour.three.id, modelThreeID);
                     assert.equal(modelFour.three.name, 'Three is a Test');
                 });
 
@@ -561,6 +565,9 @@ describe('model methods', function() {
     });
 
     it('can get model with empty childs', function(done) {
+        models.Client = 'Client';
+        models.Project = 'Project';
+
         function Project() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
@@ -1115,9 +1122,9 @@ describe('model methods', function() {
                         value: 1
                     });
                 })
-                .then(function() {
+                .then(function(object) {
                     return models.Object1.update({
-                        id: 1
+                        id: object.id
                     }, {
                         name: 'Martijn 2'
                     });
@@ -1153,7 +1160,7 @@ describe('model methods', function() {
                 })
                 .then(function(article) {
                     var string = JSON.stringify(article);
-                    assert.equal(string, '{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","votes":123,"longerTest":42}');
+                    assert.equal(string, '{"id":"' + article.id + '","title":"Title","url":"https://github.com/martijndeh/fire","votes":123,"longerTest":42}');
 
                     done();
                 })
@@ -1177,6 +1184,10 @@ describe('model methods', function() {
         }
         fire.model(User);
 
+        var userID = uuid.v1();
+        var article1ID = uuid.v1();
+        var article2ID = uuid.v1();
+
         setImmediate(function() {
             models.User.setup()
                 .then(function() {
@@ -1184,10 +1195,12 @@ describe('model methods', function() {
                 })
                 .then(function() {
                     return models.User.create({
+                        id: userID,
                         name: 'Martijn'
                     })
                     .then(function(user) {
                         return models.Article.create({
+                            id: article1ID,
                             title: 'Title',
                             url: 'https://github.com/martijndeh/fire',
                             user: user
@@ -1196,11 +1209,12 @@ describe('model methods', function() {
                 })
                 .then(function(article) {
                     var string = JSON.stringify(article);
-                    assert.equal(string, '{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":1,"name":"Martijn","articles":[]}}');
+                    assert.equal(string, '{"id":"' + article.id + '","title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":"' + userID + '","name":"Martijn","articles":[]}}');
 
                     return models.User.findOne()
                         .then(function(user) {
                             return models.Article.create({
+                                id: article2ID,
                                 title: 'Title 2',
                                 url: 'http://news.ycombinator.com/',
                                 user: user
@@ -1212,7 +1226,7 @@ describe('model methods', function() {
                 })
                 .then(function(user) {
                     var string = JSON.stringify(user);
-                    assert.equal(string, '{"id":1,"name":"Martijn","articles":[{"id":1,"title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":1,"name":"Martijn","articles":[]}},{"id":2,"title":"Title 2","url":"http://news.ycombinator.com/","user":{"id":1,"name":"Martijn","articles":[]}}]}');
+                    assert.equal(string, '{"id":"' + userID + '","name":"Martijn","articles":[{"id":"' + article1ID + '","title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":"' + userID + '","name":"Martijn","articles":[]}},{"id":"' + article2ID + '","title":"Title 2","url":"http://news.ycombinator.com/","user":{"id":"' + userID + '","name":"Martijn","articles":[]}}]}');
 
                     done();
                 })
@@ -1250,7 +1264,7 @@ describe('model methods', function() {
     it('hides non-auto fetch associations in auto toJSON', function(done) {
         models.Project = 'Project';
         models.User = 'User';
-        
+
         function User() {
             this.name = [this.String, this.Required];
             this.projects = [this.HasMany(this.models.Project)];
