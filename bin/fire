@@ -22,6 +22,14 @@ var basePath = path.resolve('./');
 var crypto = require('crypto');
 var spawn = require('child_process').spawn;
 
+function mkdir(dirPath) {
+	var defer = Q.defer();
+	fs.mkdir(dirPath, function() {
+		defer.resolve(true);
+	});
+	return defer.promise;
+}
+
 function execute(command, params) {
 	var defer = Q.defer();
 
@@ -167,15 +175,17 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 	}
 
 	if(argv._[1] == 'migrations') {
-		fs.mkdir(path.join(basePath, '_migrations'), function() {
-			var generate = new Generate(argv._[2] ? path.resolve(argv._[2]) : null);
-			generate.delegate = {
-				addMigration: function(fileName, stream) {
-					stream.pipe(fs.createWriteStream(path.join(basePath, '_migrations', fileName)));
-				}
-			};
-			generate.createMigrations();
-		});
+		return mkdir(path.join(basePath, '_migrations'))
+			.then(function() {
+				var generate = new Generate(argv._[2] ? path.resolve(argv._[2]) : null);
+				generate.delegate = {
+					addMigration: function(fileName, stream) {
+						stream.pipe(fs.createWriteStream(path.join(basePath, '_migrations', fileName)));
+					}
+				};
+
+				return generate.createMigrations();
+			});
 	}
 	else if(argv._[1] == 'scripts') {
 		fire.disabled = true;
