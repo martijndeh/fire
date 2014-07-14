@@ -37,14 +37,24 @@ function execute(command, params) {
 
 	var child = spawn(command, params, {stdio: 'inherit'});
 	child.on('exit', function() {
+		process.stdin.removeListener('readable', callback);
 		defer.resolve();
 	});
+
+	var callback = function() {
+		var chunk = process.stdin.read();
+		if(chunk !== null) {
+			child.kill();
+		}
+	};
+	process.stdin.on('readable', callback);
 
 	return defer.promise;
 }
 
 function start(scriptName) {
 	var fireBin = process.mainModule.filename;
+	process.stdin.setEncoding('utf8');
 
 	var startChild = function() {
 		execute(fireBin, ['generate', 'migrations'])
