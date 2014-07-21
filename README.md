@@ -6,7 +6,7 @@ A productive & convention-based web framework to get your minimum viable product
 
 ### Installation
 ```
-npm install -g fire@0.1.3
+npm install -g fire
 ```
 
 ### Features
@@ -181,7 +181,7 @@ The documentation will be available at https://github.com/martijndeh/fire/wiki. 
 - Replace query building with knex.
 - Improve associations api and improve query API e.g. limit and orderBy on update.
 - Fix weird authenticator system.
-- Use Yeoman 
+- Use Yeoman
 
 ### Help
 
