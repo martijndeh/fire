@@ -9,6 +9,9 @@ var uuid = require('node-uuid');
 
 describe('models api associations', function() {
 	var parentID = uuid.v1();
+	var child1ID = null;
+	var child2ID = null;
+	var child3ID = null;
 
 	beforeEach(helper.beforeEach());
 	afterEach(helper.afterEach());
@@ -49,6 +52,9 @@ describe('models api associations', function() {
 						app.models.Child.create({name: 'Test', parent: parent}),
 						app.models.Child.create({name: 'Test', parent: parent})
 					]);
+				})
+				.spread(function(child1, child2, child3) {
+					child1ID = child1.id;
 				});
 		};
 	});
@@ -71,4 +77,17 @@ describe('models api associations', function() {
 				done(error);
 			});
 	});
+
+	it('can update one', function(done) {
+		request(helper.app.express)
+			.put('/api/parents/' + parentID + '/childs/' + child1ID)
+			.send({
+				name: 'Updated Name'
+			})
+			.expect(200, function(error, response) {
+				assert.equal(response.body.id, child1ID);
+				assert.equal(response.body.name, 'Updated Name');
+				done(error);
+			});
+	})
 });

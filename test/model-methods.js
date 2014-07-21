@@ -52,6 +52,9 @@ describe('model methods', function() {
         .then(function() {
             done();
         })
+        .catch(function(error) {
+            done(error);
+        })
         .done();
     });
 
@@ -406,57 +409,60 @@ describe('model methods', function() {
 
         setImmediate(function() {
             models.Client.setup()
-            .then(function() {
-                return models.Project.setup();
-            })
-            .then(function() {
-                assert.notEqual(models.Client.getAssociations().projects, null);
-                assert.notEqual(models.Project.getAssociations().client, null);
-                return true;
-            })
-            .then(function() {
-                var _ = [];
+                .then(function() {
+                    return models.Project.setup();
+                })
+                .then(function() {
+                    assert.notEqual(models.Client.getAssociations().projects, null);
+                    assert.notEqual(models.Project.getAssociations().client, null);
+                    return true;
+                })
+                .then(function() {
+                    var _ = [];
 
-                for(var i = 0; i < 3; i++) {
-                    _.push(models.Client.create({
-                        name: 'Client #' + i
-                    }));
-                }
+                    for(var i = 0; i < 3; i++) {
+                        _.push(models.Client.create({
+                            name: 'Client #' + i
+                        }));
+                    }
 
-                return Q.all(_);
-            })
-            .then(function() {
-                return models.Client.find({});
-            })
-            .then(function(clients) {
-                assert.equal(clients.length, 3);
+                    return Q.all(_);
+                })
+                .then(function() {
+                    return models.Client.find({});
+                })
+                .then(function(clients) {
+                    assert.equal(clients.length, 3);
 
-                var _ = [];
+                    var _ = [];
 
-                for(var i = 0; i < 30; i++) {
-                    _.push(models.Project.create({
-                        name: 'Project #' + i,
-                        client: clients[i % 3]
-                    }));
-                }
+                    for(var i = 0; i < 30; i++) {
+                        _.push(models.Project.create({
+                            name: 'Project #' + i,
+                            client: clients[i % 3]
+                        }));
+                    }
 
-                return Q.all(_);
-            })
-            .then(function() {
-                return models.Client.findOne({});
-            })
-            .then(function(client) {
-                assert.equal(client.projects.length, 10);
-                return models.Client.find({}, {name:'ASC'});
-            })
-            .then(function(clients) {
-                assert.equal(clients.length, 3);
-                clients.forEach(function(client) {
+                    return Q.all(_);
+                })
+                .spread(function() {
+                    return models.Client.findOne({});
+                })
+                .then(function(client) {
                     assert.equal(client.projects.length, 10);
-                });
-                done();
-            })
-            .done();
+                    return models.Client.find({}, {name:'ASC'});
+                })
+                .then(function(clients) {
+                    assert.equal(clients.length, 3);
+                    clients.forEach(function(client) {
+                        assert.equal(client.projects.length, 10);
+                    });
+                    done();
+                })
+                .catch(function(error) {
+                    done(error);
+                })
+                .done();
         });
     });
 
@@ -875,6 +881,42 @@ describe('model methods', function() {
             this.name = [this.String];
             this.three = [this.Integer, this.Required, this.Transform(function(one, two) {
                 return (one * two);
+            })];
+        }
+        fire.model(Object1);
+
+        setImmediate(function() {
+            models.Object1.setup()
+                .then(function() {
+                    return models.Object1.create({
+                        name: 'Martijn',
+                        one: 2,
+                        two: 4
+                    });
+                })
+                .then(function(object1) {
+                    assert.notEqual(object1, null);
+                    assert.equal(object1.name, 'Martijn');
+                    assert.equal(object1.three, 8);
+
+                    return models.Object1.update({name: 'Martijn'}, {one: 3, two: 5});
+                })
+                .then(function(object) {
+                    assert.equal(object.name, 'Martijn');
+                    assert.equal(object.three, 15);
+
+                    done();
+                })
+                .done();
+        });
+    });
+
+    it('can transform using this to access other properties', function(done) {
+        function Object1() {
+            this.name = [this.String];
+            this.two = [this.Integer];
+            this.three = [this.Integer, this.Required, this.Transform(function(one) {
+                return (one * this.two);
             })];
         }
         fire.model(Object1);
