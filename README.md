@@ -177,38 +177,11 @@ The documentation will be available at https://github.com/martijndeh/fire/wiki. 
 
 ### Roadmap
 
-##### 0.2
-- Schema should have the app name somehow linked to it?
-- Property types should start with a lowercase letter to abide to the standard naming conventions.
-- Where is the Validate property type? Should happen on client AND server-side.
-- Limit the fetch all on the api.
-- Access Control: this.Update('self') should work? Maybe that should be the default?
-- Access control needs to work with a boolean.
-- Sign out.
-- If a template errors out, show that error in development.
-- $routeParams should match the argument names EXACTLY as in the controller method. So we need to keep the $.
-- Partial templates. Do they even work?
-- changeProperties in migrations does not work.
-- The base html should be a configurable template.
-- Implement some sort of module method which works with angular.
-- Modules should be able to extend the default html (e.g. seo needs to add meta thingy).
-- Should array-based routes use the basePathComponents?
-- Rename property type Authenticate to something more suiting. Perhaps we need a default authenticator model?
-- Implement status code templates. Uses in case of errors.
-- Make sure all the angular functionality is accessible.
-- What about many-to-many? Should we be able to create properties on "through"/"via" tables/models.
-- Start implementing client-side caching.
-- Cache authorize and getMe calls. Implement a signout.
-- Replace auto increment primary keys with uuids.
-- The (client-side) models API needs more love: sort, limit, cursors, transactions, etc.
-- Order by isn't really accessible. hasMany associations ideally also get an order by.
-- Extend associations api: finding e.g. articles/:id/comments isn't supported out of the box yet.
-- Load directives/, services/ etc in app.
-- Database error e.g. not-null constraints should not return a 500 but rather a 400 or something.
-- Move app.model and app.controller to the modules instead & deprecate the addModelConstructor and addControllerConstructor systems.
-- Organize everything in a more modular approach.
-- What can we do with Yeoman and should we generate more files e.g. models instead of doing everything dynamically?
-- Move authenticator from api to base controller.
+- Implement web-to-worker communication via message queueing.
+- Replace query building with knex.
+- Improve associations api and improve query API e.g. limit and orderBy on update.
+- Fix weird authenticator system.
+- Use Yeoman 
 
 ### Help
 
