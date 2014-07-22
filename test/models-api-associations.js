@@ -8,7 +8,7 @@ var request = require('supertest');
 var uuid = require('node-uuid');
 
 describe('models api associations', function() {
-	var parentID = uuid.v1();
+	var parentID = uuid.v4();
 	var child1ID = null;
 	var child2ID = null;
 	var child3ID = null;

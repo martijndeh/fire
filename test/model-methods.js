@@ -346,7 +346,7 @@ describe('model methods', function() {
             };
         };
 
-        var modelThreeID = uuid.v1();
+        var modelThreeID = uuid.v4();
 
         setImmediate(function() {
             models.ModelThree.setup()
@@ -1226,9 +1226,9 @@ describe('model methods', function() {
         }
         fire.model(User);
 
-        var userID = uuid.v1();
-        var article1ID = uuid.v1();
-        var article2ID = uuid.v1();
+        var userID = uuid.v4();
+        var article1ID = uuid.v4();
+        var article2ID = uuid.v4();
 
         setImmediate(function() {
             models.User.setup()

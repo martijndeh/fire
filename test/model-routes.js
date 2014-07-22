@@ -214,9 +214,9 @@ describe('model routes', function() {
 		});
 
 		describe('create multiple models', function() {
-			var model1ID = uuid.v1();
-			var model2ID = uuid.v1();
-			var model3ID = uuid.v1();
+			var model1ID = uuid.v4();
+			var model2ID = uuid.v4();
+			var model3ID = uuid.v4();
 
 			function createModel(map) {
 				var defer = Q.defer();
