@@ -6,6 +6,8 @@ var fire = require('..');
 var assert = require('assert');
 var crypto = require('crypto');
 var uuid = require('node-uuid');
+var Model = require('../lib/modules/models/model');
+var util = require('util');
 
 var Q = require('q');
 Q.longStackSupport = true;
@@ -1634,6 +1636,65 @@ describe('model methods', function() {
                 })
                 .then(function(tests) {
                     assert.equal(tests.length, 3);
+                    done();
+                })
+                .done();
+        });
+    });
+
+    it('can find with sub-property', function(done) {
+        models.Test1 = 'Test1';
+        models.Test2 = 'Test2';
+
+        function Test1() {
+            this.test2 = [this.BelongsTo(this.models.Test2)];
+            this.value = [this.Integer];
+        }
+        fire.model(Test1);
+
+        function Test2() {
+            this.name = [this.String];
+            this.tests = [this.HasMany(this.models.Test1)];
+        }
+        fire.model(Test2);
+
+        setImmediate(function() {
+            models.Test2.setup()
+                .then(function() {
+                    return models.Test1.setup();
+                })
+                .then(function() {
+                    return models.Test2.create([{name: 'Test 2 1'}, {name: 'Test 2 2'}, {name: 'Test 2 3'}]);
+                })
+                .then(function(test2s) {
+                    return models.Test1.create([
+                        {
+                            test2: test2s[0],
+                            value: 1
+                        }, {
+                            test2: test2s[1],
+                            value: 2
+                        }, {
+                            test2: test2s[2],
+                            value: 3
+                        },
+                    ]);
+                })
+                .then(function() {
+                    return models.Test2.findOne({
+                        'tests.value': 1
+                    });
+                })
+                .then(function(test) {
+                    assert.equal(test.name, 'Test 2 1');
+
+                    return models.Test1.findOne({
+                        'test2.name': 'Test 2 3'
+                    });
+                })
+                .then(function(test) {
+                    assert.equal(test.value, 3);
+
                     done();
                 })
                 .done();
