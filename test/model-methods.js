@@ -1605,4 +1605,38 @@ describe('model methods', function() {
                 .done();
         });
     });
+
+    it('can create with array', function(done) {
+        function Test1() {
+            this.value = [this.Integer];
+        }
+        fire.model(Test1);
+
+        setImmediate(function() {
+            models.Test1.setup()
+                .then(function() {
+                    return models.Test1.create([
+                        {
+                            value: 1
+                        },
+                        {
+                            value: 2
+                        },
+                        {
+                            value: 3
+                        }
+                    ]);
+                })
+                .then(function(tests) {
+                    assert.equal(tests.length, 3);
+
+                    return models.Test1.find();
+                })
+                .then(function(tests) {
+                    assert.equal(tests.length, 3);
+                    done();
+                })
+                .done();
+        });
+    });
 });
