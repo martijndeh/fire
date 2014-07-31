@@ -81,7 +81,6 @@ describe('models api overwrite', function() {
 				name: 'Martijn'
 			})
 			.expect(200, function(error, response) {
-				console.log(response.body);
 				assert.equal(response.body.name, 'Update');
 				done(error);
 			});
