@@ -22,6 +22,9 @@ describe('models api associations', function() {
 				this.name = [this.String];
 				this.childs = [this.HasMany(this.models.Child)];
 				this.privates = [this.HasMany(this.models.Private), this.Private];
+				this.list = [this.Has(this.models.Child, function(parent) {
+					return this.models.Child.find({parent: parent});
+				})];
 				this.accessControl = [this.Create(function() { return true; }), this.Read(function() { return true; }), this.Update(function() { return true; }), this.Delete(function() { return true; })];
 			}
 			app.model(Parent);
@@ -89,5 +92,17 @@ describe('models api associations', function() {
 				assert.equal(response.body.name, 'Updated Name');
 				done(error);
 			});
-	})
+	});
+
+	it('can get has property', function(done) {
+		request(helper.app.express)
+			.get('/api/parents/' + parentID + '/list')
+			.send()
+			.expect(200, function(error, response) {
+				assert.equal(error, null);
+				assert.equal(response.body.length, 3);
+
+				done(error);
+			});
+	});
 });
