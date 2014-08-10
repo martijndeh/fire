@@ -20,11 +20,11 @@ describe('controller routes', function() {
 	before(function(done) {
 		Config.basePath = path.dirname(__dirname);
 
-		app = fire.app();
+		app = fire.app('routes');
 
 		// Let's create some controllers
 		function ApiController() {}
-		fire.controller(ApiController);
+		app.controller(ApiController);
 
 		ApiController.prototype.basePathComponents = ['1', 'api'];
 

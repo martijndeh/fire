@@ -10,7 +10,7 @@ describe('model hooks', function() {
 	var app = null;
 
     beforeEach(function(done) {
-    	app = fire.app();
+    	app = fire.app('hooks');
         app.run()
             .then(function() {
             	models = app.models;
@@ -56,7 +56,7 @@ describe('model hooks', function() {
 			this.testName = [this.String];
 			this.testValue = [this.Integer, this.Required];
 		}
-		fire.model(User);
+		app.model(User);
 
 		User.prototype.beforeCreate = function() {
 			var self = this;
@@ -96,7 +96,7 @@ describe('model hooks', function() {
 			this.testName = [this.String];
 			this.testValue = [this.Integer, this.Required];
 		}
-		fire.model(User);
+		app.model(User);
 
 		User.prototype.beforeSave = function() {
 			var self = this;
@@ -131,13 +131,13 @@ describe('model hooks', function() {
 			this.name = [this.String];
 			this.users = [this.HasMany(this.models.User)];
 		}
-		fire.model(Team);
+		app.model(Team);
 
 		function User() {
 			this.name = [this.String];
 			this.team = [this.BelongsTo(this.models.Team), this.Required, this.AutoFetch];
 		}
-		fire.model(User);
+		app.model(User);
 
 		User.prototype.beforeCreate = function() {
 			var self = this;
@@ -173,13 +173,13 @@ describe('model hooks', function() {
 			this.name = [this.String];
 			this.users = [this.HasMany(this.models.User)];
 		}
-		fire.model(Team);
+		app.model(Team);
 
 		function User() {
 			this.name = [this.String];
 			this.team = [this.BelongsTo(this.models.Team), this.Required, this.AutoFetch];
 		}
-		fire.model(User);
+		app.model(User);
 
 		User.prototype.beforeCreate = function() {
 			this.team = this.models.Team.create({name: 'Created in -beforeCreate'});
@@ -210,13 +210,13 @@ describe('model hooks', function() {
 			this.name = [this.String];
 			this.users = [this.HasMany(this.models.User)];
 		}
-		fire.model(Team);
+		app.model(Team);
 
 		function User() {
 			this.name = [this.String];
 			this.team = [this.BelongsTo(this.models.Team), this.Required, this.AutoFetch];
 		}
-		fire.model(User);
+		app.model(User);
 
 		User.prototype._createTeam = function() {
 			var defer = Q.defer();

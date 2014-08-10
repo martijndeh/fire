@@ -2,7 +2,7 @@
 
 var fire = require('..');
 
-var Migrations = require('./../lib/modules/migrations/migrations');
+var Migrations = require('./../lib/modules/migrations');
 var assert = require('assert');
 var Q = require('q');
 
@@ -26,7 +26,7 @@ describe('migrations-associations-many-to-many', function() {
     });
 
     beforeEach(function(done) {
-        app = fire.app();
+        app = fire.app('migrations');
         app.run()
             .then(function() {
                 models = app.models;

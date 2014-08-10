@@ -6,6 +6,7 @@ var assert = require('assert');
 var Q = require('q');
 var request = require('supertest');
 var uuid = require('node-uuid');
+var helper = require('./support/helper');
 
 describe('models api associations', function() {
 	var parentID = uuid.v4();
@@ -84,9 +85,9 @@ describe('models api associations', function() {
 	it('can update one', function(done) {
 		request(helper.app.express)
 			.put('/api/parents/' + parentID + '/childs/' + child1ID)
-			.send({
+			.send(helper.jsonify({
 				name: 'Updated Name'
-			})
+			}))
 			.expect(200, function(error, response) {
 				assert.equal(response.body.id, child1ID);
 				assert.equal(response.body.name, 'Updated Name');

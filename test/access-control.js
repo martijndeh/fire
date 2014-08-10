@@ -5,6 +5,7 @@ var fire = require('..');
 var assert = require('assert');
 var Q = require('q');
 var request = require('supertest');
+var helper = require('./support/helper');
 
 describe('access control', function() {
 	var app = null;
@@ -117,14 +118,14 @@ describe('access control', function() {
 
 					// We authorize. This should set a session variable.
 					agent.post('/api/users/authorize')
-						.send({name: 'Martijn', password: 'test'})
+						.send(helper.jsonify({name: 'Martijn', password: 'test'}))
 						.expect(200, function(error, response) {
 							assert.equal(error, null);
 							assert.equal(response.body.name, 'Martijn');
 							assert.notEqual(response.body.accessToken, null);
 							assert.equal(response.body.password, null);
 
-							done();
+							done(error);
 						});
 				})
 				.catch(function(error) {
@@ -135,15 +136,17 @@ describe('access control', function() {
 
 		it('can create article', function(done) {
 			agent.post('/api/articles')
-				.send({
+				.send(helper.jsonify({
 					title: 'Test Title'
-				})
+				}))
 				.expect(200, function(error, response) {
+					console.log(error);
+
 					assert.equal(error, null);
 					assert.equal(response.body.title, 'Test Title');
 					assert.equal(response.body.author.name, 'Martijn');
 
-					done();
+					done(error);
 				});
 		});
 
@@ -151,9 +154,9 @@ describe('access control', function() {
 			var noone = request.agent(app.express);
 
 			noone.post('/api/articles')
-				.send({
+				.send(helper.jsonify({
 					title: 'Malicious'
-				})
+				}))
 				.expect(401, function(error) {
 					done(error);
 				});
@@ -165,10 +168,10 @@ describe('access control', function() {
 			app.models.User.create({name: 'Agent Smith', password: 'test'})
 				.then(function() {
 					smith.post('/api/users/authorize')
-						.send({name: 'Agent Smith', password: 'test'})
+						.send(helper.jsonify({name: 'Agent Smith', password: 'test'}))
 						.expect(200, function() {
 							smith.post('/api/articles')
-								.send({title: '+1 + -1'})
+								.send(helper.jsonify({title: '+1 + -1'}))
 								.expect(403, function(error) {
 									done(error);
 								});
@@ -181,7 +184,7 @@ describe('access control', function() {
 
 			beforeEach(function(done) {
 				agent.post('/api/articles')
-					.send({title: 'Test'})
+					.send(helper.jsonify({title: 'Test'}))
 					.expect(200, function(error, response) {
 						assert.notEqual(response.body.id, null);
 
@@ -193,7 +196,7 @@ describe('access control', function() {
 
 			it('can update article', function(done) {
 				agent.put('/api/articles/' + articleId)
-					.send({title: 'Rename'})
+					.send(helper.jsonify({title: 'Rename'}))
 					.expect(200, function(error, response) {
 						assert.equal(response.body.id, articleId);
 						assert.equal(response.body.title, 'Rename');
@@ -205,9 +208,9 @@ describe('access control', function() {
 			it('cannot update id', function(done) {
 				agent
 					.put('/api/articles/' + articleId)
-					.send({
+					.send(helper.jsonify({
 						id: 123
-					})
+					}))
 					.expect(400, function(error) {
 						done(error);
 					});
@@ -218,7 +221,7 @@ describe('access control', function() {
 
 				request.agent(app.express)
 					.put('/api/articles/' + articleId)
-					.send({title: newTitle})
+					.send(helper.jsonify({title: newTitle}))
 					.expect(401, function(error) {
 						app.models.Article.getOne({id:articleId})
 							.then(function(article) {
@@ -236,11 +239,11 @@ describe('access control', function() {
 				app.models.User.create({name: 'Agent Smith', password: 'test'})
 					.then(function() {
 						smith.post('/api/users/authorize')
-							.send({name: 'Agent Smith', password: 'test'})
+							.send(helper.jsonify({name: 'Agent Smith', password: 'test'}))
 							.expect(200, function(error1) {
 								assert.equal(error1, null);
 								smith.put('/api/articles/' + articleId)
-									.send({title: '+1 + -1'})
+									.send(helper.jsonify({title: '+1 + -1'}))
 									.expect(403, function(error2) {
 										done(error2);
 									});

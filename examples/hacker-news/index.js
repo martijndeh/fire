@@ -72,7 +72,7 @@ NewsController.prototype.doVoteArticle = ['/api/articles/:articleID/voters', fun
 function ArticleController(fire, $scope, $routeParams) {
 	$scope.article = fire.unwrap(fire.models.Article.findOne({id: $routeParams.id}), {});
 }
-fire.controller(ArticleController);
+app.controller(ArticleController);
 
 ArticleController.prototype.viewArticle = function($id) {
 	return this.template('article.jade');

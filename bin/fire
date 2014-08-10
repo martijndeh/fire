@@ -9,9 +9,9 @@ var fs = require('fs');
 var Q = require('q');
 var argv = require('minimist')(process.argv.slice(2));
 
-var Models = require('./../lib/modules/models/models');
+var Models = require('./../lib/modules/models');
 
-var Migrations = require('./../lib/modules/migrations/migrations');
+var Migrations = require('./../lib/modules/migrations');
 var Generate = require('./../lib/modules/migrations/generate');
 
 var mu = require('mu2');

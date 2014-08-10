@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
 ## Node on Fire :fire:
-A productive & convention-based web framework to get your minimum viable product ready in no-time built on top of [AngularJS](https://angularjs.org/), [express](http://expressjs.com/) and [PostgreSQL](http://www.postgresql.org/).
+A JavaScript everywhere model-driven code generation web framework built on top of [AngularJS](https://angularjs.org/), [express](http://expressjs.com/) and [PostgreSQL](http://www.postgresql.org/).
 
 ### Installation
 ```
@@ -11,13 +11,11 @@ npm install -g fire
 
 ### Features
 
-1.  **Everything JavaScript**. You write front-end and back-end code in JavaScript. Moreover, switching between the ends is as easy as calling a regular method.
+1.  **JavaScript Everywhere**. You write both your front- and back-end code in the same language: JavaScript. In addition, **Node on Fire** :fire: makes it possible to truly re-use code.
 
-2. **Configuring Models**. You configure your models with the properties and Node on Fire automatically creates the schema, an automatic CRUD API and more.
+2. **Model-Driven**. By defining your models, you automatically create a database schema, a REST API and a matching client-side library.
 
-3. **Database Everywhere**. You can query your database in both the back-end and the front-end side.
-
-4. **Productive**. Node on Fire's main focus is to make iterating on your prototype or MVP faster. Try it out and you'll find out.
+3. **Code Generation**.
 
 ### Philosophy
 
@@ -102,7 +100,7 @@ NewsController.prototype.doVoteArticle = ['/api/articles/:articleID/voters', fun
 function ArticleController(fire, $scope, $routeParams) {
     $scope.article = fire.unwrap(fire.models.Article.findOne({id: $routeParams.id}), {});
 }
-fire.controller(ArticleController);
+app.controller(ArticleController);
 
 ArticleController.prototype.viewArticle = function($id) {
     return this.template('article.jade');
@@ -173,15 +171,7 @@ Be the first to find out about any major release, sign up at http://nodeonfire.l
 
 ### Documentation
 
-The documentation will be available at https://github.com/martijndeh/fire/wiki. It's currently a work-in-progress. Sign up to receive an email about any release updates at http://nodeonfire.launchrock.co/.
-
-### Roadmap
-
-- Implement web-to-worker communication via message queueing.
-- Replace query building with knex.
-- Improve associations api and improve query API e.g. limit and orderBy on update.
-- Fix weird authenticator system.
-- Use Yeoman
+We are currently working on implementing JSDoc and you can preview the documentation by running `$ jsdoc -c ./jsdoc.json`.
 
 ### Help
 

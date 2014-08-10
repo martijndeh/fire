@@ -1,9 +1,9 @@
 'use strict';
 
 var fire = require('..');
-var Models = require('./../lib/modules/models/models');
+var Models = require('./../lib/modules/models');
 var Model = require('./../lib/modules/models/model');
-var Migrations = require('./../lib/modules/migrations/migrations');
+var Migrations = require('./../lib/modules/migrations');
 var assert = require('assert');
 var Q = require('q');
 
@@ -27,7 +27,7 @@ describe('migrations associations one-to-one', function() {
     });
 
     beforeEach(function(done) {
-        app = fire.app();
+        app = fire.app('migrations');
         app.run()
             .then(function() {
                 models = app.models;

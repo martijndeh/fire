@@ -6,8 +6,6 @@ var fire = require('..');
 var assert = require('assert');
 var crypto = require('crypto');
 var uuid = require('node-uuid');
-var Model = require('../lib/modules/models/model');
-var util = require('util');
 
 var Q = require('q');
 Q.longStackSupport = true;
@@ -17,7 +15,7 @@ describe('model methods', function() {
     var app = null;
 
     beforeEach(function(done) {
-        app = fire.app();
+        app = fire.app('methods');
         app.run()
             .then(function() {
                 models = app.models;
@@ -72,14 +70,14 @@ describe('model methods', function() {
             this.submitter = [this.BelongsTo(this.models.User, 'submittedArticles'), this.AutoFetch, this.Required];
             this.voters = [this.HasMany(this.models.User, 'votedArticles'), this.AutoFetch];
         }
-        fire.model(Article);
+        app.model(Article);
 
         function User() {
             this.name = [this.String, this.Required];
             this.votedArticles = [this.HasMany(this.models.Article, 'voters')];
             this.submittedArticles = [this.HasMany(this.models.Article, 'submitter')];
         }
-        fire.model(User);
+        app.model(User);
 
         setImmediate(function() {
             return models.User.setup()
@@ -119,7 +117,7 @@ describe('model methods', function() {
             this.name = [this.String];
             this.value = [this.Integer];
         }
-        fire.model(ModelThree);
+        app.model(ModelThree);
 
         setImmediate(function() {
             return models.ModelThree.setup()
@@ -140,7 +138,7 @@ describe('model methods', function() {
         function ModelThree() {
             this.name = [this.String];
         }
-        fire.model(ModelThree);
+        app.model(ModelThree);
 
         setImmediate(function() {
             return models.ModelThree.setup()
@@ -184,13 +182,13 @@ describe('model methods', function() {
             this.name = [this.String];
             this.modelFour = [this.HasOne(this.models.ModelFour)];
         }
-        fire.model(ModelThree);
+        app.model(ModelThree);
 
         function ModelFour() {
             this.name = [this.String];
             this.three = [this.BelongsTo(this.models.ModelThree)];
         }
-        fire.model(ModelFour);
+        app.model(ModelFour);
 
         setImmediate(function() {
             return models.ModelThree.setup()
@@ -233,7 +231,7 @@ describe('model methods', function() {
             this.name       = [this.String];
             this.createdAt  = [this.DateTime];
         }
-        fire.model(ModelThree);
+        app.model(ModelThree);
 
         var startDate = new Date(2014, 10, 23);
         var endDate = new Date(2014, 10, 24);
@@ -279,13 +277,13 @@ describe('model methods', function() {
             this.name = [this.String];
             this.modelFour = [this.HasOne(this.models.ModelFour)];
         }
-        fire.model(ModelThree);
+        app.model(ModelThree);
 
         function ModelFour() {
             this.name = [this.String];
             this.three = [this.BelongsTo(this.models.ModelThree), this.AutoFetch];
         }
-        fire.model(ModelFour);
+        app.model(ModelFour);
 
         setImmediate(function() {
             models.ModelThree.setup()
@@ -324,7 +322,7 @@ describe('model methods', function() {
             this.name = [this.String];
             this.modelFour = [this.HasOne(this.models.ModelFour)];
         }
-        fire.model(ModelThree);
+        app.model(ModelThree);
 
         ModelThree.prototype.toJSON = function() {
             return {
@@ -338,7 +336,7 @@ describe('model methods', function() {
             this.name = [this.String];
             this.three = [this.BelongsTo(this.models.ModelThree), this.AutoFetch];
         }
-        fire.model(ModelFour);
+        app.model(ModelFour);
 
         ModelFour.prototype.toJSON = function() {
             return {
@@ -401,13 +399,13 @@ describe('model methods', function() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
         }
-        fire.model(Project);
+        app.model(Project);
 
         function Client() {
             this.name       = [this.String];
             this.projects   = [this.AutoFetch, this.HasMany(this.models.Project)];
         }
-        fire.model(Client);
+        app.model(Client);
 
         setImmediate(function() {
             models.Client.setup()
@@ -476,13 +474,13 @@ describe('model methods', function() {
             this.name       = [this.String];
             this.projects   = [this.HasMany(this.models.Project)];
         }
-        fire.model(Client);
+        app.model(Client);
 
         function Project() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
         }
-        fire.model(Project);
+        app.model(Project);
 
         setImmediate(function() {
             models.Client.setup()
@@ -544,28 +542,28 @@ describe('model methods', function() {
             this.name = [this.String];
             this.projects = [this.AutoFetch, this.HasMany(this.models.Project)];
         }
-        fire.model(Client);
+        app.model(Client);
 
         function Project() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
         }
-        fire.model(Project);
+        app.model(Project);
 
         setImmediate(function() {
             models.loadClass(Client);
             models.loadClass(Project);
 
-            for(var modelName in models.internals) {
+            var modelName;
+            for(modelName in models.internals) {
                 var ModelClass = models.internals[modelName];
 
                 models._addModel(ModelClass, modelName);
             }
 
-            for(var modelName in models.internals) {
+            for(modelName in models.internals) {
                 var model = models.internals[modelName];
-
-                model.getTable().addProperties(model.getAllProperties(), false);
+                model.getAllProperties();
             }
 
             done();
@@ -580,13 +578,13 @@ describe('model methods', function() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client)];
         }
-        fire.model(Project);
+        app.model(Project);
 
         function Client() {
             this.name       = [this.String];
             this.projects   = [this.HasMany(this.models.Project), this.AutoFetch];
         }
-        fire.model(Client);
+        app.model(Client);
 
         setImmediate(function() {
             models.Client.setup()
@@ -614,20 +612,20 @@ describe('model methods', function() {
             this.name = [this.String];
             this.cs = [this.HasMany(this.models.C)];
         }
-        fire.model(User);
+        app.model(User);
 
         function A() {
             this.name = [this.String];
             this.bs = [this.HasMany(this.models.B)];
         }
-        fire.model(A);
+        app.model(A);
 
         function B() {
             this.name = [this.String];
             this.a = [this.BelongsTo(this.models.A), this.AutoFetch];
             this.cs = [this.HasMany(this.models.C)];
         }
-        fire.model(B);
+        app.model(B);
 
         function C() {
             this.name = [this.String];
@@ -635,7 +633,7 @@ describe('model methods', function() {
             this.b = [this.BelongsTo(this.models.B), this.AutoFetch];
             this.user = [this.BelongsTo(this.models.User), this.Required];
         }
-        fire.model(C);
+        app.model(C);
 
         C.prototype.toJSON = function() {
             return {
@@ -718,7 +716,7 @@ describe('model methods', function() {
             this.name = [this.String];
             this.client = [this.BelongsTo(this.models.Client), this.AutoFetch, this.Required];
         }
-        fire.model(Project);
+        app.model(Project);
 
         Project.prototype.toJSON = function() {
             return {
@@ -731,7 +729,7 @@ describe('model methods', function() {
             this.name       = [this.String];
             this.projects   = [this.HasMany(this.models.Project)];
         }
-        fire.model(Client);
+        app.model(Client);
 
         Client.prototype.toJSON = function() {
             return {
@@ -792,7 +790,7 @@ describe('model methods', function() {
                 return (title + ' ' + subtitle);
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -825,7 +823,7 @@ describe('model methods', function() {
                 return defer.promise;
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -856,7 +854,7 @@ describe('model methods', function() {
                 return (title ? title : '') + ' ' + (subtitle ? subtitle : '');
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -885,7 +883,7 @@ describe('model methods', function() {
                 return (one * two);
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -921,7 +919,7 @@ describe('model methods', function() {
                 return (one * this.two);
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -962,7 +960,7 @@ describe('model methods', function() {
                 };
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -1025,7 +1023,7 @@ describe('model methods', function() {
                 };
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -1070,7 +1068,7 @@ describe('model methods', function() {
                 return hash.digest('hex');
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -1099,7 +1097,7 @@ describe('model methods', function() {
                 });
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -1127,7 +1125,7 @@ describe('model methods', function() {
                 });
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -1156,7 +1154,7 @@ describe('model methods', function() {
                 });
             })];
         }
-        fire.model(Object1);
+        app.model(Object1);
 
         setImmediate(function() {
             models.Object1.setup()
@@ -1190,7 +1188,7 @@ describe('model methods', function() {
             this.votes = [this.Integer, this.Default(0)];
             this.longerTest = [this.Integer];
         }
-        fire.model(Article);
+        app.model(Article);
 
         setImmediate(function() {
             models.Article.setup()
@@ -1220,13 +1218,13 @@ describe('model methods', function() {
             this.url = [this.String, this.Required];
             this.user = [this.BelongsTo(this.models.User), this.AutoFetch];
         }
-        fire.model(Article);
+        app.model(Article);
 
         function User() {
             this.name = [this.String];
             this.articles = [this.HasMany(this.models.Article), this.AutoFetch];
         }
-        fire.model(User);
+        app.model(User);
 
         var userID = uuid.v4();
         var article1ID = uuid.v4();
@@ -1283,7 +1281,7 @@ describe('model methods', function() {
             this.name = [this.String, this.Required];
             this.password = [this.String, this.Required, this.Private];
         }
-        fire.model(User);
+        app.model(User);
 
         setImmediate(function() {
             models.User.setup()
@@ -1313,13 +1311,13 @@ describe('model methods', function() {
             this.name = [this.String, this.Required];
             this.projects = [this.HasMany(this.models.Project)];
         }
-        fire.model(User);
+        app.model(User);
 
         function Project() {
             this.name = [this.String];
             this.user = [this.BelongsTo(this.models.User)];
         }
-        fire.model(Project);
+        app.model(Project);
 
         setImmediate(function() {
             models.User.setup()
@@ -1346,7 +1344,7 @@ describe('model methods', function() {
             this.testValue = [this.Integer, this.Required];
             this.position = [this.ReadOnly('$testValue * 3')];
         }
-        fire.model(Test);
+        app.model(Test);
 
         setImmediate(function() {
             models.Test.setup()
@@ -1380,14 +1378,14 @@ describe('model methods', function() {
         function Test1() {
             this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
         }
-        fire.model(Test1);
+        app.model(Test1);
 
         function Test2() {
             this.testValue = [this.Integer];
             this.position = [this.ReadOnly('$testValue * 3')];
             this.test = [this.BelongsTo(this.models.Test1)];
         }
-        fire.model(Test2);
+        app.model(Test2);
 
         setImmediate(function() {
             models.Test1.setup()
@@ -1441,13 +1439,13 @@ describe('model methods', function() {
             this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
             this.numberOfTests = [this.Count('tests')];
         }
-        fire.model(Test1);
+        app.model(Test1);
 
         function Test2() {
             this.testValue = [this.Integer];
             this.test = [this.BelongsTo(this.models.Test1)];
         }
-        fire.model(Test2);
+        app.model(Test2);
 
         setImmediate(function() {
             models.Test1.setup()
@@ -1495,13 +1493,13 @@ describe('model methods', function() {
             this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
             this.numberOfTests = [this.Count('tests')];
         }
-        fire.model(Test1);
+        app.model(Test1);
 
         function Test2() {
             this.testValue = [this.Integer];
             this.tests = [this.HasMany(this.models.Test1)];
         }
-        fire.model(Test2);
+        app.model(Test2);
 
         setImmediate(function() {
             models.Test1.setup()
@@ -1555,13 +1553,13 @@ describe('model methods', function() {
             this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
             this.value = [this.ReadOnly('$count("tests") * 2')];
         }
-        fire.model(Test1);
+        app.model(Test1);
 
         function Test2() {
             this.testValue = [this.Integer];
             this.tests = [this.HasMany(this.models.Test1)];
         }
-        fire.model(Test2);
+        app.model(Test2);
 
         setImmediate(function() {
             models.Test1.setup()
@@ -1612,7 +1610,7 @@ describe('model methods', function() {
         function Test1() {
             this.value = [this.Integer];
         }
-        fire.model(Test1);
+        app.model(Test1);
 
         setImmediate(function() {
             models.Test1.setup()
@@ -1642,6 +1640,7 @@ describe('model methods', function() {
         });
     });
 
+    /*
     it('can find with sub-property', function(done) {
         models.Test1 = 'Test1';
         models.Test2 = 'Test2';
@@ -1650,13 +1649,13 @@ describe('model methods', function() {
             this.test2 = [this.BelongsTo(this.models.Test2)];
             this.value = [this.Integer];
         }
-        fire.model(Test1);
+        app.model(Test1);
 
         function Test2() {
             this.name = [this.String];
             this.tests = [this.HasMany(this.models.Test1)];
         }
-        fire.model(Test2);
+        app.model(Test2);
 
         setImmediate(function() {
             models.Test2.setup()
@@ -1694,6 +1693,58 @@ describe('model methods', function() {
                 })
                 .then(function(test) {
                     assert.equal(test.value, 3);
+
+                    done();
+                })
+                .done();
+        });
+    });
+    */
+
+    it('find only one instance via sub-property', function(done) {
+        models.App = 'App';
+        models.Event = 'Event';
+
+        function App() {
+            this.name = [this.String];
+            this.events = [this.HasMany(this.models.Event)];
+        }
+        app.model(App);
+
+        function Event() {
+            this.type = [this.String];
+            this.app = [this.BelongsTo(this.models.App)];
+        }
+        app.model(Event);
+
+        setImmediate(function() {
+            models.App.setup()
+                .then(function() {
+                    return models.Event.setup();
+                })
+                .then(function() {
+                    return models.App.create([{name: 'Test App'}, {name: 'Test App 2'}, {name: 'Test App 3'}]);
+                })
+                .then(function(apps) {
+                    return models.Event.create([{
+                        type: 'Click',
+                        app: apps[0]
+                    }, {
+                        type: 'Click',
+                        app: apps[0]
+                    }, {
+                        type: 'Click',
+                        app: apps[0]
+                    }]);
+                })
+                .then(function() {
+                    return models.App.find({
+                        'events.type': 'Click'
+                    });
+                })
+                .then(function(apps) {
+                    assert.equal(apps.length, 1);
+                    assert.equal(apps[0].name, 'Test App');
 
                     done();
                 })

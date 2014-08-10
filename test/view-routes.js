@@ -8,7 +8,7 @@ var config = require('./../lib/helpers/config');
 
 describe('view routes', function() {
     var app = null;
-    var DEFAULT_HTML = '<!DOCTYPE html><html ng-app="app"><head><meta charset="utf-8"><meta name="fragment" content="!"><title></title><script src="/bower_components/angular/angular.min.js"></script><script src="/bower_components/angular-route/angular-route.min.js"></script><script src="/scripts/fire.js"></script></head><body ng-view></body></html>';
+    var DEFAULT_HTML = '<!DOCTYPE html><html ng-app="routes"><head><meta charset="utf-8"><meta name="fragment" content="!"><title></title><script src="/bower_components/angular/angular.min.js"></script><script src="/bower_components/angular-route/angular-route.min.js"></script><script src="/scripts/fire.js"></script></head><body ng-view></body></html>';
 
     after(function(done) {
         app.stop()
@@ -18,11 +18,11 @@ describe('view routes', function() {
     });
 
     before(function(done) {
-        app = fire.app();
+        app = fire.app('routes');
 
         // Let's create some controllers
         function TestController() {}
-        fire.controller(TestController);
+        app.controller(TestController);
 
         app.template('test1', 'test1');
         app.template('test2', 'test2');

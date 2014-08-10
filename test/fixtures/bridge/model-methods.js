@@ -1,3 +1,13 @@
+'use strict';
+
+/* jshint undef: true, unused: true */
+/* global angular */
+
+var app = angular.module('example', []);
+
+
+
+
 function FireModelInstance(setMap, model, path) {
 	this._map = setMap || {};
 	this._changes = {};
@@ -159,90 +169,121 @@ FireModel.prototype.getOne = function(fields) {
 	return defer.promise;
 };
 
-{{#models}}
-function FireModelInstance{{name}}(setMap, model, path) {
+
+function FireModelInstanceUser(setMap, model, path) {
 	FireModelInstance.call(this, setMap, model, path);
 
 	var self = this;
-{{#properties}}
-	Object.defineProperty(this, '{{name}}', {
+
+	Object.defineProperty(this, 'id', {
 		get: function() {
-			return self._changes['{{name}}'] || self._map['{{name}}'];
+			return self._changes['id'] || self._map['id'];
 		},
 
 		set: function(value) {
-			self._changes['{{name}}'] = value;
+			self._changes['id'] = value;
 		}
 	});
-{{/properties}}
+
+	Object.defineProperty(this, 'name', {
+		get: function() {
+			return self._changes['name'] || self._map['name'];
+		},
+
+		set: function(value) {
+			self._changes['name'] = value;
+		}
+	});
+
 }
-FireModelInstance{{name}}.prototype = FireModelInstance.prototype;
+FireModelInstanceUser.prototype = FireModelInstance.prototype;
 
-{{#methods}}
-FireModelInstance{{name}}.prototype.{{getMethodName}} = function(queryMap, optionsMap) {
-	return this._model.models.{{modelName}}._find(this._model.endpoint + '/' + this.id + '/{{resource}}', queryMap, optionsMap);
-};
-{{/methods}}
 
-function FireModel{{name}}($http, $q, models) {
+
+function FireModelUser($http, $q, models) {
 	FireModel.call(this, $http, $q, models);
 
-	this.endpoint = '/api/{{resource}}';
+	this.endpoint = '/api/users';
 }
-FireModel{{name}}.prototype = new FireModel();
+FireModelUser.prototype = new FireModel();
 
-FireModel{{name}}.prototype.parseResult = function(setMapOrList, path) {
+FireModelUser.prototype.parseResult = function(setMapOrList, path) {
 	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
 		var self = this;
 		return setMapOrList.map(function(setMap) {
-			return new FireModelInstance{{name}}(setMap, self, path);
+			return new FireModelInstanceUser(setMap, self, path);
 		});
 	}
 	else {
-		return new FireModelInstance{{name}}(setMapOrList, this, path);
+		return new FireModelInstanceUser(setMapOrList, this, path);
 	}
 };
 
-{{#isAuthenticator}}
-var __authenticator = null;
 
-FireModel{{name}}.prototype.authorize = function(fields) {
-	return this._post(this.endpoint + '/authorize', fields)
-		.then(function(authenticator) {
-			__authenticator = authenticator;
-			return __authenticator;
+
+function FireModelInstancePet(setMap, model, path) {
+	FireModelInstance.call(this, setMap, model, path);
+
+	var self = this;
+
+	Object.defineProperty(this, 'id', {
+		get: function() {
+			return self._changes['id'] || self._map['id'];
+		},
+
+		set: function(value) {
+			self._changes['id'] = value;
+		}
+	});
+
+	Object.defineProperty(this, 'name', {
+		get: function() {
+			return self._changes['name'] || self._map['name'];
+		},
+
+		set: function(value) {
+			self._changes['name'] = value;
+		}
+	});
+
+}
+FireModelInstancePet.prototype = FireModelInstance.prototype;
+
+
+
+function FireModelPet($http, $q, models) {
+	FireModel.call(this, $http, $q, models);
+
+	this.endpoint = '/api/pets';
+}
+FireModelPet.prototype = new FireModel();
+
+FireModelPet.prototype.parseResult = function(setMapOrList, path) {
+	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
+		var self = this;
+		return setMapOrList.map(function(setMap) {
+			return new FireModelInstancePet(setMap, self, path);
 		});
-};
-
-FireModel{{name}}.prototype.getMe = function() {
-	var defer = this.$q.defer();
-
-	if(__authenticator) {
-		defer.resolve(__authenticator);
 	}
 	else {
-		this._get(this.endpoint + '/me')
-			.then(function(authenticator) {
-				if(authenticator) {
-					__authenticator = authenticator;
-					defer.resolve(__authenticator);
-				}
-				else {
-					defer.reject(new Error('Unauthorized'));
-				}
-			})
-			.catch(function(error) {
-				defer.reject(error);
-			});
+		return new FireModelInstancePet(setMapOrList, this, path);
 	}
-
-	return defer.promise;
 };
-{{/isAuthenticator}}
-{{/models}}
+
+
+
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
-	{{#models}}
-	this.{{name}} = new FireModel{{name}}($http, $q, this);
-	{{/models}}
+	
+	this.User = new FireModelUser($http, $q, this);
+	
+	this.Pet = new FireModelPet($http, $q, this);
+	
+}]);
+
+
+app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+    $locationProvider.html5Mode(true);
+
+
 }]);

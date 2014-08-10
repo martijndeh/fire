@@ -5,6 +5,7 @@ var helper = require('./support/helper');
 var assert = require('assert');
 var Q = require('q');
 var request = require('supertest');
+var helper = require('./support/helper');
 
 describe('models api overwrite', function() {
 	beforeEach(helper.beforeEach());
@@ -65,9 +66,9 @@ describe('models api overwrite', function() {
 	it('can create', function(done) {
 		request(helper.app.express)
 			.post('/api/testers')
-			.send({
+			.send(helper.jsonify({
 				name: 'Martijn'
-			})
+			}))
 			.expect(200, function(error, response) {
 				assert.equal(response.body.name, 'Create');
 				done(error);
@@ -77,9 +78,9 @@ describe('models api overwrite', function() {
 	it('can update', function(done) {
 		request(helper.app.express)
 			.put('/api/testers/' + testerID)
-			.send({
+			.send(helper.jsonify({
 				name: 'Martijn'
-			})
+			}))
 			.expect(200, function(error, response) {
 				assert.equal(response.body.name, 'Update');
 				done(error);
@@ -110,9 +111,9 @@ describe('models api overwrite', function() {
 	it('can find many', function(done) {
 		request(helper.app.express)
 			.get('/api/testers')
-			.send({
+			.send(helper.jsonify({
 				name: 'Martijn'
-			})
+			}))
 			.expect(200, function(error, response) {
 				assert.equal(response.body.length, 20);
 				done(error);

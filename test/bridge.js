@@ -4,8 +4,9 @@
 var fire = require('..');
 var util = require('util');
 var streams = require('memory-streams');
-//var request = require('supertest');
 var assert = require('assert');
+var fs = require('fs');
+var path = require('path');
 
 describe('bridge', function() {
 	var app = null;
@@ -14,6 +15,7 @@ describe('bridge', function() {
 	beforeEach(function(done) {
 		app = fire.app('example', {disabled: true});
 		bridge = app.bridge;
+
 		app.run()
 			.then(function() {
 				done();
@@ -60,6 +62,7 @@ describe('bridge', function() {
 
 	it('can generate controller methods', function(done) {
 		function TestController() {}
+		app.controller(TestController);
 
 		TestController.prototype.doTest = function(foo, bar, baz) { //jshint ignore:line
 			return 123;
@@ -77,13 +80,15 @@ describe('bridge', function() {
 			return $id;
 		};
 
-		bridge.addController(TestController);
-
 		var writeStream = new streams.WritableStream();
 
-		bridge.generate(writeStream)
+		app.models.setup()
+			.then(function() {
+				return bridge.generate(writeStream);
+			})
 			.then(function() {
 				assert.equal(writeStream.toString().length > 0, true);
+				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/controller-methods.js')).toString());
 
 				done();
 			})
@@ -111,6 +116,7 @@ describe('bridge', function() {
 
 			/* jshint ignore:end */
 		}
+		app.controller(TestController);
 
 		// This is just an API call.
 		TestController.prototype.getTest = function() {
@@ -163,25 +169,30 @@ describe('bridge', function() {
 			//{
 		}
 
+		app.model(User);
+		app.model(Pet);
 
-		bridge.addModel(User);
-		bridge.addModel(Pet);
-
-     	bridge.addController(TestController);
-     	bridge.addController(fn7);
-     	bridge.addController(fn6);
-     	bridge.addController(fn5);
-     	bridge.addController(fn4);
-     	bridge.addController(fn3);
-     	bridge.addController(fn2);
-     	bridge.addController(fn1);
-     	bridge.addController(fn0);
+     	app.controller(fn7);
+     	app.controller(fn6);
+     	app.controller(fn5);
+     	app.controller(fn4);
+     	app.controller(fn3);
+     	app.controller(fn2);
+     	app.controller(fn1);
+     	app.controller(fn0);
 
      	var writeStream = new streams.WritableStream();
 
-		bridge.generate(writeStream)
+		app.models.setup()
+			.then(function() {
+				return bridge.generate(writeStream);
+			})
 			.then(function() {
 				assert.equal(writeStream.toString().length > 0, true);
+
+				//fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/model-methods.js'), writeStream.toString());
+
+				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/model-methods.js')).toString());
 
 				done();
 			})
@@ -206,9 +217,13 @@ describe('bridge', function() {
 
 		var writeStream = new streams.WritableStream();
 
-		bridge.generate(writeStream)
+		app.models.setup()
+			.then(function() {
+				return bridge.generate(writeStream);
+			})
 			.then(function() {
 				assert.equal(writeStream.toString().length > 0, true);
+				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/angular-methods.js')).toString());
 
 				done();
 			})

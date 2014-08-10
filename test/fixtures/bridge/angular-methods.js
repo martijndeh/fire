@@ -1,3 +1,28 @@
+'use strict';
+
+/* jshint undef: true, unused: true */
+/* global angular */
+
+var app = angular.module('example', []);
+
+
+app.directive('myCustomer',function () {
+    		return {
+      			template: 'Name: {{customer.name}} Address: {{customer.address}}'
+    		};
+  		});
+
+app.config(['$scope','fire',function ($scope, fire) { //jshint ignore:line
+
+		}]);
+
+app.service('TestService', ['$scope', function($scope) { //jshint ignore:line
+			// This is the service.
+			return this;
+		}]);
+
+
+
 function FireModelInstance(setMap, model, path) {
 	this._map = setMap || {};
 	this._changes = {};
@@ -159,90 +184,15 @@ FireModel.prototype.getOne = function(fields) {
 	return defer.promise;
 };
 
-{{#models}}
-function FireModelInstance{{name}}(setMap, model, path) {
-	FireModelInstance.call(this, setMap, model, path);
 
-	var self = this;
-{{#properties}}
-	Object.defineProperty(this, '{{name}}', {
-		get: function() {
-			return self._changes['{{name}}'] || self._map['{{name}}'];
-		},
-
-		set: function(value) {
-			self._changes['{{name}}'] = value;
-		}
-	});
-{{/properties}}
-}
-FireModelInstance{{name}}.prototype = FireModelInstance.prototype;
-
-{{#methods}}
-FireModelInstance{{name}}.prototype.{{getMethodName}} = function(queryMap, optionsMap) {
-	return this._model.models.{{modelName}}._find(this._model.endpoint + '/' + this.id + '/{{resource}}', queryMap, optionsMap);
-};
-{{/methods}}
-
-function FireModel{{name}}($http, $q, models) {
-	FireModel.call(this, $http, $q, models);
-
-	this.endpoint = '/api/{{resource}}';
-}
-FireModel{{name}}.prototype = new FireModel();
-
-FireModel{{name}}.prototype.parseResult = function(setMapOrList, path) {
-	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-		var self = this;
-		return setMapOrList.map(function(setMap) {
-			return new FireModelInstance{{name}}(setMap, self, path);
-		});
-	}
-	else {
-		return new FireModelInstance{{name}}(setMapOrList, this, path);
-	}
-};
-
-{{#isAuthenticator}}
-var __authenticator = null;
-
-FireModel{{name}}.prototype.authorize = function(fields) {
-	return this._post(this.endpoint + '/authorize', fields)
-		.then(function(authenticator) {
-			__authenticator = authenticator;
-			return __authenticator;
-		});
-};
-
-FireModel{{name}}.prototype.getMe = function() {
-	var defer = this.$q.defer();
-
-	if(__authenticator) {
-		defer.resolve(__authenticator);
-	}
-	else {
-		this._get(this.endpoint + '/me')
-			.then(function(authenticator) {
-				if(authenticator) {
-					__authenticator = authenticator;
-					defer.resolve(__authenticator);
-				}
-				else {
-					defer.reject(new Error('Unauthorized'));
-				}
-			})
-			.catch(function(error) {
-				defer.reject(error);
-			});
-	}
-
-	return defer.promise;
-};
-{{/isAuthenticator}}
-{{/models}}
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
-	{{#models}}
-	this.{{name}} = new FireModel{{name}}($http, $q, this);
-	{{/models}}
+	
+}]);
+
+
+app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+    $locationProvider.html5Mode(true);
+
+
 }]);

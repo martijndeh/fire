@@ -6,13 +6,14 @@ var request = require('supertest');
 var Q = require('q');
 var assert = require('assert');
 var uuid = require('node-uuid');
+var helper = require('./support/helper');
 
 describe('model routes', function() {
 	var app = null;
 	var createModels = null;
 
 	beforeEach(function(done) {
-		app = fire.app();
+		app = fire.app('model-routes');
 
 		if(createModels) {
 			createModels();
@@ -75,7 +76,7 @@ describe('model routes', function() {
 					this.actions 	= [this.HasMany(this.models.Action), this.AutoFetch, this.Virtual];
 					this.accessControl = [this.Create(function() { return true; })];
 				}
-				fire.model(User);
+				app.model(User);
 
 				User.prototype.toJSON = function() {
 					return {
@@ -89,7 +90,7 @@ describe('model routes', function() {
 					this.type = [this.String];
 					this.user = [this.BelongsTo(this.models.User), this.Required];
 				}
-				fire.model(Action);
+				app.model(Action);
 
 				Action.prototype.toJSON = function() {
 					return {
@@ -111,10 +112,10 @@ describe('model routes', function() {
 
 		it('can register', function(done) {
 			agent.post('/api/users')
-				.send({
+				.send(helper.jsonify({
 					name: 'Martijn',
 					password: 'test'
-				})
+				}))
 				.expect(200, function(error, response) {
 					assert.equal(error, null);
 					assert.equal(response.body.name, 'Martijn');
@@ -125,18 +126,18 @@ describe('model routes', function() {
 
 		it('can register & authorize', function(done) {
 			agent.post('/api/users')
-				.send({
+				.send(helper.jsonify({
 					name: 'Martijn',
 					password: 'test'
-				})
+				}))
 				.expect(200, function(error) {
 					assert.equal(error, null);
 
 					agent.post('/api/users/authorize')
-						.send({
+						.send(helper.jsonify({
 							name: 'Martijn',
 							password: 'test'
-						})
+						}))
 						.expect(200, function(err, response) {
 							assert.equal(err, null);
 							assert.equal(response.body.name, 'Martijn');
@@ -163,10 +164,10 @@ describe('model routes', function() {
 		describe('authorize', function() {
 			beforeEach(function(done) {
 				agent.post('/api/users')
-					.send({
+					.send(helper.jsonify({
 						name: 'Martijn',
 						password: 'test'
-					})
+					}))
 					.expect(200, function(error) {
 						done(error);
 					});
@@ -179,14 +180,14 @@ describe('model routes', function() {
 	describe('basic routes', function() {
 		before(function() {
 			createModels = function() {
-				function Model() {
+				function Test() {
 					this.name = [this.String];
 					this.value = [this.Integer];
 					this.accessControl = [this.Create(function() { return true; }), this.Update(function() { return true; }), this.Read(function() { return true; })];
 				}
-				fire.model(Model);
+				app.model(Test);
 
-				Model.prototype.toJSON = function() {
+				Test.prototype.toJSON = function() {
 					return {
 						id: this.id,
 						name: this.name,
@@ -200,10 +201,10 @@ describe('model routes', function() {
 
 		it('can create model', function(done) {
 			request(app.express)
-				.post('/api/models')
-				.send({
+				.post('/api/tests')
+				.send(helper.jsonify({
 					name: 'Martijn'
-				})
+				}))
 				.expect(200, function(error, response) {
 					assert.equal(error, null);
 					assert.equal(response.body.name, 'Martijn');
@@ -222,8 +223,8 @@ describe('model routes', function() {
 				var defer = Q.defer();
 
 				request(app.express)
-					.post('/api/models')
-					.send(map)
+					.post('/api/tests')
+					.send(helper.jsonify(map))
 					.expect(200, function(error, response) {
 						if(error) {
 							defer.reject(error);
@@ -260,7 +261,7 @@ describe('model routes', function() {
 
 			it('can get 1 model', function(done) {
 				request(app.express)
-					.get('/api/models/' + model2ID)
+					.get('/api/tests/' + model2ID)
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
 						assert.equal(response.body.name, 'Martijn 2');
@@ -272,7 +273,7 @@ describe('model routes', function() {
 
 			it('can get an array of 1 model', function(done) {
 				request(app.express)
-					.get('/api/models?value=1')
+					.get('/api/tests?value=1')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
 
@@ -288,7 +289,7 @@ describe('model routes', function() {
 
 			it('can get an array of multiple models', function(done) {
 				request(app.express)
-					.get('/api/models?value=2')
+					.get('/api/tests?value=2')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
 
@@ -307,10 +308,10 @@ describe('model routes', function() {
 
 			it('can update 1 model', function(done) {
 				request(app.express)
-					.put('/api/models/' + model3ID)
-					.send({
+					.put('/api/tests/' + model3ID)
+					.send(helper.jsonify({
 						name: 'Martijn (Updated)'
-					})
+					}))
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
 						assert.equal(response.body.id, model3ID);
@@ -323,10 +324,10 @@ describe('model routes', function() {
 
 			it('cannot update all models', function(done) {
 				request(app.express)
-					.put('/api/models')
-					.send({
+					.put('/api/tests')
+					.send(helper.jsonify({
 						name: 'Oopsie'
-					})
+					}))
 					.expect(404, function(error) {
 						done(error);
 					});

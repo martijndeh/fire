@@ -13,7 +13,7 @@ function Helper() {
 Helper.prototype.beforeEach = function() {
     var self = this;
     return function(done) {
-        self.app = fire.app();
+        self.app = fire.app('test');
 
         return Q.when(self.setup(self.app))
             .then(function() {
@@ -67,4 +67,12 @@ Helper.prototype.afterEach = function() {
             })
             .done();
     };
+};
+
+Helper.prototype.jsonify = function(map) {
+    var json = {};
+    Object.keys(map).forEach(function(key) {
+        json[key] = JSON.stringify(map[key]);
+    });
+    return json;
 };

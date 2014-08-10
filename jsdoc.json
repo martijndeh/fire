@@ -1,0 +1,33 @@
+{
+	"source": {
+		"include": [
+			"index.js",
+			"README.md",
+			"lib",
+
+			"lib/helpers",
+
+			"lib/modules/api",
+			"lib/modules/bridge",
+			"lib/modules/bridge/generators",
+			"lib/modules/controllers",
+			"lib/modules/migrations",
+			"lib/modules/models",
+			"lib/modules/seo",
+			"lib/modules/static",
+			"lib/modules/templates",
+			"lib/modules/workers"
+		],
+		"includePattern": ".*\\.(js|md)$"
+	},
+	"plugins": [
+		"plugins/markdown"
+	],
+	"markdown": {
+    	"parser": "gfm",
+    	"hardwrap": true
+	},
+	"opts": {
+		"destination": "./docs"
+	}
+}
