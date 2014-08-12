@@ -10,7 +10,7 @@ describe('model hooks', function() {
 	var app = null;
 
     beforeEach(function(done) {
-    	app = fire.app('hooks');
+    	app = fire.app('hooks', {});
         app.run()
             .then(function() {
             	models = app.models;

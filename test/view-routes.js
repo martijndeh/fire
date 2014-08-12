@@ -18,7 +18,7 @@ describe('view routes', function() {
     });
 
     before(function(done) {
-        app = fire.app('routes');
+        app = fire.app('routes', {});
 
         // Let's create some controllers
         function TestController() {}

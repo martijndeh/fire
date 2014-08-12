@@ -1,7 +1,6 @@
 /* global describe, beforeEach, afterEach, before, it */
 'use strict';
 
-var fire = require('..');
 var request = require('supertest');
 var Q = require('q');
 var assert = require('assert');
@@ -9,68 +8,14 @@ var uuid = require('node-uuid');
 var helper = require('./support/helper');
 
 describe('model routes', function() {
-	var app = null;
-	var createModels = null;
-
-	beforeEach(function(done) {
-		app = fire.app('model-routes');
-
-		if(createModels) {
-			createModels();
-		}
-
-		app.run()
-			.then(function() {
-				var result = Q.when(true);
-
-				app.models.forEach(function(model) {
-					result = result.then(function() {
-						return model.setup();
-					});
-				});
-
-				return result;
-			})
-			.then(function() {
-				// TODO: Why are we doing a timeout here?
-				setTimeout(function() {
-					done();
-				}, 500);
-			})
-			.done();
-	});
-
-	afterEach(function(done) {
-		var result = Q.when(true);
-
-        app.models.forEach(function(model) {
-            result = result.then(function() {
-                return model.exists().then(function(exists) {
-                    if(exists) {
-                        return model.forceDestroy();
-                    }
-                    else {
-                        return Q.when(true);
-                    }
-                });
-            });
-        });
-
-        result
-	        .then(function() {
-	        	return app.stop();
-	        })
-	        .then(function() {
-	        	done();
-	        })
-	        .done();
-	});
+	beforeEach(helper.beforeEach());
+	afterEach(helper.afterEach());
 
 	describe('authentication session', function() {
 		var agent = null;
 
 		before(function() {
-			createModels = function() {
+			helper.setup = function(app) {
 				function User() {
 					this.name 		= [this.String, this.Authenticate];
 					this.actions 	= [this.HasMany(this.models.Action), this.AutoFetch, this.Virtual];
@@ -98,16 +43,14 @@ describe('model routes', function() {
 						type: this.type
 					};
 				};
-
-
 			};
 		});
 
 		beforeEach(function() {
-			assert.notEqual(app, null);
-			assert.notEqual(app.express, null);
+			assert.notEqual(helper.app, null);
+			assert.notEqual(helper.app.express, null);
 
-			agent = request.agent(app.express);
+			agent = request.agent(helper.app.express);
 		});
 
 		it('can register', function(done) {
@@ -179,7 +122,7 @@ describe('model routes', function() {
 
 	describe('basic routes', function() {
 		before(function() {
-			createModels = function() {
+			helper.setup = function(app) {
 				function Test() {
 					this.name = [this.String];
 					this.value = [this.Integer];
@@ -200,7 +143,7 @@ describe('model routes', function() {
 		});
 
 		it('can create model', function(done) {
-			request(app.express)
+			request(helper.app.express)
 				.post('/api/tests')
 				.send(helper.jsonify({
 					name: 'Martijn'
@@ -222,7 +165,7 @@ describe('model routes', function() {
 			function createModel(map) {
 				var defer = Q.defer();
 
-				request(app.express)
+				request(helper.app.express)
 					.post('/api/tests')
 					.send(helper.jsonify(map))
 					.expect(200, function(error, response) {
@@ -260,7 +203,7 @@ describe('model routes', function() {
 			});
 
 			it('can get 1 model', function(done) {
-				request(app.express)
+				request(helper.app.express)
 					.get('/api/tests/' + model2ID)
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
@@ -272,7 +215,7 @@ describe('model routes', function() {
 			});
 
 			it('can get an array of 1 model', function(done) {
-				request(app.express)
+				request(helper.app.express)
 					.get('/api/tests?value=1')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
@@ -288,7 +231,7 @@ describe('model routes', function() {
 			});
 
 			it('can get an array of multiple models', function(done) {
-				request(app.express)
+				request(helper.app.express)
 					.get('/api/tests?value=2')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
@@ -307,7 +250,7 @@ describe('model routes', function() {
 			});
 
 			it('can update 1 model', function(done) {
-				request(app.express)
+				request(helper.app.express)
 					.put('/api/tests/' + model3ID)
 					.send(helper.jsonify({
 						name: 'Martijn (Updated)'
@@ -323,7 +266,7 @@ describe('model routes', function() {
 			});
 
 			it('cannot update all models', function(done) {
-				request(app.express)
+				request(helper.app.express)
 					.put('/api/tests')
 					.send(helper.jsonify({
 						name: 'Oopsie'

@@ -2,18 +2,22 @@
 
 var Q = require('q');
 var fire = require('./../..');
+var fs = require('fs');
+var path = require('path');
 
 exports = module.exports = new Helper();
 
 function Helper() {
     this.setup = null;
     this.createModels = null;
+    this.app = null;
+    this.modules = null;
 }
 
-Helper.prototype.beforeEach = function() {
+Helper.prototype.beforeEach = function(options) {
     var self = this;
     return function(done) {
-        self.app = fire.app('test');
+        self.app = fire.app('test', options || {});
 
         return Q.when(self.setup(self.app))
             .then(function() {
@@ -31,7 +35,37 @@ Helper.prototype.beforeEach = function() {
                 return result;
             })
             .then(function() {
-                return Q.when(self.createModels(self.app));
+                if(self.createModels) {
+                    return Q.when(self.createModels(self.app));
+                }
+                else {
+                    return Q.when(true);
+                }
+            })
+            .then(function() {
+                var result = Q.when(true);
+
+                self.modules = [];
+
+                self.app.models.forEach(function(model) {
+                    result = result.then(function() {
+                        var writeStream = fs.createWriteStream(path.join(__dirname, '..', '..', 'temp', model.getName().toLowerCase() + '.js'));
+
+                        return self.app.aPI.generateModelController(model, writeStream)
+                            .then(function() {
+                                self.modules.push(writeStream.path);
+
+                                require(writeStream.path);
+                            });
+                    });
+                });
+
+                return result;
+            })
+            .then(function() {
+                var defer = Q.defer();
+                setImmediate(defer.makeNodeResolver());
+                return defer.promise;
             })
             .then(function() {
                 done();
@@ -61,6 +95,12 @@ Helper.prototype.afterEach = function() {
         result
             .then(function() {
                 return self.app.stop();
+            })
+            .then(function() {
+                return (self.modules && self.modules.forEach(function(modulePath) {
+                    delete require.cache[modulePath];
+                    fs.unlinkSync(modulePath);
+                }));
             })
             .then(function() {
                 done();

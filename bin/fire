@@ -197,6 +197,48 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 				return generate.createMigrations();
 			});
 	}
+	else if(argv._[1] == 'api') {
+		fire.disabled = true;
+
+		var initialScript = 'index.js';
+		if(argv._.length > 2) {
+			initialScript = argv._[2];
+		}
+
+		require(path.join(basePath, initialScript));
+
+		var app = fire.app(Object.keys(fire.appsMap)[0]);
+
+		app.controllers.setup(basePath)
+			.then(function() {
+				return app.models.setup(basePath);
+			})
+			.then(function() {
+				var defer = Q.defer();
+
+				setImmediate(function() {
+					fs.mkdir(path.join(basePath, '_api'), function() {
+						defer.resolve();
+					});
+				});
+
+				return defer.promise;
+			})
+			.then(function() {
+				var result = Q.when(true);
+
+				app.models.forEach(function(model) {
+					result = result.then(function() {
+						var modelName = model.getName();
+						var writeStream = fs.createWriteStream(path.join(basePath, '_api', inflection.transform(modelName, ['tableize', 'dasherize', 'singularize']) + '.js'));
+						return app.aPI.generateModelController(model, writeStream);
+					});
+				});
+
+				return result;
+			})
+			.done();
+	}
 	else if(argv._[1] == 'scripts') {
 		fire.disabled = true;
 
@@ -207,20 +249,19 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 
 		require(path.join(basePath, initialScript));
 
-		var app = fire.app();
+		// TODO: This should get all apps?
+
+		var app = fire.app(Object.keys(fire.appsMap)[0]);
 		app.controllers.setup(basePath)
 			.then(function() {
 				return app.models.setup(basePath);
 			})
 			.then(function() {
 				setImmediate(function() {
-					var bridge = app.bridge;
-					bridge.load();
-
 					fs.mkdir(path.join(basePath, '_assets'), function() {
 						var writeStream = fs.createWriteStream(path.join(basePath, '_assets', 'fire.js'));
 
-						bridge.generate(writeStream);
+						app.bridge.generate(writeStream);
 					});
 				});
 			})

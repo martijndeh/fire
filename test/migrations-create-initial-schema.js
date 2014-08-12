@@ -28,7 +28,7 @@ describe('migrations create initial schema', function() {
     });
 
     beforeEach(function(done) {
-    	app = fire.app('migrations');
+    	app = fire.app('migrations', {});
     	app.run()
     		.then(function() {
 		        models = app.models;

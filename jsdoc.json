@@ -2,6 +2,7 @@
 	"source": {
 		"include": [
 			"index.js",
+
 			"README.md",
 			"lib",
 
@@ -25,9 +26,14 @@
 	],
 	"markdown": {
     	"parser": "gfm",
-    	"hardwrap": true
+    	"hardwrap": true,
+    	"githubRepoName": "fire",
+    	"githubRepoOwner": "martijndeh"
 	},
 	"opts": {
-		"destination": "./docs"
+		"destination": "docs"
+	},
+	"tags": {
+		"allowUnknownTags": true
 	}
 }

@@ -15,16 +15,20 @@
     "type": "git",
     "url": "https://github.com/martijndeh/fire.git"
   },
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "main": "index.js",
   "bin": "bin/fire",
   "devDependencies": {
     "chai-as-promised": "~4.1.1",
-    "supertest": "^0.13.0",
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-jsdoc": "^0.5.6",
     "jscoverage": "^0.3.8",
+    "jsdoc": "^3.3.0-alpha9",
+    "memory-streams": "0.0.3",
     "mocha": "^1.18.2",
-    "memory-streams": "0.0.3"
+    "supertest": "^0.13.0"
   },
   "scripts": {
     "test": "NODE_ENV=test ./node_modules/.bin/mocha --reporter spec ./test/*.js"

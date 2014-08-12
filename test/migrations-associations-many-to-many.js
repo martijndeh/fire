@@ -26,7 +26,7 @@ describe('migrations-associations-many-to-many', function() {
     });
 
     beforeEach(function(done) {
-        app = fire.app('migrations');
+        app = fire.app('migrations', {});
         app.run()
             .then(function() {
                 models = app.models;
@@ -45,7 +45,6 @@ describe('migrations-associations-many-to-many', function() {
                     .done();
             })
             .catch(function(error) {
-                console.log(error);
                 done(error);
             })
     });

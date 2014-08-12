@@ -11,8 +11,6 @@ var helper = require('./support/helper');
 describe('models api associations', function() {
 	var parentID = uuid.v4();
 	var child1ID = null;
-	var child2ID = null;
-	var child3ID = null;
 
 	beforeEach(helper.beforeEach());
 	afterEach(helper.afterEach());
@@ -77,7 +75,7 @@ describe('models api associations', function() {
 		request(helper.app.express)
 			.get('/api/parents/' + parentID + '/privates')
 			.send()
-			.expect(404, function(error, response) {
+			.expect(404, function(error) {
 				done(error);
 			});
 	});
@@ -89,6 +87,8 @@ describe('models api associations', function() {
 				name: 'Updated Name'
 			}))
 			.expect(200, function(error, response) {
+				console.log(error);
+
 				assert.equal(response.body.id, child1ID);
 				assert.equal(response.body.name, 'Updated Name');
 				done(error);

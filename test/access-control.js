@@ -6,10 +6,13 @@ var assert = require('assert');
 var Q = require('q');
 var request = require('supertest');
 var helper = require('./support/helper');
+var fs = require('fs');
+var path = require('path');
 
 describe('access control', function() {
 	var app = null;
 	var createModels = null;
+	var modules = null;
 
 	beforeEach(function(done) {
 		app = fire.app('accessControlTest', {});
@@ -37,6 +40,31 @@ describe('access control', function() {
 	        	});
 
 	        	return result;
+			})
+			.then(function() {
+				var result = Q.when(true);
+
+				modules = [];
+
+				app.models.forEach(function(model) {
+					result = result.then(function() {
+						var writeStream = fs.createWriteStream(path.join(__dirname, '..', 'temp', model.getName().toLowerCase() + '.js'));
+
+						return app.aPI.generateModelController(model, writeStream)
+							.then(function() {
+								modules.push(writeStream.path);
+
+								require(writeStream.path);
+							});
+					});
+				});
+
+				return result;
+			})
+			.then(function() {
+				var defer = Q.defer();
+				setImmediate(defer.makeNodeResolver());
+				return defer.promise;
 			})
 			.then(function() {
 				done();
@@ -67,6 +95,11 @@ describe('access control', function() {
         	.then(function() {
             	return app.stop();
         	})
+			.then(function() {
+				modules.forEach(function(modulPath) {
+					delete require.cache[modulPath];
+				});
+			})
         	.then(function() {
             	done();
         	})
@@ -140,8 +173,6 @@ describe('access control', function() {
 					title: 'Test Title'
 				}))
 				.expect(200, function(error, response) {
-					console.log(error);
-
 					assert.equal(error, null);
 					assert.equal(response.body.title, 'Test Title');
 					assert.equal(response.body.author.name, 'Martijn');

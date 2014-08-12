@@ -15,7 +15,7 @@ npm install -g fire
 
 2. **Model-Driven**. By defining your models, you automatically create a database schema, a REST API and a matching client-side library.
 
-3. **Code Generation**.
+3. **Code Generation**. Write only a few lines of code and hundreds of lines of code are generated for you.
 
 ### Philosophy
 
