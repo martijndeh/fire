@@ -62,6 +62,9 @@ function start(scriptName) {
 				return execute(fireBin, ['generate', 'scripts']);
 			})
 			.then(function() {
+				return execute(fireBin, ['generate', 'api']);
+			})
+			.then(function() {
 				return execute('npm', ['install']);
 			})
 			.then(function() {
@@ -185,9 +188,20 @@ else if(argv._[0] == 'generate' || argv._[0] == 'g') {
 	}
 
 	if(argv._[1] == 'migrations') {
+		fire.disabled = true;
+
+		var initialScript = 'index.js';
+		if(argv._.length > 2) {
+			initialScript = argv._[2];
+		}
+
+		require(path.join(basePath, initialScript));
+
+		var app = fire.app(Object.keys(fire.appsMap)[0]);
+
 		return mkdir(path.join(basePath, '_migrations'))
 			.then(function() {
-				var generate = new Generate(argv._[2] ? path.resolve(argv._[2]) : null);
+				var generate = new Generate(app, basePath);
 				generate.delegate = {
 					addMigration: function(fileName, stream) {
 						stream.pipe(fs.createWriteStream(path.join(basePath, '_migrations', fileName)));
