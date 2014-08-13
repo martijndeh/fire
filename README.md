@@ -1,5 +1,3 @@
-#### Under active development. Not feature-complete yet and currently unstable.
-
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
 ## Node on Fire :fire:
 A JavaScript everywhere model-driven code generation web framework built on top of [AngularJS](https://angularjs.org/), [express](http://expressjs.com/) and [PostgreSQL](http://www.postgresql.org/).
