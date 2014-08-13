@@ -4,6 +4,6 @@ node_js:
 addons:
   postgresql: "9.3"
 before_script:
-  - psql -c 'create database fire;' -U postgres
+  - psql -c 'create database fire; CREATE EXTENSION "uuid-ossp";' -U postgres
 env:
   - DATABASE_URL=postgres://postgres@localhost/fire
