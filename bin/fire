@@ -16,6 +16,7 @@ var Generate = require('./../lib/modules/migrations/generate');
 
 var mu = require('mu2');
 mu.root = path.join(__dirname, 'templates');
+
 var inflection = require('inflection');
 var fire = require('./..');
 var basePath = path.resolve('./');
@@ -57,19 +58,7 @@ function start(scriptName) {
 	process.stdin.setEncoding('utf8');
 
 	var startChild = function() {
-		execute(fireBin, ['generate', 'migrations'])
-			.then(function() {
-				return execute(fireBin, ['generate', 'scripts']);
-			})
-			.then(function() {
-				return execute(fireBin, ['generate', 'api']);
-			})
-			.then(function() {
-				return execute('npm', ['install']);
-			})
-			.then(function() {
-				return execute('bower', ['install']);
-			})
+		execute(fireBin, ['build'])
 			.then(function() {
 				return execute(fireBin, ['migrate']);
 			})
@@ -88,16 +77,65 @@ function start(scriptName) {
 	startChild();
 }
 
+function showUsage() {
+	var lines = [
+		'Usage: fire COMMAND [command-specific-options]',
+		'',
+		'All available commands are listed below. For more information on a specific command, type "fire help COMMAND".',
+		'',
+		'	start		# builds, releases and runs your app',
+		'	build		# generates migrations, scripts, api, installs dependencies',
+		'	create		# creates a new app with a skeleton structure',
+		'	migrate		# migrates the database',
+		'	generate	# generates additional code',
+		''
+	];
+	lines.forEach(function(line) {
+		console.log(line);
+	});
+}
+
 if(argv._.length === 0) {
+	showUsage();
+}
+else if(argv._[0] == 'start') {
+	// TODO: Should we deprecate this because we want to promote the build-release-run phases?
 	start('index.js');
 }
+else if(argv._[0] == 'build') {
+	var fireBin = process.mainModule.filename;
+	execute(fireBin, ['generate', 'migrations'])
+		.then(function() {
+			return execute(fireBin, ['generate', 'scripts']);
+		})
+		.then(function() {
+			return execute(fireBin, ['generate', 'api']);
+		})
+		.then(function() {
+			return execute('npm', ['install']);
+		})
+		.then(function() {
+			return execute('bower', ['install']);
+		})
+		.done();
+}
 else if(argv._[0] == 'help') {
-	console.log('todo: create a help section');
+	if(argv._.length == 1) {
+		showUsage();
+	}
+	else {
+		console.log('todo: show command-specific help');
+	}
 }
 else if(argv._[0] == 'create') {
 	var appName = argv._[1];
 
 	var appPath = path.join(basePath, inflection.dasherize(appName).toLowerCase());
+
+	if(fs.existsSync(appPath)) {
+		throw new Error('Path `' + appPath + '` already exists.');
+	}
+
 	console.log('Creating `' + appPath + '`.');
 
 	fs.mkdirSync(appPath);
@@ -109,13 +147,20 @@ else if(argv._[0] == 'create') {
 		fs.mkdirSync(directoryPath);
 	});
 
-	var files = ['bower.json', 'index.js', '.env'];
-	files.forEach(function(fileName) {
-		var filePath = path.join(appPath, fileName);
+	var filesMap = {
+		'bower-json.mu': 'bower.json',
+		'index-js.mu': 'index.js',
+		'env.mu': '.env',
+		'package-json.mu': 'package.json'
+	};
+
+	Object.keys(filesMap).forEach(function(from) {
+		var to = filesMap[from];
+		var filePath = path.join(appPath, to);
 
 		console.log('Creating `' + filePath + '`.');
 
-		mu.compileAndRender(fileName, {
+		mu.compileAndRender(from, {
 			name: appName,
 			sessionKey: crypto.randomBytes(127).toString('base64')
 		}).pipe(fs.createWriteStream(filePath));
