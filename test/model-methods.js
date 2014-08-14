@@ -551,8 +551,8 @@ describe('model methods', function() {
         app.model(Project);
 
         setImmediate(function() {
-            models.loadClass(Client);
-            models.loadClass(Project);
+            models.loadModelConstructor(Client);
+            models.loadModelConstructor(Project);
 
             var modelName;
             for(modelName in models.internals) {

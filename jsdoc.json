@@ -16,8 +16,7 @@
 			"lib/modules/models",
 			"lib/modules/seo",
 			"lib/modules/static",
-			"lib/modules/templates",
-			"lib/modules/workers"
+			"lib/modules/templates"
 		],
 		"includePattern": ".*\\.(js|md)$"
 	},

@@ -8,7 +8,8 @@ var config = require('./../lib/helpers/config');
 
 describe('view routes', function() {
     var app = null;
-    var DEFAULT_HTML = '<!DOCTYPE html><html ng-app="routes"><head><meta charset="utf-8"><meta name="fragment" content="!"><title></title><script src="/bower_components/angular/angular.min.js"></script><script src="/bower_components/angular-route/angular-route.min.js"></script><script src="/scripts/fire.js"></script></head><body ng-view></body></html>';
+                            
+    var DEFAULT_HTML = '<!DOCTYPE html><html ng-app="routes" id="ng-app" xmlns:ng="http://angularjs.org"><head><meta charset="utf-8"><meta name="fragment" content="!"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title></title><script src="/bower_components/angular/angular.min.js"></script><script src="/bower_components/angular-route/angular-route.min.js"></script><script src="/scripts/fire.js"></script></head><body ng-view></body></html>';
 
     after(function(done) {
         app.stop()
@@ -99,18 +100,5 @@ describe('view routes', function() {
                 assert.equal(response.text, 'test3');
                 done(error);
             });
-    });
-
-    it('can load file-based template', function(done) {
-        config.basePath = path.join(__dirname, 'fixtures');
-
-        app.templates.load(path.join(config.basePath, 'templates', 'test4.html'))
-            .then(function() {
-                var template = app.templates.template('test4.html');
-
-                assert.equal(template, 'test4\n');
-                done();
-            })
-            .done();
     });
 });
