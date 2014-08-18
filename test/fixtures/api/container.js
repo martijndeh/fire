@@ -45,6 +45,8 @@ ContainerModelController.prototype.createContainer = function() {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canCreate.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -90,6 +92,8 @@ ContainerModelController.prototype.getContainers = function() {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canRead.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -98,6 +102,8 @@ ContainerModelController.prototype.getContainers = function() {
 					if(canRead) {
 						var queryMap = self.query || {};
 						var optionsMap = {};
+
+						// TODO: Move this to Model#find instead.
 
 						if(queryMap.$options) {
 							optionsMap = queryMap.$options;
@@ -117,6 +123,8 @@ ContainerModelController.prototype.getContainers = function() {
 ContainerModelController.prototype.getContainer = function($id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
+
+	// TODO: Use Controller#canCreate.
 
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -275,6 +283,7 @@ ContainerModelController.prototype.updateUsers = ['/api/Containers/:id/users/:as
 									whereMap[association.options.relationshipVia.name] = $id;
 									whereMap.id = $associationID;
 
+									// TODO: Replace with this.models.ModelNameHere in the build phase!
 									return association.options.relationshipVia.model.updateOne(whereMap, self.body);
 								}
 								else {

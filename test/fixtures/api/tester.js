@@ -45,6 +45,8 @@ TesterModelController.prototype.createTester = function() {
 	var model = this.models.Tester;
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canCreate.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -90,6 +92,8 @@ TesterModelController.prototype.getTesters = function() {
 	var model = this.models.Tester;
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canRead.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -98,6 +102,8 @@ TesterModelController.prototype.getTesters = function() {
 					if(canRead) {
 						var queryMap = self.query || {};
 						var optionsMap = {};
+
+						// TODO: Move this to Model#find instead.
 
 						if(queryMap.$options) {
 							optionsMap = queryMap.$options;
@@ -117,6 +123,8 @@ TesterModelController.prototype.getTesters = function() {
 TesterModelController.prototype.getTester = function($id) {
 	var model = this.models.Tester;
 	var accessControl = model.getAccessControl();
+
+	// TODO: Use Controller#canCreate.
 
 	return this.findAuthenticator()
 		.then(function(authenticator) {

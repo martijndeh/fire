@@ -45,6 +45,8 @@ CollectionModelController.prototype.createCollection = function() {
 	var model = this.models.Collection;
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canCreate.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -90,6 +92,8 @@ CollectionModelController.prototype.getCollections = function() {
 	var model = this.models.Collection;
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canRead.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -98,6 +102,8 @@ CollectionModelController.prototype.getCollections = function() {
 					if(canRead) {
 						var queryMap = self.query || {};
 						var optionsMap = {};
+
+						// TODO: Move this to Model#find instead.
 
 						if(queryMap.$options) {
 							optionsMap = queryMap.$options;
@@ -117,6 +123,8 @@ CollectionModelController.prototype.getCollections = function() {
 CollectionModelController.prototype.getCollection = function($id) {
 	var model = this.models.Collection;
 	var accessControl = model.getAccessControl();
+
+	// TODO: Use Controller#canCreate.
 
 	return this.findAuthenticator()
 		.then(function(authenticator) {

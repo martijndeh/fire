@@ -82,6 +82,8 @@ UserModelController.prototype.createUser = function() {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canCreate.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -127,6 +129,8 @@ UserModelController.prototype.getUsers = function() {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canRead.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -135,6 +139,8 @@ UserModelController.prototype.getUsers = function() {
 					if(canRead) {
 						var queryMap = self.query || {};
 						var optionsMap = {};
+
+						// TODO: Move this to Model#find instead.
 
 						if(queryMap.$options) {
 							optionsMap = queryMap.$options;
@@ -154,6 +160,8 @@ UserModelController.prototype.getUsers = function() {
 UserModelController.prototype.getUser = function($id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
+
+	// TODO: Use Controller#canCreate.
 
 	return this.findAuthenticator()
 		.then(function(authenticator) {

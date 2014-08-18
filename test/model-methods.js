@@ -1202,7 +1202,7 @@ describe('model methods', function() {
                 })
                 .then(function(article) {
                     var string = JSON.stringify(article);
-                    assert.equal(string, '{"id":"' + article.id + '","title":"Title","url":"https://github.com/martijndeh/fire","votes":123,"longerTest":42}');
+                    assert.equal(string, '{"_type":"Article","id":"' + article.id + '","title":"Title","url":"https://github.com/martijndeh/fire","votes":123,"longerTest":42}');
 
                     done();
                 })
@@ -1251,7 +1251,7 @@ describe('model methods', function() {
                 })
                 .then(function(article) {
                     var string = JSON.stringify(article);
-                    assert.equal(string, '{"id":"' + article.id + '","title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":"' + userID + '","name":"Martijn","articles":[]}}');
+                    assert.equal(string, '{"_type":"Article","id":"' + article.id + '","title":"Title","url":"https://github.com/martijndeh/fire","user":{"_type":"User","id":"' + userID + '","name":"Martijn","articles":[]}}');
 
                     return models.User.findOne()
                         .then(function(user) {
@@ -1268,7 +1268,7 @@ describe('model methods', function() {
                 })
                 .then(function(user) {
                     var string = JSON.stringify(user);
-                    assert.equal(string, '{"id":"' + userID + '","name":"Martijn","articles":[{"id":"' + article1ID + '","title":"Title","url":"https://github.com/martijndeh/fire","user":{"id":"' + userID + '","name":"Martijn","articles":[]}},{"id":"' + article2ID + '","title":"Title 2","url":"http://news.ycombinator.com/","user":{"id":"' + userID + '","name":"Martijn","articles":[]}}]}');
+                    assert.equal(string, '{"_type":"User","id":"' + userID + '","name":"Martijn","articles":[{"_type":"Article","id":"' + article1ID + '","title":"Title","url":"https://github.com/martijndeh/fire","user":{"_type":"User","id":"' + userID + '","name":"Martijn","articles":[]}},{"_type":"Article","id":"' + article2ID + '","title":"Title 2","url":"http://news.ycombinator.com/","user":{"_type":"User","id":"' + userID + '","name":"Martijn","articles":[]}}]}');
 
                     done();
                 })
