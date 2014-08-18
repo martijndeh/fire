@@ -30,7 +30,8 @@
     	"githubRepoOwner": "martijndeh"
 	},
 	"opts": {
-		"destination": "docs"
+		"destination": "docs",
+		"template": "docs-template"
 	},
 	"tags": {
 		"allowUnknownTags": true

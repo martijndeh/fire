@@ -82,6 +82,8 @@ app.controller({{controllerName}});
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canCreate.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -127,6 +129,8 @@ app.controller({{controllerName}});
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
+	// TODO: Use Controller#canRead.
+
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -135,6 +139,8 @@ app.controller({{controllerName}});
 					if(canRead) {
 						var queryMap = self.query || {};
 						var optionsMap = {};
+
+						// TODO: Move this to Model#find instead.
 
 						if(queryMap.$options) {
 							optionsMap = queryMap.$options;
@@ -154,6 +160,8 @@ app.controller({{controllerName}});
 {{controllerName}}.prototype.get{{model.name}} = function($id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
+
+	// TODO: Use Controller#canCreate.
 
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -324,6 +332,7 @@ app.controller({{controllerName}});
 									whereMap[association.options.relationshipVia.name] = $id;
 									whereMap.id = $associationID;
 
+									// TODO: Replace with this.models.ModelNameHere in the build phase!
 									return association.options.relationshipVia.model.updateOne(whereMap, self.body);
 								}
 								else {
