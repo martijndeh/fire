@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Documentation Class: API</title>
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<style>
+	body {
+		padding-top:50px;
+	}
+	.navbar {
+		background:#fff;
+	}
+	.nav .toc-h1 {
+		margin-top:20px;
+	}
+	.nav .toc-h1 a {
+		color:rgb(51, 51, 51);
+		font-weight:600;
+		display:inline;
+	}
+	.nav .toc-h3 {
+		margin-top:10px;
+	}
+	.nav .toc-h3 a {
+		color:rgb(51, 51, 51);
+		font-weight:500;
+		display:inline;
+	}
+	.nav .toc-h3 a:hover, .nav .toc-h1 a:hover {
+		background:none;
+	}
+	#toc.affix {
+		position: static;
+		width: auto;
+		top: 0;
+	}
+	.label.label-primary a {
+		color:#fff;
+	}
+	span.type-signature {
+		/* I really dislike this bit */
+		display:none;
+	}
+	</style>
+</head>
+
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="col-md-8 col-md-offset-2">
+				<ul class="nav navbar-nav">
+					<li><a href="/">Home</a></li>
+					<li class="active"><a href="/documentation">Documentation</a></li>
+					<li><a href="/examples">Examples</a></li>
+					<li><a href="/tutorials">Tutorials</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-offset-1 col-md-3">
+				
+				<a href="/documentation">Back to documentation</a>
+
+				<div data-spy="affix" id="toc"></div>
+				
+			</div>
+
+			<div id="main" class="col-md-7">
+				
+
+
+	<h1 class="page-title">Class: API</h1>
+<section>
+
+<header>
+    <h2>
+    API
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+<dt>
+    <h4 class="name" id="API"><span class="type-signature"></span>new API<span class="signature">(app)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>The API module.</p>
+<p>This module generates model controllers of all models during build phase and executes the controllers in the run phase. The model controllers get generated to /_api. To generate the model controllers:</p>
+<pre class="prettyprint source"><code>$ fire generate api</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>app</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type"><a href="App.html">App</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The app.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="generateModelController"><span class="type-signature"></span>generateModelController<span class="signature">(model, writeStream)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Writes the model controller of <code>model</code> to <code>writeStream</code>.</p>
+<p>Once this method finishes, it does close the <code>writeStream</code>.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>model</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Model</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The model.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>writeStream</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">fs.Writable</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The write stream to write to.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">(basePath)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Loads the model controllers in the run phase. This method is called when the app starts up. The model controllers are loaded in the <code>_api/</code> directory.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>basePath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The root directory of the app.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				This is the footer.
+			</div>
+		</div>
+	</div>
+
+	<script src="scripts/docstrap.lib.js"></script>
+	<script src="scripts/toc.js"></script>
+
+	<script>
+		$( function () {
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "#toc>ul" ).addClass( "nav nav-stacked" );
+		} );
+	 </script>
+
+
+
+	<!--Navigation and Symbol Display-->
+	
+
+
+	
+
+</body>
+</html>

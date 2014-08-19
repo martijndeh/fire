@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Documentation Class: Bridge</title>
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<style>
+	body {
+		padding-top:50px;
+	}
+	.navbar {
+		background:#fff;
+	}
+	.nav .toc-h1 {
+		margin-top:20px;
+	}
+	.nav .toc-h1 a {
+		color:rgb(51, 51, 51);
+		font-weight:600;
+		display:inline;
+	}
+	.nav .toc-h3 {
+		margin-top:10px;
+	}
+	.nav .toc-h3 a {
+		color:rgb(51, 51, 51);
+		font-weight:500;
+		display:inline;
+	}
+	.nav .toc-h3 a:hover, .nav .toc-h1 a:hover {
+		background:none;
+	}
+	#toc.affix {
+		position: static;
+		width: auto;
+		top: 0;
+	}
+	.label.label-primary a {
+		color:#fff;
+	}
+	span.type-signature {
+		/* I really dislike this bit */
+		display:none;
+	}
+	</style>
+</head>
+
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="col-md-8 col-md-offset-2">
+				<ul class="nav navbar-nav">
+					<li><a href="/">Home</a></li>
+					<li class="active"><a href="/documentation">Documentation</a></li>
+					<li><a href="/examples">Examples</a></li>
+					<li><a href="/tutorials">Tutorials</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-offset-1 col-md-3">
+				
+				<a href="/documentation">Back to documentation</a>
+
+				<div data-spy="affix" id="toc"></div>
+				
+			</div>
+
+			<div id="main" class="col-md-7">
+				
+
+
+	<h1 class="page-title">Class: Bridge</h1>
+<section>
+
+<header>
+    <h2>
+    Bridge
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+<dt>
+    <h4 class="name" id="Bridge"><span class="type-signature"></span>new Bridge<span class="signature">(app)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>The bridge module generates app-specific JavaScript libraries to be used in the client-context.</p>
+<p>To generate the JavaScript, run the following command in your app's root directory:</p>
+<pre class="prettyprint source"><code>$ fire generate scripts</code></pre><p>The creates 1 file named fire.js in the _assets directory. This fire.js file contains all client-side code:</p>
+<p>It's not possible yet to include additional scripts, for example, angular or angular-route, but in the future this will be possible.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>app</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type"><a href="App.html">App</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The app which loads this module.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="Bridge.Constructor.html">Constructor</a></dt>
+            <dd></dd>
+        
+            <dt><a href="Bridge.Generator.html">Generator</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        <dl>
+            
+<dt class="name" id="ignoreDisabled">
+    <h4><span class="type-signature"></span>ignoreDisabled<span class="type-signature"></span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>This module will be loaded when the app is run in disabled mode.</p>
+    </div>
+    
+
+    
+
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+        
+            
+<dt class="name" id="methodNames">
+    <h4><span class="type-signature">&lt;constant> </span>methodNames<span class="type-signature"></span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>A list of method names which get proxied to the angular module.</p>
+<p>The controller method is missing, because that one is added by the Controllers module.</p>
+    </div>
+    
+
+    
+
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+        
+            
+<dt class="name" id="generateFireControllers">
+    <h4><span class="type-signature">&lt;inner> </span>generateFireControllers<span class="type-signature"></span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Generates all controller services and all local routes for the ng-route module.</p>
+<p>For every controller, an angular service is generated named Fire + controller name. The service exposes the models service, a unwrap method and all controller operations.</p>
+<pre class="prettyprint source lang-js"><code>function TestController(fire, $scope) {
+    //
+}
+app.controller(TestController);
+
+TestController.prototype.doAction = function() {
+    return {value: 123};
+};</code></pre><p>roughly generates</p>
+<pre class="prettyprint source lang-js"><code>app.service('FireTestController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+    this.models = FireModels;
+    this.doAction = function() {
+        var defer = $q.defer();
+
+        $http['post']('/action', {})
+            .success(function(result) {
+                 defer.resolve(result);
+         })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
+}]);</code></pre>
+    </div>
+    
+
+    
+
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+        
+            
+<dt class="name" id="generateFireInit">
+    <h4><span class="type-signature">&lt;inner> </span>generateFireInit<span class="type-signature"></span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Generates the initial angular.Module and all the methods like angular.directive(...).</p>
+    </div>
+    
+
+    
+
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+        
+            
+<dt class="name" id="generateLocalControllers">
+    <h4><span class="type-signature">&lt;inner> </span>generateLocalControllers<span class="type-signature"></span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Generates the client-side angular controllers from the controllers' constructor's.</p>
+<pre class="prettyprint source lang-js"><code>function TestController($scope) {
+    $scope.test = function() {
+        console.log('test');
+    };
+}
+app.controller(TestController);</code></pre><p>Roughly generates:</p>
+<pre class="prettyprint source lang-js"><code>app.controller('TestController', ['$scope', function($scope) {
+    $scope.test = function() {
+        console.log('test');
+    };
+}]);</code></pre>
+    </div>
+    
+
+    
+
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+        
+            
+<dt class="name" id="generateModels">
+    <h4><span class="type-signature">&lt;inner> </span>generateModels<span class="type-signature"></span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Generates a client-side library to manage your models with a 1-to-1 API as the models api on the server-context.</p>
+<p>For more information on the API itself, see the Models module.</p>
+    </div>
+    
+
+    
+
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+        </dl>
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="generate"><span class="type-signature"></span>generate<span class="signature">(writeStream)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Generates the client-side fire.js by executing all generators local in ./generators.</p>
+<p>Please note: this method will close the write stream by calling fs.WriteStream#end once it succeeds.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>writeStream</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">fs.WriteStream</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An opened stream to write to.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Resolves when succeeded. Rejects when fails.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				This is the footer.
+			</div>
+		</div>
+	</div>
+
+	<script src="scripts/docstrap.lib.js"></script>
+	<script src="scripts/toc.js"></script>
+
+	<script>
+		$( function () {
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "#toc>ul" ).addClass( "nav nav-stacked" );
+		} );
+	 </script>
+
+
+
+	<!--Navigation and Symbol Display-->
+	
+
+
+	
+
+</body>
+</html>

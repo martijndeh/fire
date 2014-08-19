@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Documentation Class: Constructor</title>
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<style>
+	body {
+		padding-top:50px;
+	}
+	.navbar {
+		background:#fff;
+	}
+	.nav .toc-h1 {
+		margin-top:20px;
+	}
+	.nav .toc-h1 a {
+		color:rgb(51, 51, 51);
+		font-weight:600;
+		display:inline;
+	}
+	.nav .toc-h3 {
+		margin-top:10px;
+	}
+	.nav .toc-h3 a {
+		color:rgb(51, 51, 51);
+		font-weight:500;
+		display:inline;
+	}
+	.nav .toc-h3 a:hover, .nav .toc-h1 a:hover {
+		background:none;
+	}
+	#toc.affix {
+		position: static;
+		width: auto;
+		top: 0;
+	}
+	.label.label-primary a {
+		color:#fff;
+	}
+	span.type-signature {
+		/* I really dislike this bit */
+		display:none;
+	}
+	</style>
+</head>
+
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="col-md-8 col-md-offset-2">
+				<ul class="nav navbar-nav">
+					<li><a href="/">Home</a></li>
+					<li class="active"><a href="/documentation">Documentation</a></li>
+					<li><a href="/examples">Examples</a></li>
+					<li><a href="/tutorials">Tutorials</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-offset-1 col-md-3">
+				
+				<a href="/documentation">Back to documentation</a>
+
+				<div data-spy="affix" id="toc"></div>
+				
+			</div>
+
+			<div id="main" class="col-md-7">
+				
+
+
+	<h1 class="page-title">Class: Constructor</h1>
+<section>
+
+<header>
+    <h2>
+        <span class="ancestors"><a href="Bridge.html">Bridge</a>.</span>
+    
+    Constructor
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+<dt>
+    <h4 class="name" id="Constructor"><span class="type-signature"></span>new Constructor<span class="signature">(type)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Holds the information the angular proxy receive from any of the angular methods, like app.directive(...).</p>
+<p>The information is used in the generators to render the client-side library.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The angular method name.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				This is the footer.
+			</div>
+		</div>
+	</div>
+
+	<script src="scripts/docstrap.lib.js"></script>
+	<script src="scripts/toc.js"></script>
+
+	<script>
+		$( function () {
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "#toc>ul" ).addClass( "nav nav-stacked" );
+		} );
+	 </script>
+
+
+
+	<!--Navigation and Symbol Display-->
+	
+
+
+	
+
+</body>
+</html>

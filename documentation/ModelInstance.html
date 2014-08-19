@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Documentation Class: ModelInstance</title>
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<style>
+	body {
+		padding-top:50px;
+	}
+	.navbar {
+		background:#fff;
+	}
+	.nav .toc-h1 {
+		margin-top:20px;
+	}
+	.nav .toc-h1 a {
+		color:rgb(51, 51, 51);
+		font-weight:600;
+		display:inline;
+	}
+	.nav .toc-h3 {
+		margin-top:10px;
+	}
+	.nav .toc-h3 a {
+		color:rgb(51, 51, 51);
+		font-weight:500;
+		display:inline;
+	}
+	.nav .toc-h3 a:hover, .nav .toc-h1 a:hover {
+		background:none;
+	}
+	#toc.affix {
+		position: static;
+		width: auto;
+		top: 0;
+	}
+	.label.label-primary a {
+		color:#fff;
+	}
+	span.type-signature {
+		/* I really dislike this bit */
+		display:none;
+	}
+	</style>
+</head>
+
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="col-md-8 col-md-offset-2">
+				<ul class="nav navbar-nav">
+					<li><a href="/">Home</a></li>
+					<li class="active"><a href="/documentation">Documentation</a></li>
+					<li><a href="/examples">Examples</a></li>
+					<li><a href="/tutorials">Tutorials</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-offset-1 col-md-3">
+				
+				<a href="/documentation">Back to documentation</a>
+
+				<div data-spy="affix" id="toc"></div>
+				
+			</div>
+
+			<div id="main" class="col-md-7">
+				
+
+
+	<h1 class="page-title">Class: ModelInstance</h1>
+<section>
+
+<header>
+    <h2>
+    ModelInstance
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+<dt>
+    <h4 class="name" id="ModelInstance"><span class="type-signature"></span>new ModelInstance<span class="signature">(model, row, changes, id)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>A model instance represents one or multiple rows in the database. These instances are usually the return value(s) of Model#find, Model#create and Model#update methods.</p>
+<p>This calls the beforeLoad hook when initialization starts and calls afterLoad when initializations finishes. To declare a hook, declare a method with the hook name on the model's prototype. For example, this creates an afterCreate hook on a User model:</p>
+<pre class="prettyprint source lang-js"><code>function User() {
+    this.email = [this.String, this.Authenticate];
+    this.type = [this.String];
+    this.posts = [this.HasMany(this.models.Post)];
+}
+app.model(User);
+
+User.prototype.afterCreate = function() {
+    // Gets executed whenever a new model instance is created.
+};</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>model</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Model</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The model the instance belongs to.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>row</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A map of all column-value pairs from the database.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>changes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A map of property-value pairs set by the caller.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The instance primary key's value, if known.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="addAssociation"><span class="type-signature"></span>addAssociation<span class="signature">(property, modelInstance)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Adds modelInstance as association of property.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>property</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Property</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The property of the association the model instance is added to.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>modelInstance</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type"><a href="ModelInstance.html">ModelInstance</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The model instance to be added to the association.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="callHooks"><span class="type-signature"></span>callHooks<span class="signature">(hookNames)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Internally calls the hooks. The following hooks are supported:</p>
+<pre class="prettyprint source"><code>- beforeLoad: invoked when the model instance loads, before any of the properties are set.
+- afterLoad: invoked after the model instance loaded and the properties are completely set.
+- beforeSave: invoked right before saving the model instance, either creating or updating the instance.
+- afterSave: invoked after the model instance successfully saved (either a new instance or updated instance).
+- beforeCreate: invoked right before a new instance is created.
+- afterCreate: invoked after a new instance is created.</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>hookNames</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>List of hook names to invoke the methods of.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="checkProperties"><span class="type-signature"></span>checkProperties<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Internally checks all the values of the properties, applies any transform methods, if neccesary, and sets any default values, if specified.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="configureProperty"><span class="type-signature"></span>configureProperty<span class="signature">(property)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Adds property <code>property</code> to the model instance. This configures accessor methods of the property and any relationships. This is invoked when constructing the model instance right after <code>beforeLoad</code> hook and before <code>afterLoad</code> hook.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>property</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Property</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The property to configure.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="consumeRow"><span class="type-signature"></span>consumeRow<span class="signature">(row)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>row</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A row from the datastore.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+	<dt class="tag-todo">To Do:</dt>
+	<dd class="tag-todo">
+		<ul>
+			<li>This method and ModelInstance#parseRow have similar code. They should be merged. It's not DRY.
+
+Reads the information of a datastore's row and parses the row if it's considerd part of this model instance.</li>
+			</ul>
+	</dd>
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Returns true if the row is consumed by this model instance, false if not.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Boolean</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="createAssociations"><span class="type-signature"></span>createAssociations<span class="signature">(associations)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Parses the associations dictionary and creates model instances for every association.</p>
+<p>Each value in the dictionary is a dictionary of column name-value pairs. An association only has one dictionary, because the associations are added per row. This method generally gets called multiple times per model instance (depending on the number of associations).</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>associations</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The dictionary with the association names as keys.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Returns true if a valid association is added, false otherwise.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Boolean</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="parseRow"><span class="type-signature"></span>parseRow<span class="signature">(row)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Parses the given row and any associations it finds.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>row</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Map of column name-value pairs.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="resolvePromises"><span class="type-signature"></span>resolvePromises<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Resolves all promises set on the model instance.</p>
+<p>This makes it possible to set unresolved promises as values of properties. This method is called during saving. If any of the promises rejects, the saving of the model rejects, too.</p>
+<p>For example, consider creating a project instance with an owner property:</p>
+<pre class="prettyprint source lang-js"><code>this.models.Project.create({
+    name: 'Test Project',
+    owner: this.models.User.findOne({name: 'Martijn'})
+});</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="save"><span class="type-signature"></span>save<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Saves the model instance. This either creates a new model instance, or updates an existing model instance.</p>
+<pre class="prettyprint source"><code>this.models.Post.create({
+        title: 'The Adventures of Huckleberry Finn',
+      createdAt: new Date()
+ })
+ .then(function(post) {
+     post.title = 'Confessions of a Shopaholic'
+     return post.save();
+    })</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="toJSON"><span class="type-signature"></span>toJSON<span class="signature">()</span><span class="type-signature"> &rarr; {Dictionary}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Convert the instance to a simple Dictionary when JSON#stringify is called.</p>
+<p>All auto-fetched assocations are included in the returned dictionary, see PropertyTypes#AutoFetch on how to configure associations to be auto-fetched.</p>
+<p>A _type key is also included. The _type's value is the name of the model. This is used in the client-side parser to allocate and initialize the correct model instance.</p>
+<p>Private properties, like a password, are not included in the returned dictionary, see PropertyTypes#Private on how to declare private properties.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>The JSON representation of the model instance.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="toQueryValue"><span class="type-signature"></span>toQueryValue<span class="signature">()</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>toQueryValue is executed by Table to convert a model instance to a valid parameter in a query.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">String</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="validateChanges"><span class="type-signature"></span>validateChanges<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+	<dt class="tag-todo">To Do:</dt>
+	<dd class="tag-todo">
+		<ul>
+			<li>Replace this by PropertyTypes#Validate.
+
+Validates all set property values. This calls a validate method named after the property's name prefixed with validate. If the method returns a truthy value the property value is considered valid. If anything else the value is considered invalid.
+
+This method is invoked before saving the model in ModelInstance#save.</li>
+			</ul>
+	</dd>
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				This is the footer.
+			</div>
+		</div>
+	</div>
+
+	<script src="scripts/docstrap.lib.js"></script>
+	<script src="scripts/toc.js"></script>
+
+	<script>
+		$( function () {
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "#toc>ul" ).addClass( "nav nav-stacked" );
+		} );
+	 </script>
+
+
+
+	<!--Navigation and Symbol Display-->
+	
+
+
+	
+
+</body>
+</html>

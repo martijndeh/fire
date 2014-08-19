@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: modules/migrations/generate.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: modules/migrations/generate.js</h1>
+
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+
+exports = module.exports = Generate;
+
+var path = require('path');
+var inflection = require('inflection');
+var utils = require('./../../helpers/utils');
+var Models = require('./../models');
+
+var Model = require('./../models/model');
+var Migration = require('./migration');
+var Migrations = require('./');
+
+var Q = require('q');
+
+var pg = require('pg');
+pg.defaults.poolIdleTimeout = 500;
+
+var mu = require('mu2');
+
+var PropertyTypes = require('./../models/property-types');
+
+var debug = require('debug')('fire:generate');
+
+/**
+ * This module, executed from the cli, is responsible for the creation of the migrations.
+ *
+ * @param {String} startPath The root path of the app.
+ */
+function Generate(app, startPath) {
+	this.path = startPath;
+	this.delegate = null;
+	this.app = app;
+}
+
+/**
+ * This method creates the migrations by loading all the migrations in a Models module, and loading all existing models in another Models module. Then migrations are created based on the differences of the two Models.
+ *
+ * Warning: this method swizzles (replaces) some methods on the Model's prototype and it currently does not sets them back.
+ */
+Generate.prototype.createMigrations = function() {
+	if(!this.delegate) {
+		throw new Error('No delegate set on Generate.');
+	}
+
+	if(!this.app) {
+		throw new Error('No app set on Generate.');
+	}
+
+	// These are based on the actualy models
+	var newModels = this.app.models;
+	var oldModels = new Models();
+	var migrations 	= new Migrations();
+
+	function addPropertiesMigrationTask(model, properties) {
+		var string = '\tthis.models.' + model.getName() + '.addProperties({\n';
+
+		string += properties.map(function(property) {
+			return '\t\t' + property.name + ': ' + propertyTypesToString(property);
+		}).join(',\n') + '\n';
+
+		string += '\t});\n';
+		return string;
+	}
+
+	function changePropertiesMigrationTask(model, properties) {
+		var string = '\tthis.models.' + model.getName() + '.changeProperties({\n';
+
+		string += properties.map(function(property) {
+			return '\t\t' + property.name + ': ' + propertyTypesToString(property);
+		}).join(',\n') + '\n';
+
+		string += '\t});\n';
+		return string;
+	}
+
+	function removePropertiesMigrationTask(model, properties) {
+		var string = '\tthis.models.' + model.getName() + '.removeProperties([';
+
+		string += properties.map(function(property) {
+			return '\'' + property.name + '\'';
+		}).join(', ');
+
+		string += ']);\n';
+		return string;
+	}
+
+	function createModelMigrationTask(model) {
+		debug('createModelMigrationTask');
+
+		var string = '\tthis.models.createModel(\'' + model.getName() + '\', {\n';
+
+		var propertiesMap = model.getAllProperties();
+
+		var properties = Object.keys(propertiesMap).map(function(propertyName) {
+			var property = propertiesMap[propertyName];
+
+			return '\t\t' + propertyName + ': ' + propertyTypesToString(property);
+		});
+
+		string += properties.join(',\n') + '\n';
+		string += '\t});\n';
+		return string;
+	}
+
+	function destroyModelMigrationTask(model) {
+		return '\tthis.models.destroyModel(\'' + model.getName() + '\');\n';
+	}
+
+	function propertyTypesToString(property) {
+		return '[' + property.types.map(function(type) {
+			while(typeof type == 'function') {
+				type = type.call(property, property);
+			}
+
+			if(!type) {
+				throw new Error('No type in propertyTypesToString.');
+			}
+
+			var propertyTypeString = 'this.' + type.name;
+
+			if(type.params &amp;&amp; type.params.length > 0 &amp;&amp; type.params[0] != property) {
+				propertyTypeString += '(' + type.params.map(function(value, index) {
+					// TOOD: Check if `value` is a model thingy?
+					// TODO: Check if `value` exists on model?
+					// For now, let's check if this is: Reference, Many, HasOne, HasMany
+
+					var name = value;
+
+					if(value instanceof Model) {
+						name = value.getName();
+					}
+
+					if(['HasOne', 'HasMany', 'BelongsTo'].indexOf(type.name) >= 0) {
+						if(index === 0) {
+							return 'this.models.' + name;
+						}
+						else {
+							return '"' + name + '"';
+						}
+					}
+					else {
+						if(typeof name == 'string') {
+							return '\'' + name.replace(/'/g, '\\\'') + '\'';
+						}
+						else {
+							return name;
+						}
+					}
+				}).join(', ') + ')';
+			}
+
+			return propertyTypeString;
+		}).join(', ') + ']';
+	}
+
+	// Let's swizzle some methods
+	Object.keys(PropertyTypes).forEach(function(propertyName) {
+		Model.prototype[propertyName] = function() {
+			var args = new Array(arguments.length);
+			for(var i = 0; i &lt; args.length; ++i) {
+				args[i] = arguments[i];
+			}
+
+			return {
+				name: propertyName,
+				params: Array.prototype.splice.call(args, 0)
+			};
+		};
+	});
+
+	Object.keys(PropertyTypes).forEach(function(propertyName) {
+        // We check if it's set already, as e.g. migrations swizzle these methods
+        Migration.prototype[propertyName] = function() {
+			var args = new Array(arguments.length);
+			for(var i = 0; i &lt; args.length; ++i) {
+				args[i] = arguments[i];
+			}
+
+			return {
+				name: propertyName,
+				params: Array.prototype.splice.call(args, 0)
+			};
+		};
+    });
+
+	var toVersion = 0;
+	var self = this;
+	var basePath = this.path;
+
+	// Let's load all models
+	return newModels.setup(basePath)
+		.then(function() {
+			debug('Old models setup.');
+
+			return oldModels.setup(null);
+		})
+		.then(function() {
+			debug('Loading migrations to `oldModels` from `' + path.join(basePath, '_migrations') + '`.');
+
+			// and load all migrations
+			return migrations.loadMigrations(path.join(basePath, '_migrations'), oldModels);
+		})
+		.then(function() {
+			debug('Reseting migration-models');
+
+			// Now we copy all models and remove them from the models
+			// We do a soft-migration to the last migration
+			// Then compare all models created by the soft migration with the models we copied earlier
+			// We create migrations based on the differences
+			// Let's go!
+
+			return migrations.resetAllModels();
+		})
+		.then(function() {
+			debug('Soft migrating to ' + toVersion);
+
+			if(migrations._.length > 0) {
+				var lastMigration = migrations._[migrations._.length - 1];
+				toVersion = lastMigration.version;
+			}
+
+			return migrations.softMigrate(toVersion);
+		})
+		.then(function() {
+			debug('Creating migration tasks');
+
+			var upMigrationTasks = [];
+			var downMigrationTasks = [];
+
+			var migrationNames = [];
+
+			// Now check the copied models and figure out what to migrate
+			newModels.forEach(function(newModel) {
+				debug('Checking model ' + newModel.getName() + ' on ' + newModel.models.tag);
+
+				var oldModel = oldModels.findModel(newModel.getName());
+
+				if(!oldModel) {
+					//create newModel, easy
+					migrationNames.push('create', inflection.dasherize(newModel.getName()));
+
+					upMigrationTasks.push(createModelMigrationTask(newModel));
+					downMigrationTasks.push(destroyModelMigrationTask(newModel));
+				}
+				else {
+					// Check all properties and see if something changed
+					var removedProperties = [];
+					var addedProperties = [];
+					var changedProperties = [];
+					var originalChangedProperties = [];
+
+					var newPropertiesMap = newModel.getAllProperties();
+					var oldPropertiesMap = oldModel.getAllProperties();
+
+					var parsedPropertyNames = [];
+
+					Object.keys(newPropertiesMap).forEach(function(propertyName) {
+						var oldProperty = oldPropertiesMap[propertyName];
+						var newProperty = newPropertiesMap[propertyName];
+
+						if(!oldProperty) {
+							addedProperties.push(newProperty);
+						}
+						else {
+							var new_ = propertyTypesToString(newProperty);
+							var old = propertyTypesToString(oldProperty);
+
+							if(new_ != old) {
+								changedProperties.push(newProperty);
+								originalChangedProperties.push(oldProperty);
+							}
+						}
+
+						parsedPropertyNames.push(propertyName);
+					});
+
+					Object.keys(oldPropertiesMap).forEach(function(propertyName) {
+						if(parsedPropertyNames.indexOf(propertyName) == -1) {
+							removedProperties.push(oldPropertiesMap[propertyName]);
+						}
+					});
+
+					if(addedProperties.length > 0) {
+						migrationNames.push('add', 'to', inflection.dasherize(newModel.getName()));
+
+						upMigrationTasks.push(addPropertiesMigrationTask(newModel, addedProperties));
+						downMigrationTasks.push(removePropertiesMigrationTask(newModel, addedProperties));
+					}
+
+					if(removedProperties.length > 0) {
+						migrationNames.push('remove', 'from', inflection.dasherize(newModel.getName()));
+
+						upMigrationTasks.push(removePropertiesMigrationTask(newModel, removedProperties));
+						downMigrationTasks.push(addPropertiesMigrationTask(newModel, removedProperties));
+					}
+
+					if(changedProperties.length > 0) {
+						migrationNames.push('edit', inflection.dasherize(newModel.getName()));
+
+						upMigrationTasks.push(changePropertiesMigrationTask(newModel, changedProperties));
+						downMigrationTasks.push(changePropertiesMigrationTask(newModel, originalChangedProperties));
+					}
+				}
+			});
+
+			if(upMigrationTasks.length > 0 &amp;&amp; downMigrationTasks.length > 0) {
+				var version = (parseInt(toVersion) + 1);
+				var migrationFileName;
+				if(version == 1) {
+					migrationFileName = '001-create-initial-schema.js';
+				}
+				else {
+					migrationFileName = utils.zeroPad(version, 100) + '-' + migrationNames.join('-').toLowerCase() + '.js';
+				}
+
+				// TODO: Check to see if directory exists.
+				var defer = Q.defer();
+
+				//fs.mkdir(path.join(basePath, '_migrations'), function() {
+					var stream = mu.compileAndRender(path.join(__dirname, '..', '..', '..', 'bin', 'templates', 'migration.js'), {
+						migrationName: 'Migration',
+						upTasks: function() {
+							return upMigrationTasks.map(function(contents) {
+								return {contents: contents};
+							});
+						},
+						downTasks: function() {
+							return downMigrationTasks.map(function(contents) {
+								return {contents: contents};
+							});
+						}
+					});
+
+					if(self.delegate.addMigration) {
+						self.delegate.addMigration(migrationFileName, stream);
+					}
+					else {
+						debug('No addMigration method found on delegate.');
+					}
+					//.pipe(fs.createWriteStream(path.join(basePath, '_migrations', migrationFileName)))
+
+					stream.on('end', function() {
+						console.log('Created migration file at `' + migrationFileName + '`.');
+
+						defer.resolve();
+					});
+				//});
+
+				return defer.promise;
+			}
+			else {
+				console.log('Your local migrations are up-to-date.');
+			}
+		})
+		.catch(function(error) {
+			console.log(error);
+			console.log(error.stack);
+
+			throw error;
+		});
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AccessControl.html">AccessControl</a></li><li><a href="API.html">API</a></li><li><a href="App.html">App</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Bridge.Constructor.html">Constructor</a></li><li><a href="Bridge.Generator.html">Generator</a></li><li><a href="Client.html">Client</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Controllers.html">Controllers</a></li><li><a href="Datastore.html">Datastore</a></li><li><a href="Firestarter.html">Firestarter</a></li><li><a href="Migration.html">Migration</a></li><li><a href="MigrationTask.html">MigrationTask</a></li><li><a href="ModelInstance.html">ModelInstance</a></li><li><a href="Route.html">Route</a></li><li><a href="Template.html">Template</a></li></ul><h3>Global</h3><ul><li><a href="global.html"></a></li><li><a href="global.html#Generate">Generate</a></li><li><a href="global.html#Migrations">Migrations</a></li><li><a href="global.html#Router">Router</a></li><li><a href="global.html#Schema">Schema</a></li><li><a href="global.html#SEO">SEO</a></li><li><a href="global.html#Static">Static</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#Templates">Templates</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Fri Aug 15 2014 22:51:23 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

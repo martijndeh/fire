@@ -1,1 +1,181 @@
-Node on Fire :)
+<!doctype html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+	<style>
+	body {
+		padding-top:50px;
+	}
+	.header {
+		background: #b63c12;
+		background: -moz-linear-gradient(-45deg,  #b63c12 0%, #e19428 100%);
+		background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#b63c12), color-stop(100%,#e19428));
+		background: -webkit-linear-gradient(-45deg,  #b63c12 0%,#e19428 100%);
+		background: -o-linear-gradient(-45deg,  #b63c12 0%,#e19428 100%);
+		background: -ms-linear-gradient(-45deg,  #b63c12 0%,#e19428 100%);
+		background: linear-gradient(135deg,  #b63c12 0%,#e19428 100%);
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b63c12', endColorstr='#e19428',GradientType=1 );
+	}
+	.header .logo {
+		margin-top:150px;
+		margin-bottom:150px;
+	}
+	.header .logo span {
+		margin-left:20px;
+		vertical-align:middle;
+	}
+	.header span.h1 {
+		color:#fff;
+		font-weight:100;
+		font-size:4em;
+		font-family:'Helvetica Neue';
+	}
+	.header p {
+		font-family:Georgia;
+		color:rgba(0,0,0,0.25);
+		font-style:italic;
+		text-align:center;
+		font-size:1.25em;
+		line-height:1.75em;
+	}
+	h1, h2 {
+		font-weight:200;
+	}
+	.footer p {
+		margin-top:50px;
+		margin-bottom:50px;
+	}
+	.pitch p, .footer p {
+		text-align:center;
+		color:#8a9199;
+		font-size:1.25em;
+		line-height:1.75em;
+	}
+	.pitch p {
+		margin-bottom:100px;
+	}
+	.pitch h1 {
+		margin-top:100px;
+		text-align:center;
+		font-size:3em;
+	}
+	.pitch h2 {
+		text-align:center;
+	}
+	.desc p {
+		line-height:1.75em;
+		font-size:1.2em;
+	}
+	.navbar {
+		background:#fff;
+	}
+	.navbar ul.nav li.active {
+		background:rgb(163, 77, 7) !important;
+	}
+	</style>
+</head>
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="col-md-8 col-md-offset-2">
+				<ul class="nav navbar-nav">
+					<li class="active"><a href="/">Home</a></li>
+					<li><a href="/documentation">Documentation</a></li>
+					<li><a href="/examples">Examples</a></li>
+					<li><a href="/tutorials">Tutorials</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row header">
+			<div class="row">
+				<div class="logo col-md-4 col-md-offset-4">
+					<img src="images/logo.png"/>
+					<span class="h1">Node on Fire</span>
+				</div>
+			</div>
+
+			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, code generation web framework built on top of AngularJS, express and PostgreSQL.</p>
+		</div>
+
+		<div class="row pitch">
+			<div class="col-md-8 col-md-offset-2">
+				<h1>Welcome to Node on Fire</h1>
+
+				<p>Node on Fire is a JavaScript-everywhere, model-driven, code-generation web framework. In Node on Fire, your models are available on both the client-side and server-side and your controllers run in both the client- and server-side.</p>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<div class="col-md-offset-2 col-md-4">
+				<h2>JavaScript Everywhere</h2>
+
+				<p>You write your complete app in JavaScript*, both the client- and server-side. You don't just put server code in <code>/server/*</code> and client code in <code>/client/*</code>, no, your controllers and models are truly available everywhere.</p>
+
+				<p><small>* If you prefer, you can also write you app in CoffeeScript, of course.</small></p>
+			</div>
+
+			<div class="col-md-4">
+				<h2>Scaffold Everything</h2>
+
+				<p>Node on Fire loves Yeoman. A generator is available so you can scaffold your models, controllers, directives, or even the example apps. Install the generator via <kbd>npm install -g generator-fire</kbd> and run <kbd>yo fire</kbd> to get started with the generator.</p>
+
+				<p><small>Not familiar with Yeoman? Check <a href="http://yeoman.io/">it out</a>.</small></p>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<div class="col-md-offset-2 col-md-4">
+				<h2>AngularJS</h2>
+
+				<p>Node on Fire completely embraces the <a href="https://angularjs.org/">superheoric AngularJS framework</a> for all things client-side.</p>
+			</div>
+
+			<div class="col-md-4">
+				<h2>Model-Driven</h2>
+
+				<p>Configure your models, and Node on Fire generates migrations, database schema, a RESTful API and a client&mdash;server equal models API.</p>
+			</div>
+		</div>
+
+		<div class="row footer">
+			<div class="col-md-offset-2 col-md-8">
+				<p>If this seems interesting, sign up for the newsletter below, have a look at <a href="/examples">our examples</a>, or view <a href="/tutorials">the tutorials</a>. Of course, everything we are doing is <a href="https://github.com/martijndeh/fire">open-source</a>.</p>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<div class="col-md-offset-2 col-md-8">
+				<hr/>
+
+				<h2>Newsletter</h2>
+				<p>Sign up for our newsletter to receive occasional updates on Node on Fire.</p>
+
+				<div id="mc_embed_signup">
+				<form action="//blobmedia.us1.list-manage.com/subscribe/post?u=4feb48ecaabb298155244a2ad&amp;id=8e4335d553" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank">
+
+					<div id="mce-responses" class="clear">
+						<div class="response" id="mce-error-response" style="display:none"></div>
+						<div class="response" id="mce-success-response" style="display:none"></div>
+					</div>
+
+					<label for="mce-EMAIL">Email Address </label>
+					<div class="input-group">
+						<input type="email" name="EMAIL" id="mce-EMAIL" class="form-control">
+				    	<span class="input-group-btn">
+				    		<input type="submit" value="Subscribe" id="mc-embedded-subscribe" name="subscribe" class="btn btn-default"/>
+						</span>
+				    </div>
+
+				    <div style="position: absolute; left: -5000px;"><input type="text" name="b_4feb48ecaabb298155244a2ad_8e4335d553" tabindex="-1" value=""></div>
+				</form>
+				</div>
+			</div>
+			<script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script><script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';fnames[1]='FNAME';ftypes[1]='text';fnames[2]='LNAME';ftypes[2]='text';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
+		</div>
+	</div>
+</body>
+</html>
