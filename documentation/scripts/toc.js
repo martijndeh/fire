@@ -14,7 +14,7 @@ $.fn.toc = function(options) {
       var elScrollTo = $(e.target).attr('href');
       var $el = $(elScrollTo);
 
-      $('body,html').animate({ scrollTop: $el.offset().top }, 400, 'swing', function() {
+      $('body,html').animate({ scrollTop: $el.offset().top - 50 }, 400, 'swing', function() {
         location.hash = elScrollTo;
       });
     }
@@ -22,34 +22,11 @@ $.fn.toc = function(options) {
     $(e.target).parent().addClass(activeClassName);
   };
 
-  //highlight on scroll
-  var timeout;
-  var highlightOnScroll = function(e) {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-    timeout = setTimeout(function() {
-      var top = $(window).scrollTop(),
-        highlighted;
-      for (var i = 0, c = headingOffsets.length; i < c; i++) {
-        if (headingOffsets[i] >= top) {
-          $('li', self).removeClass(activeClassName);
-          highlighted = $('li:eq('+(i-1)+')', self).addClass(activeClassName);
-          opts.onHighlight(highlighted);
-          break;
-        }
-      }
-    }, 50);
-  };
-  if (opts.highlightOnScroll) {
-    $(window).bind('scroll', highlightOnScroll);
-    highlightOnScroll();
-  }
-
   return this.each(function() {
-    //build TOC
     var el = $(this);
-    var ul = $('<ul/>');
+    console.log(el);
+
+    var ul = $('<ul/>').addClass('nav nav-stacked');
 
     headings.each(function(i, heading) {
       var $h = $(heading);
@@ -73,7 +50,10 @@ $.fn.toc = function(options) {
 
       ul.append(li);
     });
+
     el.html(ul);
+    el.affix();
+    el.width(el.parent().width());
   });
 };
 

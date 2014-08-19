@@ -2,3 +2,6 @@
 README.md
 .bower.json
 bower.json
+_template
+index.js
+node_modules
