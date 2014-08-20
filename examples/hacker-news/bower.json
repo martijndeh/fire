@@ -1,8 +1,0 @@
-{
-  "name": "Hacker News",
-  "dependencies": {
-    "gss": "~1.0.4-beta",
-    "angular": "~1.2.19",
-    "angular-route": "*"
-  }
-}
