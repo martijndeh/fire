@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Node on Fire</title>
+	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="/styles/default.css"/>
+	<link rel="stylesheet" href="/bower_components/google-code-prettify/bin/prettify.min.css"/>
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/bower_components/google-code-prettify/bin/prettify.min.js"></script>
+	<script>!function ($) {$(function(){window.prettyPrint && prettyPrint()})}(window.jQuery)</script>
+</head>
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="col-md-8 col-md-offset-2">
+				<ul class="nav navbar-nav">
+					<li><a href="/">Home</a></li>
+					<li class="active"><a href="/getting-started">Getting Started</a></li>
+					<li><a href="/documentation">Documentation</a></li>
+					<li><a href="/examples">Examples</a></li>
+					<li><a href="/tutorials">Tutorials</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row header getting-started">
+			<div class="col-md-8 col-md-offset-2">
+				<h1>Getting Started</h1>
+				<p>Setting up all the depencies and a basic project in five easy steps.</p>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<div class="col-md-8 col-md-offset-2">
+				<h3>1/5. Dependencies</h3>
+				<p>Node on Fire has a few dependencies. Let's first make sure you have them installed.</p>
+
+				<ul>
+					<li>Node.js &amp; npm&mdash;<a href="http://nodejs.org/">http://nodejs.org/</a></li>
+					<li>PostgreSQL&mdash;<a href="http://postgresapp.com/">http://postgresapp.com/</a> (Mac) or <a href="http://www.postgresql.org/download/">http://www.postgresql.org/download/</a></li>
+					<li>Yeoman&mdash;<kbd>$ npm install -g yo</kbd> or <a href="http://yeoman.io/">http://yeoman.io/</a></li>
+					<li>Grunt&mdash;<kbd>$ npm install -g grunt-cli</kbd> or <a href="http://gruntjs.com/">http://gruntjs.com/</a></li>
+					<li>Bower&mdash;<kbd>$ npm install -g bower</kbd> or <a href="http://bower.io/">http://bower.io/</a></li>
+					<li>Node on Fire's Yeoman generator&mdash;<kbd>$ npm install generator-fire</kdb></li>
+				</ul>
+
+				<p>There. That's it. Next step.</p>
+			</div>
+
+			<div class="col-md-8 col-md-offset-2">
+				<hr/>
+				<h3>2/5. Database</h3>
+
+				<p>Set up a PostgreSQL database with a new user and install the neccesary extension:</p>
+
+				<ul>
+					<li>Open psql (if using Postgresapp on Mac you can do so by clicking the elephant in the status bar and clicking <em>Open psql</em>)</li>
+					<li>Create the user&mdash;<code>CREATE USER fire WITH PASSWORD 'password';</code></li>
+					<li>Create the database&mdash;<code>CREATE DATABASE helloworld;</code></li>
+					<li>Grant privileges on the database to the user&mdash;<code>GRANT ALL PRIVILEGES ON DATABASE helloworld TO fire;</code></li>
+					<li>Connect to the newly created database&mdash;<code>\c helloworld</code></li>
+					<li>Install the UUID extension&mdash;<code>CREATE EXTENSION "uuid-ossp";</code></li>
+				</ul>
+
+				<p>The database is up and running. The URL to the database is <code>postgres://fire:password@127.0.0.1/helloworld</code> which we need in the next step.</p>
+
+				<p><small>Feel free to change the names to whatever you want, just make sure to construct the correct database URL.</small></p>
+			</div>
+
+			<div class="col-md-8 col-md-offset-2">
+				<hr/>
+				<h3>3/5. Creating the App</h3>
+
+				<p>Use the <a href="http://yeoman.io/">Yeoman</a> generator we installed earlier to quickly scaffold an app:</p>
+
+				<p><kbd>$ yo fire</kbd></p>
+
+				<ul>
+					<li>Type the name of the app e.g. <code>hello-world</code></li>
+					<li>Paste the database URL from the previous step: <code>postgres://fire:password@127.0.0.1/helloworld</code></li>
+				</ul>
+
+				<p>The generator writes some files and installs the initial dependencies.</p>
+			</div>
+
+			<div class="col-md-8 col-md-offset-2">
+				<hr/>
+
+				<h3>4/5. Creating the Controller</h3>
+
+				<p>Now that we have an empty app, let's create a controller with a view which presents us the fabulous <em>Hello, world!</em>.</p>
+
+				<p>In <code>index.js</code> insert the following annotated piece of code before the <code>app.run();</code> line:</p>
+
+				<pre class="prettyprint">app.template('index', '&lt;div ng-controller="TestController"&gt;&lt;h1&gt;Hello, world!&lt;/h1&gt;&lt;/div&gt;');
+
+function TestController($scope, fire) {
+	$scope.
+}
+app.controller(TestController);
+
+TestController.prototype.view = function() {
+	return this.template('index');
+};
+</pre>
+			</div>
+
+			<div class="col-md-8 col-md-offset-2">
+				<hr/>
+
+				<h3>5/5. Build and Run</h3>
+
+				<p>Before you can run the app, you need to build it. Node on Fire needs to generate some scripts before an app can run.</p>
+
+				<p>Now invoke <kbd>$ grunt build:api &amp;&amp; grunt build:scripts &amp;&amp; grunt build:migrations</kbd> which generates <code>_assets</code>, <code>_api</code> and <code>_migrations</code>.</p>
+
+				<div class="bs-callout bs-callout-danger">
+					<h4>A bug in grunt build.</h4>
+
+					<p>It's currently not possible yet to simply call <code>grunt build</code> as there is a bug which creates invalid code when running all the build phases at once.</p>
+				</div>
+
+				<p>To run and view the app invoke <kbd>$ node index.js</kbd> and visit <a href="http://127.0.0.1:3000/">Hello, World!</a>.</p>
+			</div>
+		</div>
+
+		<div class="row pitch">
+			<div class="col-md-8 col-md-offset-2">
+				<h1>What's next?</h1>
+
+				<p>Now you know the basics of Node on Fire, move ahead to our <a href="/examples">examples</a> section to view some more advanced code samples.</p>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<hr/>
+
+			<div class="col-md-offset-1 col-md-5">
+				<h2>Newsletter</h2>
+				<p>Sign up for our newsletter to receive occasional updates on Node on Fire.</p>
+
+				<div id="mc_embed_signup">
+				<form action="//blobmedia.us1.list-manage.com/subscribe/post?u=4feb48ecaabb298155244a2ad&amp;id=8e4335d553" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank">
+
+					<div id="mce-responses" class="clear">
+						<div class="response" id="mce-error-response" style="display:none"></div>
+						<div class="response" id="mce-success-response" style="display:none"></div>
+					</div>
+
+					<label for="mce-EMAIL">Email Address </label>
+					<div class="input-group">
+						<input type="email" name="EMAIL" id="mce-EMAIL" class="form-control">
+						<span class="input-group-btn">
+							<input type="submit" value="Subscribe" id="mc-embedded-subscribe" name="subscribe" class="btn btn-default"/>
+						</span>
+					</div>
+
+					<div style="position: absolute; left: -5000px;"><input type="text" name="b_4feb48ecaabb298155244a2ad_8e4335d553" tabindex="-1" value=""></div>
+				</form>
+				</div>
+			</div>
+			<script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script><script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';fnames[1]='FNAME';ftypes[1]='text';fnames[2]='LNAME';ftypes[2]='text';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
+		</div>
+	</div>
+</body>
+</html>

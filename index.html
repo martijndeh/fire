@@ -5,6 +5,10 @@
 	<title>Node on Fire</title>
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
+	<link rel="stylesheet" href="/bower_components/google-code-prettify/bin/prettify.min.css"/>
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/bower_components/google-code-prettify/bin/prettify.min.js"></script>
+	<script>!function ($) {$(function(){window.prettyPrint && prettyPrint()})}(window.jQuery)</script>
 </head>
 <body>
 	<nav class="navbar navbar-default navbar-fixed-top">
@@ -12,6 +16,7 @@
 			<div class="col-md-8 col-md-offset-2">
 				<ul class="nav navbar-nav">
 					<li class="active"><a href="/">Home</a></li>
+					<li><a href="/getting-started">Getting Started</a></li>
 					<li><a href="/documentation">Documentation</a></li>
 					<li><a href="/examples">Examples</a></li>
 					<li><a href="/tutorials">Tutorials</a></li>
@@ -21,25 +26,24 @@
 	</nav>
 
 	<div class="container-fluid">
-		<div class="row header">
+		<div class="row header index">
 			<div class="logo col-md-4 col-md-offset-4">
-				<img src="images/logo.png"/>
 				<span class="h1">Node on Fire</span>
 			</div>
 
-			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, code generation web framework built on top of AngularJS, express and PostgreSQL.</p>
+			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, web framework built on top of AngularJS, express and PostgreSQL.</p>
 		</div>
 
 		<div class="row pitch">
 			<div class="col-md-8 col-md-offset-2">
-				<h1>Welcome to Node on Fire</h1>
+				<h1>What is Node on Fire?</h1>
 
-				<p>Node on Fire is a JavaScript-everywhere, model-driven, code-generation web framework. In Node on Fire, your models are available on both the client-side and server-side and your controllers run in both the client- and server-side.</p>
+				<p>Node on Fire is a JavaScript-everywhere, model-driven, web framework. Instead of client- and server-side code, your code runs in the client-context, the server-context or both. Go to our <a href="/getting-started">getting started</a> section to learn how to set up a working Hello World project.</p>
 			</div>
 		</div>
 
 		<div class="row desc">
-			<div class="col-md-offset-2 col-md-4">
+			<div class="col-md-offset-1 col-md-5">
 				<h2>JavaScript Everywhere</h2>
 
 				<p>You write your complete app in JavaScript*, both the client- and server-side. You don't just put server code in <code>/server/*</code> and client code in <code>/client/*</code>, no, your controllers and models are truly available everywhere.</p>
@@ -47,26 +51,43 @@
 				<p><small>* If you prefer, you can also write you app in CoffeeScript, of course.</small></p>
 			</div>
 
-			<div class="col-md-4">
-				<h2>Scaffold Everything</h2>
+			<div class="col-md-5">
+				<h2>Model-Driven</h2>
 
-				<p>Node on Fire loves Yeoman. A generator is available so you can scaffold your models, controllers, directives, or even the example apps. Install the generator via <kbd>npm install -g generator-fire</kbd> and run <kbd>yo fire</kbd> to get started with the generator.</p>
+				<p>Configure your models in a non-awkward style:</p>
 
-				<p><small>Not familiar with Yeoman? Check <a href="http://yeoman.io/">it out</a>.</small></p>
+				<pre class="prettyprint">function Article() {
+	this.title	= [this.String, this.Required];
+	this.url	= [this.String, this.Unique];
+	this.createdAt 	= [this.DateTime];
+}
+app.model(Article);</pre>
+				<p>Node on Fire automatically generates migrations, the database schema, a RESTful CRUD API, client&mdash;server equal models API and client- and server-context routing.</p>
 			</div>
 		</div>
 
 		<div class="row desc">
-			<div class="col-md-offset-2 col-md-4">
+			<div class="col-md-offset-1 col-md-5">
 				<h2>AngularJS</h2>
 
 				<p>Node on Fire completely embraces the <a href="https://angularjs.org/">superheoric AngularJS framework</a> for all things client-side.</p>
+				<pre class="prettyprint">function NewsController(fire, $scope) {
+	$scope.articles = fire.models.Article.find({}, {orderBy:{position:1}});
+	$scope.user 	= fire.models.User.getMe();
+
+	$scope.voteArticle = function(article) {
+		return article.createVoter({user: $scope.user});
+	};
+}
+app.controller(NewsController);</pre>
 			</div>
 
-			<div class="col-md-4">
-				<h2>Model-Driven</h2>
+			<div class="col-md-5">
+				<h2>Scaffold Everything</h2>
 
-				<p>Configure your models, and Node on Fire generates migrations, database schema, a RESTful API and a client&mdash;server equal models API.</p>
+				<p>Node on Fire loves <a href="http://yeoman.io/">Yeoman</a>. A generator is available so you can scaffold your models, controllers, directives, or even the example apps. Install the generator via <kbd>npm install -g generator-fire</kbd> and run <kbd>yo fire</kbd> to get started with the generator.</p>
+
+				<p><small>Not familiar with Yeoman? Check <a href="http://yeoman.io/">it out</a>.</small></p>
 			</div>
 		</div>
 
@@ -77,9 +98,9 @@
 		</div>
 
 		<div class="row desc">
-			<div class="col-md-offset-2 col-md-4">
-				<hr/>
-
+			<hr/>
+			
+			<div class="col-md-offset-1 col-md-5">
 				<h2>Newsletter</h2>
 				<p>Sign up for our newsletter to receive occasional updates on Node on Fire.</p>
 

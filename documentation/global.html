@@ -4,6 +4,7 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Documentation Global</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
 </head>
@@ -14,6 +15,7 @@
 			<div class="col-md-8 col-md-offset-2">
 				<ul class="nav navbar-nav">
 					<li><a href="/">Home</a></li>
+					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
 					<li><a href="/examples">Examples</a></li>
 					<li><a href="/tutorials">Tutorials</a></li>
@@ -1228,7 +1230,7 @@
         <p>A model constructor defines a model with the name of the constructor. Please note that this constructor is invoked to set up a model, and not when a model instance is created.</p>
 <p>Every property set in the constructor will be considered a model property. The value should be an array of Models~PropertyType.</p>
 <p>It is not allowed to start a property name with _ or $ as these prefixes are currently reserved.</p>
-<p>An id property is automatically created, if it does not exist, with <code>[this.UUID, this.Update(false)]</code> property type, and is considered the model's primary key.</p>
+<p>An id property is automatically created, if it does not exist, with <code>[this.UUID, this.CanUpdate(false)]</code> property type, and is considered the model's primary key.</p>
 <p>For more information on all property types, see PropertyTypes.</p>
     </div>
     

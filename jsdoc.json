@@ -1,0 +1,39 @@
+{
+	"source": {
+		"include": [
+			"../fire/index.js",
+
+			"../fire/README.md",
+			"../fire/lib",
+
+			"../fire/lib/helpers",
+
+			"../fire/lib/modules/api",
+			"../fire/lib/modules/bridge",
+			"../fire/lib/modules/bridge/generators",
+			"../fire/lib/modules/controllers",
+			"../fire/lib/modules/migrations",
+			"../fire/lib/modules/models",
+			"../fire/lib/modules/seo",
+			"../fire/lib/modules/static",
+			"../fire/lib/modules/templates"
+		],
+		"includePattern": ".*\\.(js|md)$"
+	},
+	"plugins": [
+		"plugins/markdown"
+	],
+	"markdown": {
+    	"parser": "gfm",
+    	"hardwrap": true,
+    	"githubRepoName": "fire",
+    	"githubRepoOwner": "martijndeh"
+	},
+	"opts": {
+		"destination": "documentation",
+		"template": "_template"
+	},
+	"tags": {
+		"allowUnknownTags": true
+	}
+}

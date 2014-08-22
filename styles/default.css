@@ -11,6 +11,17 @@ body {
 	background: linear-gradient(135deg,  #b63c12 0%,#e19428 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b63c12', endColorstr='#e19428',GradientType=1 );
 }
+h3 {
+	font-weight:200;
+}
+.getting-started p:last-child {
+	margin-bottom:30px;
+}
+.header h1 {
+	color:#fff;
+	font-weight:100;
+	margin-top:50px;
+}
 .header .logo {
 	margin-top:150px;
 	margin-bottom:150px;
@@ -30,9 +41,11 @@ body {
 	font-family:Georgia;
 	color:rgba(0,0,0,0.25);
 	font-style:italic;
-	text-align:center;
 	font-size:1.25em;
 	line-height:1.75em;
+}
+.index.header p {
+	text-align:center;
 }
 h1, h2 {
 	font-weight:200;
@@ -117,4 +130,36 @@ span.type-signature {
 .disqus-expl {
 	margin-top:100px;
 	margin-bottom:150px;
+}
+div.row pre.prettyprint {
+	border-radius:5px;
+	padding:10px;
+	border:1px solid rgba(0, 0, 0, 0.1);
+	background:#fff;
+	overflow:scroll;
+	font-size:0.8em;
+}
+.bs-callout {
+  margin: 20px 0;
+  padding: 15px 30px 15px 15px;
+  border-left: 5px solid #eee;
+}
+.bs-callout h4 {
+  margin-top: 0;
+}
+.bs-callout p:last-child {
+  margin-bottom: 0;
+}
+.bs-callout code,
+.bs-callout .highlight {
+  background-color: #fff;
+}
+
+/* Themes for different contexts */
+.bs-callout-danger {
+  background-color: #fcf2f2;
+  border-color:#d9534f;
+}
+.bs-callout-danger h4 {
+	color:#d9534f;
 }
