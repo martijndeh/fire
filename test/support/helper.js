@@ -43,6 +43,15 @@ Helper.prototype.beforeEach = function(options) {
                 }
             })
             .then(function() {
+                var defer = Q.defer();
+
+                fs.mkdir(path.join(__dirname, '..', '..', 'temp'), function() {
+                    defer.resolve();
+                });
+
+                return defer.promise;
+            })
+            .then(function() {
                 var result = Q.when(true);
 
                 self.modules = [];

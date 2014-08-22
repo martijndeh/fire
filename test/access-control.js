@@ -42,6 +42,15 @@ describe('access control', function() {
 	        	return result;
 			})
 			.then(function() {
+				var defer = Q.defer();
+
+				fs.mkdir(path.join(__dirname, '..', 'temp'), function() {
+					defer.resolve();
+				});
+
+				return defer.promise;
+			})
+			.then(function() {
 				var result = Q.when(true);
 
 				modules = [];
