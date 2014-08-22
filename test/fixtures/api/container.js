@@ -222,6 +222,36 @@ ContainerModelController.prototype.deleteContainer = function($id) { //jshint ig
 
 
 
+ContainerModelController.prototype.createUsers = ['/api/Containers/:id/users', function($id) {
+	var model = this.models.Container;
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			var property = model.getProperty('users');
+			return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+		})
+		.spread(function(canCreate, authenticator) {
+			if(!canCreate) {
+				throw unauthenticatedError(authenticator);
+			}
+			else {
+				return authenticator;
+			}
+		})
+		.then(function(authenticator) {
+			var association = model.getAssociation('users');
+			var createMap = self.body;
+			createMap['container'] = $id;
+
+			return association.options.through.create(createMap);
+		})
+		.then(function() {
+			return model.findOne({id: $id});
+		})
+}];
+
 ContainerModelController.prototype.getUsers = ['/api/Containers/:id/users', function($id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();

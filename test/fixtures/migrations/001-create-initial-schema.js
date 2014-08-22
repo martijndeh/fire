@@ -6,8 +6,8 @@ function Migration() {
 
 Migration.prototype.up = function() {
 	this.models.createModel('Test', {
-		id: [this.Id, this.Update(false)],
-		name: [this.String, this.Update('test')]
+		id: [this.Id, this.CanUpdate(false)],
+		name: [this.String, this.CanUpdate('test')]
 	});
 
 };

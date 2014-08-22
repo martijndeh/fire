@@ -8,12 +8,19 @@ var app = angular.module('example', []);
 
 
 
+app.controller('TestController', [function() {}]);
+
 function FireModelInstance(setMap, model, path) {
 	this._map = setMap || {};
 	this._changes = {};
 	this._model = model;
 	this._endpoint = path + '/' + this._map.id;
 }
+
+FireModelInstance.prototype.refresh = function(otherInstance) {
+	this._map = otherInstance._map;
+	return this;
+};
 
 FireModelInstance.prototype.toQueryValue = function() {
 	return this._map.id;
@@ -59,9 +66,6 @@ FireModel.prototype._prepare = function(params) {
 FireModel.prototype._action = function(verb, path, fields) {
 	var defer = this.$q.defer();
 
-	console.log(verb + ' ' + path);
-	console.log(fields);
-
 	var self = this;
 	this.$http[verb](path, fields)
 		.success(function(result) {
@@ -101,7 +105,7 @@ FireModel.prototype.update = function(id, model) {
 	return this._put(this.endpoint + '/' + id, updateMap);
 };
 
-FireModel.prototype.create = function(fields) {
+FireModel.prototype._create = function(path, fields) {
 	var createMap = {};
 	Object.keys(fields).forEach(function(key) {
 		var value = fields[key];
@@ -113,7 +117,11 @@ FireModel.prototype.create = function(fields) {
 		}
 	});
 
-	return this._post(this.endpoint, createMap);
+	return this._post(path, createMap);
+};
+
+FireModel.prototype.create = function(fields) {
+	return this._create(this.endpoint, fields);
 };
 
 FireModel.prototype._find = function(path, fields, options) {
@@ -175,9 +183,81 @@ app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 }]);
 
+app.service('FireTestController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+    function unwrap(promise, initialValue) {
+        var value = initialValue;
+
+        promise.then(function(newValue) {
+            angular.copy(newValue, value);
+        });
+
+        return value;
+    };
+    this.unwrap = unwrap;
+    this.models = FireModels;
+
+    
+    
+    this.doTest = function(foo,bar,baz) {
+        var defer = $q.defer();
+
+        $http['post']('/test', {foo: foo, bar: bar, baz: baz})
+            .success(function(result) {
+                defer.resolve(result);
+            })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
+    
+    
+    
+    this.doTest3 = function(a) {
+        var defer = $q.defer();
+
+        $http['post']('/test3', {a: a})
+            .success(function(result) {
+                defer.resolve(result);
+            })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
+    
+    
+    
+    this.getTest4 = function($id) {
+        var defer = $q.defer();
+
+        $http['get']('/test4s/' + $id + '', {$id: $id})
+            .success(function(result) {
+                defer.resolve(result);
+            })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
+    
+    
+}]);
+
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);
+
+
+
+    
+
+    
+
+    
 
 
 }]);

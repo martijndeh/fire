@@ -128,7 +128,7 @@ describe('access control', function() {
 				function Article() {
 					this.title = [this.String];
 					this.author = [this.BelongsTo(this.models.User), this.Automatic, this.AutoFetch];
-					this.accessControl = [this.Read(function() { return true; }), this.Update('author'), this.Delete(function() { return false; }), this.Create(function(user) {
+					this.accessControl = [this.CanRead(function() { return true; }), this.CanUpdate('author'), this.CanDelete(function() { return false; }), this.CanCreate(function(user) {
 						return (user && user.name == 'Martijn');
 					})];
 				}

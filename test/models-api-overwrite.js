@@ -17,7 +17,7 @@ describe('models api overwrite', function() {
 		helper.setup = function(app) {
 			function Tester() {
 				this.name = [this.String];
-				this.accessControl = [this.Create(function() { return true; }), this.Read(function() { return true; }), this.Update(function() { return true; }), this.Delete(function() { return true; })];
+				this.accessControl = [this.CanCreate(function() { return true; }), this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return true; })];
 			}
 			app.model(Tester);
 

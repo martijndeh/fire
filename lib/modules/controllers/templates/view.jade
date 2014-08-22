@@ -13,4 +13,5 @@ html(ng-app=_fire.appName id="ng-app" xmlns:ng="http://angularjs.org")
 			link(rel="stylesheet" type="text/css" href=style)
 		for script in scripts
 			script(type="text/javascript" src=script)
-	body(ng-view)
+	body
+		div(ng-view)

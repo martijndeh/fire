@@ -8,8 +8,8 @@ var config = require('./../lib/helpers/config');
 
 describe('view routes', function() {
     var app = null;
-                            
-    var DEFAULT_HTML = '<!DOCTYPE html><html ng-app="routes" id="ng-app" xmlns:ng="http://angularjs.org"><head><meta charset="utf-8"><meta name="fragment" content="!"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title></title><script src="/bower_components/angular/angular.min.js"></script><script src="/bower_components/angular-route/angular-route.min.js"></script><script src="/scripts/fire.js"></script></head><body ng-view></body></html>';
+
+    var DEFAULT_HTML = '<!DOCTYPE html><html ng-app="routes" id="ng-app" xmlns:ng="http://angularjs.org"><head><meta charset="utf-8"><meta name="fragment" content="!"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title></title><script src="/bower_components/angular/angular.min.js"></script><script src="/bower_components/angular-route/angular-route.min.js"></script><script src="/scripts/fire.js"></script></head><body><div ng-view></div></body></html>';
 
     after(function(done) {
         app.stop()

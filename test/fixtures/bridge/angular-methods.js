@@ -30,6 +30,11 @@ function FireModelInstance(setMap, model, path) {
 	this._endpoint = path + '/' + this._map.id;
 }
 
+FireModelInstance.prototype.refresh = function(otherInstance) {
+	this._map = otherInstance._map;
+	return this;
+};
+
 FireModelInstance.prototype.toQueryValue = function() {
 	return this._map.id;
 };
@@ -74,9 +79,6 @@ FireModel.prototype._prepare = function(params) {
 FireModel.prototype._action = function(verb, path, fields) {
 	var defer = this.$q.defer();
 
-	console.log(verb + ' ' + path);
-	console.log(fields);
-
 	var self = this;
 	this.$http[verb](path, fields)
 		.success(function(result) {
@@ -116,7 +118,7 @@ FireModel.prototype.update = function(id, model) {
 	return this._put(this.endpoint + '/' + id, updateMap);
 };
 
-FireModel.prototype.create = function(fields) {
+FireModel.prototype._create = function(path, fields) {
 	var createMap = {};
 	Object.keys(fields).forEach(function(key) {
 		var value = fields[key];
@@ -128,7 +130,11 @@ FireModel.prototype.create = function(fields) {
 		}
 	});
 
-	return this._post(this.endpoint, createMap);
+	return this._post(path, createMap);
+};
+
+FireModel.prototype.create = function(fields) {
+	return this._create(this.endpoint, fields);
 };
 
 FireModel.prototype._find = function(path, fields, options) {

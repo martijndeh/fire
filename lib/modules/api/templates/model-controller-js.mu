@@ -271,6 +271,36 @@ app.controller({{controllerName}});
 }];
 {{/hasMethod}}
 {{#hasMany}}
+{{controllerName}}.prototype.create{{capitalName}} = ['/api/{{model.pluralName}}/:id/{{name}}', function($id) {
+	var model = this.models.{{model.name}};
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			var property = model.getProperty('{{name}}');
+			return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+		})
+		.spread(function(canCreate, authenticator) {
+			if(!canCreate) {
+				throw unauthenticatedError(authenticator);
+			}
+			else {
+				return authenticator;
+			}
+		})
+		.then(function(authenticator) {
+			var association = model.getAssociation('{{name}}');
+			var createMap = self.body;
+			createMap['{{model.lowerCaseName}}'] = $id;
+
+			return association.options.through.create(createMap);
+		})
+		.then(function() {
+			return model.findOne({id: $id});
+		})
+}];
+
 {{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.pluralName}}/:id/{{name}}', function($id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();

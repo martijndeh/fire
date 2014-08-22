@@ -19,7 +19,7 @@ describe('model routes', function() {
 				function User() {
 					this.name 		= [this.String, this.Authenticate];
 					this.actions 	= [this.HasMany(this.models.Action), this.AutoFetch, this.Virtual];
-					this.accessControl = [this.Create(function() { return true; })];
+					this.accessControl = [this.CanCreate(function() { return true; })];
 				}
 				app.model(User);
 
@@ -126,7 +126,7 @@ describe('model routes', function() {
 				function Test() {
 					this.name = [this.String];
 					this.value = [this.Integer];
-					this.accessControl = [this.Create(function() { return true; }), this.Update(function() { return true; }), this.Read(function() { return true; })];
+					this.accessControl = [this.CanCreate(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanRead(function() { return true; })];
 				}
 				app.model(Test);
 

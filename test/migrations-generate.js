@@ -45,7 +45,7 @@ describe('migrations generate', function() {
         before(function() {
             createModels = function() {
                 function Test() {
-                    this.name = [this.String, this.Update('test')];
+                    this.name = [this.String, this.CanUpdate('test')];
                 }
                 app.model(Test);
             };

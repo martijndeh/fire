@@ -8,6 +8,8 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
+// fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/controller-methods.js'), writeStream.toString());
+
 describe('bridge', function() {
 	var app = null;
 	var bridge = null;
@@ -84,6 +86,9 @@ describe('bridge', function() {
 
 		app.models.setup()
 			.then(function() {
+				return app.controllers.setup();
+			})
+			.then(function() {
 				return bridge.generate(writeStream);
 			})
 			.then(function() {
@@ -96,12 +101,25 @@ describe('bridge', function() {
 	});
 
 	it('can generate model methods', function(done) {
-		function User() {
+		function Pet() {
 			this.name = [this.String];
 		}
 
-		function Pet() {
-			this.name = [this.String];
+		function User() {
+			this.name 			= [this.String, this.Unique];
+			this.votes 			= [this.HasMany(this.models.Article, 'voters')];
+			this.accessControl 	= [this.CanRead(function() { return false; }), this.CanUpdate(function() { return false; })];
+		}
+
+		function Article() {
+			this.title 			= [this.String, this.Required];
+			this.voters 		= [this.HasMany(this.models.User, 'votes'), this.AutoFetch, this.CanCreate(function(articleID) {
+				return this.models.ArticlesUsers.findOne({user: this.body.user, article: articleID})
+					.then(function(articleUser) {
+						return (!articleUser);
+					});
+			})];
+			this.accessControl 	= [this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return false; })];
 		}
 
 		function TestController ( $scope, fire/*), test*/ ){/* jshint ignore:start */$scope.user = null; //jshint ignore:line
@@ -169,8 +187,10 @@ describe('bridge', function() {
 			//{
 		}
 
-		app.model(User);
 		app.model(Pet);
+
+		app.model(User);
+		app.model(Article);
 
      	app.controller(fn7);
      	app.controller(fn6);
@@ -185,13 +205,13 @@ describe('bridge', function() {
 
 		app.models.setup()
 			.then(function() {
+				return app.controllers.setup();
+			})
+			.then(function() {
 				return bridge.generate(writeStream);
 			})
 			.then(function() {
 				assert.equal(writeStream.toString().length > 0, true);
-
-				//fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/model-methods.js'), writeStream.toString());
-
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/model-methods.js')).toString());
 
 				done();
@@ -219,11 +239,44 @@ describe('bridge', function() {
 
 		app.models.setup()
 			.then(function() {
+				return app.controllers.setup();
+			})
+			.then(function() {
 				return bridge.generate(writeStream);
 			})
 			.then(function() {
 				assert.equal(writeStream.toString().length > 0, true);
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/angular-methods.js')).toString());
+
+				done();
+			})
+			.done();
+	});
+
+	it('can export inline template', function(done) {
+		app.template('test', '<h1>Test template.</h1>');
+
+		function TestController() {
+
+		}
+		app.controller(TestController);
+
+		TestController.prototype.view = function() {
+			return this.template('test');
+		};
+
+		var writeStream = new streams.WritableStream();
+
+		app.models.setup()
+			.then(function() {
+				return app.controllers.setup();
+			})
+			.then(function() {
+				return bridge.generate(writeStream);
+			})
+			.then(function() {
+				assert.equal(writeStream.toString().length > 0, true);
+				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/inline-templates.js')).toString());
 
 				done();
 			})

@@ -8,12 +8,21 @@ var app = angular.module('example', []);
 
 
 
+app.controller('TestController', [function() {
+
+		}]);
+
 function FireModelInstance(setMap, model, path) {
 	this._map = setMap || {};
 	this._changes = {};
 	this._model = model;
 	this._endpoint = path + '/' + this._map.id;
 }
+
+FireModelInstance.prototype.refresh = function(otherInstance) {
+	this._map = otherInstance._map;
+	return this;
+};
 
 FireModelInstance.prototype.toQueryValue = function() {
 	return this._map.id;
@@ -59,9 +68,6 @@ FireModel.prototype._prepare = function(params) {
 FireModel.prototype._action = function(verb, path, fields) {
 	var defer = this.$q.defer();
 
-	console.log(verb + ' ' + path);
-	console.log(fields);
-
 	var self = this;
 	this.$http[verb](path, fields)
 		.success(function(result) {
@@ -101,7 +107,7 @@ FireModel.prototype.update = function(id, model) {
 	return this._put(this.endpoint + '/' + id, updateMap);
 };
 
-FireModel.prototype.create = function(fields) {
+FireModel.prototype._create = function(path, fields) {
 	var createMap = {};
 	Object.keys(fields).forEach(function(key) {
 		var value = fields[key];
@@ -113,7 +119,11 @@ FireModel.prototype.create = function(fields) {
 		}
 	});
 
-	return this._post(this.endpoint, createMap);
+	return this._post(path, createMap);
+};
+
+FireModel.prototype.create = function(fields) {
+	return this._create(this.endpoint, fields);
 };
 
 FireModel.prototype._find = function(path, fields, options) {
@@ -170,120 +180,41 @@ FireModel.prototype.getOne = function(fields) {
 };
 
 
-function FireModelInstanceUser(setMap, model, path) {
-	FireModelInstance.call(this, setMap, model, path);
-
-	var self = this;
-
-	Object.defineProperty(this, 'id', {
-		get: function() {
-			return self._changes['id'] || self._map['id'];
-		},
-
-		set: function(value) {
-			self._changes['id'] = value;
-		}
-	});
-
-	Object.defineProperty(this, 'name', {
-		get: function() {
-			return self._changes['name'] || self._map['name'];
-		},
-
-		set: function(value) {
-			self._changes['name'] = value;
-		}
-	});
-
-}
-FireModelInstanceUser.prototype = FireModelInstance.prototype;
-
-
-
-function FireModelUser($http, $q, models) {
-	FireModel.call(this, $http, $q, models);
-
-	this.endpoint = '/api/users';
-}
-FireModelUser.prototype = new FireModel();
-
-FireModelUser.prototype.parseResult = function(setMapOrList, path) {
-	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-		var self = this;
-		return setMapOrList.map(function(setMap) {
-			return new FireModelInstanceUser(setMap, self, path);
-		});
-	}
-	else {
-		return new FireModelInstanceUser(setMapOrList, this, path);
-	}
-};
-
-
-
-function FireModelInstancePet(setMap, model, path) {
-	FireModelInstance.call(this, setMap, model, path);
-
-	var self = this;
-
-	Object.defineProperty(this, 'id', {
-		get: function() {
-			return self._changes['id'] || self._map['id'];
-		},
-
-		set: function(value) {
-			self._changes['id'] = value;
-		}
-	});
-
-	Object.defineProperty(this, 'name', {
-		get: function() {
-			return self._changes['name'] || self._map['name'];
-		},
-
-		set: function(value) {
-			self._changes['name'] = value;
-		}
-	});
-
-}
-FireModelInstancePet.prototype = FireModelInstance.prototype;
-
-
-
-function FireModelPet($http, $q, models) {
-	FireModel.call(this, $http, $q, models);
-
-	this.endpoint = '/api/pets';
-}
-FireModelPet.prototype = new FireModel();
-
-FireModelPet.prototype.parseResult = function(setMapOrList, path) {
-	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-		var self = this;
-		return setMapOrList.map(function(setMap) {
-			return new FireModelInstancePet(setMap, self, path);
-		});
-	}
-	else {
-		return new FireModelInstancePet(setMapOrList, this, path);
-	}
-};
-
-
-
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
-	this.User = new FireModelUser($http, $q, this);
-	
-	this.Pet = new FireModelPet($http, $q, this);
-	
+}]);
+
+app.service('FireTestController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+    function unwrap(promise, initialValue) {
+        var value = initialValue;
+
+        promise.then(function(newValue) {
+            angular.copy(newValue, value);
+        });
+
+        return value;
+    };
+    this.unwrap = unwrap;
+    this.models = FireModels;
+
+    
+    
+    
 }]);
 
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);
+
+
+
+    
+    $routeProvider.when('/', {
+        templateUrl: '/templates/test',
+        controller: 'TestController'
+    });
+    
 
 
 }]);
