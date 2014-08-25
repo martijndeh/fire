@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: API - Node on Fire</title>
+	<title>Documentation Class: Controller - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,12 @@
 				
 
 
-	<h1 class="page-title">Class: API</h1>
+	<h1 class="page-title">Class: Controller</h1>
 <section>
 
 <header>
     <h2>
-    API
+    Controller
     </h2>
     
 </header>
@@ -53,7 +53,7 @@
     
         
 <dt>
-    <h4 class="name" id="API"><span class="type-signature"></span>new API<span class="signature">(app)</span></h4>
+    <h4 class="name" id="Controller"><span class="type-signature"></span>new Controller<span class="signature">(models, request, response)</span></h4>
     
     
 </dt>
@@ -61,9 +61,8 @@
     
     
     <div class="description">
-        <p>The API module.</p>
-<p>This module generates model controllers of all models during build phase and executes the controllers in the run phase. The model controllers get generated to /_api. To generate the model controllers:</p>
-<pre class="prettyprint source"><code>$ fire generate api</code></pre>
+        <p>The base constructor for a controller. Inheritance is applied when calling App#controller on a controller constructor.</p>
+<p>To prevent leaking of data between requests, for every request a new instance is allocated and initialized. This is likely to change in the future because of optimizations.</p>
     </div>
     
 
@@ -97,13 +96,13 @@
 
         <tr>
             
-                <td class="name"><code>app</code></td>
+                <td class="name"><code>models</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type"><a href="App.html">App</a></span>
+<span class="label label-primary param-type"><a href="Models.html">Models</a></span>
 
 
 
@@ -114,7 +113,55 @@
 
             
 
-            <td class="description last"><p>The app.</p></td>
+            <td class="description last"><p>The models module.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>request</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">http.IncomingMessage</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The HTTP request from express.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>response</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">http.ServerResponse</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The HTTP response from</p></td>
         </tr>
 
 	
@@ -125,6 +172,203 @@
     
     
 <dl class="details">
+	
+
+	<h5 class="subsection-title">Properties:</h5>
+
+	<dl>
+
+<table class="props table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>basePathComponents</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The base path or prefix of every route in this controller. For example, a basePathComponents of <code>['api', 'v1']</code> would prefix every route with <code>/api/v1</code>.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>models</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type"><a href="Models.html">Models</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The models module. On the models module you can access the models. For more information see Models.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>session</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">express.cookie-session</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Cookie-based session storage, see <a href="https://github.com/expressjs/cookie-session">https://github.com/expressjs/cookie-session</a>.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>body</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The HTTP request's body.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The HTTP request's query parameters.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>__request</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">http.IncomingMessage</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The HTTP request. The request is currently available, but it's likely in the future this property will be deprecated and removed.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>__response</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">http.ServerResponse</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The HTTP response. See Controller#__request.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+</dl>
+
 	
 
 	
@@ -183,267 +427,6 @@
 
     
 
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        <dl>
-            
-<dt>
-    <h4 class="name" id="generateModelController"><span class="type-signature"></span>generateModelController<span class="signature">(model, writeStream)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Writes the model controller of <code>model</code> to <code>writeStream</code>.</p>
-<p>Once this method finishes, it does close the <code>writeStream</code>.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>model</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="Model.html">Model</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The model.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>writeStream</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">fs.Writable</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The write stream to write to.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">(basePath)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Loads the model controllers in the run phase. This method is called when the app starts up. The model controllers are loaded in the <code>_api/</code> directory.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>basePath</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The root directory of the app.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        </dl>
     
 
     

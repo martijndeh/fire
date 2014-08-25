@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Classes - Node on Fire</title>
+	<title>Documentation Class: Router - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,12 @@
 				
 
 
-	<h1 class="page-title">Classes</h1>
+	<h1 class="page-title">Class: Router</h1>
 <section>
 
 <header>
     <h2>
-    
+    Router
     </h2>
     
 </header>
@@ -52,8 +52,103 @@
 
     
         
+<dt>
+    <h4 class="name" id="Router"><span class="type-signature"></span>new Router<span class="signature">(controllerConstructor, filePath)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>The router is responsible for creating routes. The created routes are passed to the delegate, either a Controller instance, or another module, like Bridge.</p>
+<p>For example, a controller creates a router, the controller is set as the router's delegate, and the controller executes the Router#createRoutes. Whenever the router creates a route, the delegate#addRoute is invoked.</p>
+<p>A controller is not the only module utilizing the router. The Bridge module, and in the future more modules, are using the router to find all routes.</p>
+<p>To customize the routing behaviour, and if the array-based notation is not sufficient, overwrite your controller's Controller#getRouter method and return a custom router.</p>
+    </div>
+    
 
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
         
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>controllerConstructor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Constructor</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The controller to create the routes for.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>filePath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The file path to the controller. If the controller is included in a subdirectory in <code>controllers/</code> and Controller#basePathComponents is not set, the subdirectory is prepended to all route paths.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
 <dl class="details">
 	
 
@@ -84,8 +179,20 @@
 	
 </dl>
 
+    
+    
 
-        
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
     
     </div>
 
@@ -95,79 +202,6 @@
 
     
 
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="AccessControl.html">AccessControl</a></dt>
-            <dd></dd>
-        
-            <dt><a href="API.API.html">API</a></dt>
-            <dd></dd>
-        
-            <dt><a href="App.html">App</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Bridge.html">Bridge</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Client.html">Client</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Controllers.Controllers.html">Controllers</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Controllers.Route.html">Route</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Controllers.Router.html">Router</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Controllers.Template.html">Template</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Datastore.html">Datastore</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Migrations.Generate.html">Generate</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Migrations.Migration.html">Migration</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Migrations.Migrations.html">Migrations</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Migrations.MigrationTask.html">MigrationTask</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Migrations.Schema.html">Schema</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Model.html">Model</a></dt>
-            <dd></dd>
-        
-            <dt><a href="ModelInstance.html">ModelInstance</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Models.html">Models</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Property.html">Property</a></dt>
-            <dd></dd>
-        
-            <dt><a href="SEO.SEO.html">SEO</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Static.Static.html">Static</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Table.html">Table</a></dt>
-            <dd></dd>
-        
-            <dt><a href="Templates.Templates.html">Templates</a></dt>
-            <dd></dd>
-        </dl>
     
 
     

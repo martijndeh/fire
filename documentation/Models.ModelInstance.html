@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: API - Node on Fire</title>
+	<title>Documentation Class: ModelInstance - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,14 @@
 				
 
 
-	<h1 class="page-title">Class: API</h1>
+	<h1 class="page-title">Class: ModelInstance</h1>
 <section>
 
 <header>
     <h2>
-    API
+        <span class="ancestors"><a href="Models.html">Models</a>.</span>
+    
+    ModelInstance
     </h2>
     
 </header>
@@ -53,7 +55,7 @@
     
         
 <dt>
-    <h4 class="name" id="API"><span class="type-signature"></span>new API<span class="signature">(app)</span></h4>
+    <h4 class="name" id="ModelInstance"><span class="type-signature"></span>new ModelInstance<span class="signature">(model, row, changes, id)</span></h4>
     
     
 </dt>
@@ -61,144 +63,18 @@
     
     
     <div class="description">
-        <p>The API module.</p>
-<p>This module generates model controllers of all models during build phase and executes the controllers in the run phase. The model controllers get generated to /_api. To generate the model controllers:</p>
-<pre class="prettyprint source"><code>$ fire generate api</code></pre>
-    </div>
-    
+        <p>A model instance represents one or multiple rows in the database. These instances are usually the return value(s) of Model#find, Model#create and Model#update methods.</p>
+<p>This calls the beforeLoad hook when initialization starts and calls afterLoad when initializations finishes. To declare a hook, declare a method with the hook name on the model's prototype. For example, this creates an afterCreate hook on a User model:</p>
+<pre class="prettyprint source lang-js"><code>function User() {
+    this.email = [this.String, this.Authenticate];
+    this.type = [this.String];
+    this.posts = [this.HasMany(this.models.Post)];
+}
+app.model(User);
 
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>app</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="App.html">App</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The app.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        <dl>
-            
-<dt>
-    <h4 class="name" id="generateModelController"><span class="type-signature"></span>generateModelController<span class="signature">(model, writeStream)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Writes the model controller of <code>model</code> to <code>writeStream</code>.</p>
-<p>Once this method finishes, it does close the <code>writeStream</code>.</p>
+User.prototype.afterCreate = function() {
+    // Gets executed whenever a new model instance is created.
+};</code></pre>
     </div>
     
 
@@ -249,20 +125,20 @@
 
             
 
-            <td class="description last"><p>The model.</p></td>
+            <td class="description last"><p>The model the instance belongs to.</p></td>
         </tr>
 
 	
 
         <tr>
             
-                <td class="name"><code>writeStream</code></td>
+                <td class="name"><code>row</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">fs.Writable</span>
+<span class="label label-primary param-type">Dictionary</span>
 
 
 
@@ -273,106 +149,38 @@
 
             
 
-            <td class="description last"><p>The write stream to write to.</p></td>
+            <td class="description last"><p>A map of all column-value pairs from the database.</p></td>
         </tr>
 
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">(basePath)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Loads the model controllers in the run phase. This method is called when the app starts up. The model controllers are loaded in the <code>_api/</code> directory.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
 	
 
         <tr>
             
-                <td class="name"><code>basePath</code></td>
+                <td class="name"><code>changes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A map of property-value pairs set by the caller.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
             
 
             <td class="type">
@@ -389,7 +197,7 @@
 
             
 
-            <td class="description last"><p>The root directory of the app.</p></td>
+            <td class="description last"><p>The instance primary key's value, if known.</p></td>
         </tr>
 
 	
@@ -443,7 +251,21 @@
     
 </dd>
 
-        </dl>
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
     
 
     
