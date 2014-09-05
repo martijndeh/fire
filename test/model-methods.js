@@ -90,14 +90,14 @@ describe('model methods', function() {
                 .then(function() {
                     return models.User.create({
                         name: 'Test Creator'
-                    })
+                    });
                 })
                 .then(function(user) {
                     return models.Article.create({
-                        title: 'Test title.',
-                        url: 'https://github.com/martijndeh/fire',
-                        submitter: user
-                    })
+                            title: 'Test title.',
+                            url: 'https://github.com/martijndeh/fire',
+                            submitter: user
+                        })
                         .then(function(article) {
                             return article.addVoter(user)
                                 .then(function() {
@@ -105,8 +105,8 @@ describe('model methods', function() {
                                     assert.equal(article.voters.length, 1);
 
                                     done();
-                                })
-                        })
+                                });
+                        });
                 })
                 .done();
         });
@@ -123,6 +123,28 @@ describe('model methods', function() {
             return models.ModelThree.setup()
                 .then(function() {
                     return models.ModelThree.findOrCreate({name: 'Test'}, {value: 123});
+                })
+                .then(function(model) {
+                    assert.equal(model.name, 'Test');
+                    assert.equal(model.value, 123);
+
+                    done();
+                })
+                .done();
+        });
+    });
+
+    it('can create model when calling updateOrCreate()', function(done) {
+        function ModelThree() {
+            this.name = [this.String];
+            this.value = [this.Integer];
+        }
+        app.model(ModelThree);
+
+        setImmediate(function() {
+            return models.ModelThree.setup()
+                .then(function() {
+                    return models.ModelThree.updateOrCreate({name: 'Test'}, {value: 123});
                 })
                 .then(function(model) {
                     assert.equal(model.name, 'Test');

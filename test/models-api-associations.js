@@ -125,8 +125,6 @@ describe('models api associations', function() {
 				user: user1ID
 			}))
 			.expect(200, function(error, response) {
-				console.log(response.body);
-
 				assert.equal(response.body.voters.length, 1);
 
 				done(error);
