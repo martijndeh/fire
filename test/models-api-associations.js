@@ -145,8 +145,8 @@ describe('models api associations', function() {
 					.send(helper.jsonify({
 						user: user1ID
 					}))
-					.expect(401, function(error) {
-						done(error);
+					.expect(401, function(error2) {
+						done(error2);
 					});
 			});
 	});
@@ -167,8 +167,6 @@ describe('models api associations', function() {
 				name: 'Updated Name'
 			}))
 			.expect(200, function(error, response) {
-				console.log(error);
-
 				assert.equal(response.body.id, child1ID);
 				assert.equal(response.body.name, 'Updated Name');
 				done(error);

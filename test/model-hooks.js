@@ -257,5 +257,162 @@ describe('model hooks', function() {
 				.catch(done)
 				.done();
 		});
-	})
+	});
+
+	it('will call afterUpdate', function(done) {
+		var called = 0;
+
+		function User() {
+			this.name = [this.String];
+		}
+		app.model(User);
+
+		User.prototype.afterUpdate = function() {
+			called++;
+		};
+
+		setImmediate(function() {
+			models.User.setup()
+				.then(function() {
+					return models.User.create({name: 'Martijn'});
+				})
+				.then(function() {
+					return models.User.update({name: 'Martijn'}, {name: 'Weird Guy'});
+				})
+				.then(function(users) {
+					assert.equal(users.length, 1);
+					assert.equal(called, 1);
+					done();
+				})
+				.catch(function(error) {
+					done(error);
+				})
+				.done();
+		});
+	});
+
+	it('will call afterUpdate zero times', function(done) {
+		var called = 0;
+
+		function User() {
+			this.name = [this.String];
+		}
+		app.model(User);
+
+		User.prototype.afterUpdate = function() {
+			called++;
+		};
+
+		setImmediate(function() {
+			models.User.setup()
+				.then(function() {
+					return models.User.create({name: 'Someone Else'});
+				})
+				.then(function() {
+					return models.User.update({name: 'Martijn'}, {name: 'Weird Guy'});
+				})
+				.then(function(users) {
+					assert.equal(users.length, 0);
+					assert.equal(called, 0);
+					done();
+				})
+				.done();
+		});
+	});
+
+	it('will call afterUpdate three times', function(done) {
+		var called = 0;
+
+		function User() {
+			this.name = [this.String];
+		}
+		app.model(User);
+
+		User.prototype.afterUpdate = function() {
+			called++;
+		};
+
+		setImmediate(function() {
+			models.User.setup()
+				.then(function() {
+					return models.User.create([{name: 'Someone Else'}, {name: 'Another Guy'}, {name: 'Martijn Again'}]);
+				})
+				.then(function() {
+					return models.User.update({}, {name: 'Weird Guy'});
+				})
+				.then(function(users) {
+					assert.equal(users.length, 3);
+					assert.equal(called, 3);
+					done();
+				})
+				.done();
+		});
+	});
+
+	it('will call afterUpdate after ModelInstance#save', function(done) {
+		var called = 0;
+
+		function User() {
+			this.name = [this.String];
+		}
+		app.model(User);
+
+		User.prototype.afterUpdate = function() {
+			called++;
+		};
+
+		setImmediate(function() {
+			models.User.setup()
+				.then(function() {
+					return models.User.create({name: 'Martijn'});
+				})
+				.then(function() {
+					return models.User.findOne({});
+				})
+				.then(function(user) {
+					user.name = 'Test';
+					return user.save();
+				})
+				.then(function() {
+					assert.equal(called, 1);
+					done();
+				})
+				.done();
+		});
+	});
+
+	it('will call afterSave', function(done) {
+		var called = 0;
+
+		function User() {
+			this.name = [this.String];
+		}
+		app.model(User);
+
+		User.prototype.afterSave = function() {
+			called++;
+		};
+
+		setImmediate(function() {
+			models.User.setup()
+				.then(function() {
+					return models.User.create({name: 'Martijn'});
+				})
+				.then(function() {
+					return models.User.update({name: 'Martijn'}, {name: 'Weird Guy'});
+				})
+				.then(function(users) {
+					assert.equal(users.length, 1);
+					return Q.delay(0);
+				})
+				.then(function() {
+					assert.equal(called, 2);
+					done();
+				})
+				.catch(function(error) {
+					done(error);
+				})
+				.done();
+		});
+	});
 });

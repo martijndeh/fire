@@ -14,6 +14,10 @@ FireModelInstance.prototype.toQueryValue = function() {
 	return this._map.id;
 };
 
+FireModelInstance.prototype.remove = function() {
+	return this._model.remove(this._map.id);
+};
+
 FireModelInstance.prototype.save = function() {
 	// TODO: Check validation locally.
 
@@ -93,6 +97,32 @@ FireModel.prototype.update = function(id, model) {
 	return this._put(this.endpoint + '/' + id, updateMap);
 };
 
+FireModel.prototype.remove = function(id) {
+	return this._action('delete', this.endpoint + '/' + id, {})
+};
+
+FireModel.prototype.findOrCreate = function(where, set) {
+	var self = this;
+	return this.findOne(where)
+		.then(function(modelInstance) {
+			if(modelInstance) {
+				return modelInstance;
+			}
+			else {
+				var createMap = {};
+				Object.keys(where || {}).forEach(function(key) {
+					createMap[key] = where[key];
+				});
+
+				Object.keys(set || {}).forEach(function(key) {
+					createMap[key] = set[key];
+				});
+
+				return self.create(createMap);
+			}
+		});
+};
+
 FireModel.prototype._create = function(path, fields) {
 	var createMap = {};
 	Object.keys(fields).forEach(function(key) {
@@ -167,10 +197,21 @@ FireModel.prototype.getOne = function(fields) {
 
 {{#models}}
 function FireModelInstance{{name}}(setMap, model, path) {
-	FireModelInstance.call(this, setMap, model, path);
-
 	var self = this;
 {{#properties}}
+	{{#isAssociation}}
+	if(typeof setMap.{{name}} != 'undefined' && setMap.{{name}} !== null) {
+		if(Array.isArray(setMap.{{name}})) {
+			setMap.{{name}} = setMap.{{name}}.map(function(object) {
+				return new FireModelInstance{{getAssociatedModelName}}(object);
+			});
+		}
+		else {
+			setMap.{{name}} = new FireModelInstance{{getAssociatedModelName}}(setMap.{{name}});
+		}
+	}
+	{{/isAssociation}}
+
 	Object.defineProperty(this, '{{name}}', {
 		get: function() {
 			return self._changes['{{name}}'] || self._map['{{name}}'];
@@ -181,6 +222,8 @@ function FireModelInstance{{name}}(setMap, model, path) {
 		}
 	});
 {{/properties}}
+
+	FireModelInstance.call(this, setMap, model, path);
 }
 FireModelInstance{{name}}.prototype = FireModelInstance.prototype;
 

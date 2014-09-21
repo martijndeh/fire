@@ -75,6 +75,10 @@ FireModelInstance.prototype.toQueryValue = function() {
 	return this._map.id;
 };
 
+FireModelInstance.prototype.remove = function() {
+	return this._model.remove(this._map.id);
+};
+
 FireModelInstance.prototype.save = function() {
 	// TODO: Check validation locally.
 
@@ -154,6 +158,32 @@ FireModel.prototype.update = function(id, model) {
 	return this._put(this.endpoint + '/' + id, updateMap);
 };
 
+FireModel.prototype.remove = function(id) {
+	return this._action('delete', this.endpoint + '/' + id, {})
+};
+
+FireModel.prototype.findOrCreate = function(where, set) {
+	var self = this;
+	return this.findOne(where)
+		.then(function(modelInstance) {
+			if(modelInstance) {
+				return modelInstance;
+			}
+			else {
+				var createMap = {};
+				Object.keys(where || {}).forEach(function(key) {
+					createMap[key] = where[key];
+				});
+
+				Object.keys(set || {}).forEach(function(key) {
+					createMap[key] = set[key];
+				});
+
+				return self.create(createMap);
+			}
+		});
+};
+
 FireModel.prototype._create = function(path, fields) {
 	var createMap = {};
 	Object.keys(fields).forEach(function(key) {
@@ -228,9 +258,9 @@ FireModel.prototype.getOne = function(fields) {
 
 
 function FireModelInstancePet(setMap, model, path) {
-	FireModelInstance.call(this, setMap, model, path);
-
 	var self = this;
+
+	
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
@@ -242,6 +272,8 @@ function FireModelInstancePet(setMap, model, path) {
 		}
 	});
 
+	
+
 	Object.defineProperty(this, 'name', {
 		get: function() {
 			return self._changes['name'] || self._map['name'];
@@ -252,6 +284,8 @@ function FireModelInstancePet(setMap, model, path) {
 		}
 	});
 
+
+	FireModelInstance.call(this, setMap, model, path);
 }
 FireModelInstancePet.prototype = FireModelInstance.prototype;
 
@@ -279,9 +313,9 @@ FireModelPet.prototype.parseResult = function(setMapOrList, path) {
 
 
 function FireModelInstanceUser(setMap, model, path) {
-	FireModelInstance.call(this, setMap, model, path);
-
 	var self = this;
+
+	
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
@@ -293,6 +327,8 @@ function FireModelInstanceUser(setMap, model, path) {
 		}
 	});
 
+	
+
 	Object.defineProperty(this, 'name', {
 		get: function() {
 			return self._changes['name'] || self._map['name'];
@@ -302,6 +338,19 @@ function FireModelInstanceUser(setMap, model, path) {
 			self._changes['name'] = value;
 		}
 	});
+
+	
+	if(typeof setMap.votes != 'undefined' && setMap.votes !== null) {
+		if(Array.isArray(setMap.votes)) {
+			setMap.votes = setMap.votes.map(function(object) {
+				return new FireModelInstanceArticle(object);
+			});
+		}
+		else {
+			setMap.votes = new FireModelInstanceArticle(setMap.votes);
+		}
+	}
+	
 
 	Object.defineProperty(this, 'votes', {
 		get: function() {
@@ -313,6 +362,8 @@ function FireModelInstanceUser(setMap, model, path) {
 		}
 	});
 
+	
+
 	Object.defineProperty(this, 'accessControl', {
 		get: function() {
 			return self._changes['accessControl'] || self._map['accessControl'];
@@ -323,6 +374,8 @@ function FireModelInstanceUser(setMap, model, path) {
 		}
 	});
 
+
+	FireModelInstance.call(this, setMap, model, path);
 }
 FireModelInstanceUser.prototype = FireModelInstance.prototype;
 
@@ -361,9 +414,9 @@ FireModelUser.prototype.parseResult = function(setMapOrList, path) {
 
 
 function FireModelInstanceArticle(setMap, model, path) {
-	FireModelInstance.call(this, setMap, model, path);
-
 	var self = this;
+
+	
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
@@ -375,6 +428,8 @@ function FireModelInstanceArticle(setMap, model, path) {
 		}
 	});
 
+	
+
 	Object.defineProperty(this, 'title', {
 		get: function() {
 			return self._changes['title'] || self._map['title'];
@@ -384,6 +439,19 @@ function FireModelInstanceArticle(setMap, model, path) {
 			self._changes['title'] = value;
 		}
 	});
+
+	
+	if(typeof setMap.voters != 'undefined' && setMap.voters !== null) {
+		if(Array.isArray(setMap.voters)) {
+			setMap.voters = setMap.voters.map(function(object) {
+				return new FireModelInstanceUser(object);
+			});
+		}
+		else {
+			setMap.voters = new FireModelInstanceUser(setMap.voters);
+		}
+	}
+	
 
 	Object.defineProperty(this, 'voters', {
 		get: function() {
@@ -395,6 +463,8 @@ function FireModelInstanceArticle(setMap, model, path) {
 		}
 	});
 
+	
+
 	Object.defineProperty(this, 'accessControl', {
 		get: function() {
 			return self._changes['accessControl'] || self._map['accessControl'];
@@ -405,6 +475,8 @@ function FireModelInstanceArticle(setMap, model, path) {
 		}
 	});
 
+
+	FireModelInstance.call(this, setMap, model, path);
 }
 FireModelInstanceArticle.prototype = FireModelInstance.prototype;
 
@@ -443,9 +515,20 @@ FireModelArticle.prototype.parseResult = function(setMapOrList, path) {
 
 
 function FireModelInstanceArticlesUsers(setMap, model, path) {
-	FireModelInstance.call(this, setMap, model, path);
-
 	var self = this;
+
+	
+	if(typeof setMap.user != 'undefined' && setMap.user !== null) {
+		if(Array.isArray(setMap.user)) {
+			setMap.user = setMap.user.map(function(object) {
+				return new FireModelInstanceUser(object);
+			});
+		}
+		else {
+			setMap.user = new FireModelInstanceUser(setMap.user);
+		}
+	}
+	
 
 	Object.defineProperty(this, 'user', {
 		get: function() {
@@ -457,6 +540,19 @@ function FireModelInstanceArticlesUsers(setMap, model, path) {
 		}
 	});
 
+	
+	if(typeof setMap.article != 'undefined' && setMap.article !== null) {
+		if(Array.isArray(setMap.article)) {
+			setMap.article = setMap.article.map(function(object) {
+				return new FireModelInstanceArticle(object);
+			});
+		}
+		else {
+			setMap.article = new FireModelInstanceArticle(setMap.article);
+		}
+	}
+	
+
 	Object.defineProperty(this, 'article', {
 		get: function() {
 			return self._changes['article'] || self._map['article'];
@@ -467,6 +563,8 @@ function FireModelInstanceArticlesUsers(setMap, model, path) {
 		}
 	});
 
+
+	FireModelInstance.call(this, setMap, model, path);
 }
 FireModelInstanceArticlesUsers.prototype = FireModelInstance.prototype;
 
@@ -505,17 +603,18 @@ app.service('FireModels', ['$http', '$q', function($http, $q) {
 	this.ArticlesUsers = new FireModelArticlesUsers($http, $q, this);
 	
 }]);
+function unwrap(promise, initialValue) {
+    var value = initialValue;
+
+    promise.then(function(newValue) {
+        angular.copy(newValue, value);
+    });
+
+    return value;
+};
+
 
 app.service('FireTestController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
     this.unwrap = unwrap;
     this.models = FireModels;
 
@@ -539,15 +638,6 @@ app.service('FireTestController', ['FireModels', '$http', '$q', function(FireMod
 }]);
 
 app.service('Firefn7', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
     this.unwrap = unwrap;
     this.models = FireModels;
 
@@ -555,15 +645,6 @@ app.service('Firefn7', ['FireModels', '$http', '$q', function(FireModels, $http,
 }]);
 
 app.service('Firefn6', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
     this.unwrap = unwrap;
     this.models = FireModels;
 
@@ -571,15 +652,6 @@ app.service('Firefn6', ['FireModels', '$http', '$q', function(FireModels, $http,
 }]);
 
 app.service('Firefn5', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
     this.unwrap = unwrap;
     this.models = FireModels;
 
@@ -587,15 +659,6 @@ app.service('Firefn5', ['FireModels', '$http', '$q', function(FireModels, $http,
 }]);
 
 app.service('Firefn4', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
     this.unwrap = unwrap;
     this.models = FireModels;
 
@@ -603,15 +666,6 @@ app.service('Firefn4', ['FireModels', '$http', '$q', function(FireModels, $http,
 }]);
 
 app.service('Firefn3', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
     this.unwrap = unwrap;
     this.models = FireModels;
 
@@ -619,15 +673,6 @@ app.service('Firefn3', ['FireModels', '$http', '$q', function(FireModels, $http,
 }]);
 
 app.service('Firefn2', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
     this.unwrap = unwrap;
     this.models = FireModels;
 
@@ -635,15 +680,6 @@ app.service('Firefn2', ['FireModels', '$http', '$q', function(FireModels, $http,
 }]);
 
 app.service('Firefn1', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
     this.unwrap = unwrap;
     this.models = FireModels;
 
@@ -651,6 +687,14 @@ app.service('Firefn1', ['FireModels', '$http', '$q', function(FireModels, $http,
 }]);
 
 app.service('Firefn0', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+    this.unwrap = unwrap;
+    this.models = FireModels;
+
+    
+}]);
+
+
+app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
     function unwrap(promise, initialValue) {
         var value = initialValue;
 
@@ -662,10 +706,7 @@ app.service('Firefn0', ['FireModels', '$http', '$q', function(FireModels, $http,
     };
     this.unwrap = unwrap;
     this.models = FireModels;
-
-    
 }]);
-
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);

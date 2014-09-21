@@ -44,6 +44,7 @@ describe('model routes', function() {
 					};
 				};
 			};
+			helper.createModels = null;
 		});
 
 		beforeEach(function() {

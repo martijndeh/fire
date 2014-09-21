@@ -99,13 +99,18 @@ describe('model methods', function() {
                             submitter: user
                         })
                         .then(function(article) {
+                            assert.notEqual(article, null);
+
                             return article.addVoter(user)
                                 .then(function() {
-                                    assert.equal(article.submitter.name, 'Test Creator');
-                                    assert.equal(article.voters.length, 1);
-
-                                    done();
+                                    return models.Article.findOne({title: 'Test title.'});
                                 });
+                        })
+                        .then(function(article) {
+                            assert.equal(article.submitter.name, 'Test Creator');
+                            assert.equal(article.voters.length, 1);
+
+                            done();
                         });
                 })
                 .done();
@@ -777,7 +782,7 @@ describe('model methods', function() {
                         client: client1
                     })
                     .then(function() {
-                        return models.Project.update({
+                        return models.Project.updateOne({
                             client: client1
                         }, {
                             client: client2,
@@ -787,7 +792,6 @@ describe('model methods', function() {
                     .then(function(project) {
                         assert.notEqual(project, null);
                         assert.equal(project.name, 'Project 2');
-                        assert.equal(project.client.name, 'Client 2');
                     })
                     .then(function() {
                         return models.Project.findOne();
@@ -869,10 +873,10 @@ describe('model methods', function() {
         });
     });
 
-    it('can transform parameters to property value without values', function(done) {
+    it('will not transform parameters to property value without values', function(done) {
         function Object1() {
             this.name = [this.String];
-            this.text = [this.String, this.Required, this.Transform(function(title, subtitle) {
+            this.text = [this.String, this.Transform(function(title, subtitle) {
                 return (title ? title : '') + ' ' + (subtitle ? subtitle : '');
             })];
         }
@@ -888,9 +892,7 @@ describe('model methods', function() {
                 .then(function(object1) {
                     assert.notEqual(object1, null);
                     assert.equal(object1.name, 'Martijn');
-                    assert.equal(object1.text, ' ');
-                    assert.equal(object1.title, undefined);
-                    assert.equal(object1.subtitle, undefined);
+                    assert.equal(object1.text, null);
 
                     done();
                 })
@@ -921,43 +923,7 @@ describe('model methods', function() {
                     assert.equal(object1.name, 'Martijn');
                     assert.equal(object1.three, 8);
 
-                    return models.Object1.update({name: 'Martijn'}, {one: 3, two: 5});
-                })
-                .then(function(object) {
-                    assert.equal(object.name, 'Martijn');
-                    assert.equal(object.three, 15);
-
-                    done();
-                })
-                .done();
-        });
-    });
-
-    it('can transform using this to access other properties', function(done) {
-        function Object1() {
-            this.name = [this.String];
-            this.two = [this.Integer];
-            this.three = [this.Integer, this.Required, this.Transform(function(one) {
-                return (one * this.two);
-            })];
-        }
-        app.model(Object1);
-
-        setImmediate(function() {
-            models.Object1.setup()
-                .then(function() {
-                    return models.Object1.create({
-                        name: 'Martijn',
-                        one: 2,
-                        two: 4
-                    });
-                })
-                .then(function(object1) {
-                    assert.notEqual(object1, null);
-                    assert.equal(object1.name, 'Martijn');
-                    assert.equal(object1.three, 8);
-
-                    return models.Object1.update({name: 'Martijn'}, {one: 3, two: 5});
+                    return models.Object1.updateOne({name: 'Martijn'}, {one: 3, two: 5});
                 })
                 .then(function(object) {
                     assert.equal(object.name, 'Martijn');
@@ -1068,7 +1034,7 @@ describe('model methods', function() {
                 .then(function(objects) {
                     assert.equal(objects.length, 3);
 
-                    return models.Object1.update({test:1}, {name: 'Update 1', value: 120});
+                    return models.Object1.updateOne({test:1}, {name: 'Update 1', value: 120});
                 })
                 .then(function(object) {
                     assert.equal(object.name, 'Update 1');
@@ -1187,7 +1153,7 @@ describe('model methods', function() {
                     });
                 })
                 .then(function(object) {
-                    return models.Object1.update({
+                    return models.Object1.updateOne({
                         id: object.id
                     }, {
                         name: 'Martijn 2'
@@ -1353,6 +1319,7 @@ describe('model methods', function() {
                 })
                 .then(function(user) {
                     var json = user.toJSON();
+                    assert.notEqual(json, null);
                     assert.equal(typeof user.projects, 'undefined');
 
                     done();
@@ -1383,7 +1350,7 @@ describe('model methods', function() {
                 .then(function(test) {
                     assert.equal(test.position, 123 * 3);
 
-                    return models.Test.update(test.id, {testValue: 234});
+                    return models.Test.updateOne(test.id, {testValue: 234});
                 })
                 .then(function(test) {
                     assert.equal(test.position, 234 * 3);

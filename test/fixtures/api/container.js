@@ -70,9 +70,7 @@ ContainerModelController.prototype.createContainer = function() {
 							createMap[model.options.automaticPropertyName] = authenticator;
 						}
 
-						var createFunction = model.createContainer || model.create;
-
-						return createFunction.call(model, self.body)
+						return model.create(createMap)
 							.then(function(instance) {
 								if(model.isAuthenticator()) {
 									self.session.at = instance.accessToken;
@@ -110,8 +108,11 @@ ContainerModelController.prototype.getContainers = function() {
 							delete queryMap.$options;
 						}
 
-						var readManyFunction = model.getContainers || model.find;
-						return readManyFunction.call(model, queryMap, optionsMap);
+						if(model.options.automaticPropertyName) {
+							queryMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.find(queryMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -131,10 +132,13 @@ ContainerModelController.prototype.getContainer = function($id) {
 			return Q.when(accessControl.canRead(authenticator))
 				.then(function(canRead) {
 					if(canRead) {
-						var readFunction = model.getContainer || model.getOne;
+						var whereMap = {id: $id};
 
-						// TODO: read should also use all query params as additional where options
-						return readFunction.call(model, {id: $id});
+						if(model.options.automaticPropertyName) {
+							whereMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.getOne(whereMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -175,8 +179,7 @@ ContainerModelController.prototype.updateContainer = function($id) {
 						return Q.when(_canUpdateProperties(Object.keys(self.body), model))
 							.then(function(canUpdateProperties) {
 								if(canUpdateProperties) {
-									var updateFunction = model.updateContainer || model.update;
-									return updateFunction.call(model, whereMap, self.body)
+									return model.updateOne(whereMap, self.body)
 										.then(function(instance) {
 											if(instance) {
 												return instance;
@@ -204,10 +207,41 @@ ContainerModelController.prototype.updateContainer = function($id) {
 		});
 };
 
-ContainerModelController.prototype.deleteContainer = function($id) { //jshint ignore:line
-	var error = new Error('Not Found');
-	error.status = 404;
-	throw error;
+ContainerModelController.prototype.deleteContainer = function($id) {
+	var model = this.models.Container;
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
+				.then(function(canDelete) {
+					if(canDelete) {
+						var whereMap = {
+							id: $id
+						};
+
+						var keyPath = accessControl.getPermissionKeyPath('delete');
+						if(keyPath) {
+							if(!model.getProperty(keyPath)) {
+								throw new Error('Invalid key path `' + keyPath + '`.');
+							}
+
+							// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
+							whereMap[keyPath] = authenticator;
+						}
+
+						if(model.options.automaticPropertyName) {
+							whereMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.removeOne(whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
 };
 
 
@@ -245,6 +279,8 @@ ContainerModelController.prototype.createUsers = ['/api/Containers/:id/users', f
 			var createMap = self.body;
 			createMap['container'] = $id;
 
+			// TODO: Do we need to set the automatic property name?
+
 			return association.options.through.create(createMap);
 		})
 		.then(function() {
@@ -272,6 +308,8 @@ ContainerModelController.prototype.getUsers = ['/api/Containers/:id/users', func
 
 						var association = model.getProperty('users');
 						queryMap[association.options.relationshipVia.name] = $id;
+
+						// TODO: What about the automatic property?
 
 						return association.options.relationshipVia.model.find(queryMap, optionsMap);
 					}
@@ -312,6 +350,8 @@ ContainerModelController.prototype.updateUsers = ['/api/Containers/:id/users/:as
 									// TODO: Retrieve the name in the code generation phase already!
 									whereMap[association.options.relationshipVia.name] = $id;
 									whereMap.id = $associationID;
+
+									// TODO: the automatic property name ... ?
 
 									// TODO: Replace with this.models.ModelNameHere in the build phase!
 									return association.options.relationshipVia.model.updateOne(whereMap, self.body);

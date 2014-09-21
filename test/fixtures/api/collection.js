@@ -70,9 +70,7 @@ CollectionModelController.prototype.createCollection = function() {
 							createMap[model.options.automaticPropertyName] = authenticator;
 						}
 
-						var createFunction = model.createCollection || model.create;
-
-						return createFunction.call(model, self.body)
+						return model.create(createMap)
 							.then(function(instance) {
 								if(model.isAuthenticator()) {
 									self.session.at = instance.accessToken;
@@ -110,8 +108,11 @@ CollectionModelController.prototype.getCollections = function() {
 							delete queryMap.$options;
 						}
 
-						var readManyFunction = model.getCollections || model.find;
-						return readManyFunction.call(model, queryMap, optionsMap);
+						if(model.options.automaticPropertyName) {
+							queryMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.find(queryMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -131,10 +132,13 @@ CollectionModelController.prototype.getCollection = function($id) {
 			return Q.when(accessControl.canRead(authenticator))
 				.then(function(canRead) {
 					if(canRead) {
-						var readFunction = model.getCollection || model.getOne;
+						var whereMap = {id: $id};
 
-						// TODO: read should also use all query params as additional where options
-						return readFunction.call(model, {id: $id});
+						if(model.options.automaticPropertyName) {
+							whereMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.getOne(whereMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -175,8 +179,7 @@ CollectionModelController.prototype.updateCollection = function($id) {
 						return Q.when(_canUpdateProperties(Object.keys(self.body), model))
 							.then(function(canUpdateProperties) {
 								if(canUpdateProperties) {
-									var updateFunction = model.updateCollection || model.update;
-									return updateFunction.call(model, whereMap, self.body)
+									return model.updateOne(whereMap, self.body)
 										.then(function(instance) {
 											if(instance) {
 												return instance;
@@ -204,10 +207,41 @@ CollectionModelController.prototype.updateCollection = function($id) {
 		});
 };
 
-CollectionModelController.prototype.deleteCollection = function($id) { //jshint ignore:line
-	var error = new Error('Not Found');
-	error.status = 404;
-	throw error;
+CollectionModelController.prototype.deleteCollection = function($id) {
+	var model = this.models.Collection;
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
+				.then(function(canDelete) {
+					if(canDelete) {
+						var whereMap = {
+							id: $id
+						};
+
+						var keyPath = accessControl.getPermissionKeyPath('delete');
+						if(keyPath) {
+							if(!model.getProperty(keyPath)) {
+								throw new Error('Invalid key path `' + keyPath + '`.');
+							}
+
+							// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
+							whereMap[keyPath] = authenticator;
+						}
+
+						if(model.options.automaticPropertyName) {
+							whereMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.removeOne(whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
 };
 
 

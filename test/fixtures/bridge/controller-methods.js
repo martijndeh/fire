@@ -26,6 +26,10 @@ FireModelInstance.prototype.toQueryValue = function() {
 	return this._map.id;
 };
 
+FireModelInstance.prototype.remove = function() {
+	return this._model.remove(this._map.id);
+};
+
 FireModelInstance.prototype.save = function() {
 	// TODO: Check validation locally.
 
@@ -105,6 +109,32 @@ FireModel.prototype.update = function(id, model) {
 	return this._put(this.endpoint + '/' + id, updateMap);
 };
 
+FireModel.prototype.remove = function(id) {
+	return this._action('delete', this.endpoint + '/' + id, {})
+};
+
+FireModel.prototype.findOrCreate = function(where, set) {
+	var self = this;
+	return this.findOne(where)
+		.then(function(modelInstance) {
+			if(modelInstance) {
+				return modelInstance;
+			}
+			else {
+				var createMap = {};
+				Object.keys(where || {}).forEach(function(key) {
+					createMap[key] = where[key];
+				});
+
+				Object.keys(set || {}).forEach(function(key) {
+					createMap[key] = set[key];
+				});
+
+				return self.create(createMap);
+			}
+		});
+};
+
 FireModel.prototype._create = function(path, fields) {
 	var createMap = {};
 	Object.keys(fields).forEach(function(key) {
@@ -182,17 +212,18 @@ FireModel.prototype.getOne = function(fields) {
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 }]);
+function unwrap(promise, initialValue) {
+    var value = initialValue;
+
+    promise.then(function(newValue) {
+        angular.copy(newValue, value);
+    });
+
+    return value;
+};
+
 
 app.service('FireTestController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
     this.unwrap = unwrap;
     this.models = FireModels;
 
@@ -247,6 +278,20 @@ app.service('FireTestController', ['FireModels', '$http', '$q', function(FireMod
     
 }]);
 
+
+app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+    function unwrap(promise, initialValue) {
+        var value = initialValue;
+
+        promise.then(function(newValue) {
+            angular.copy(newValue, value);
+        });
+
+        return value;
+    };
+    this.unwrap = unwrap;
+    this.models = FireModels;
+}]);
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);

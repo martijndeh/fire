@@ -72,8 +72,6 @@ UserModelController.prototype.doAuthorize = ['/api/Users/authorize', function() 
 			return instance;
 		})
 		.catch(function(error) {
-			console.log(error);
-
 			throw error;
 		});
 }];
@@ -107,9 +105,7 @@ UserModelController.prototype.createUser = function() {
 							createMap[model.options.automaticPropertyName] = authenticator;
 						}
 
-						var createFunction = model.createUser || model.create;
-
-						return createFunction.call(model, self.body)
+						return model.create(createMap)
 							.then(function(instance) {
 								if(model.isAuthenticator()) {
 									self.session.at = instance.accessToken;
@@ -147,8 +143,11 @@ UserModelController.prototype.getUsers = function() {
 							delete queryMap.$options;
 						}
 
-						var readManyFunction = model.getUsers || model.find;
-						return readManyFunction.call(model, queryMap, optionsMap);
+						if(model.options.automaticPropertyName) {
+							queryMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.find(queryMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -168,10 +167,13 @@ UserModelController.prototype.getUser = function($id) {
 			return Q.when(accessControl.canRead(authenticator))
 				.then(function(canRead) {
 					if(canRead) {
-						var readFunction = model.getUser || model.getOne;
+						var whereMap = {id: $id};
 
-						// TODO: read should also use all query params as additional where options
-						return readFunction.call(model, {id: $id});
+						if(model.options.automaticPropertyName) {
+							whereMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.getOne(whereMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -212,8 +214,7 @@ UserModelController.prototype.updateUser = function($id) {
 						return Q.when(_canUpdateProperties(Object.keys(self.body), model))
 							.then(function(canUpdateProperties) {
 								if(canUpdateProperties) {
-									var updateFunction = model.updateUser || model.update;
-									return updateFunction.call(model, whereMap, self.body)
+									return model.updateOne(whereMap, self.body)
 										.then(function(instance) {
 											if(instance) {
 												return instance;
@@ -241,10 +242,41 @@ UserModelController.prototype.updateUser = function($id) {
 		});
 };
 
-UserModelController.prototype.deleteUser = function($id) { //jshint ignore:line
-	var error = new Error('Not Found');
-	error.status = 404;
-	throw error;
+UserModelController.prototype.deleteUser = function($id) {
+	var model = this.models.User;
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
+				.then(function(canDelete) {
+					if(canDelete) {
+						var whereMap = {
+							id: $id
+						};
+
+						var keyPath = accessControl.getPermissionKeyPath('delete');
+						if(keyPath) {
+							if(!model.getProperty(keyPath)) {
+								throw new Error('Invalid key path `' + keyPath + '`.');
+							}
+
+							// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
+							whereMap[keyPath] = authenticator;
+						}
+
+						if(model.options.automaticPropertyName) {
+							whereMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.removeOne(whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
 };
 
 

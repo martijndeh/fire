@@ -301,12 +301,11 @@ describe('access control', function() {
 				});
 		});
 
-		it('cannot delete article', function(done) {
+		it('can delete article', function(done) {
 			agent
 				.delete('/api/articles/1')
 				.send()
-				.expect(404, function(error) {
-					// TODO: Actually implement delete.
+				.expect(403, function(error) {
 					done(error);
 				});
 		});

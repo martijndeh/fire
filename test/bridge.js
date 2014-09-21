@@ -48,13 +48,13 @@ describe('bridge', function() {
 		util.inherits(TemporaryController, TestController);
 
 		var controller = new TemporaryController();
-		controller.should.be.instanceof(TestController);
-		controller.test().should.equal(123);
+		assert.equal(controller instanceof TestController, true);
+		assert.equal(controller.test(), 123);
 		assert.equal(called, false);
 
-		TestController.name.should.equal('TestController');
+		assert.equal(TestController.name, 'TestController');
 
-		TestController.toString().should.equal(
+		assert.equal(TestController.toString(),
 		'function TestController(arg1, arg2) { //jshint ignore:line\n' +
 		'			called = true;\n' +
 		'		}');

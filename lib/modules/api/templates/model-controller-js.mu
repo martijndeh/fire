@@ -72,8 +72,6 @@ app.controller({{controllerName}});
 			return instance;
 		})
 		.catch(function(error) {
-			console.log(error);
-
 			throw error;
 		});
 }];
@@ -107,9 +105,7 @@ app.controller({{controllerName}});
 							createMap[model.options.automaticPropertyName] = authenticator;
 						}
 
-						var createFunction = model.create{{model.name}} || model.create;
-
-						return createFunction.call(model, self.body)
+						return model.create(createMap)
 							.then(function(instance) {
 								if(model.isAuthenticator()) {
 									self.session.at = instance.accessToken;
@@ -147,8 +143,11 @@ app.controller({{controllerName}});
 							delete queryMap.$options;
 						}
 
-						var readManyFunction = model.get{{model.pluralName}} || model.find;
-						return readManyFunction.call(model, queryMap, optionsMap);
+						if(model.options.automaticPropertyName) {
+							queryMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.find(queryMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -168,10 +167,13 @@ app.controller({{controllerName}});
 			return Q.when(accessControl.canRead(authenticator))
 				.then(function(canRead) {
 					if(canRead) {
-						var readFunction = model.get{{model.name}} || model.getOne;
+						var whereMap = {id: $id};
 
-						// TODO: read should also use all query params as additional where options
-						return readFunction.call(model, {id: $id});
+						if(model.options.automaticPropertyName) {
+							whereMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.getOne(whereMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -212,8 +214,7 @@ app.controller({{controllerName}});
 						return Q.when(_canUpdateProperties(Object.keys(self.body), model))
 							.then(function(canUpdateProperties) {
 								if(canUpdateProperties) {
-									var updateFunction = model.update{{model.name}} || model.update;
-									return updateFunction.call(model, whereMap, self.body)
+									return model.updateOne(whereMap, self.body)
 										.then(function(instance) {
 											if(instance) {
 												return instance;
@@ -241,10 +242,41 @@ app.controller({{controllerName}});
 		});
 };
 
-{{controllerName}}.prototype.delete{{model.name}} = function($id) { //jshint ignore:line
-	var error = new Error('Not Found');
-	error.status = 404;
-	throw error;
+{{controllerName}}.prototype.delete{{model.name}} = function($id) {
+	var model = this.models.{{model.name}};
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
+				.then(function(canDelete) {
+					if(canDelete) {
+						var whereMap = {
+							id: $id
+						};
+
+						var keyPath = accessControl.getPermissionKeyPath('delete');
+						if(keyPath) {
+							if(!model.getProperty(keyPath)) {
+								throw new Error('Invalid key path `' + keyPath + '`.');
+							}
+
+							// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
+							whereMap[keyPath] = authenticator;
+						}
+
+						if(model.options.automaticPropertyName) {
+							whereMap[model.options.automaticPropertyName] = authenticator;
+						}
+
+						return model.removeOne(whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
 };
 
 {{#model.properties}}
@@ -294,6 +326,8 @@ app.controller({{controllerName}});
 			var createMap = self.body;
 			createMap['{{model.lowerCaseName}}'] = $id;
 
+			// TODO: Do we need to set the automatic property name?
+
 			return association.options.through.create(createMap);
 		})
 		.then(function() {
@@ -321,6 +355,8 @@ app.controller({{controllerName}});
 
 						var association = model.getProperty('{{name}}');
 						queryMap[association.options.relationshipVia.name] = $id;
+
+						// TODO: What about the automatic property?
 
 						return association.options.relationshipVia.model.find(queryMap, optionsMap);
 					}
@@ -361,6 +397,8 @@ app.controller({{controllerName}});
 									// TODO: Retrieve the name in the code generation phase already!
 									whereMap[association.options.relationshipVia.name] = $id;
 									whereMap.id = $associationID;
+
+									// TODO: the automatic property name ... ?
 
 									// TODO: Replace with this.models.ModelNameHere in the build phase!
 									return association.options.relationshipVia.model.updateOne(whereMap, self.body);

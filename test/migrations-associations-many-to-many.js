@@ -193,7 +193,7 @@ describe('migrations-associations-many-to-many', function() {
             .then(function(a) {
                 assert.equal(a.name, 'Aart');
                 assert.equal(typeof a.getBs, 'function');
-                assert.equal(typeof a.getB, 'undefined');
+                assert.equal(typeof a.getB, 'function');
                 assert.equal(typeof a.bs, 'undefined');
                 assert.equal(typeof a.addB, 'function');
                 assert.equal(typeof a.removeB, 'function');
@@ -205,7 +205,7 @@ describe('migrations-associations-many-to-many', function() {
                     .then(function(b) {
                         assert.equal(b.name, 'Bert');
                         assert.equal(typeof b.getAs, 'function');
-                        assert.equal(typeof b.getA, 'undefined');
+                        assert.equal(typeof b.getA, 'function');
                         assert.equal(typeof b.as, 'undefined');
                         assert.equal(typeof b.addA, 'function');
                         assert.equal(typeof b.removeA, 'function');
@@ -222,7 +222,7 @@ describe('migrations-associations-many-to-many', function() {
 
                                 return b.removeA(a);
                             })
-                            .then(function(association) {
+                            .then(function() {
                                 return b.getAs();
                             })
                             .then(function(as) {
