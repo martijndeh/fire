@@ -49,7 +49,7 @@ describe('migrations-associations-many-to-many', function() {
             })
     });
 
-    it('can create model with multiple associations', function(done) {
+    it('can create model with multiple associations', function() {
         function Migration() {
             //
         }
@@ -86,10 +86,10 @@ describe('migrations-associations-many-to-many', function() {
         };
 
         migrations.addMigration(Migration, 1);
-        migrations.migrate(0, 1)
+        return migrations.migrate(0, 1)
             .then(function() {
-                assert.notEqual(models.ArticlesUsers, null);
-                return models.ArticlesUsers.exists();
+                assert.notEqual(models.ArticleVoterUserVote, null);
+                return models.ArticleVoterUserVote.exists();
             })
             .then(function(exists) {
                 assert.equal(exists, true);
@@ -125,13 +125,8 @@ describe('migrations-associations-many-to-many', function() {
 
                 var voter = article.voters[0];
                 assert.equal(voter.name, 'Test 2');
-
-                done();
-            })
-            .catch(function(error) {
-                done(error);
             });
-    })
+    });
 
     it('can create model with M:N association', function(done) {
     	function Migration() {}

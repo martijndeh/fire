@@ -57,7 +57,7 @@ describe('models api associations', function() {
 			function Article() {
 				this.title 			= [this.String, this.Required];
 				this.voters 		= [this.HasMany(this.models.User, 'votes'), this.AutoFetch, this.CanCreate(function(articleID) {
-					return this.models.ArticlesUsers.findOne({user: this.body.user, article: articleID})
+					return this.models.ArticleVoterUserVote.findOne({userVote: this.body.userVote, articleVoter: articleID})
 						.then(function(articleUser) {
 							return (!articleUser);
 						});
@@ -122,7 +122,7 @@ describe('models api associations', function() {
 		request(helper.app.express)
 			.post('/api/articles/' + article1ID + '/voters')
 			.send(helper.jsonify({
-				user: user1ID
+				userVote: user1ID
 			}))
 			.expect(200, function(error, response) {
 				assert.equal(response.body.voters.length, 1);
@@ -135,7 +135,7 @@ describe('models api associations', function() {
 		request(helper.app.express)
 			.post('/api/articles/' + article1ID + '/voters')
 			.send(helper.jsonify({
-				user: user1ID
+				userVote: user1ID
 			}))
 			.expect(200, function(error, response) {
 				assert.equal(response.body.voters.length, 1);
@@ -143,7 +143,7 @@ describe('models api associations', function() {
 				request(helper.app.express)
 					.post('/api/articles/' + article1ID + '/voters')
 					.send(helper.jsonify({
-						user: user1ID
+						userVote: user1ID
 					}))
 					.expect(401, function(error2) {
 						done(error2);

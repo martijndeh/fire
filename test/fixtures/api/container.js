@@ -277,7 +277,9 @@ ContainerModelController.prototype.createUsers = ['/api/Containers/:id/users', f
 		.then(function(authenticator) {
 			var association = model.getAssociation('users');
 			var createMap = self.body;
-			createMap['container'] = $id;
+
+			var property = model.getProperty('users');
+			createMap[property.options.throughPropertyName] = $id;
 
 			// TODO: Do we need to set the automatic property name?
 
@@ -285,7 +287,7 @@ ContainerModelController.prototype.createUsers = ['/api/Containers/:id/users', f
 		})
 		.then(function() {
 			return model.findOne({id: $id});
-		})
+		});
 }];
 
 ContainerModelController.prototype.getUsers = ['/api/Containers/:id/users', function($id) {

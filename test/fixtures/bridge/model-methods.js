@@ -514,78 +514,78 @@ FireModelArticle.prototype.parseResult = function(setMapOrList, path) {
 
 
 
-function FireModelInstanceArticlesUsers(setMap, model, path) {
+function FireModelInstanceArticleVoterUserVote(setMap, model, path) {
 	var self = this;
 
 	
-	if(typeof setMap.user != 'undefined' && setMap.user !== null) {
-		if(Array.isArray(setMap.user)) {
-			setMap.user = setMap.user.map(function(object) {
+	if(typeof setMap.userVote != 'undefined' && setMap.userVote !== null) {
+		if(Array.isArray(setMap.userVote)) {
+			setMap.userVote = setMap.userVote.map(function(object) {
 				return new FireModelInstanceUser(object);
 			});
 		}
 		else {
-			setMap.user = new FireModelInstanceUser(setMap.user);
+			setMap.userVote = new FireModelInstanceUser(setMap.userVote);
 		}
 	}
 	
 
-	Object.defineProperty(this, 'user', {
+	Object.defineProperty(this, 'userVote', {
 		get: function() {
-			return self._changes['user'] || self._map['user'];
+			return self._changes['userVote'] || self._map['userVote'];
 		},
 
 		set: function(value) {
-			self._changes['user'] = value;
+			self._changes['userVote'] = value;
 		}
 	});
 
 	
-	if(typeof setMap.article != 'undefined' && setMap.article !== null) {
-		if(Array.isArray(setMap.article)) {
-			setMap.article = setMap.article.map(function(object) {
+	if(typeof setMap.articleVoter != 'undefined' && setMap.articleVoter !== null) {
+		if(Array.isArray(setMap.articleVoter)) {
+			setMap.articleVoter = setMap.articleVoter.map(function(object) {
 				return new FireModelInstanceArticle(object);
 			});
 		}
 		else {
-			setMap.article = new FireModelInstanceArticle(setMap.article);
+			setMap.articleVoter = new FireModelInstanceArticle(setMap.articleVoter);
 		}
 	}
 	
 
-	Object.defineProperty(this, 'article', {
+	Object.defineProperty(this, 'articleVoter', {
 		get: function() {
-			return self._changes['article'] || self._map['article'];
+			return self._changes['articleVoter'] || self._map['articleVoter'];
 		},
 
 		set: function(value) {
-			self._changes['article'] = value;
+			self._changes['articleVoter'] = value;
 		}
 	});
 
 
 	FireModelInstance.call(this, setMap, model, path);
 }
-FireModelInstanceArticlesUsers.prototype = FireModelInstance.prototype;
+FireModelInstanceArticleVoterUserVote.prototype = FireModelInstance.prototype;
 
 
 
-function FireModelArticlesUsers($http, $q, models) {
+function FireModelArticleVoterUserVote($http, $q, models) {
 	FireModel.call(this, $http, $q, models);
 
-	this.endpoint = '/api/articlesusers';
+	this.endpoint = '/api/articlevoteruservotes';
 }
-FireModelArticlesUsers.prototype = new FireModel();
+FireModelArticleVoterUserVote.prototype = new FireModel();
 
-FireModelArticlesUsers.prototype.parseResult = function(setMapOrList, path) {
+FireModelArticleVoterUserVote.prototype.parseResult = function(setMapOrList, path) {
 	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
 		var self = this;
 		return setMapOrList.map(function(setMap) {
-			return new FireModelInstanceArticlesUsers(setMap, self, path);
+			return new FireModelInstanceArticleVoterUserVote(setMap, self, path);
 		});
 	}
 	else {
-		return new FireModelInstanceArticlesUsers(setMapOrList, this, path);
+		return new FireModelInstanceArticleVoterUserVote(setMapOrList, this, path);
 	}
 };
 
@@ -600,7 +600,7 @@ app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 	this.Article = new FireModelArticle($http, $q, this);
 	
-	this.ArticlesUsers = new FireModelArticlesUsers($http, $q, this);
+	this.ArticleVoterUserVote = new FireModelArticleVoterUserVote($http, $q, this);
 	
 }]);
 function unwrap(promise, initialValue) {

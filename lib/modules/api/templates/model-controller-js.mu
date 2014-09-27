@@ -324,7 +324,9 @@ app.controller({{controllerName}});
 		.then(function(authenticator) {
 			var association = model.getAssociation('{{name}}');
 			var createMap = self.body;
-			createMap['{{model.lowerCaseName}}'] = $id;
+
+			var property = model.getProperty('{{name}}');
+			createMap[property.options.throughPropertyName] = $id;
 
 			// TODO: Do we need to set the automatic property name?
 
@@ -332,7 +334,7 @@ app.controller({{controllerName}});
 		})
 		.then(function() {
 			return model.findOne({id: $id});
-		})
+		});
 }];
 
 {{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.pluralName}}/:id/{{name}}', function($id) {

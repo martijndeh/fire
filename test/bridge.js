@@ -91,7 +91,7 @@ describe('bridge', function() {
 			.then(function() {
 				return bridge.generate(writeStream);
 			})
-			.then(function() {
+			.then(function() {				
 				assert.equal(writeStream.toString().length > 0, true);
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/controller-methods.js')).toString());
 

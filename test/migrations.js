@@ -529,7 +529,7 @@ describe('migrations', function() {
             .done();
     });
 
-    it('can add many-to-many reference', function(done) {
+    it('can add many-to-many reference', function() {
         function Migration13() {}
         Migration13.prototype.up = function() {
             this.models.ThirdTest.addProperties({
@@ -539,15 +539,15 @@ describe('migrations', function() {
             this.models.Team.addProperties({
                 testChildren: [this.HasMany(this.models.ThirdTest)]
             });
-        }
+        };
         Migration13.prototype.down = function() {
             this.models.Team.removeProperties(['testChildren']);
-            this.models.ThirdTest.removeProperties(['teams'])
-        }
+            this.models.ThirdTest.removeProperties(['teams']);
+        };
 
         migrations.addMigration(Migration13, 13);
 
-        migrations.migrate(0, 13)
+        return migrations.migrate(0, 13)
             .then(function() {
                 return models.Project.create({
                     name: 'Test Project :)'
@@ -564,10 +564,10 @@ describe('migrations', function() {
 
                 return team.addTestChild(models.ThirdTest.create({name: 'Third Test 1 Name'}))
                     .then(function() {
-                        return team.addTestChild(models.ThirdTest.create({name: 'Third Test 2 Name'}))
+                        return team.addTestChild(models.ThirdTest.create({name: 'Third Test 2 Name'}));
                     })
                     .then(function() {
-                        return team.addTestChild(models.ThirdTest.create({name: 'Third Test 3 Name'}))
+                        return team.addTestChild(models.ThirdTest.create({name: 'Third Test 3 Name'}));
                     })
                     .then(function() {
                         return models.Team.findOne();
@@ -599,19 +599,20 @@ describe('migrations', function() {
                 assert.notEqual(tests, null);
                 assert.equal(tests.length, 3);
 
+                console.log('get teams of ' + tests[0].id);
+
                 return tests[0].getTeams();
             })
             .then(function(teams) {
                 assert.notEqual(teams, null);
-                assert.equal(teams.length, 2);
+                assert.equal(teams.length, 1);
                 assert.equal(teams[0].name, 'Team Name');
-                assert.equal(teams[1].name, 'Team Name');
 
-                done();
+                return models.Team.find();
             })
-            .catch(function(error) {
-                done(error);
-            })
-            .done();
+            .then(function(teams) {
+                assert.equal(teams.length, 1);
+                assert.equal(teams[0].name, 'Team Name');
+            });
     });
 });

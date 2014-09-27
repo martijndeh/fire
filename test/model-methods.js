@@ -85,7 +85,7 @@ describe('model methods', function() {
                     return models.Article.setup();
                 })
                 .then(function() {
-                    return models.ArticlesUsers.setup();
+                    return models.ArticleVoterUserVotedArticle.setup();
                 })
                 .then(function() {
                     return models.User.create({
@@ -1496,7 +1496,7 @@ describe('model methods', function() {
                     return models.Test2.setup();
                 })
                 .then(function() {
-                    return models.Test1sTest2s.setup();
+                    return models.Test1TestTest2Test.setup();
                 })
                 .then(function() {
                     return models.Test1.create({});
@@ -1556,7 +1556,7 @@ describe('model methods', function() {
                     return models.Test2.setup();
                 })
                 .then(function() {
-                    return models.Test1sTest2s.setup();
+                    return models.Test1TestTest2Test.setup();
                 })
                 .then(function() {
                     return models.Test1.create({});
