@@ -3,7 +3,9 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: AccessControl - Node on Fire</title>
+	<title>Documentation Module: App
+
+This is a test. - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +38,16 @@
 				
 
 
-	<h1 class="page-title">Class: AccessControl</h1>
+	<h1 class="page-title">Module: App
+
+This is a test.</h1>
 <section>
 
 <header>
     <h2>
-    AccessControl
+    App
+
+This is a test.
     </h2>
     
 </header>
@@ -52,22 +58,8 @@
 
     
         
-<dt>
-    <h4 class="name" id="AccessControl"><span class="type-signature"></span>new AccessControl<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
 
-    
-    
-    
-    
-    
-    
-    
+        
 <dl class="details">
 	
 
@@ -98,20 +90,8 @@
 	
 </dl>
 
-    
-    
 
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
+        
     
     </div>
 
@@ -121,6 +101,13 @@
 
     
 
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="-App.html">App</a></dt>
+            <dd></dd>
+        </dl>
     
 
     
@@ -133,7 +120,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="canCreate"><span class="type-signature"></span>canCreate<span class="signature">(authenticator)</span></h4>
+    <h4 class="name" id="addModule"><span class="type-signature">&lt;inner> </span>App#addModule<span class="signature">(moduleConstructor)</span></h4>
     
     
 </dt>
@@ -141,9 +128,7 @@
     
     
     <div class="description">
-        <p>Returns true if authenticator can create the model the access control belongs to.</p>
-<p>An example request in the model controllers would be:</p>
-<p><code>POST /api/users</code></p>
+        <p>Adds a new module to the app.</p>
     </div>
     
 
@@ -177,13 +162,13 @@
 
         <tr>
             
-                <td class="name"><code>authenticator</code></td>
+                <td class="name"><code>moduleConstructor</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type"><a href="ModelInstance.html">ModelInstance</a></span>
+<span class="label label-primary param-type">Constructor</span>
 
 
 
@@ -194,7 +179,7 @@
 
             
 
-            <td class="description last"><p>The current authenticated authenticator (user). Can be null.</p></td>
+            <td class="description last"><p>The module constructor which gets invoked with 1 param: this app instance.</p></td>
         </tr>
 
 	
@@ -247,6 +232,10 @@
     <h5>Returns:</h5>
     
             
+<div class="param-desc">
+    <p>The app instance-so this method is chainable.</p>
+</div>
+
 
 
 <dl>
@@ -255,7 +244,7 @@
 	</dt>
 	<dd>
 		
-<span class="label label-primary param-type">Boolean</span>
+<span class="label label-primary param-type">App</span>
 
 
 
@@ -271,7 +260,7 @@
         
             
 <dt>
-    <h4 class="name" id="canRead"><span class="type-signature"></span>canRead<span class="signature">(authenticator)</span></h4>
+    <h4 class="name" id="configure"><span class="type-signature">&lt;inner> </span>App#configure<span class="signature">(configureFunction)</span></h4>
     
     
 </dt>
@@ -279,10 +268,8 @@
     
     
     <div class="description">
-        <p>Returns true if authenticator can read the model the access control belongs to.</p>
-<p>An example request in the model controllers would be:</p>
-<pre class="prettyprint source"><code>GET /api/users
-GET /api/users/1</code></pre>
+        <p>Sets a configure function to be run in the server-context right before the app starts. This is useful because code may be invoked when generating code, migrations and so on. The configureFunction is guaranteed only to be run when the app starts.</p>
+<p>You may invoke this method multiple times to configure multiple functions. If you return a promise, the start up of the app continues once the promise resolves.</p>
     </div>
     
 
@@ -316,427 +303,7 @@ GET /api/users/1</code></pre>
 
         <tr>
             
-                <td class="name"><code>authenticator</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="ModelInstance.html">ModelInstance</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The current authenticated authenticator (user). Can be null.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Boolean</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getPermissionFunction"><span class="type-signature"></span>getPermissionFunction<span class="signature">(action)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Returns the permission function for a specific action. The permission function can be executed to determine whether permission is allowed for the given access.</p>
-<p>In development mode, when no access control is set, this always allows all actions, but a warning is shown. In production mode, when no access control is set, the default behaviour is to always disallow any action.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>action</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">create</span>
-|
-
-<span class="label label-primary param-type">read</span>
-|
-
-<span class="label label-primary param-type">update</span>
-|
-
-<span class="label label-primary param-type">delete</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The action.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getPermissionKeyPath"><span class="type-signature"></span>getPermissionKeyPath<span class="signature">(action)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Returns the key path set for the given action, or null if a permission function is set. The system requesting the key path is responsbile for whether the key path matches the authenticated authenticator.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>action</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">create</span>
-|
-
-<span class="label label-primary param-type">read</span>
-|
-
-<span class="label label-primary param-type">update</span>
-|
-
-<span class="label label-primary param-type">delete</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The action.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="setPermissionFunction"><span class="type-signature"></span>setPermissionFunction<span class="signature">(action, permissionFunction)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Sets a permission function for the given action. The permission function is executed to evaluate if the access control for action is allowed.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>action</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">create</span>
-|
-
-<span class="label label-primary param-type">read</span>
-|
-
-<span class="label label-primary param-type">update</span>
-|
-
-<span class="label label-primary param-type">delete</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The access controlled action.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>permissionFunction</code></td>
+                <td class="name"><code>configureFunction</code></td>
             
 
             <td class="type">
@@ -753,7 +320,7 @@ GET /api/users/1</code></pre>
 
             
 
-            <td class="description last"><p>The function to allow or disallow the specific action. Returns truthy if allowed, and falsy if not allowed.</p></td>
+            <td class="description last"><p>The function to run. The first param is the value of the NODE_ENV environmentable value.</p></td>
         </tr>
 
 	
@@ -803,6 +370,30 @@ GET /api/users/1</code></pre>
     
     
     
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>The app instance-so this method is chainable.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">App</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
     
     
 </dd>
@@ -810,7 +401,7 @@ GET /api/users/1</code></pre>
         
             
 <dt>
-    <h4 class="name" id="setPermissionKeyPath"><span class="type-signature"></span>setPermissionKeyPath<span class="signature">(action, permissionKeyPath)</span></h4>
+    <h4 class="name" id="controller"><span class="type-signature">&lt;inner> </span>App#controller<span class="signature">(controllerConstructor)</span></h4>
     
     
 </dt>
@@ -818,8 +409,7 @@ GET /api/users/1</code></pre>
     
     
     <div class="description">
-        <p>Sets a key path to evaluate the access control. If the current authenticator matches the key path an action is allowed. Otherwise it's disallowed.</p>
-<p>Key path-based access control currently only works in update actions.</p>
+        <p>Sets up a controller. This is a convenient method. See Controllers#controller for a full explanation.</p>
     </div>
     
 
@@ -853,22 +443,13 @@ GET /api/users/1</code></pre>
 
         <tr>
             
-                <td class="name"><code>action</code></td>
+                <td class="name"><code>controllerConstructor</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">create</span>
-|
-
-<span class="label label-primary param-type">read</span>
-|
-
-<span class="label label-primary param-type">update</span>
-|
-
-<span class="label label-primary param-type">delete</span>
+<span class="label label-primary param-type">Controllers~ControllerConstructor</span>
 
 
 
@@ -879,31 +460,7 @@ GET /api/users/1</code></pre>
 
             
 
-            <td class="description last"><p>The action.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>permissionKeyPath</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>A key path</p></td>
+            <td class="description last"><p>The controller to be created.</p></td>
         </tr>
 
 	
@@ -953,6 +510,347 @@ GET /api/users/1</code></pre>
     
     
     
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>The app instance-so this method is chainable.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">App</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="model"><span class="type-signature">&lt;inner> </span>App#model<span class="signature">(modelConstructor)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Sets up a model. This is a convenient method. For a full explanation see <a href="Models.html#model">Models#model</a>.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>modelConstructor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Constructor</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The model to be created.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>The app instance-so this method is chainable.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">App</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="run"><span class="type-signature">&lt;inner> </span>App#run<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Starts the app by setting up all modules, invoking all configure functions, starting the HTTP server and binding to the value of PORT defined in the environmental table.</p>
+<p>This method should not be be invoked multiple times (even after calling App#stop).</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="stop"><span class="type-signature">&lt;inner> </span>App#stop<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Stops the app and closes the HTTP server.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Resolves when closing of the server finishes, or rejects when an error occurs.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
     
     
 </dd>

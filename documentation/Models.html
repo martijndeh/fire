@@ -61,7 +61,24 @@
     
     
     <div class="description">
-        <p>Models.</p>
+        <p>The models module.</p>
+<p>Every registered model will be available through this module.</p>
+<p>For example, when creating a <code>User</code> model:</p>
+<pre class="prettyprint source lang-js"><code>function User() {
+    this.name = [this.String];
+}
+app.model(User);</code></pre><p>A <code>User</code> key is added to models instance so you can access the <code>User</code> model via:</p>
+<pre class="prettyprint source"><code>models.User.findOne();</code></pre><p>In a model and controller instance, the models instance is always available as a property <code>models</code>. In a controller, for example:</p>
+<pre class="prettyprint source"><code>MyController.prototype.getUsers = function() {
+    return this.models.User.find({});
+};</code></pre><p>In the client-context, in a controller, you use the fire dependency:</p>
+<pre class="prettyprint source"><code>function MyController($scope, fire) {
+    fire.models.User.find()
+        .then(function(users) {
+          // Do something with `users`.
+        })
+}
+app.controller(MyController);</code></pre>
     </div>
     
 
@@ -281,7 +298,7 @@
 	</dt>
 	<dd>
 		
-<span class="label label-primary param-type"><a href="Model.html">Model</a></span>
+<span class="label label-primary param-type">Model</span>
 
 
 
@@ -1604,7 +1621,7 @@ Rolls back the transaction.</li>
 <p>Every property set in the constructor will be considered a model property. The value should be an array of Models~PropertyType.</p>
 <p>It is not allowed to start a property name with _ or $ as these prefixes are currently reserved.</p>
 <p>An id property is automatically created, if it does not exist, with <code>[this.UUID, this.CanUpdate(false)]</code> property type, and is considered the model's primary key.</p>
-<p>For more information on all property types, see <a href="global.html#PropertyTypes">PropertyTypes</a>.</p>
+<p>For more information on all property types, see <a href="PropertyTypes.html">PropertyTypes</a>.</p>
 <p>Set any of the model constructor's prototype methods <strong>after</strong> invoking this method as this method inherits the constructor from Model thus overwriting the constructor's prototype.</p>
     </div>
     

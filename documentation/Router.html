@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Documentation Class: Router - Node on Fire</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="/styles/default.css"/>
+</head>
+
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="col-md-8 col-md-offset-2">
+				<ul class="nav navbar-nav">
+					<li><a href="/">Home</a></li>
+					<li><a href="/getting-started">Getting Started</a></li>
+					<li class="active"><a href="/documentation">Documentation</a></li>
+					<li><a href="/examples">Examples</a></li>
+					<li><a href="/tutorials">Tutorials</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-offset-1 col-md-3">
+				
+				<div id="toc"></div>
+				
+			</div>
+
+			<div id="main" class="col-md-7">
+				
+
+
+	<h1 class="page-title">Class: Router</h1>
+<section>
+
+<header>
+    <h2>
+    Router
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+<dt>
+    <h4 class="name" id="Router"><span class="type-signature"></span>new Router<span class="signature">(controllerConstructor, filePath)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>The router is responsible for creating routes. The created routes are passed to the delegate, either a Controller instance, or another module, like Bridge.</p>
+<p>For example, a controller creates a router, the controller is set as the router's delegate, and the controller executes the Router#createRoutes. Whenever the router creates a route, the delegate#addRoute is invoked.</p>
+<p>A controller is not the only module utilizing the router. The Bridge module, and in the future more modules, are using the router to find all routes.</p>
+<p>To customize the routing behaviour, and if the array-based notation is not sufficient, overwrite your controller's Controller#getRouter method and return a custom router.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>controllerConstructor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Constructor</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The controller to create the routes for.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>filePath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The file path to the controller. If the controller is included in a subdirectory in <code>controllers/</code> and Controller#basePathComponents is not set, the subdirectory is prepended to all route paths.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	<h5 class="subsection-title">Properties:</h5>
+
+	<dl>
+
+<table class="props table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>delegate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Mixed</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The router's delegate. Whenever a route is created, the Route instance is passed to the delegate via <code>addRoute(route)</code> method.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+</dl>
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="createRoute"><span class="type-signature"></span>createRoute<span class="signature">(routeName)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates a route for the given name and passes it to the delegate.</p>
+<p>The routes action is determined by the first word of the route name. The route's action is translated to the route's HTTP verb. If the action is one of the below, the HTTP verb becomes:</p>
+<pre class="prettyprint source"><code>create    POST
+update    PUT
+view    GET
+do         POST</code></pre><p>If the action is anything else, it's translated to the HTTP verb 1:1.</p>
+<p>The path of the route is determined by the remaining words of the route's name. The words are pluralized and dasherized. Then for every argument of the route's method which starts with a $, a route param is appended. A few examples are listed below:</p>
+<pre class="prettyprint source lang-js"><code>ExampleController.prototype.getUsers = function() { ... }; // GET /users
+ExampleController.prototype.getUser = function($userID) { ... }; // GET /users/:userID -- notice that user gets pluralized.
+ExampleController.prototype.getChocolateFactory = function() { ... }; // GET /chocolate-factories -- the name also gets dasherized, if neccesary</code></pre><p>If the route's action is <code>do</code> or <code>view</code>, which is considered not-RESTful, the remaining words of the route's name are not pluralized and dasherized. This is useful when you are writing RPC-based routes, or if you simply write view routes. A few examples are listed below:</p>
+<pre class="prettyprint source lang-js"><code>ExampleController.prototype.view = function() { ... }; // GET /
+ExampleController.prototype.viewBlog = function() { ... }; // GET /blog -- because the route is view-based, blog does not get pluralized.</code></pre><p>Now, this might not cover all your routing needs. That's why it's possible to, instead of declaring a method on your property, it's possible to declare an array instead. The array contains your route's path as first item, and the method as second item. For example:</p>
+<pre class="prettyprint source lang-js"><code>ExampleController.prototype.getUser = ['/user/:userID', function($userID) { ... }];
+ExampleController.prototype.getUserBuildings = ['/user/:userID/buildings', function($userID) { ... }];
+ExampleController.prototype.getUserBuilding = ['/user/:userID/buildings/:buildingID', function($userID, $buildingID) { ... }];</code></pre><p>In the above example you'll notice that the route's HTTP verb is still based on the route's action (the first word of the route).</p>
+<p>Argument names not prefixed with a $ have a different purpose. These arguments are populated with the request's param of the same name. For example, when doing an HTTP POST to <code>/users</code> with email and password in the body:</p>
+<pre class="prettyprint source lang-js"><code>TestController.prototype.createUser = function(email, password) {
+    // email and password are populated with the values from the body.
+};</code></pre><p>This is especially useful when switching from the client-context to the server-context. For example, in your local controller:</p>
+<pre class="prettyprint source lang-js"><code>function TestController($scope, fire) {
+    // This could get called in a form: createUser('martijn', 'test');
+    $scope.createUser = function(email, password) {
+        // A client-context api is available in the fire service.
+        // The below does a HTTP post to /users with email and password in the body.
+        fire.createUser(email, password)
+            .then(function(user) {
+                // This is the response from the request. This is executed in the client-context.
+            });
+    };
+};
+
+TestController.prototype.createUser = function(email, password) {
+    // Imagine a user is created here and we return the user...
+    return {
+        email: email
+    };
+};</code></pre><p>The controller's constructor is executed in the local-context, and the controller methods are executed in the server-context.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>routeName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The route's name—which is the name of the property on the controller's prototype.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="createRoutes"><span class="type-signature"></span>createRoutes<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Loops over the controller's prototype and checks whether a route should be created for any of the properties.</p>
+<p>Currently, the following rules must apply:</p>
+<pre class="prettyprint source"><code>1. The property's name must not be declared on the base constructor's (Controller's) prototype. For example, Controller#configure and Controller#before.
+2. The property's name most not start with _ (underscore). Methods prefixed with _ are excluded from the routes.
+3. The property must either be a method, or an array equal to [{Mixed}, {Function}].</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				<p class="expl disqus-expl">Do you have any questions or comments on this page? Start a discussion below.</p>
+
+			    <div id="disqus_thread"></div>
+				<script type="text/javascript">
+    			var disqus_shortname = 'nodeonfire';
+    			(function() {
+        			var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    			})();
+				</script>
+				<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				This is the footer.
+			</div>
+		</div>
+	</div>
+
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="scripts/toc.js"></script>
+	<script>
+		$( function () {
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+		} );
+	 </script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-52717773-3', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>

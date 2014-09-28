@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: API - Node on Fire</title>
+	<title>Documentation Class: Table - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,14 @@
 				
 
 
-	<h1 class="page-title">Class: API</h1>
+	<h1 class="page-title">Class: Table</h1>
 <section>
 
 <header>
     <h2>
-    API
+        <span class="ancestors"><a href="module-Datastore.html">Datastore</a>~</span>
+    
+    Table
     </h2>
     
 </header>
@@ -53,12 +55,16 @@
     
         
 <dt>
-    <h4 class="name" id="API"><span class="type-signature"></span>new API<span class="signature">(app)</span></h4>
+    <h4 class="name" id="Table"><span class="type-signature"></span>new Table<span class="signature">(schemaName, model, datastore)</span></h4>
     
     
 </dt>
 <dd>
     
+    
+    <div class="description">
+        <p>The table generates all SQL queries.</p>
+    </div>
     
 
     
@@ -91,13 +97,13 @@
 
         <tr>
             
-                <td class="name"><code>app</code></td>
+                <td class="name"><code>schemaName</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type"><a href="App.html">App</a></span>
+<span class="label label-primary param-type">String</span>
 
 
 
@@ -108,7 +114,55 @@
 
             
 
-            <td class="description last"><p>The app.</p></td>
+            <td class="description last"><p>The name of the schema.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>model</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Model</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The model the table belongs to.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>datastore</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Datastore</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The datastore the app is connected to.</p></td>
         </tr>
 
 	
@@ -177,6 +231,174 @@
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="query"><span class="type-signature"></span>query<span class="signature">(query, parameters)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Executes a query with parameters against the datastore.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The query to execute.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>parameters</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The parameters to pass to the query. The first item in the array is passed to $1, and so on.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>[description]</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        </dl>
     
 
     

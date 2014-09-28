@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: App - Node on Fire</title>
+	<title>Documentation Class: Datastore - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,14 @@
 				
 
 
-	<h1 class="page-title">Class: App</h1>
+	<h1 class="page-title">Class: Datastore</h1>
 <section>
 
 <header>
     <h2>
-    App
+        <span class="ancestors"><a href="module-Datastore.html">Datastore</a>~</span>
+    
+    Datastore
     </h2>
     
 </header>
@@ -53,7 +55,7 @@
     
         
 <dt>
-    <h4 class="name" id="App"><span class="type-signature"></span>new App<span class="signature">(name, options)</span></h4>
+    <h4 class="name" id="Datastore"><span class="type-signature"></span>new Datastore<span class="signature">(databaseURL)</span></h4>
     
     
 </dt>
@@ -61,9 +63,7 @@
     
     
     <div class="description">
-        <p>Initialize a new <code>App</code> for both the client- and server-context. A new app is usually created via <a href="Firestarter.html#app">Firestarter#app</a>.</p>
-<p>In the client-context, this creates an <code>angular.Module</code> with <code>name</code> and requires from <code>options.modules</code>. This instance also acts as a proxy to the <code>angular.Module</code>. This means that you can invoke <code>directive</code>, <code>controller</code> or any of the <code>angular.Module</code> methods.</p>
-<p>For a complete list, angular's Module documentation at <a href="https://docs.angularjs.org/api/ng/type/angular.Module">https://docs.angularjs.org/api/ng/type/angular.Module</a>.</p>
+        <p>The datastore module. Communicates with the database. Currently only PostgreSQL is supported.</p>
     </div>
     
 
@@ -97,7 +97,7 @@
 
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>databaseURL</code></td>
             
 
             <td class="type">
@@ -114,81 +114,7 @@
 
             
 
-            <td class="description last"><p>Name of the app.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Dictionary</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <h6>Properties</h6>
-                
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>modules</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Array</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>List of requires passed to angular.Module.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-            </td>
+            <td class="description last"><p>URL to the database.</p></td>
         </tr>
 
 	
@@ -263,7 +189,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="addModule"><span class="type-signature"></span>addModule<span class="signature">(moduleConstructor)</span></h4>
+    <h4 class="name" id="addModel"><span class="type-signature"></span>addModel<span class="signature">(modelName, model)</span></h4>
     
     
 </dt>
@@ -271,7 +197,8 @@
     
     
     <div class="description">
-        <p>Adds a new module to the app.</p>
+        <p>Adds a table to the model.</p>
+<p>The SQL table isn't actually created in the database by this method.</p>
     </div>
     
 
@@ -305,13 +232,13 @@
 
         <tr>
             
-                <td class="name"><code>moduleConstructor</code></td>
+                <td class="name"><code>modelName</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">Constructor</span>
+<span class="label label-primary param-type">String</span>
 
 
 
@@ -322,7 +249,261 @@
 
             
 
-            <td class="description last"><p>The module constructor which gets invoked with 1 param: this app instance.</p></td>
+            <td class="description last"><p>The name of the model.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>model</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Model</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The model.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="connect"><span class="type-signature"></span>connect<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Connects to the database and resolves with Client. It's generally easier to call Datastore#query.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Resolves with a Client.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="query"><span class="type-signature"></span>query<span class="signature">(query, parameters)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Connects the database and executes query. See Client#query.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The SQL statement.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>parameters</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The parameters to pass to the statement.</p></td>
         </tr>
 
 	
@@ -376,7 +557,7 @@
     
             
 <div class="param-desc">
-    <p>The app instance-so this method is chainable.</p>
+    <p>Result set.</p>
 </div>
 
 
@@ -387,7 +568,7 @@
 	</dt>
 	<dd>
 		
-<span class="label label-primary param-type"><a href="App.html">App</a></span>
+<span class="label label-primary param-type">Object</span>
 
 
 
@@ -403,7 +584,7 @@
         
             
 <dt>
-    <h4 class="name" id="configure"><span class="type-signature"></span>configure<span class="signature">(configureFunction)</span></h4>
+    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">()</span></h4>
     
     
 </dt>
@@ -411,429 +592,10 @@
     
     
     <div class="description">
-        <p>Sets a configure function to be run in the server-context right before the app starts. This is useful because code may be invoked when generating code, migrations and so on. The configureFunction is guaranteed only to be run when the app starts.</p>
-<p>You may invoke this method multiple times to configure multiple functions. If you return a promise, the start up of the app continues once the promise resolves.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>configureFunction</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">function</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The function to run. The first param is the value of the NODE_ENV environmentable value.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>The app instance-so this method is chainable.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type"><a href="App.html">App</a></span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="controller"><span class="type-signature"></span>controller<span class="signature">(controllerConstructor)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Sets up a controller. This is a convenient method. See Controllers#controller for a full explanation.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>controllerConstructor</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Controllers~ControllerConstructor</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The controller to be created.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>The app instance-so this method is chainable.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type"><a href="App.html">App</a></span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="model"><span class="type-signature"></span>model<span class="signature">(modelConstructor)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Sets up a model. This is a convenient method. For a full explanation see Models#model.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>modelConstructor</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Constructor</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The model to be created.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>The app instance-so this method is chainable.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type"><a href="App.html">App</a></span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="run"><span class="type-signature"></span>run<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Starts the app by setting up all modules, invoking all configure functions, starting the HTTP server and binding to the value of PORT defined in the environmental table.</p>
-<p>This method should not be be invoked multiple times (even after calling App#stop).</p>
+        <p>Connects to the database and verifies if the uuid-ossp extension exists.</p>
+<p>If the uuid-ossp exists, but is not enabled, a warning is shown and the extension is enabled. If this fails, you may need to connect the database yourself with an admin account and enable the extension by executing <code>CREATE EXTENSION &quot;uuid-ossp&quot;;</code>.</p>
+<p>If the extension does not exist, an error is thrown.</p>
+<p>The uuid-ossp is required because models, by default, have a UUID as primary key. It's currently not possible to change this behaviour.</p>
     </div>
     
 
@@ -911,7 +673,7 @@
         
             
 <dt>
-    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span></h4>
+    <h4 class="name" id="setupTable"><span class="type-signature"></span>setupTable<span class="signature">(table)</span></h4>
     
     
 </dt>
@@ -919,7 +681,7 @@
     
     
     <div class="description">
-        <p>Stops the app and closes the HTTP server.</p>
+        <p>Creates the table in the databse.</p>
     </div>
     
 
@@ -927,6 +689,56 @@
     
     
     
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Table</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The table to create.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     
@@ -970,30 +782,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>Resolves when closing of the server finishes, or rejects when an error occurs.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>

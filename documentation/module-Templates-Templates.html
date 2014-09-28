@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: Template - Node on Fire</title>
+	<title>Documentation Class: Templates - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,14 +36,14 @@
 				
 
 
-	<h1 class="page-title">Class: Template</h1>
+	<h1 class="page-title">Class: Templates</h1>
 <section>
 
 <header>
     <h2>
-        <span class="ancestors"><a href="Controllers.html">Controllers</a>.</span>
+        <span class="ancestors"><a href="module-Templates.html">Templates</a>~</span>
     
-    Template
+    Templates
     </h2>
     
 </header>
@@ -55,7 +55,7 @@
     
         
 <dt>
-    <h4 class="name" id="Template"><span class="type-signature"></span>new Template<span class="signature">(name, options)</span></h4>
+    <h4 class="name" id="Templates"><span class="type-signature"></span>new Templates<span class="signature">(app)</span></h4>
     
     
 </dt>
@@ -63,8 +63,8 @@
     
     
     <div class="description">
-        <p>Holds template information.</p>
-<p>For more information on templates, see Templates.</p>
+        <p>The templates module loads all templates from the /templates directory. Plain html files and jade templates are currently supported.</p>
+<p>This module also creates App#template, see Templates#template.</p>
     </div>
     
 
@@ -98,13 +98,13 @@
 
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>app</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">String</span>
+<span class="label label-primary param-type">App</span>
 
 
 
@@ -115,31 +115,7 @@
 
             
 
-            <td class="description last"><p>The name of the template.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Dictionary</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Any options passed to the template rendering.</p></td>
+            <td class="description last"><p>The app.</p></td>
         </tr>
 
 	
@@ -208,6 +184,291 @@
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">(basePath)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Loads all templates from /templates and compiles them to html.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>basePath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The app's root directory.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="template"><span class="type-signature"></span>template<span class="signature">(name, html)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Either gets the html of template, or sets the template's html with <code>html</code>.</p>
+<p>This method allows you to create inline templates instead of creating a new file in the templates/ directory.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the template.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>html</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Optionally, set the html of the template.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Returns the html of the template.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">String</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        </dl>
     
 
     

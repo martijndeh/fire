@@ -61,7 +61,7 @@
     
     
     <div class="description">
-        <p>The singleton-ish module orchastrating the modules and apps.</p>
+        <p>The singleton-ish module orchastrating the modules and apps. Do not construct an instance of this manually. When <code>require</code>ing fire, an instance of <code>Firestarter</code> is exported.</p>
     </div>
     
 
@@ -149,6 +149,11 @@
 <p>It is possible to create multiple apps with different names. Fire will store them in a map internally.</p>
 <p>If a <code>options</code> is specified, a new app will be created. If an app with the same name already exists, an exception is thrown.</p>
 <p>If <code>options</code> is not specified, an existing app will be retrieved. If no app with <code>name</code> exists, an exception is thrown.</p>
+<p>For example, to create a new app:</p>
+<pre class="prettyprint source"><code>var fire = require('fire');
+var app = fire.app('test', {});
+
+//</code></pre>
     </div>
     
 
@@ -223,7 +228,7 @@
 
             
 
-            <td class="description last"><p>Passed directly to the app constructor. See App#constructor for more information.</p></td>
+            <td class="description last"><p>Passed directly to the app constructor. See <a href="App.html">App</a> for more information.</p></td>
         </tr>
 
 	
@@ -297,122 +302,6 @@
 
 
         
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="removeApp"><span class="type-signature"></span>removeApp<span class="signature">(app)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Removes an app from the internal map. Useful when cleaning up during tests.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>app</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="App.html">App</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The app to be removed.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
     
     
 </dd>

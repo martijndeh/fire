@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: API - Node on Fire</title>
+	<title>Documentation Class: Templates - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,12 @@
 				
 
 
-	<h1 class="page-title">Class: API</h1>
+	<h1 class="page-title">Class: Templates</h1>
 <section>
 
 <header>
     <h2>
-    API
+    Templates
     </h2>
     
 </header>
@@ -53,12 +53,19 @@
     
         
 <dt>
-    <h4 class="name" id="API"><span class="type-signature"></span>new API<span class="signature">(app)</span></h4>
+    <h4 class="name" id="Templates"><span class="type-signature"></span>new Templates<span class="signature">(app)</span></h4>
     
     
 </dt>
 <dd>
     
+    
+    <div class="description">
+        <p>The templates module loads all templates from the <code>/templates</code> directory in the app's root directory. Plain html files and jade templates are currently supported.</p>
+<p>To create a template, store a file in the <code>templates</code> directory in your app's root directory. You can also create inline templates on an <a href="App.html">App</a> instance:</p>
+<pre class="prettyprint source"><code>app.template('hello-world', '&lt;h1>Hello, world&lt;/h1>');</code></pre><p>In a view route you can simply use the <code>hello-world</code> template, see <a href="Controller.html#template">Controller#template</a> for more on view routes.</p>
+<p>This module also creates App#template, see {@link Templates#template}.</p>
+    </div>
     
 
     
@@ -108,7 +115,7 @@
 
             
 
-            <td class="description last"><p>The app.</p></td>
+            <td class="description last"><p>The app instance.</p></td>
         </tr>
 
 	
@@ -177,6 +184,175 @@
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="template"><span class="type-signature"></span>template<span class="signature">(name, html)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Either gets the html of template, or sets the template's html with <code>html</code>.</p>
+<p>This method allows you to create inline templates instead of creating a new file in the templates/ directory.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the template.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>html</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Optionally, set the html of the template.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Returns the html of the template.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">String</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        </dl>
     
 
     

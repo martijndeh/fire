@@ -61,7 +61,7 @@
     
     
     <div class="description">
-        <p>The base constructor for a controller. Inheritance is applied when calling App#controller on a controller constructor.</p>
+        <p>The base constructor of a controller. Inheritance is applied when calling <a href="App.html#controller">App#controller</a> on a controller constructor. Do not call this constructor yourself (unless you know what you are doing).</p>
 <p>To prevent leaking of data between requests, for every request a new instance is allocated and initialized. This is likely to change in the future because of optimizations.</p>
     </div>
     
@@ -102,7 +102,7 @@
             <td class="type">
             
                 
-<span class="label label-primary param-type"><a href="Models.html">Models</a></span>
+<span class="label label-primary param-type">Models</span>
 
 
 
@@ -161,7 +161,7 @@
 
             
 
-            <td class="description last"><p>The HTTP response from</p></td>
+            <td class="description last"><p>The HTTP response from express.</p></td>
         </tr>
 
 	
@@ -217,7 +217,18 @@
 
             
 
-            <td class="description last"><p>The base path or prefix of every route in this controller. For example, a basePathComponents of <code>['api', 'v1']</code> would prefix every route with <code>/api/v1</code>.</p></td>
+            <td class="description last"><p>The base path or prefix of every route in this controller. A <code>basePathComponents</code> of <code>['api', 'v1']</code> would prefix every route with <code>/api/v1</code>.</p>
+<p>The below example creates a controller which returns all users when calling <code>/api/v1/users</code>.</p>
+<pre class="prettyprint source lang-js"><code>function MyController() {
+    // This is executed in the local context.
+}
+app.controller(MyController);
+
+MyController.prototype.basePathComponents = ['api', 'v1'];
+
+MyController.prototype.getUsers = function() {
+    return [];
+};</code></pre></td>
         </tr>
 
 	
@@ -230,7 +241,7 @@
             <td class="type">
             
                 
-<span class="label label-primary param-type"><a href="Models.html">Models</a></span>
+<span class="label label-primary param-type">Models</span>
 
 
 
@@ -241,7 +252,18 @@
 
             
 
-            <td class="description last"><p>The models module. On the models module you can access the models. For more information see Models.</p></td>
+            <td class="description last"><p>The models instance. This exposes all models registered via <a href="App.html#model">App#model</a>.</p>
+<p>In a controller method, in the server-context, you can access e.g. a <code>User</code> model via the following:</p>
+<pre class="prettyprint source lang-js"><code>MyController.prototype.getUser = function($id) {
+    return this.models.User.findOne({id: $id});
+};</code></pre><p>In a controller, in the client-context, you can access the models via the <code>fire</code> service:</p>
+<pre class="prettyprint source"><code>function MyController($scope, fire) {
+    fire.models.User.findOne({name: 'Martijn'})
+        .then(function(user) {
+            // Do something with `user`.
+        })
+}
+app.controller(MyController);</code></pre></td>
         </tr>
 
 	
@@ -265,7 +287,7 @@
 
             
 
-            <td class="description last"><p>Cookie-based session storage, see <a href="https://github.com/expressjs/cookie-session">https://github.com/expressjs/cookie-session</a>.</p></td>
+            <td class="description last"><p>Cookie-based session storage. The session is initialized when a controller is constructed. The <code>SESSION_KEYS</code> environmental variable is used as keys to sign the cookie, see <a href="https://github.com/expressjs/cookie-session">https://github.com/expressjs/cookie-session</a> for more information.</p></td>
         </tr>
 
 	
@@ -337,7 +359,7 @@
 
             
 
-            <td class="description last"><p>The HTTP request. The request is currently available, but it's likely in the future this property will be deprecated and removed.</p></td>
+            <td class="description last"><p>The HTTP request.</p></td>
         </tr>
 
 	
@@ -361,7 +383,7 @@
 
             
 
-            <td class="description last"><p>The HTTP response. See Controller#__request.</p></td>
+            <td class="description last"><p>The HTTP response.</p></td>
         </tr>
 
 	
@@ -441,7 +463,8 @@
     
     
     <div class="description">
-        <p>The after method is executed after any matching request is routed to the controller. You, similar to Controller#before, typically overwrite this method to perform any tasks after any requests matching the controller finished.</p>
+        <p>You may overwrite this method.</p>
+<p>The after method is executed after any matching request is routed to the controller and is successful. You typically overwrite this method to perform any tasks after any requests matching the controller succeeded.</p>
 <p>This method is executed after the response has been send to the client. It's not possible to change the response to the client from this method. This behaviour might change in the future.</p>
     </div>
     
@@ -508,8 +531,21 @@
     
     
     <div class="description">
-        <p>The before method is executed before any matching request is routed to the controller. You typically overwrite this method to perform any actions before any request is routed to the controller.</p>
-<p>You may return a promise and the system continues once the promise resolves or rejects.</p>
+        <p>You may overwrite this method.</p>
+<p>The before method is executed before any matching request is routed to the controller. You typically overwrite this method to perform any actions before any request is routed to the controller.</p>
+<p>The below example creates a <code>before</code> method which gets executed before the <code>getTests</code> is executed:</p>
+<pre class="prettyprint source"><code>function MyController() {
+    // This is run in the client-context.
+}
+app.controller(MyController);
+
+MyController.prototype.before = function() {
+    // Do something before every method.
+};
+
+MyController.prototype.getTests = function() {
+    return [];
+};</code></pre><p>If you return a promise, the flow is only resumed when you resolve the promise. If you reject the promise, an error is returned.</p>
     </div>
     
 
@@ -642,7 +678,7 @@
     
     <div class="description">
         <p>This method returns the current authenticated authenticator instance, for example, the currently signed in user.</p>
-<p>An authenticator is configured via the Models~PropertyType#Authenticate property type. See Models for more information.</p>
+<p>An authenticator is configured via the <a href="PropertyTypes.html#Authenticate">PropertyTypes#Authenticate</a> property type.</p>
 <p>This method does not cache the return value.</p>
     </div>
     
@@ -709,9 +745,9 @@
     
     
     <div class="description">
-        <p>Creates and returns a router. The router is responsible for creating the routes of the controller.</p>
-<p>If you want to override the default router behaviour of your controller(s), override this method and return a custom router. See Router for more information on how to override the router.</p>
-<p>This method is not invoked on an instance, but rather, the method is retrieved from the controller constructor's prototype. <code>this</code> may be undefined. Do not use it.</p>
+        <p>Creates and returns a router. The router is responsible for creating the routes of the controller. For example, if you have a method named <code>getUser($id)</code> on your controller, the router creates the HTTP route to it, in the default router's case <code>GET /users/:id</code>.</p>
+<p>If you want to override the default router behaviour of your controller(s), override this method and return a custom router. See <a href="Router.html">Router</a> for more information on how to override the router.</p>
+<p>This method is not invoked on an instance, but rather, the method is retrieved from the controller constructor's prototype. <code>this</code> will be undefined when this method is invoked. Do not rely on it.</p>
     </div>
     
 
@@ -765,7 +801,7 @@
 
             
 
-            <td class="description last"><p>The controller's constructor.</p></td>
+            <td class="description last"><p>The controller's constructor. The default router loops over this constructor's prototype to build the  routes for every method.</p></td>
         </tr>
 
 	
@@ -789,7 +825,7 @@
 
             
 
-            <td class="description last"><p>The path to the controller's file. The default router sets Controller#basePathComponents based on subdirectories the controller's file is located in.</p></td>
+            <td class="description last"><p>The path to the controller's file. The default router sets Controller#basePathComponents based on subdirectories the controller's file is located in. For example, if your controller is saved in a file at <code>controllers/api/controller.js</code> the <code>basePathComponents</code> is set to <code>['api']</code>.</p></td>
         </tr>
 
 	
@@ -854,7 +890,7 @@
 	</dt>
 	<dd>
 		
-<span class="label label-primary param-type"><a href="global.html#Router">Router</a></span>
+<span class="label label-primary param-type"><a href="Router.html">Router</a></span>
 
 
 
@@ -1014,7 +1050,12 @@
     
     
     <div class="description">
-        <p>Returns a template to render. This should only be used in view routes. For more information on templates, see Templates.</p>
+        <p>Returns a template to render. This should only be used in view routes.</p>
+<p>A view route is created by prefixing the method name with <code>view</code>, like the below.</p>
+<pre class="prettyprint source"><code>MyController.prototype.viewTest = function() {
+    return this.template('user.jade');
+};</code></pre><p>This creates a route in the local-context angular <code>$routeProvider</code>, creates a <code>templateUrl</code> to <code>GET /templates/user.jade</code> and makes sure direct access to <code>GET /test</code> also works. For more information on routes, see <a href="Router.html">Router</a>.</p>
+<p>For more information on templates and how to declare them, see <a href="Templates.html">Templates</a>.</p>
     </div>
     
 
@@ -1089,7 +1130,7 @@
 
             
 
-            <td class="description last"><p>Optionally any template options.</p></td>
+            <td class="description last"><p>Optionally any template options passed to the template renderer.</p></td>
         </tr>
 
 	
@@ -1154,7 +1195,7 @@
 	</dt>
 	<dd>
 		
-<span class="label label-primary param-type"><a href="Template.html">Template</a></span>
+<span class="label label-primary param-type">Template</span>
 
 
 

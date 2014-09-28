@@ -41,6 +41,8 @@
 
 <header>
     <h2>
+        <span class="ancestors"><a href="module-Models.html">Models</a>~</span>
+    
     ModelInstance
     </h2>
     
@@ -112,7 +114,7 @@ User.prototype.afterCreate = function() {
             <td class="type">
             
                 
-<span class="label label-primary param-type"><a href="Model.html">Model</a></span>
+<span class="label label-primary param-type">Model</span>
 
 
 
@@ -342,7 +344,7 @@ User.prototype.afterCreate = function() {
             <td class="type">
             
                 
-<span class="label label-primary param-type"><a href="ModelInstance.html">ModelInstance</a></span>
+<span class="label label-primary param-type">ModelInstance</span>
 
 
 
@@ -419,12 +421,13 @@ User.prototype.afterCreate = function() {
     
     <div class="description">
         <p>Internally calls the hooks. The following hooks are supported:</p>
-<pre class="prettyprint source"><code>- beforeLoad: invoked when the model instance loads, before any of the properties are set.
-- afterLoad: invoked after the model instance loaded and the properties are completely set.
-- beforeSave: invoked right before saving the model instance, either creating or updating the instance.
-- afterSave: invoked after the model instance successfully saved (either a new instance or updated instance).
-- beforeCreate: invoked right before a new instance is created.
-- afterCreate: invoked after a new instance is created.</code></pre>
+<p>Warning: in the future the effects of these hooks might change. Currently the hooks are invoked on the same process, in the future, the hooks will be invoked in a worker process.</p>
+<h5>beforeLoad</h5><p>Before a model instance is loaded, before it's properties are fully configured, this hook is called.</p>
+<h5>afterLoad</h5><p>After a model instance is loaded this hook</p>
+<h5>beforeSave</h5><p>Invoked right before saving the model instance, either creating or updating the instance.</p>
+<h5>afterSave</h5><p>invoked after the model instance successfully saved (either a new instance or updated instance).</p>
+<h5>beforeCreate</h5><p>invoked right before a new instance is created.</p>
+<h5>afterCreate</h5><p>invoked after a new instance is created.</p>
     </div>
     
 
