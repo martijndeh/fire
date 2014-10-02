@@ -31,6 +31,26 @@ app.service('Fire{{name}}', ['FireModels', '$http', '$q', function(FireModels, $
     {{/isView}}
     {{/routes}}
 }]);
+
+app.service('{{name}}Controller', ['$http', '$q', function($http, $q) {
+    {{#routes}}
+    {{^isView}}
+    this.{{methodName}} = function({{argumentNames}}) {
+        var defer = $q.defer();
+
+        $http['{{verb}}']('{{transformedPath}}', {{transformedParams}})
+            .success(function(result) {
+                defer.resolve(result);
+            })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
+    {{/isView}}
+    {{/routes}}
+}]);
 {{/controllers}}
 
 app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
