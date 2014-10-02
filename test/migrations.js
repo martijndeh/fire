@@ -599,8 +599,6 @@ describe('migrations', function() {
                 assert.notEqual(tests, null);
                 assert.equal(tests.length, 3);
 
-                console.log('get teams of ' + tests[0].id);
-
                 return tests[0].getTeams();
             })
             .then(function(teams) {
