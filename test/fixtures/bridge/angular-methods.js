@@ -222,6 +222,7 @@ FireModel.prototype.getOne = function(fields) {
 
 
 
+// TODO: Remove this in favour of the model factories (which is more angularism).
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 }]);

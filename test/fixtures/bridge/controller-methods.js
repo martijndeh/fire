@@ -209,6 +209,7 @@ FireModel.prototype.getOne = function(fields) {
 
 
 
+// TODO: Remove this in favour of the model factories (which is more angularism).
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 }]);
@@ -227,6 +228,58 @@ app.service('FireTestController', ['FireModels', '$http', '$q', function(FireMod
     this.unwrap = unwrap;
     this.models = FireModels;
 
+    
+    
+    this.doTest = function(foo,bar,baz) {
+        var defer = $q.defer();
+
+        $http['post']('/test', {foo: foo, bar: bar, baz: baz})
+            .success(function(result) {
+                defer.resolve(result);
+            })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
+    
+    
+    
+    this.doTest3 = function(a) {
+        var defer = $q.defer();
+
+        $http['post']('/test3', {a: a})
+            .success(function(result) {
+                defer.resolve(result);
+            })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
+    
+    
+    
+    this.getTest4 = function($id) {
+        var defer = $q.defer();
+
+        $http['get']('/test4s/' + $id + '', {$id: $id})
+            .success(function(result) {
+                defer.resolve(result);
+            })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
+    
+    
+}]);
+
+app.service('TestControllerController', ['$http', '$q', function($http, $q) {
     
     
     this.doTest = function(foo,bar,baz) {

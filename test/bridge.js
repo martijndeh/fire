@@ -8,7 +8,7 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
-// fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/controller-methods.js'), writeStream.toString());
+var write = true;
 
 describe('bridge', function() {
 	var app = null;
@@ -91,7 +91,11 @@ describe('bridge', function() {
 			.then(function() {
 				return bridge.generate(writeStream);
 			})
-			.then(function() {				
+			.then(function() {
+				if(write) {
+					fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/controller-methods.js'), writeStream.toString());
+				}
+
 				assert.equal(writeStream.toString().length > 0, true);
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/controller-methods.js')).toString());
 
@@ -100,7 +104,7 @@ describe('bridge', function() {
 			.done();
 	});
 
-	it('can generate model methods', function(done) {
+	it('can generate model methods', function() {
 		function Pet() {
 			this.name = [this.String];
 		}
@@ -201,9 +205,11 @@ describe('bridge', function() {
      	app.controller(fn1);
      	app.controller(fn0);
 
-     	var writeStream = new streams.WritableStream();
+     	var writeStream = new streams.WritableStream({
+			highWaterMark: 32768
+		});
 
-		app.models.setup()
+		return app.models.setup()
 			.then(function() {
 				return app.controllers.setup();
 			})
@@ -211,12 +217,13 @@ describe('bridge', function() {
 				return bridge.generate(writeStream);
 			})
 			.then(function() {
+				if(write) {
+					fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/model-methods.js'), writeStream.toString());
+				}
+
 				assert.equal(writeStream.toString().length > 0, true);
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/model-methods.js')).toString());
-
-				done();
-			})
-			.done();
+			});
 	});
 
 	it('can export angular-methods', function(done) {
@@ -245,6 +252,10 @@ describe('bridge', function() {
 				return bridge.generate(writeStream);
 			})
 			.then(function() {
+				if(write) {
+					fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/angular-methods.js'), writeStream.toString());
+				}
+
 				assert.equal(writeStream.toString().length > 0, true);
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/angular-methods.js')).toString());
 
@@ -275,6 +286,10 @@ describe('bridge', function() {
 				return bridge.generate(writeStream);
 			})
 			.then(function() {
+				if(write) {
+					fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/inline-templates.js'), writeStream.toString());
+				}
+
 				assert.equal(writeStream.toString().length > 0, true);
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/inline-templates.js')).toString());
 

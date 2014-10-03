@@ -304,8 +304,13 @@ FireModel{{name}}.prototype.getMe = function() {
 	return defer.promise;
 };
 {{/isAuthenticator}}
+
+app.factory('{{name}}Model', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
+	return new FireModel{{name}}($http, $q, FireModels);
+}]);
 {{/models}}
 
+// TODO: Remove this in favour of the model factories (which is more angularism).
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	{{#models}}
 	this.{{name}} = new FireModel{{name}}($http, $q, this);

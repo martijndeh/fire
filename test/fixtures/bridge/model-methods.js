@@ -312,6 +312,10 @@ FireModelPet.prototype.parseResult = function(setMapOrList, path) {
 
 
 
+app.factory('PetModel', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
+	return new FireModelPet($http, $q, FireModels);
+}]);
+
 function FireModelInstanceUser(setMap, model, path) {
 	var self = this;
 
@@ -412,6 +416,10 @@ FireModelUser.prototype.parseResult = function(setMapOrList, path) {
 };
 
 
+
+app.factory('UserModel', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
+	return new FireModelUser($http, $q, FireModels);
+}]);
 
 function FireModelInstanceArticle(setMap, model, path) {
 	var self = this;
@@ -514,6 +522,10 @@ FireModelArticle.prototype.parseResult = function(setMapOrList, path) {
 
 
 
+app.factory('ArticleModel', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
+	return new FireModelArticle($http, $q, FireModels);
+}]);
+
 function FireModelInstanceArticleVoterUserVote(setMap, model, path) {
 	var self = this;
 
@@ -591,7 +603,12 @@ FireModelArticleVoterUserVote.prototype.parseResult = function(setMapOrList, pat
 
 
 
+app.factory('ArticleVoterUserVoteModel', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
+	return new FireModelArticleVoterUserVote($http, $q, FireModels);
+}]);
 
+
+// TODO: Remove this in favour of the model factories (which is more angularism).
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 	this.Pet = new FireModelPet($http, $q, this);
@@ -637,10 +654,34 @@ app.service('FireTestController', ['FireModels', '$http', '$q', function(FireMod
     
 }]);
 
+app.service('TestControllerController', ['$http', '$q', function($http, $q) {
+    
+    
+    this.getTest = function() {
+        var defer = $q.defer();
+
+        $http['get']('/tests', {})
+            .success(function(result) {
+                defer.resolve(result);
+            })
+            .error(function(error) {
+                defer.reject(error);
+            });
+
+        return defer.promise;
+    };
+    
+    
+}]);
+
 app.service('Firefn7', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
     this.unwrap = unwrap;
     this.models = FireModels;
 
+    
+}]);
+
+app.service('fn7Controller', ['$http', '$q', function($http, $q) {
     
 }]);
 
@@ -651,10 +692,18 @@ app.service('Firefn6', ['FireModels', '$http', '$q', function(FireModels, $http,
     
 }]);
 
+app.service('fn6Controller', ['$http', '$q', function($http, $q) {
+    
+}]);
+
 app.service('Firefn5', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
     this.unwrap = unwrap;
     this.models = FireModels;
 
+    
+}]);
+
+app.service('fn5Controller', ['$http', '$q', function($http, $q) {
     
 }]);
 
@@ -665,10 +714,18 @@ app.service('Firefn4', ['FireModels', '$http', '$q', function(FireModels, $http,
     
 }]);
 
+app.service('fn4Controller', ['$http', '$q', function($http, $q) {
+    
+}]);
+
 app.service('Firefn3', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
     this.unwrap = unwrap;
     this.models = FireModels;
 
+    
+}]);
+
+app.service('fn3Controller', ['$http', '$q', function($http, $q) {
     
 }]);
 
@@ -679,6 +736,10 @@ app.service('Firefn2', ['FireModels', '$http', '$q', function(FireModels, $http,
     
 }]);
 
+app.service('fn2Controller', ['$http', '$q', function($http, $q) {
+    
+}]);
+
 app.service('Firefn1', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
     this.unwrap = unwrap;
     this.models = FireModels;
@@ -686,10 +747,18 @@ app.service('Firefn1', ['FireModels', '$http', '$q', function(FireModels, $http,
     
 }]);
 
+app.service('fn1Controller', ['$http', '$q', function($http, $q) {
+    
+}]);
+
 app.service('Firefn0', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
     this.unwrap = unwrap;
     this.models = FireModels;
 
+    
+}]);
+
+app.service('fn0Controller', ['$http', '$q', function($http, $q) {
     
 }]);
 

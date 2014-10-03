@@ -211,6 +211,7 @@ FireModel.prototype.getOne = function(fields) {
 
 
 
+// TODO: Remove this in favour of the model factories (which is more angularism).
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 }]);
@@ -229,6 +230,12 @@ app.service('FireTestController', ['FireModels', '$http', '$q', function(FireMod
     this.unwrap = unwrap;
     this.models = FireModels;
 
+    
+    
+    
+}]);
+
+app.service('TestControllerController', ['$http', '$q', function($http, $q) {
     
     
     
