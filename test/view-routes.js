@@ -41,7 +41,7 @@ describe('view routes', function() {
             return this.template('test3');
         }];
 
-        app.run()
+        app.start()
             .then(function() {
                 done();
             })

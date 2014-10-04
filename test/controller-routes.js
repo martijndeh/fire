@@ -16,7 +16,7 @@ describe('controller routes', function() {
             createControllers();
         }
 
-        app.run()
+        app.start()
             .then(function() {
                 done();
             })

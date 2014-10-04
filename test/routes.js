@@ -58,7 +58,7 @@ describe('controller routes', function() {
 			};
 		};
 
-		app.run()
+		app.start()
 			.then(function(s) {
 				server = s;
 

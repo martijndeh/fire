@@ -16,7 +16,7 @@ describe('model methods', function() {
 
     beforeEach(function(done) {
         app = fire.app('methods', {});
-        app.run()
+        app.start()
             .then(function() {
                 models = app.models;
 

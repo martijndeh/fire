@@ -5,4 +5,4 @@ var app = fire.app('{{name}}', {modules:['ngRoute']});
 
 //
 
-app.run();
+app.start();

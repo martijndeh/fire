@@ -23,7 +23,7 @@ describe('controller session', function() {
 			};
 		};
 
-		app.run()
+		app.start()
 			.then(function() {
 				done();
 			})

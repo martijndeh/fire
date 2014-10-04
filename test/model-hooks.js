@@ -11,7 +11,7 @@ describe('model hooks', function() {
 
     beforeEach(function(done) {
     	app = fire.app('hooks', {});
-        app.run()
+        app.start()
             .then(function() {
             	models = app.models;
 

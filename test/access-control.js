@@ -21,7 +21,7 @@ describe('access control', function() {
 			createModels();
 		}
 
-		app.run()
+		app.start()
 			.then(function() {
 				var result = Q.when(true);
 

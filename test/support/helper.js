@@ -21,7 +21,7 @@ Helper.prototype.beforeEach = function(options) {
 
         return Q.when(self.setup(self.app))
             .then(function() {
-                return self.app.run();
+                return self.app.start();
             })
             .then(function() {
                 var result = Q.when(true);

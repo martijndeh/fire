@@ -53,7 +53,7 @@ describe('api generate model controllers', function() {
 				return app.models.setup();
 			})
 			.then(function() {
-				return app.run();
+				return app.start();
 			})
 			.then(function() {
 				done();

@@ -23,7 +23,7 @@ describe('migrations generate', function() {
             createModels();
         }
 
-        app.run()
+        app.start()
             .then(function() {
                 done();
             })

@@ -28,7 +28,7 @@ describe('migrations-associations-one-to-many', function() {
 
     beforeEach(function(done) {
         app = fire.app('migrations', {});
-        app.run()
+        app.start()
             .then(function() {
                 models = app.models;
 

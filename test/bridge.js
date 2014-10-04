@@ -18,7 +18,7 @@ describe('bridge', function() {
 		app = fire.app('example', {disabled: true});
 		bridge = app.bridge;
 
-		app.run()
+		app.start()
 			.then(function() {
 				done();
 			})
