@@ -15,7 +15,7 @@
     "type": "git",
     "url": "https://github.com/martijndeh/fire.git"
   },
-  "version": "0.1.12",
+  "version": "0.2.0",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "main": "index.js",
   "bin": "bin/fire",
@@ -26,7 +26,7 @@
     "ink-docstrap": "^0.4.12",
     "jscoverage": "^0.3.8",
     "jsdoc": "^3.3.0-alpha9",
-    "memory-streams": "0.0.3",
+    "memory-streams": "^0.1.0",
     "mocha": "^1.21.4",
     "supertest": "^0.13.0"
   },
