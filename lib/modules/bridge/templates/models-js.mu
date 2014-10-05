@@ -269,7 +269,7 @@ var __authenticator = null;
 FireModel{{name}}.prototype.authorize = function(fields) {
 	return this._post(this.endpoint + '/authorize', fields)
 		.then(function(authenticator) {
-			if(!authenticator) {
+			if(authenticator) {
 				__authenticator = authenticator;
 				return __authenticator;
 			}
