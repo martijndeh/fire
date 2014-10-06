@@ -1,9 +1,12 @@
 language: node_js
 node_js:
   - "0.10"
+services:
+  - rabbitmq
 addons:
   postgresql: "9.3"
 before_script:
   - psql -c 'create database fire;' -U postgres
 env:
   - DATABASE_URL=postgres://postgres@localhost/fire
+  - AMQP_URL=amqp://localhost/
