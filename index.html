@@ -33,14 +33,14 @@
 				<span class="h1">Node on Fire</span>
 			</div>
 
-			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, web framework built on top of AngularJS, express and PostgreSQL.</p>
+			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, web framework built on top of AngularJS, express,  PostgreSQL, and RabbitMQ.</p>
 		</div>
 
 		<div class="row pitch">
 			<div class="col-md-8 col-md-offset-2">
 				<h1>What is Node on Fire?</h1>
 
-				<p>Node on Fire is a JavaScript-everywhere, model-driven, web framework. Instead of client- and server-side code, your code runs in the client-context, the server-context or both. Go to our <a href="/getting-started">getting started</a> section to learn how to set up a working Hello World project.</p>
+				<p>Node on Fire is a JavaScript-everywhere, model-driven, web framework to rapidly create advanced web-worker applications following the <a href="http://12factor.net">12factor methodology</a>. Go to our <a href="/getting-started">getting started</a> section to learn how to set up a working Hello World project.</p>
 			</div>
 		</div>
 
@@ -48,7 +48,7 @@
 			<div class="col-md-offset-1 col-md-5">
 				<h2>JavaScript Everywhere</h2>
 
-				<p>You write your complete app in JavaScript*, both the client- and server-side. You don't just put server code in <code>/server/*</code> and client code in <code>/client/*</code>, no, your controllers and models are truly available everywhere.</p>
+				<p>You write both you server-side and client-side in JavaScript*. But you don't have to write separate files for your client- or your server-side: your controllers handle both the server- and the client-side.</p>
 
 				<p><small>* If you prefer, you can also write you app in CoffeeScript, of course.</small></p>
 			</div>
@@ -73,9 +73,9 @@ app.model(Article);</pre>
 				<h2>AngularJS</h2>
 
 				<p>Node on Fire completely embraces the <a href="https://angularjs.org/">superheoric AngularJS framework</a> for all things client-side.</p>
-				<pre class="prettyprint">function NewsController(fire, $scope) {
-	$scope.articles = fire.models.Article.find({}, {orderBy:{position:1}});
-	$scope.user 	= fire.models.User.getMe();
+				<pre class="prettyprint">function NewsController(ArticleModel, UserModel, $scope) {
+	$scope.articles = ArticleModel.find({}, {orderBy:{position:1}});
+	$scope.user 	= UserModel.getMe();
 
 	$scope.voteArticle = function(article) {
 		return article.createVoter({user: $scope.user});
@@ -90,6 +90,47 @@ app.controller(NewsController);</pre>
 				<p>Node on Fire loves <a href="http://yeoman.io/">Yeoman</a>. A generator is available so you can scaffold your models, controllers, directives, or even the example apps. Install the generator via <kbd>npm install -g generator-fire</kbd> and run <kbd>yo fire</kbd> to get started with the generator.</p>
 
 				<p><small>Not familiar with Yeoman? Check <a href="http://yeoman.io/">it out</a>.</small></p>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<div class="col-md-offset-1 col-md-5">
+				<h2>The Process Model</h2>
+
+				<p>In Node on Fire it's trivial to pass a message to a worker process. The below example sends an email in a worker process whenever a new user registers:</p>
+				<pre class="prettyprint">function User() {
+	this.email = [this.String, this.Authenticate];
+}
+app.model(User);
+
+User.prototype.afterCreate = function() {
+	return this.workers.MailWorker.sendWelcomeMail(this);
+}
+
+function MailWorker() {
+
+}
+app.worker(MailWorker);
+
+MailWorker.prototype.sendWelcomeMail = function(user) {
+	// and send the mail
+};</pre>
+			</div>
+
+			<div class="col-md-5">
+				<h2>One-Off Tasks</h2>
+
+				<p>You can create tasks which you can configure to run as scheduled task:</p>
+				<pre class="prettyprint">function DeactivateTask() {
+	//
+}
+app.task(DeactivateTask);
+
+DeactiveTask.prototype.run = function() {
+	return this.models.User.update({activate: true}, {active: false});
+}</pre>
+
+				<p>This works perfectly with Heroku's scheduler or any task scheduler as you can run them via the command line: <kbd>$ node index.js --task DeactivateTask</kbd>.</p>
 			</div>
 		</div>
 

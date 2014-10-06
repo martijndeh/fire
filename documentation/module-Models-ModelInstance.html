@@ -420,14 +420,13 @@ User.prototype.afterCreate = function() {
     
     
     <div class="description">
-        <p>Internally calls the hooks. The following hooks are supported:</p>
-<p>Warning: in the future the effects of these hooks might change. Currently the hooks are invoked on the same process, in the future, the hooks will be invoked in a worker process.</p>
-<h5>beforeLoad</h5><p>Before a model instance is loaded, before it's properties are fully configured, this hook is called.</p>
-<h5>afterLoad</h5><p>After a model instance is loaded this hook</p>
-<h5>beforeSave</h5><p>Invoked right before saving the model instance, either creating or updating the instance.</p>
+        <p>Warning: in the future the effects of these hooks might change. Currently the hooks are invoked on the same process, in the future, the hooks will be invoked in a worker process.</p>
+<p>Internally calls the hooks.</p>
+<p>The following hooks are supported:</p>
+<h5>afterLoad</h5><p>After a model instance is loaded this hook is called.</p>
 <h5>afterSave</h5><p>invoked after the model instance successfully saved (either a new instance or updated instance).</p>
-<h5>beforeCreate</h5><p>invoked right before a new instance is created.</p>
 <h5>afterCreate</h5><p>invoked after a new instance is created.</p>
+<h5>afterUpdate</h5><p>Invoked after a model instance is updated, either after ModelInstance#save or Model#update.</p>
     </div>
     
 

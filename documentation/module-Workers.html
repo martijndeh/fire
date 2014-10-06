@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: Table - Node on Fire</title>
+	<title>Documentation Module: Workers - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,12 @@
 				
 
 
-	<h1 class="page-title">Class: Table</h1>
+	<h1 class="page-title">Module: Workers</h1>
 <section>
 
 <header>
     <h2>
-    Table
+    Workers
     </h2>
     
 </header>
@@ -52,8 +52,69 @@
 
     
         
+
+        
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="module-Workers-Worker.html">Worker</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
 <dt>
-    <h4 class="name" id="Table"><span class="type-signature"></span>new Table<span class="signature">(schemaName, model, datastore)</span></h4>
+    <h4 class="name" id="Workers"><span class="type-signature">&lt;inner> </span>Workers<span class="signature">(app)</span></h4>
     
     
 </dt>
@@ -61,7 +122,34 @@
     
     
     <div class="description">
-        <p>The table generates all SQL queries.</p>
+        <p>The Workers module. This module is responsible for the orchestration of worker process types.</p>
+<p>With workers you can off-load intensive tasks away from the web processes to separate worker processes.</p>
+<p>In your controllers and models, you can pass messages to workers. Under the hood, the messages are posted over a message queueing system and consumed by a worker process. For example, consider the below example:</p>
+<pre class="prettyprint source lang-js"><code>// Our User model.
+
+function User() {
+    //
+}
+app.model(User);
+
+User.prototype.afterCreate = function() {
+    return this.workers.MailWorker.sendWelcomeMail(this);
+};
+
+// The Mail worker.
+
+function MailWorker() {
+    //
+}
+app.worker(MailWorker);
+
+MailWorker.prototype.sendWelcomeMail = function(user) {
+    // now send the mail to the user...
+}
+
+// The Procfile
+web: node index.js
+worker: node index.js --worker MailWorker</code></pre><p>If you want to have a time-based process running, have a look at the Tasks module.</p>
     </div>
     
 
@@ -95,13 +183,13 @@
 
         <tr>
             
-                <td class="name"><code>schemaName</code></td>
+                <td class="name"><code>app</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">String</span>
+<span class="label label-primary param-type"><a href="App.html">App</a></span>
 
 
 
@@ -112,55 +200,7 @@
 
             
 
-            <td class="description last"><p>The name of the schema.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>model</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="Model.html">Model</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The model the table belongs to.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>datastore</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="Datastore.html">Datastore</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The datastore the app is connected to.</p></td>
+            <td class="description last"><p>The app.</p></td>
         </tr>
 
 	
@@ -214,6 +254,70 @@
     
 </dd>
 
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+	<h1 class="page-title">Module: Workers</h1>
+<section>
+
+<header>
+    <h2>
+    Workers
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+
+        
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+        
     
     </div>
 
@@ -223,6 +327,13 @@
 
     
 
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="module-Workers-Worker.html">Worker</a></dt>
+            <dd></dd>
+        </dl>
     
 
     
@@ -235,7 +346,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="query"><span class="type-signature"></span>query<span class="signature">(query, parameters)</span></h4>
+    <h4 class="name" id="Workers"><span class="type-signature">&lt;inner> </span>Workers<span class="signature">(app)</span></h4>
     
     
 </dt>
@@ -243,7 +354,34 @@
     
     
     <div class="description">
-        <p>Executes a query with parameters against the datastore.</p>
+        <p>The Workers module. This module is responsible for the orchestration of worker process types.</p>
+<p>With workers you can off-load intensive tasks away from the web processes to separate worker processes.</p>
+<p>In your controllers and models, you can pass messages to workers. Under the hood, the messages are posted over a message queueing system and consumed by a worker process. For example, consider the below example:</p>
+<pre class="prettyprint source lang-js"><code>// Our User model.
+
+function User() {
+    //
+}
+app.model(User);
+
+User.prototype.afterCreate = function() {
+    return this.workers.MailWorker.sendWelcomeMail(this);
+};
+
+// The Mail worker.
+
+function MailWorker() {
+    //
+}
+app.worker(MailWorker);
+
+MailWorker.prototype.sendWelcomeMail = function(user) {
+    // now send the mail to the user...
+}
+
+// The Procfile
+web: node index.js
+worker: node index.js --worker MailWorker</code></pre><p>If you want to have a time-based process running, have a look at the Tasks module.</p>
     </div>
     
 
@@ -277,13 +415,13 @@
 
         <tr>
             
-                <td class="name"><code>query</code></td>
+                <td class="name"><code>app</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">String</span>
+<span class="label label-primary param-type"><a href="App.html">App</a></span>
 
 
 
@@ -294,31 +432,7 @@
 
             
 
-            <td class="description last"><p>The query to execute.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>parameters</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Array</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The parameters to pass to the query. The first item in the array is passed to $1, and so on.</p></td>
+            <td class="description last"><p>The app.</p></td>
         </tr>
 
 	
@@ -368,30 +482,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>[description]</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>

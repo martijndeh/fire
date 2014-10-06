@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: Datastore - Node on Fire</title>
+	<title>Documentation Class: Workers - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,12 @@
 				
 
 
-	<h1 class="page-title">Class: Datastore</h1>
+	<h1 class="page-title">Class: Workers</h1>
 <section>
 
 <header>
     <h2>
-    Datastore
+    Workers
     </h2>
     
 </header>
@@ -53,7 +53,7 @@
     
         
 <dt>
-    <h4 class="name" id="Datastore"><span class="type-signature"></span>new Datastore<span class="signature">(databaseURL)</span></h4>
+    <h4 class="name" id="Workers"><span class="type-signature"></span>new Workers<span class="signature">(app)</span></h4>
     
     
 </dt>
@@ -61,7 +61,34 @@
     
     
     <div class="description">
-        <p>The datastore module. Communicates with the database. Currently only PostgreSQL is supported.</p>
+        <p>The Workers module. This module is responsible for the orchestration of worker process types.</p>
+<p>With workers you can off-load intensive tasks away from the web processes to separate worker processes.</p>
+<p>In your controllers and models, you can pass messages to workers. Under the hood, the messages are posted over a message queueing system and consumed by a worker process. For example, consider the below example:</p>
+<pre class="prettyprint source lang-js"><code>// Our User model.
+
+function User() {
+    //
+}
+app.model(User);
+
+User.prototype.afterCreate = function() {
+    return this.workers.MailWorker.sendWelcomeMail(this);
+};
+
+// The Mail worker.
+
+function MailWorker() {
+    //
+}
+app.worker(MailWorker);
+
+MailWorker.prototype.sendWelcomeMail = function(user) {
+    // now send the mail to the user...
+}
+
+// The Procfile
+web: node index.js
+worker: node index.js --worker MailWorker</code></pre><p>If you want to have a time-based process running, have a look at the Tasks module.</p>
     </div>
     
 
@@ -95,13 +122,13 @@
 
         <tr>
             
-                <td class="name"><code>databaseURL</code></td>
+                <td class="name"><code>app</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">String</span>
+<span class="label label-primary param-type"><a href="App.html">App</a></span>
 
 
 
@@ -112,7 +139,7 @@
 
             
 
-            <td class="description last"><p>URL to the database.</p></td>
+            <td class="description last"><p>The app.</p></td>
         </tr>
 
 	
@@ -187,17 +214,12 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="addModel"><span class="type-signature"></span>addModel<span class="signature">(modelName, model)</span></h4>
+    <h4 class="name" id="addWorkerConstructor"><span class="type-signature"></span>addWorkerConstructor<span class="signature">(workerConstructor)</span></h4>
     
     
 </dt>
 <dd>
     
-    
-    <div class="description">
-        <p>Adds a table to the model.</p>
-<p>The SQL table isn't actually created in the database by this method.</p>
-    </div>
     
 
     
@@ -230,13 +252,13 @@
 
         <tr>
             
-                <td class="name"><code>modelName</code></td>
+                <td class="name"><code>workerConstructor</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">String</span>
+<span class="label label-primary param-type">Constructor</span>
 
 
 
@@ -247,31 +269,7 @@
 
             
 
-            <td class="description last"><p>The name of the model.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>model</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="Model.html">Model</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The model.</p></td>
+            <td class="description last"><p>The worker constructor.</p></td>
         </tr>
 
 	
@@ -328,7 +326,7 @@
         
             
 <dt>
-    <h4 class="name" id="connect"><span class="type-signature"></span>connect<span class="signature">()</span></h4>
+    <h4 class="name" id="close"><span class="type-signature"></span>close<span class="signature">()</span></h4>
     
     
 </dt>
@@ -336,7 +334,7 @@
     
     
     <div class="description">
-        <p>Connects to the database and resolves with Client. It's generally easier to call Datastore#query.</p>
+        <p>Closes the AMQP connection.</p>
     </div>
     
 
@@ -387,30 +385,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>Resolves with a Client.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>
@@ -418,16 +392,12 @@
         
             
 <dt>
-    <h4 class="name" id="query"><span class="type-signature"></span>query<span class="signature">(query, parameters)</span></h4>
+    <h4 class="name" id="createPublishMessageMethod"><span class="type-signature"></span>createPublishMessageMethod<span class="signature">(methodName)</span></h4>
     
     
 </dt>
 <dd>
     
-    
-    <div class="description">
-        <p>Connects the database and executes query. See Client#query.</p>
-    </div>
     
 
     
@@ -460,7 +430,7 @@
 
         <tr>
             
-                <td class="name"><code>query</code></td>
+                <td class="name"><code>methodName</code></td>
             
 
             <td class="type">
@@ -477,31 +447,7 @@
 
             
 
-            <td class="description last"><p>The SQL statement.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>parameters</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Array</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The parameters to pass to the statement.</p></td>
+            <td class="description last"><p>The name of the method.</p></td>
         </tr>
 
 	
@@ -551,30 +497,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>Result set.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Object</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>
@@ -590,10 +512,7 @@
     
     
     <div class="description">
-        <p>Connects to the database and verifies if the uuid-ossp extension exists.</p>
-<p>If the uuid-ossp exists, but is not enabled, a warning is shown and the extension is enabled. If this fails, you may need to connect the database yourself with an admin account and enable the extension by executing <code>CREATE EXTENSION &quot;uuid-ossp&quot;;</code>.</p>
-<p>If the extension does not exist, an error is thrown.</p>
-<p>The uuid-ossp is required because models, by default, have a UUID as primary key. It's currently not possible to change this behaviour.</p>
+        <p>Connects to the AMQP e.g. your RabbitMQ instance. The connection string is taken from the environment variable <code>AMQP_URL</code>.</p>
     </div>
     
 
@@ -644,26 +563,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>
@@ -671,7 +570,7 @@
         
             
 <dt>
-    <h4 class="name" id="setupTable"><span class="type-signature"></span>setupTable<span class="signature">(table)</span></h4>
+    <h4 class="name" id="startConsuming"><span class="type-signature"></span>startConsuming<span class="signature">(workerNames)</span></h4>
     
     
 </dt>
@@ -679,7 +578,7 @@
     
     
     <div class="description">
-        <p>Creates the table in the databse.</p>
+        <p>Start consuming in workers. This is invoked in the worker processes. Workers wait for published messages and invoke them when received.</p>
     </div>
     
 
@@ -713,13 +612,13 @@
 
         <tr>
             
-                <td class="name"><code>table</code></td>
+                <td class="name"><code>workerNames</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type"><a href="Table.html">Table</a></span>
+<span class="label label-primary param-type">Array:<a href="global.html"></a>.&lt;String:<a href="global.html"></a>></span>
 
 
 
@@ -730,7 +629,189 @@
 
             
 
-            <td class="description last"><p>The table to create.</p></td>
+            <td class="description last"><p>The workers with a name in this array are only started.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="swizzleMethods"><span class="type-signature"></span>swizzleMethods<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>In the web process, swizzles all worker methods so that they are changed to the {@see Worker#publishMessage} variant.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="worker"><span class="type-signature"></span>worker<span class="signature">(workerConstructor)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates the worker. You can create a worker when call {@see App#worker}.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>workerConstructor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Constructor</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The constructor to use.</p></td>
         </tr>
 
 	

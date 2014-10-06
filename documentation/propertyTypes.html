@@ -904,7 +904,7 @@
     
     
     <div class="description">
-        <p>Hashes a property's value before it's inserted in the database or it's searched for in a where map, see Model#find.</p>
+        <p>Hashes a property's value before it's inserted in the database or it's searched for in a where map, see <a href="Model.html#find">Model#find</a>.</p>
 <p>This is especially useful if you, for example, want to hash a user's password before it's inserted into the database. For example:</p>
 <pre class="prettyprint source"><code>var crypto = require('crypto');
 
@@ -1191,7 +1191,13 @@ models.Test.create({
  })
     .then(function(test) {
         // test.three is 18
- });</code></pre>
+ });</code></pre><p>The transform method is not invoked if any of the transform parameters is undefined. For example, the below example doesn't set <code>three</code>.</p>
+<pre class="prettyprint source"><code>models.Test.create({
+    one: 3
+})
+.then(function(test) {
+    // test.three is not set via the transform method (thus it's the default value)
+})</code></pre>
     </div>
     
 

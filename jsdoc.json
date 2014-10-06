@@ -16,7 +16,8 @@
 			"../fire/lib/modules/models",
 			"../fire/lib/modules/seo",
 			"../fire/lib/modules/static",
-			"../fire/lib/modules/templates"
+			"../fire/lib/modules/templates",
+			"../fire/lib/modules/workers"
 		],
 		"includePattern": ".*\\.(js|md)$"
 	},

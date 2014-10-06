@@ -530,6 +530,170 @@
         
             
 <dt>
+    <h4 class="name" id="execute"><span class="type-signature"></span>execute<span class="signature">(sql, values)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Executes an SQLish statement on the model. To execute a raw sql statement, see {Models#execute}.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>sql</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>SQLish statement.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>values</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An array of values</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Resolves with an array of model instances.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="find"><span class="type-signature"></span>find<span class="signature">(whereMap, optionsMap)</span></h4>
     
     
@@ -677,6 +841,30 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
 
         <tr>
             
+                <td class="name"><code>skip</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Skips the first number of model instances. This does not affect the associations.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
                 <td class="name"><code>orderBy</code></td>
             
 
@@ -710,7 +898,7 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
             <td class="type">
             
                 
-<span class="label label-primary param-type">Array</span>
+<span class="label label-primary param-type">Array:<a href="global.html"></a>.&lt;String:<a href="global.html"></a>></span>
 
 
 
@@ -721,7 +909,19 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
 
             
 
-            <td class="description last"><p>The properties to select. This is useful if you want to limit the number of properties to fetch. If the property is an non-auto fetched association, the association is not fetched automatically. To fetch non-auto fetched associations, use the <code>optionsMap.associations</code> key.</p></td>
+            <td class="description last"><p>The properties to select. By default all properties are selected. If you specify an array only those properties are selected.</p>
+<p>This is useful if you want to limit the number of properties to fetch of the model and it's associations.</p>
+<p>To limit the properties to only <code>name</code> and <code>id</code> of the <code>User</code> model, see the example below. The <code>id</code> property is always included automatically.</p>
+<pre class="prettyprint source"><code>models.User.find({}, {select:['name']});</code></pre><p>If the property is an non-auto fetched association, the association is not fetched automatically. To fetch non-auto fetched associations, use the <code>optionsMap.associations</code> key.</p>
+<p>You also need to specify the properties of any auto-fetched associations, else only their <code>id</code> property is returned. You can do this via the dot notation. For example, given a <code>User</code> model with a one-to-many <code>projects</code> association:</p>
+<pre class="prettyprint source"><code>models.User.find({name: 'Martijn'}, {select:['name', 'projects.name']})
+    .then(function(user) {
+        // user
+    });</code></pre><p>You can also select all properties of an association by supplying a <code>*</code>:</p>
+<pre class="prettyprint source"><code>models.User.find({name: 'Martijn'}, {select:['name', 'projects.*']})
+    .then(function(user) {
+        // user
+    });</code></pre><p>Please note if you try to access properties on a model instance not in the <code>select</code> list, the property's value will be undefined.</p></td>
         </tr>
 
 	
@@ -1085,72 +1285,6 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
 	</tbody>
 </table>
 
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getAccessControl"><span class="type-signature"></span>getAccessControl<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Returns the models access control instance.</p>
-    </div>
-    
-
-    
-    
-    
-    
     
     
     
@@ -2427,150 +2561,6 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
         
             
 <dt>
-    <h4 class="name" id="setAccessControl"><span class="type-signature"></span>setAccessControl<span class="signature">(action, propertyKeyPathOrFunction)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Sets the permission of a given action on the model to a given key path or function.</p>
-<p>See AccessControl for more information.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>action</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The type of action: create, read, update, delete.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>propertyKeyPathOrFunction</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-|
-
-<span class="label label-primary param-type">function</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
     <h4 class="name" id="setActiveMigration"><span class="type-signature"></span>setActiveMigration<span class="signature">(migration)</span></h4>
     
     
@@ -2828,6 +2818,9 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
             
                 
 <span class="label label-primary param-type">Dictionary</span>
+|
+
+<span class="label label-primary param-type">String</span>
 
 
 
@@ -2923,7 +2916,7 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
 	</dt>
 	<dd>
 		
-<span class="label label-primary param-type"><a href="ModelInstance.html">ModelInstance</a></span>
+<span class="label label-primary param-type">Array:<a href="global.html"></a>.&lt;<a href="ModelInstance.html">ModelInstance</a>:<a href="global.html"></a>></span>
 
 
 
@@ -3091,6 +3084,7 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
     
     <div class="description">
         <p>Either updates a model instance, or creates a new model instance if not model exists.</p>
+<p>This method simply executes <a href="Model.html#updateOne">Model#updateOne</a> followed by <a href="Model.html#create">Model#create</a> if no model could be updated. This method will be improved by using a writable CTE/WITH.</p>
     </div>
     
 
