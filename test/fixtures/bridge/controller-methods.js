@@ -233,7 +233,7 @@ app.service('FireTestController', ['FireModels', '$http', '$q', function(FireMod
     this.doTest = function(foo,bar,baz) {
         var defer = $q.defer();
 
-        $http['post']('/test', {foo: foo, bar: bar, baz: baz})
+        $http['post']('/test', {params: {foo: foo, bar: bar, baz: baz}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })
@@ -249,7 +249,7 @@ app.service('FireTestController', ['FireModels', '$http', '$q', function(FireMod
     this.doTest3 = function(a) {
         var defer = $q.defer();
 
-        $http['post']('/test3', {a: a})
+        $http['post']('/test3', {params: {a: a}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })
@@ -265,7 +265,7 @@ app.service('FireTestController', ['FireModels', '$http', '$q', function(FireMod
     this.getTest4 = function($id) {
         var defer = $q.defer();
 
-        $http['get']('/test4s/' + $id + '', {$id: $id})
+        $http['get']('/test4s/' + $id + '', {params: {$id: $id}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })
@@ -285,7 +285,7 @@ app.service('TestControllerController', ['$http', '$q', function($http, $q) {
     this.doTest = function(foo,bar,baz) {
         var defer = $q.defer();
 
-        $http['post']('/test', {foo: foo, bar: bar, baz: baz})
+        $http['post']('/test', {params: {foo: foo, bar: bar, baz: baz}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })
@@ -301,7 +301,7 @@ app.service('TestControllerController', ['$http', '$q', function($http, $q) {
     this.doTest3 = function(a) {
         var defer = $q.defer();
 
-        $http['post']('/test3', {a: a})
+        $http['post']('/test3', {params: {a: a}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })
@@ -317,7 +317,7 @@ app.service('TestControllerController', ['$http', '$q', function($http, $q) {
     this.getTest4 = function($id) {
         var defer = $q.defer();
 
-        $http['get']('/test4s/' + $id + '', {$id: $id})
+        $http['get']('/test4s/' + $id + '', {params: {$id: $id}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })

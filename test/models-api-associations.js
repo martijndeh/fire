@@ -121,9 +121,9 @@ describe('models api associations', function() {
 	it('can create many-to-many', function(done) {
 		request(helper.app.express)
 			.post('/api/articles/' + article1ID + '/voters')
-			.send(helper.jsonify({
+			.send({
 				userVote: user1ID
-			}))
+			})
 			.expect(200, function(error, response) {
 				assert.equal(response.body.voters.length, 1);
 
@@ -134,17 +134,17 @@ describe('models api associations', function() {
 	it('cannot create multiple many-to-many', function(done) {
 		request(helper.app.express)
 			.post('/api/articles/' + article1ID + '/voters')
-			.send(helper.jsonify({
+			.send({
 				userVote: user1ID
-			}))
+			})
 			.expect(200, function(error, response) {
 				assert.equal(response.body.voters.length, 1);
 
 				request(helper.app.express)
 					.post('/api/articles/' + article1ID + '/voters')
-					.send(helper.jsonify({
+					.send({
 						userVote: user1ID
-					}))
+					})
 					.expect(401, function(error2) {
 						done(error2);
 					});
@@ -163,9 +163,9 @@ describe('models api associations', function() {
 	it('can update one', function(done) {
 		request(helper.app.express)
 			.put('/api/parents/' + parentID + '/childs/' + child1ID)
-			.send(helper.jsonify({
+			.send({
 				name: 'Updated Name'
-			}))
+			})
 			.expect(200, function(error, response) {
 				assert.equal(response.body.id, child1ID);
 				assert.equal(response.body.name, 'Updated Name');

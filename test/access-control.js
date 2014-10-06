@@ -160,6 +160,7 @@ describe('access control', function() {
 
 					// We authorize. This should set a session variable.
 					agent.post('/api/users/authorize')
+						.set('X-JSON-Params', true)
 						.send(helper.jsonify({name: 'Martijn', password: 'test'}))
 						.expect(200, function(error, response) {
 							assert.equal(error, null);
@@ -178,9 +179,9 @@ describe('access control', function() {
 
 		it('can create article', function(done) {
 			agent.post('/api/articles')
-				.send(helper.jsonify({
+				.send({
 					title: 'Test Title'
-				}))
+				})
 				.expect(200, function(error, response) {
 					assert.equal(error, null);
 					assert.equal(response.body.title, 'Test Title');
@@ -194,6 +195,7 @@ describe('access control', function() {
 			var noone = request.agent(app.express);
 
 			noone.post('/api/articles')
+				.set('X-JSON-Params', true)
 				.send(helper.jsonify({
 					title: 'Malicious'
 				}))
@@ -208,10 +210,12 @@ describe('access control', function() {
 			app.models.User.create({name: 'Agent Smith', password: 'test'})
 				.then(function() {
 					smith.post('/api/users/authorize')
-						.send(helper.jsonify({name: 'Agent Smith', password: 'test'}))
+						.set('X-JSON-Params', false)
+						.send({name: 'Agent Smith', password: 'test'})
 						.expect(200, function() {
 							smith.post('/api/articles')
-								.send(helper.jsonify({title: '+1 + -1'}))
+								.set('X-JSON-Params', false)
+								.send({title: '+1 + -1'})
 								.expect(403, function(error) {
 									done(error);
 								});
@@ -236,7 +240,7 @@ describe('access control', function() {
 
 			it('can update article', function(done) {
 				agent.put('/api/articles/' + articleId)
-					.send(helper.jsonify({title: 'Rename'}))
+					.send({title: 'Rename'})
 					.expect(200, function(error, response) {
 						assert.equal(response.body.id, articleId);
 						assert.equal(response.body.title, 'Rename');
@@ -279,11 +283,11 @@ describe('access control', function() {
 				app.models.User.create({name: 'Agent Smith', password: 'test'})
 					.then(function() {
 						smith.post('/api/users/authorize')
-							.send(helper.jsonify({name: 'Agent Smith', password: 'test'}))
+							.send({name: 'Agent Smith', password: 'test'})
 							.expect(200, function(error1) {
 								assert.equal(error1, null);
 								smith.put('/api/articles/' + articleId)
-									.send(helper.jsonify({title: '+1 + -1'}))
+									.send({title: '+1 + -1'})
 									.expect(403, function(error2) {
 										done(error2);
 									});

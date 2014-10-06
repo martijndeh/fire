@@ -640,7 +640,7 @@ app.service('FireTestController', ['FireModels', '$http', '$q', function(FireMod
     this.getTest = function() {
         var defer = $q.defer();
 
-        $http['get']('/tests', {})
+        $http['get']('/tests', {params: {}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })
@@ -660,7 +660,7 @@ app.service('TestControllerController', ['$http', '$q', function($http, $q) {
     this.getTest = function() {
         var defer = $q.defer();
 
-        $http['get']('/tests', {})
+        $http['get']('/tests', {params: {}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })

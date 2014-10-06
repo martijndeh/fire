@@ -18,7 +18,7 @@ app.service('Fire{{name}}', ['FireModels', '$http', '$q', function(FireModels, $
     this.{{methodName}} = function({{argumentNames}}) {
         var defer = $q.defer();
 
-        $http['{{verb}}']('{{transformedPath}}', {{transformedParams}})
+        $http['{{verb}}']('{{transformedPath}}', {params: {{transformedParams}}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })
@@ -38,7 +38,7 @@ app.service('{{name}}Controller', ['$http', '$q', function($http, $q) {
     this.{{methodName}} = function({{argumentNames}}) {
         var defer = $q.defer();
 
-        $http['{{verb}}']('{{transformedPath}}', {{transformedParams}})
+        $http['{{verb}}']('{{transformedPath}}', {params: {{transformedParams}}, headers: {'X-JSON-Params': true}})
             .success(function(result) {
                 defer.resolve(result);
             })

@@ -56,10 +56,10 @@ describe('model routes', function() {
 
 		it('can register', function(done) {
 			agent.post('/api/users')
-				.send(helper.jsonify({
+				.send({
 					name: 'Martijn',
 					password: 'test'
-				}))
+				})
 				.expect(200, function(error, response) {
 					assert.equal(error, null);
 					assert.equal(response.body.name, 'Martijn');
@@ -70,18 +70,18 @@ describe('model routes', function() {
 
 		it('can register & authorize', function(done) {
 			agent.post('/api/users')
-				.send(helper.jsonify({
+				.send({
 					name: 'Martijn',
 					password: 'test'
-				}))
+				})
 				.expect(200, function(error) {
 					assert.equal(error, null);
 
 					agent.post('/api/users/authorize')
-						.send(helper.jsonify({
+						.send({
 							name: 'Martijn',
 							password: 'test'
-						}))
+						})
 						.expect(200, function(err, response) {
 							assert.equal(err, null);
 							assert.equal(response.body.name, 'Martijn');
@@ -146,9 +146,9 @@ describe('model routes', function() {
 		it('can create model', function(done) {
 			request(helper.app.express)
 				.post('/api/tests')
-				.send(helper.jsonify({
+				.send({
 					name: 'Martijn'
-				}))
+				})
 				.expect(200, function(error, response) {
 					assert.equal(error, null);
 					assert.equal(response.body.name, 'Martijn');
@@ -168,7 +168,7 @@ describe('model routes', function() {
 
 				request(helper.app.express)
 					.post('/api/tests')
-					.send(helper.jsonify(map))
+					.send(map)
 					.expect(200, function(error, response) {
 						if(error) {
 							defer.reject(error);
@@ -253,9 +253,9 @@ describe('model routes', function() {
 			it('can update 1 model', function(done) {
 				request(helper.app.express)
 					.put('/api/tests/' + model3ID)
-					.send(helper.jsonify({
+					.send({
 						name: 'Martijn (Updated)'
-					}))
+					})
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
 						assert.equal(response.body.id, model3ID);
