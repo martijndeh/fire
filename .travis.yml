@@ -8,5 +8,4 @@ addons:
 before_script:
   - psql -c 'create database fire;' -U postgres
 env:
-  - DATABASE_URL=postgres://postgres@localhost/fire
-  - AMQP_URL=amqp://localhost/
+  - DATABASE_URL=postgres://postgres@localhost/fire AMQP_URL=amqp://localhost/
