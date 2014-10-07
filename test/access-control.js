@@ -105,9 +105,11 @@ describe('access control', function() {
             	return app.stop();
         	})
 			.then(function() {
-				modules.forEach(function(modulPath) {
-					delete require.cache[modulPath];
-				});
+				if(modules) {
+					modules.forEach(function(modulPath) {
+						delete require.cache[modulPath];
+					});
+				}
 			})
         	.then(function() {
             	done();
