@@ -19,7 +19,7 @@ Helper.prototype.beforeEach = function(options) {
     return function(done) {
         self.app = fire.app('test', options || {});
 
-        return Q.when(self.setup(self.app))
+        return (self.setup ? Q.when(self.setup(self.app)) : Q.when(true))
             .then(function() {
                 return self.app.start();
             })
