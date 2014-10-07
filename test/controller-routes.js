@@ -44,7 +44,7 @@ describe('controller routes', function() {
         });
 
         it('responds on correct route', function(done) {
-            var agent = request.agent(app.express);
+            var agent = request.agent(app.hTTPServer.express);
             agent.get('/test_routes.test')
                 .send()
                 .expect(200, function(error, response) {
@@ -54,7 +54,7 @@ describe('controller routes', function() {
         });
 
         it('does not respond on invalid route', function(done) {
-            var agent = request.agent(app.express);
+            var agent = request.agent(app.hTTPServer.express);
             agent.get('/simple-routes')
                 .send()
                 .expect(404, function(error) {
@@ -76,7 +76,7 @@ describe('controller routes', function() {
         });
 
         it('passes arguments to method', function(done) {
-            var agent = request.agent(app.express);
+            var agent = request.agent(app.hTTPServer.express);
             agent.get('/hello/world')
                 .send()
                 .expect(200, function(error, response) {

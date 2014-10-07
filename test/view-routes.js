@@ -49,7 +49,7 @@ describe('view routes', function() {
     });
 
     it('can find /', function(done) {
-        request(app.express)
+        request(app.hTTPServer.express)
             .get('/')
             .expect(200, function(error, response) {
                 assert.equal(response.text, DEFAULT_HTML);
@@ -58,7 +58,7 @@ describe('view routes', function() {
     });
 
     it('can find /user', function(done) {
-        request(app.express)
+        request(app.hTTPServer.express)
             .get('/user')
             .expect(200, function(error, response) {
                 assert.equal(response.text, DEFAULT_HTML);
@@ -67,7 +67,7 @@ describe('view routes', function() {
     });
 
     it('can find /special/page', function(done) {
-        request(app.express)
+        request(app.hTTPServer.express)
             .get('/special/page')
             .expect(200, function(error, response) {
                 assert.equal(response.text, DEFAULT_HTML);
@@ -76,7 +76,7 @@ describe('view routes', function() {
     });
 
     it('can find test1 template', function(done) {
-        request(app.express)
+        request(app.hTTPServer.express)
             .get('/templates/test1')
             .expect(200, function(error, response) {
                 assert.equal(response.text, 'test1');
@@ -85,7 +85,7 @@ describe('view routes', function() {
     });
 
     it('can find test2 template', function(done) {
-        request(app.express)
+        request(app.hTTPServer.express)
             .get('/templates/test2')
             .expect(200, function(error, response) {
                 assert.equal(response.text, 'test2');
@@ -94,7 +94,7 @@ describe('view routes', function() {
     });
 
     it('can find test3 template', function(done) {
-        request(app.express)
+        request(app.hTTPServer.express)
             .get('/templates/test3')
             .expect(200, function(error, response) {
                 assert.equal(response.text, 'test3');

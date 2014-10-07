@@ -158,7 +158,7 @@ describe('access control', function() {
 		beforeEach(function(done) {
 			app.models.User.create({name: 'Martijn', password: 'test'})
 				.then(function() {
-					agent = request.agent(app.express);
+					agent = request.agent(app.hTTPServer.express);
 
 					// We authorize. This should set a session variable.
 					agent.post('/api/users/authorize')
@@ -194,7 +194,7 @@ describe('access control', function() {
 		});
 
 		it('cannot create article when unauthorized', function(done) {
-			var noone = request.agent(app.express);
+			var noone = request.agent(app.hTTPServer.express);
 
 			noone.post('/api/articles')
 				.set('X-JSON-Params', true)
@@ -207,7 +207,7 @@ describe('access control', function() {
 		});
 
 		it('cannot create article when not Martijn', function(done) {
-			var smith = request.agent(app.express);
+			var smith = request.agent(app.hTTPServer.express);
 
 			app.models.User.create({name: 'Agent Smith', password: 'test'})
 				.then(function() {
@@ -265,7 +265,7 @@ describe('access control', function() {
 			it('cannot update article when unauthorized', function(done) {
 				var newTitle = 'Not Possible ' + Math.floor(Math.random() * 1000);
 
-				request.agent(app.express)
+				request.agent(app.hTTPServer.express)
 					.put('/api/articles/' + articleId)
 					.send(helper.jsonify({title: newTitle}))
 					.expect(401, function(error) {
@@ -280,7 +280,7 @@ describe('access control', function() {
 			});
 
 			it('cannot update article when not correctly authorized', function(done) {
-				var smith = request.agent(app.express);
+				var smith = request.agent(app.hTTPServer.express);
 
 				app.models.User.create({name: 'Agent Smith', password: 'test'})
 					.then(function() {

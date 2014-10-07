@@ -109,7 +109,7 @@ describe('models api associations', function() {
 	});
 
 	it('can find many', function(done) {
-		request(helper.app.express)
+		request(helper.app.hTTPServer.express)
 			.get('/api/parents/' + parentID + '/childs')
 			.send()
 			.expect(200, function(error, response) {
@@ -119,7 +119,7 @@ describe('models api associations', function() {
 	});
 
 	it('can create many-to-many', function(done) {
-		request(helper.app.express)
+		request(helper.app.hTTPServer.express)
 			.post('/api/articles/' + article1ID + '/voters')
 			.send({
 				userVote: user1ID
@@ -132,7 +132,7 @@ describe('models api associations', function() {
 	});
 
 	it('cannot create multiple many-to-many', function(done) {
-		request(helper.app.express)
+		request(helper.app.hTTPServer.express)
 			.post('/api/articles/' + article1ID + '/voters')
 			.send({
 				userVote: user1ID
@@ -140,7 +140,7 @@ describe('models api associations', function() {
 			.expect(200, function(error, response) {
 				assert.equal(response.body.voters.length, 1);
 
-				request(helper.app.express)
+				request(helper.app.hTTPServer.express)
 					.post('/api/articles/' + article1ID + '/voters')
 					.send({
 						userVote: user1ID
@@ -152,7 +152,7 @@ describe('models api associations', function() {
 	});
 
 	it('cannot find private many', function(done) {
-		request(helper.app.express)
+		request(helper.app.hTTPServer.express)
 			.get('/api/parents/' + parentID + '/privates')
 			.send()
 			.expect(404, function(error) {
@@ -161,7 +161,7 @@ describe('models api associations', function() {
 	});
 
 	it('can update one', function(done) {
-		request(helper.app.express)
+		request(helper.app.hTTPServer.express)
 			.put('/api/parents/' + parentID + '/childs/' + child1ID)
 			.send({
 				name: 'Updated Name'
@@ -174,7 +174,7 @@ describe('models api associations', function() {
 	});
 
 	it('can get has property', function(done) {
-		request(helper.app.express)
+		request(helper.app.hTTPServer.express)
 			.get('/api/parents/' + parentID + '/list')
 			.send()
 			.expect(200, function(error, response) {

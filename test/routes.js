@@ -68,25 +68,25 @@ describe('controller routes', function() {
 	});
 
 	it('cannot find route', function(done) {
-		request(app.express)
+		request(app.hTTPServer.express)
 			.get('/404')
 			.expect(404, done);
 	});
 
 	it('can find get route', function(done) {
-		request(app.express)
+		request(app.hTTPServer.express)
 			.get('/1/api/users')
 			.expect(200, done);
 	});
 
 	it('can find get route with argument', function(done) {
-		request(app.express)
+		request(app.hTTPServer.express)
 			.get('/1/api/users/123')
 			.expect(200, done);
 	});
 
 	it('can find get route with correct argument', function(done) {
-		request(app.express)
+		request(app.hTTPServer.express)
 			.get('/1/api/users/10')
 			.expect(200, function(error, response) {
 				assert.equal(response.text, '{"id":"10"}');
@@ -95,13 +95,13 @@ describe('controller routes', function() {
 	});
 
 	it('can do post for create route', function(done) {
-		request(app.express)
+		request(app.hTTPServer.express)
 			.post('/1/api/users')
 			.expect(200, done);
 	});
 
 	it('can do put for update route', function(done) {
-		request(app.express)
+		request(app.hTTPServer.express)
 			.put('/1/api/users/123')
 			.expect(200, done);
 	});
