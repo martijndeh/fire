@@ -36,9 +36,9 @@ describe('workers', function() {
 	it('can publish message and consume', function(done) {
 		assert.equal(called, 0);
 
-		helper.app.workers.startConsuming(['TestWorker']);
+		helper.app.workers.startConsumingTasks(['TestWorker']);
 
-		helper.app.workers.TestWorker.publishMessage('doSomething', []);
+		helper.app.workers.TestWorker.createTask('doSomething', []);
 
 		setTimeout(function() {
 			assert.equal(called, 1);
@@ -64,7 +64,7 @@ describe('workers', function() {
 
 		workers2.setup()
 			.then(function() {
-				return workers2.startConsuming(['TestWorker']);
+				return workers2.startConsumingTasks(['TestWorker']);
 			})
 			.then(function() {
 				helper.app.workers.TestWorker.doSomething();
