@@ -61,7 +61,7 @@
     
     
     <div class="description">
-        <p>The base constructor of a controller. Inheritance is applied when calling <a href="App.html#controller">App#controller</a> on a controller constructor. Do not call this constructor yourself (unless you know what you are doing).</p>
+        <p>The base constructor of a controller. Inheritance is applied when calling App#controller on a controller constructor. Do not call this constructor yourself (unless you know what you are doing).</p>
 <p>To prevent leaking of data between requests, for every request a new instance is allocated and initialized. This is likely to change in the future because of optimizations.</p>
     </div>
     
@@ -276,7 +276,7 @@ MyController.prototype.getUsers = function() {
 
             
 
-            <td class="description last"><p>The models instance. This exposes all models registered via <a href="App.html#model">App#model</a>.</p>
+            <td class="description last"><p>The models instance. This exposes all models registered via App#model.</p>
 <p>In a controller method, in the server-context, you can access e.g. a <code>User</code> model via the following:</p>
 <pre class="prettyprint source lang-js"><code>MyController.prototype.getUser = function($id) {
     return this.models.User.findOne({id: $id});

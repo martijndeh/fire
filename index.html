@@ -33,22 +33,32 @@
 				<span class="h1">Node on Fire</span>
 			</div>
 
-			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, web framework built on top of AngularJS, express,  PostgreSQL, and RabbitMQ.</p>
+			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, real-time web framework built on top of AngularJS, express,  PostgreSQL, and RabbitMQ.</p>
 		</div>
 
 		<div class="row pitch">
 			<div class="col-md-8 col-md-offset-2">
 				<h1>What is Node on Fire?</h1>
 
-				<p>Node on Fire is a JavaScript-everywhere, model-driven, web framework to rapidly create advanced web-worker applications following the <a href="http://12factor.net">12factor methodology</a>. Go to our <a href="/getting-started">getting started</a> section to learn how to set up a working Hello World project.</p>
+				<p>Node on Fire is a JavaScript-everywhere, model-driven, real-time web framework to rapidly create advanced web-worker applications following the <a href="http://12factor.net">12factor methodology</a>. Go to our <a href="/getting-started">getting started</a> section to learn how to set up a working Hello World project.</p>
 			</div>
 		</div>
 
 		<div class="row desc">
 			<div class="col-md-offset-1 col-md-5">
-				<h2>JavaScript Everywhere</h2>
+				<h2>Real-Time (Web Sockets)</h2>
 
-				<p>You write both you server-side and client-side in JavaScript*. But you don't have to write separate files for your client- or your server-side: your controllers handle both the server- and the client-side.</p>
+				<p>Node on Fire supports web sockets and channels to push messages to and from clients.</p>
+
+				<pre class="prettyprint">function MyController(MyChannel, $scope) {
+	var channel = MyChannel.get('test');
+	channel.getMessage(function(message) {
+		$scope.messages.push(messages);
+	});
+
+	channel.sendMessage({text: 'Hello, world!'});
+}
+app.controller(MyController);</pre>
 
 				<p><small>* If you prefer, you can also write you app in CoffeeScript, of course.</small></p>
 			</div>
@@ -85,11 +95,11 @@ app.controller(NewsController);</pre>
 			</div>
 
 			<div class="col-md-5">
-				<h2>Scaffold Everything</h2>
+				<h2>JavaScript Everywhere</h2>
 
-				<p>Node on Fire loves <a href="http://yeoman.io/">Yeoman</a>. A generator is available so you can scaffold your models, controllers, directives, or even the example apps. Install the generator via <kbd>npm install -g generator-fire</kbd> and run <kbd>yo fire</kbd> to get started with the generator.</p>
+				<p>You write both you server-side and client-side in JavaScript*. But you don't have to write separate files for your client- or your server-side: your controllers handle both the server- and the client-side.</p>
 
-				<p><small>Not familiar with Yeoman? Check <a href="http://yeoman.io/">it out</a>.</small></p>
+				<p><small>* If you prefer, you can also write you app in CoffeeScript, of course.</small></p>
 			</div>
 		</div>
 
@@ -127,7 +137,7 @@ MailWorker.prototype.sendWelcomeMail = function(user) {
 app.task(DeactivateTask);
 
 DeactiveTask.prototype.run = function() {
-	return this.models.User.update({activate: true}, {active: false});
+	return this.models.User.update({active: true}, {active: false});
 }</pre>
 
 				<p>This works perfectly with Heroku's scheduler or any task scheduler as you can run them via the command line: <kbd>$ node index.js --task DeactivateTask</kbd>.</p>

@@ -61,7 +61,7 @@
     
     
     <div class="description">
-        <p>The worker class. See <a href="App.html#worker">App#worker</a>.</p>
+        <p>The worker class. See App#worker.</p>
     </div>
     
 
@@ -259,7 +259,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="consumeMessage"><span class="type-signature"></span>consumeMessage<span class="signature">(message)</span></h4>
+    <h4 class="name" id="consumeTask"><span class="type-signature"></span>consumeTask<span class="signature">(messageMap)</span></h4>
     
     
 </dt>
@@ -268,8 +268,7 @@
     
     <div class="description">
         <p>Consumes a single message received from the message queue.</p>
-<p>Parses the message's contents, deserializes the JSON, and invoked the method which was invoked.</p>
-<p>This method returns a promise. If the promise is resolved, the message is acknowledged. If the promise is rejected, the message is not acknowledged and thus will be re-published to the queue at a later time.</p>
+<p>This method returns a promise. If the promise is resolved, the message is acknowledged. If the promise is rejected, the message is not acknowledged and thus will be re-published to the queue at a later time (depending on the exact implementation).</p>
     </div>
     
 
@@ -303,13 +302,13 @@
 
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>messageMap</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">AMQP.Message</span>
+<span class="label label-primary param-type">Dictionary</span>
 
 
 
@@ -320,7 +319,7 @@
 
             
 
-            <td class="description last"><p>The AMQP message.</p></td>
+            <td class="description last"><p>A map with key <code>methodName</code> and <code>params</code>. The <code>methodName</code> is a string with the name of the method to invoke on the worker object and <code>params</code> a list of arguments passed to the worker's method.</p></td>
         </tr>
 
 	
@@ -377,7 +376,7 @@
         
             
 <dt>
-    <h4 class="name" id="publishMessage"><span class="type-signature"></span>publishMessage<span class="signature">(methodName, params)</span></h4>
+    <h4 class="name" id="createTask"><span class="type-signature"></span>createTask<span class="signature">(methodName, params)</span></h4>
     
     
 </dt>
@@ -385,7 +384,7 @@
     
     
     <div class="description">
-        <p>Publishes a message from a process to a worker process and invoked the method with name <code>methodName</code> on the worker process with the arguments in <code>params</code>.</p>
+        <p>Creates a task from a process to a worker process and invoked the method with name <code>methodName</code> on the worker process with the arguments in <code>params</code>.</p>
     </div>
     
 
@@ -517,7 +516,7 @@
         
             
 <dt>
-    <h4 class="name" id="startConsuming"><span class="type-signature"></span>startConsuming<span class="signature">()</span></h4>
+    <h4 class="name" id="startConsumingTasks"><span class="type-signature"></span>startConsumingTasks<span class="signature">()</span></h4>
     
     
 </dt>
@@ -525,7 +524,7 @@
     
     
     <div class="description">
-        <p>Starts consuming message the queue. The name of the queue is the name of the worker.</p>
+        <p>Starts consuming messages from the message queue. Whenever a message is received it's passed to Worker#consumeMessage.</p>
     </div>
     
 

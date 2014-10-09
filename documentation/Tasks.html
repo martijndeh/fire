@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Global - Node on Fire</title>
+	<title>Documentation Class: Tasks - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,12 @@
 				
 
 
-	<h1 class="page-title">Global</h1>
+	<h1 class="page-title">Class: Tasks</h1>
 <section>
 
 <header>
     <h2>
-    
+    Tasks
     </h2>
     
 </header>
@@ -52,117 +52,8 @@
 
     
         
-
-        
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        <dl>
-            
-<dt class="name" id="">
-    <h4><span class="type-signature"></span><span class="type-signature"></span></h4>
-
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>App and Firestarter create a circular require. Set the exports early, before requiring App, so that it's available in App already.</p>
-    </div>
-    
-
-    
-
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-</dd>
-
-        </dl>
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        <dl>
-            
 <dt>
-    <h4 class="name" id="__parseRow"><span class="type-signature"></span>__parseRow<span class="signature">(row)</span></h4>
+    <h4 class="name" id="Tasks"><span class="type-signature"></span>new Tasks<span class="signature">(app)</span></h4>
     
     
 </dt>
@@ -170,7 +61,17 @@
     
     
     <div class="description">
-        <p>Parses the row and returns the associations and the column map parsed.</p>
+        <p>The tasks module. Useful to run one-off tasks in a cronjob or manually.</p>
+<p>To create a task, create a constructor in the <code>tasks/</code> folder with a run method:</p>
+<pre class="prettyprint source lang-js"><code>function MyTask() {
+    //
+}
+app.task(MyTask);
+
+MyTask.prototype.run = function() {
+    // do something
+};</code></pre><p>To invoke the task, execute the following: <code>$ node index.js --task MyTask</code>.</p>
+<p><code>this.models</code> and <code>this.workers</code> are available in your tasks.</p>
     </div>
     
 
@@ -204,13 +105,13 @@
 
         <tr>
             
-                <td class="name"><code>row</code></td>
+                <td class="name"><code>app</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">Dictionary</span>
+<span class="label label-primary param-type"><a href="App.html">App</a></span>
 
 
 
@@ -221,7 +122,141 @@
 
             
 
-            <td class="description last"><p>A single row from the datastore.</p></td>
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="run"><span class="type-signature"></span>run<span class="signature">(taskNames)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Runs all the tasks in <code>taskNames</code>.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>taskNames</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Array:<a href="global.html"></a>.&lt;String:<a href="global.html"></a>></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>All the task names to run.</p></td>
         </tr>
 
 	
@@ -275,7 +310,7 @@
     
             
 <div class="param-desc">
-    <p>Multiple return values in an array. At index 0 the columns found, and at index 1 the associations found. The array contains 2 items.</p>
+    <p>Resolves with an array of promises via <code>Q#all</code>.</p>
 </div>
 
 
@@ -286,7 +321,7 @@
 	</dt>
 	<dd>
 		
-<span class="label label-primary param-type">Array</span>
+<span class="label label-primary param-type">Promise</span>
 
 
 
@@ -302,7 +337,7 @@
         
             
 <dt>
-    <h4 class="name" id="ConfigureFunctions"><span class="type-signature"></span>ConfigureFunctions<span class="signature">()</span></h4>
+    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">(basePath)</span></h4>
     
     
 </dt>
@@ -310,142 +345,8 @@
     
     
     <div class="description">
-        <p>The configure module creates App#configure which...:</p>
-<p>Sets a configure function to be run in the server-context right before the app starts. This is useful because code may be invoked when generating code, migrations and so on. The configureFunction is guaranteed only to be run when the app starts.</p>
-<p>You may invoke this method multiple times to configure multiple functions. If you return a promise, the start up of the app continues once the promise resolves.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="HTTPServer"><span class="type-signature"></span>HTTPServer<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>The HTTP server module. Actually creates the web server.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="Task"><span class="type-signature"></span>Task<span class="signature">(models, workers)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>The task base class. See <a href="Tasks.html">Tasks</a> for more information on the Tasks module.</p>
-<p>This constructor sets several modules to <code>this</code> so that they are available in <code>Task#run</code>.</p>
+        <p>Loads the tasks from the <code>tasks/</code> folder.</p>
+<p>Currently the tasks are always loaded even if no tasks are run.</p>
     </div>
     
 
@@ -479,13 +380,13 @@
 
         <tr>
             
-                <td class="name"><code>models</code></td>
+                <td class="name"><code>basePath</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type"><a href="Models.html">Models</a></span>
+<span class="label label-primary param-type">String</span>
 
 
 
@@ -496,31 +397,7 @@
 
             
 
-            <td class="description last"><p>The models module.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>workers</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="Workers.html">Workers</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The workers module.</p></td>
+            <td class="description last"><p>The path to the app's directory.</p></td>
         </tr>
 
 	
@@ -570,6 +447,142 @@
     
     
     
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">(argv)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Starts the tasks matching <code>argv.name</code>. See <a href="Tasks.html">Tasks</a>.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>argv</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The arguments passed to the process.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
     
     
 </dd>

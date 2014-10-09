@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: Workers - Node on Fire</title>
+	<title>Documentation Class: Channels - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,12 @@
 				
 
 
-	<h1 class="page-title">Class: Workers</h1>
+	<h1 class="page-title">Class: Channels</h1>
 <section>
 
 <header>
     <h2>
-    Workers
+    Channels
     </h2>
     
 </header>
@@ -53,7 +53,7 @@
     
         
 <dt>
-    <h4 class="name" id="Workers"><span class="type-signature"></span>new Workers<span class="signature">(app)</span></h4>
+    <h4 class="name" id="Channels"><span class="type-signature"></span>new Channels<span class="signature">(app)</span></h4>
     
     
 </dt>
@@ -61,34 +61,8 @@
     
     
     <div class="description">
-        <p>The Workers module. This module is responsible for the orchestration of worker process types.</p>
-<p>With workers you can off-load intensive tasks away from the web processes to separate worker processes.</p>
-<p>In your controllers and models, you can pass messages to workers. Under the hood, the messages are posted over a message queueing system and consumed by a worker process. For example, consider the below example:</p>
-<pre class="prettyprint source lang-js"><code>// Our User model.
-
-function User() {
-    //
-}
-app.model(User);
-
-User.prototype.afterCreate = function() {
-    return this.workers.MailWorker.sendWelcomeMail(this);
-};
-
-// The Mail worker.
-
-function MailWorker() {
-    //
-}
-app.worker(MailWorker);
-
-MailWorker.prototype.sendWelcomeMail = function(user) {
-    // now send the mail to the user...
-}
-
-// The Procfile
-web: node index.js
-worker: node index.js --worker MailWorker</code></pre><p>If you want to have a time-based process running, have a look at the Tasks module.</p>
+        <p>The Channels module.</p>
+<p>Provides an implementation for real time communication between the clients and the servers.</p>
     </div>
     
 
@@ -139,7 +113,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
 
             
 
-            <td class="description last"><p>The app.</p></td>
+            <td class="description last"></td>
         </tr>
 
 	
@@ -214,7 +188,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
         <dl>
             
 <dt>
-    <h4 class="name" id="addWorkerConstructor"><span class="type-signature"></span>addWorkerConstructor<span class="signature">(workerConstructor)</span></h4>
+    <h4 class="name" id="addChannelConstructor"><span class="type-signature"></span>addChannelConstructor<span class="signature">(channelConstructor)</span></h4>
     
     
 </dt>
@@ -252,7 +226,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
 
         <tr>
             
-                <td class="name"><code>workerConstructor</code></td>
+                <td class="name"><code>channelConstructor</code></td>
             
 
             <td class="type">
@@ -269,7 +243,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
 
             
 
-            <td class="description last"><p>The worker constructor.</p></td>
+            <td class="description last"></td>
         </tr>
 
 	
@@ -326,12 +300,108 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
         
             
 <dt>
-    <h4 class="name" id="createCreateTaskMethod"><span class="type-signature"></span>createCreateTaskMethod<span class="signature">(methodName)</span></h4>
+    <h4 class="name" id="generator"><span class="type-signature"></span>generator<span class="signature">()</span></h4>
     
     
 </dt>
 <dd>
     
+    
+    <div class="description">
+        <p>A generator for the <a href="Bridge.html">Bridge</a> module.</p>
+<p>This generator generates the client-side channel services used to communication from the client to the server.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>A generator instance used by the Bridge module to write the file.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Generator</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getChannel"><span class="type-signature"></span>getChannel<span class="signature">(channelType, channelId)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates and returns a specific channel instance.</p>
+<p>If a channel is created, and this is a web process, starts consuming messages for the channel.</p>
+    </div>
     
 
     
@@ -364,7 +434,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
 
         <tr>
             
-                <td class="name"><code>methodName</code></td>
+                <td class="name"><code>channelType</code></td>
             
 
             <td class="type">
@@ -381,7 +451,31 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
 
             
 
-            <td class="description last"><p>The name of the method.</p></td>
+            <td class="description last"><p>The type of the channel. This is the name of the channel's constructor method.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>channelId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The id of the channel. This is coming from user land.</p></td>
         </tr>
 
 	
@@ -438,7 +532,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
         
             
 <dt>
-    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">()</span></h4>
+    <h4 class="name" id="parsePacket"><span class="type-signature"></span>parsePacket<span class="signature">(packet, webSocket)</span></h4>
     
     
 </dt>
@@ -446,7 +540,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
     
     
     <div class="description">
-        <p>Connects to the message queue, see <a href="MessageQueue.html#factory">MessageQueue.factory</a>.</p>
+        <p>Parses a (web socket) packet.</p>
     </div>
     
 
@@ -454,6 +548,228 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
     
     
     
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>packet</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>channel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The id of the channel.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The type of the channel.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The message is passed directly to any consumer.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>webSocket</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">WebSocket</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     
@@ -504,7 +820,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
         
             
 <dt>
-    <h4 class="name" id="startConsumingTasks"><span class="type-signature"></span>startConsumingTasks<span class="signature">(workerNames)</span></h4>
+    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">(basePath)</span></h4>
     
     
 </dt>
@@ -512,7 +828,12 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
     
     
     <div class="description">
-        <p>Starts consuming messages in the workers specified by <code>workerNames</code>. This is invoked in the worker processes.</p>
+        <p>Sets up the channels.</p>
+<ul>
+<li>Loads all the channels from <code>channels/</code> folder.</li>
+<li>Creates getters for the channels e.g. for TestChannel:<pre class="prettyprint source lang-js"><code>var channel = channels.TestChannel.get('test');</code></pre></li>
+<li>Connects to the message queue</li>
+</ul>
     </div>
     
 
@@ -546,13 +867,13 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
 
         <tr>
             
-                <td class="name"><code>workerNames</code></td>
+                <td class="name"><code>basePath</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">Array:<a href="global.html"></a>.&lt;String:<a href="global.html"></a>></span>
+<span class="label label-primary param-type">String</span>
 
 
 
@@ -563,7 +884,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
 
             
 
-            <td class="description last"><p>Only the workers with it's name in this array are started. This is a required argument.</p></td>
+            <td class="description last"><p>The app's project directory.</p></td>
         </tr>
 
 	
@@ -628,7 +949,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
     
     
     <div class="description">
-        <p>This method is invoked when the process quits. Does clean up: closes the message queue's connection.</p>
+        <p>Disconnects the message queue.</p>
     </div>
     
 
@@ -636,188 +957,6 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
     
     
     
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="swizzleMethods"><span class="type-signature"></span>swizzleMethods<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>In the web process, swizzles all worker methods so that they are changed to the {@see Worker#publishMessage} variant. In a web process, when invoking a worker's method, a message is published to the message queue and is picked up in the worker process.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="worker"><span class="type-signature"></span>worker<span class="signature">(workerConstructor)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Creates the worker. You can create a worker when call {@see App#worker}.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>workerConstructor</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Constructor</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The constructor to use.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
     
     
     
