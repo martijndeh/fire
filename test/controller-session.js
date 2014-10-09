@@ -39,7 +39,7 @@ describe('controller session', function() {
 	});
 
 	it('keeps track of count', function(done) {
-		var agent = request.agent(app.hTTPServer.express);
+		var agent = request.agent(app.HTTPServer.express);
 
 		agent
 			.post('/test')

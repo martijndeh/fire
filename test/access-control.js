@@ -59,7 +59,7 @@ describe('access control', function() {
 					result = result.then(function() {
 						var writeStream = fs.createWriteStream(path.join(__dirname, '..', 'temp', model.getName().toLowerCase() + '.js'));
 
-						return app.aPI.generateModelController(model, writeStream)
+						return app.API.generateModelController(model, writeStream)
 							.then(function() {
 								modules.push(writeStream.path);
 
@@ -158,7 +158,7 @@ describe('access control', function() {
 		beforeEach(function(done) {
 			app.models.User.create({name: 'Martijn', password: 'test'})
 				.then(function() {
-					agent = request.agent(app.hTTPServer.express);
+					agent = request.agent(app.HTTPServer.express);
 
 					// We authorize. This should set a session variable.
 					agent.post('/api/users/authorize')
@@ -194,7 +194,7 @@ describe('access control', function() {
 		});
 
 		it('cannot create article when unauthorized', function(done) {
-			var noone = request.agent(app.hTTPServer.express);
+			var noone = request.agent(app.HTTPServer.express);
 
 			noone.post('/api/articles')
 				.set('X-JSON-Params', true)
@@ -207,7 +207,7 @@ describe('access control', function() {
 		});
 
 		it('cannot create article when not Martijn', function(done) {
-			var smith = request.agent(app.hTTPServer.express);
+			var smith = request.agent(app.HTTPServer.express);
 
 			app.models.User.create({name: 'Agent Smith', password: 'test'})
 				.then(function() {
@@ -265,7 +265,7 @@ describe('access control', function() {
 			it('cannot update article when unauthorized', function(done) {
 				var newTitle = 'Not Possible ' + Math.floor(Math.random() * 1000);
 
-				request.agent(app.hTTPServer.express)
+				request.agent(app.HTTPServer.express)
 					.put('/api/articles/' + articleId)
 					.send(helper.jsonify({title: newTitle}))
 					.expect(401, function(error) {
@@ -280,7 +280,7 @@ describe('access control', function() {
 			});
 
 			it('cannot update article when not correctly authorized', function(done) {
-				var smith = request.agent(app.hTTPServer.express);
+				var smith = request.agent(app.HTTPServer.express);
 
 				app.models.User.create({name: 'Agent Smith', password: 'test'})
 					.then(function() {

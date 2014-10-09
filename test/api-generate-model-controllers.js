@@ -72,7 +72,7 @@ describe('api generate model controllers', function() {
 	it('write basic model controller', function(done) {
 		var writeStream = new streams.WritableStream();
 
-		return app.aPI.generateModelController(app.models.Tester, writeStream)
+		return app.API.generateModelController(app.models.Tester, writeStream)
 			.then(function() {
 				fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'tester.js'), writeStream.toString());
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures', 'api', 'tester.js')));
@@ -87,7 +87,7 @@ describe('api generate model controllers', function() {
 	it('write authenticator model controller', function(done) {
 		var writeStream = new streams.WritableStream();
 
-		return app.aPI.generateModelController(app.models.User, writeStream)
+		return app.API.generateModelController(app.models.User, writeStream)
 			.then(function() {
 				fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'user.js'), writeStream.toString());
 
@@ -103,7 +103,7 @@ describe('api generate model controllers', function() {
 	it('write has method in model controller', function(done) {
 		var writeStream = new streams.WritableStream();
 
-		return app.aPI.generateModelController(app.models.Collection, writeStream)
+		return app.API.generateModelController(app.models.Collection, writeStream)
 			.then(function() {
 				fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'collection.js'), writeStream.toString());
 
@@ -119,7 +119,7 @@ describe('api generate model controllers', function() {
 	it('write associations in model controller', function(done) {
 		var writeStream = new streams.WritableStream();
 
-		return app.aPI.generateModelController(app.models.Container, writeStream)
+		return app.API.generateModelController(app.models.Container, writeStream)
 			.then(function() {
 				fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'container.js'), writeStream.toString());
 

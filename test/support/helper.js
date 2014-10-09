@@ -60,7 +60,7 @@ Helper.prototype.beforeEach = function(options) {
                     result = result.then(function() {
                         var writeStream = fs.createWriteStream(path.join(__dirname, '..', '..', 'temp', model.getName().toLowerCase() + '.js'));
 
-                        return self.app.aPI.generateModelController(model, writeStream)
+                        return self.app.API.generateModelController(model, writeStream)
                             .then(function() {
                                 self.modules.push(writeStream.path);
 

@@ -49,9 +49,9 @@ describe('model routes', function() {
 
 		beforeEach(function() {
 			assert.notEqual(helper.app, null);
-			assert.notEqual(helper.app.hTTPServer.express, null);
+			assert.notEqual(helper.app.HTTPServer.express, null);
 
-			agent = request.agent(helper.app.hTTPServer.express);
+			agent = request.agent(helper.app.HTTPServer.express);
 		});
 
 		it('can register', function(done) {
@@ -144,7 +144,7 @@ describe('model routes', function() {
 		});
 
 		it('can create model', function(done) {
-			request(helper.app.hTTPServer.express)
+			request(helper.app.HTTPServer.express)
 				.post('/api/tests')
 				.send({
 					name: 'Martijn'
@@ -166,7 +166,7 @@ describe('model routes', function() {
 			function createModel(map) {
 				var defer = Q.defer();
 
-				request(helper.app.hTTPServer.express)
+				request(helper.app.HTTPServer.express)
 					.post('/api/tests')
 					.send(map)
 					.expect(200, function(error, response) {
@@ -204,7 +204,7 @@ describe('model routes', function() {
 			});
 
 			it('can get 1 model', function(done) {
-				request(helper.app.hTTPServer.express)
+				request(helper.app.HTTPServer.express)
 					.get('/api/tests/' + model2ID)
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
@@ -216,7 +216,7 @@ describe('model routes', function() {
 			});
 
 			it('can get an array of 1 model', function(done) {
-				request(helper.app.hTTPServer.express)
+				request(helper.app.HTTPServer.express)
 					.get('/api/tests?value=1')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
@@ -232,7 +232,7 @@ describe('model routes', function() {
 			});
 
 			it('can get an array of multiple models', function(done) {
-				request(helper.app.hTTPServer.express)
+				request(helper.app.HTTPServer.express)
 					.get('/api/tests?value=2')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
@@ -251,7 +251,7 @@ describe('model routes', function() {
 			});
 
 			it('can update 1 model', function(done) {
-				request(helper.app.hTTPServer.express)
+				request(helper.app.HTTPServer.express)
 					.put('/api/tests/' + model3ID)
 					.send({
 						name: 'Martijn (Updated)'
@@ -267,7 +267,7 @@ describe('model routes', function() {
 			});
 
 			it('cannot update all models', function(done) {
-				request(helper.app.hTTPServer.express)
+				request(helper.app.HTTPServer.express)
 					.put('/api/tests')
 					.send(helper.jsonify({
 						name: 'Oopsie'
