@@ -6,21 +6,6 @@
 var app = angular.module('example', []);
 
 
-app.directive('myCustomer',function () {
-    		return {
-      			template: 'Name: {{customer.name}} Address: {{customer.address}}'
-    		};
-  		});
-
-app.config(['$scope','fire',function ($scope, fire) { //jshint ignore:line
-
-		}]);
-
-app.service('TestService', ['$scope', function($scope) { //jshint ignore:line
-			// This is the service.
-			return this;
-		}]);
-
 
 
 function FireModelInstance(setMap, model, path) {
@@ -377,4 +362,28 @@ app.service('WebSocketService', ['$location', '$timeout', function($location, $t
 	connect();
 }]);
 
+
+app.factory('TestChannel', ['ChannelService', function(ChannelService) { //jshint ignore:line
+	function TestChannelInstance(id) {
+		this.type = 'TestChannel';
+		this.id = id;
+		this.delegate = null;
+
+		ChannelService.registerChannel(this);
+	}
+
+	TestChannelInstance.prototype.getMessage = function(callback) {
+		this.delegate = callback;
+	};
+
+	TestChannelInstance.prototype.sendMessage = function(message) {
+		return ChannelService.sendMessageOnChannel(message, this);
+	};
+
+	return {
+		get: function(id) {
+			return new TestChannelInstance(id);
+		}
+	};
+}]);
 

@@ -51,6 +51,7 @@ describe('channels', function() {
 				event: '_subscribe'
 			}
 		}, {
+			channels: [],
 			send: function() {
 				//
 			}
@@ -73,6 +74,7 @@ describe('channels', function() {
 				event: '_subscribe'
 			}
 		}, {
+			channels: [],
 			send: function(message) {
 				messageReceived = message;
 			}

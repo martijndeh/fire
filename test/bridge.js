@@ -297,4 +297,32 @@ describe('bridge', function() {
 			})
 			.done();
 	});
+
+	it('can export channels', function(done) {
+		function TestChannel() {
+
+		}
+		app.channel(TestChannel);
+
+		var writeStream = new streams.WritableStream();
+
+		app.models.setup()
+			.then(function() {
+				return app.controllers.setup();
+			})
+			.then(function() {
+				return bridge.generate(writeStream);
+			})
+			.then(function() {
+				if(write) {
+					fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/channels-test.js'), writeStream.toString());
+				}
+
+				assert.equal(writeStream.toString().length > 0, true);
+				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/channels-test.js')).toString());
+
+				done();
+			})
+			.done();
+	});
 });
