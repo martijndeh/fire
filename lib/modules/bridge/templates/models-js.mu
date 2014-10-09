@@ -59,7 +59,7 @@ FireModel.prototype._action = function(verb, path, fields) {
 	var defer = this.$q.defer();
 
 	var self = this;
-	this.$http[verb](path, fields)
+	this.$http({method: verb, url: path, data: fields, headers: {'x-json-params': true}})
 		.success(function(result) {
 			defer.resolve(self.parseResult(result, path));
 		})

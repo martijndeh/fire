@@ -15,7 +15,7 @@
     "type": "git",
     "url": "https://github.com/martijndeh/fire.git"
   },
-  "version": "0.5.1",
+  "version": "0.6.0",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "main": "index.js",
   "bin": "bin/fire",
@@ -38,6 +38,7 @@
     "body": "^4.4.2",
     "body-parser": "^1.2.0",
     "cookie-session": "^1.0.2",
+    "cookies": "^0.5.0",
     "debug": "^0.8.0",
     "dotenv": "^0.2.8",
     "express": "^4.4.4",

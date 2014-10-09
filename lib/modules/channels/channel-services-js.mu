@@ -18,7 +18,7 @@ app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSoc
 	};
 
 	this.getUnknownMessage = function(messageMap, channelMap) { //jshint ignore:line
-		//
+		console.log('Unknown message.');
 	};
 
 	this.sendMessageOnChannel = function(message, channel) {
@@ -41,8 +41,7 @@ app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSoc
 				});
 			}
 			else {
-				console.log('Warning: Channel#delegate not set.');
-				console.log(packet.message);
+				console.log('Warning: no delegate set on channel.');
 			}
 		}
 		else {

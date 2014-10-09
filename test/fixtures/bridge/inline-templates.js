@@ -73,7 +73,7 @@ FireModel.prototype._action = function(verb, path, fields) {
 	var defer = this.$q.defer();
 
 	var self = this;
-	this.$http[verb](path, fields)
+	this.$http({method: verb, url: path, data: fields, headers: {'x-json-params': true}})
 		.success(function(result) {
 			defer.resolve(self.parseResult(result, path));
 		})
@@ -290,7 +290,7 @@ app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSoc
 	};
 
 	this.getUnknownMessage = function(messageMap, channelMap) { //jshint ignore:line
-		//
+		console.log('Unknown message.');
 	};
 
 	this.sendMessageOnChannel = function(message, channel) {
@@ -313,8 +313,7 @@ app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSoc
 				});
 			}
 			else {
-				console.log('Warning: Channel#delegate not set.');
-				console.log(packet.message);
+				console.log('Warning: no delegate set on channel.');
 			}
 		}
 		else {
