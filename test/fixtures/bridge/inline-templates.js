@@ -257,7 +257,10 @@ app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q
 }]);
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
-    $locationProvider.html5Mode(true);
+    $locationProvider.html5Mode({
+        enabled: true,
+        requireBase: false
+    });
 
 
 
