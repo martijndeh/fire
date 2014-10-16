@@ -89,7 +89,7 @@ describe('channels', function() {
 				assert.equal(message.message.event, 'test');
 
 				done();
-			}, 10);
+			}, 500);
 		});
 	});
 
