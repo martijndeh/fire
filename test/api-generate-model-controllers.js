@@ -8,7 +8,7 @@ var fire = require('./..');
 var path = require('path');
 var fs = require('fs');
 
-//fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'tester.js'), writeStream.toString());
+var write = false;
 
 describe('api generate model controllers', function() {
 	var app = null;
@@ -74,7 +74,10 @@ describe('api generate model controllers', function() {
 
 		return app.API.generateModelController(app.models.Tester, writeStream)
 			.then(function() {
-				//fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'tester.js'), writeStream.toString());
+				if(write) {
+					fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'tester.js'), writeStream.toString());
+				}
+
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures', 'api', 'tester.js')));
 
 				done();
@@ -89,7 +92,9 @@ describe('api generate model controllers', function() {
 
 		return app.API.generateModelController(app.models.User, writeStream)
 			.then(function() {
-				//fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'user.js'), writeStream.toString());
+				if(write) {
+					fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'user.js'), writeStream.toString());
+				}
 
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures', 'api', 'user.js')));
 
@@ -105,7 +110,9 @@ describe('api generate model controllers', function() {
 
 		return app.API.generateModelController(app.models.Collection, writeStream)
 			.then(function() {
-				//fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'collection.js'), writeStream.toString());
+				if(write) {
+					fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'collection.js'), writeStream.toString());
+				}
 
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures', 'api', 'collection.js')));
 
@@ -121,7 +128,9 @@ describe('api generate model controllers', function() {
 
 		return app.API.generateModelController(app.models.Container, writeStream)
 			.then(function() {
-				//fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'container.js'), writeStream.toString());
+				if(write) {
+					fs.writeFileSync(path.join(__dirname, 'fixtures', 'api', 'container.js'), writeStream.toString());
+				}
 
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures', 'api', 'container.js')));
 

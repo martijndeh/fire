@@ -129,21 +129,21 @@ TesterModelController.prototype.getTester = function($id) {
 
 	return this.findAuthenticator()
 		.then(function(authenticator) {
-			return Q.when(accessControl.canRead(authenticator))
-				.then(function(canRead) {
-					if(canRead) {
-						var whereMap = {id: $id};
+			return Q.all([Q.when(accessControl.canRead(authenticator)), authenticator]);
+		})
+		.spread(function(canRead, authenticator) {
+			if(canRead) {
+				var whereMap = {id: $id};
 
-						if(model.options.automaticPropertyName) {
-							whereMap[model.options.automaticPropertyName] = authenticator;
-						}
+				if(model.options.automaticPropertyName) {
+					whereMap[model.options.automaticPropertyName] = authenticator;
+				}
 
-						return model.getOne(whereMap);
-					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
+				return model.getOne(whereMap);
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
 		});
 };
 
@@ -154,53 +154,52 @@ TesterModelController.prototype.updateTester = function($id) {
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
-			return Q.when(accessControl.getPermissionFunction('update')(authenticator))
-				.then(function(canUpdate) {
-					if(canUpdate) {
-						var whereMap = {};
+			return Q.all([Q.when(accessControl.getPermissionFunction('update')(authenticator)), authenticator]);
+		})
+		.spread(function(canUpdate, authenticator) {
+			if(canUpdate) {
+				var whereMap = {};
 
-						var keyPath = accessControl.getPermissionKeyPath('update');
-						if(keyPath) {
-							if(!model.getProperty(keyPath)) {
-								throw new Error('Invalid key path `' + keyPath + '`.');
-							}
-
-							// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
-							whereMap[keyPath] = authenticator;
-						}
-
-						if(model.options.automaticPropertyName) {
-							whereMap[model.options.automaticPropertyName] = authenticator;
-						}
-
-						whereMap.id = $id;
-
-						// Now check if we may update the properties we want to update.
-						return Q.when(_canUpdateProperties(Object.keys(self.body), model))
-							.then(function(canUpdateProperties) {
-								if(canUpdateProperties) {
-									return model.updateOne(whereMap, self.body)
-										.then(function(instance) {
-											if(instance) {
-												return instance;
-											}
-											else {
-												throw unauthenticatedError(authenticator);
-											}
-										});
-								}
-								else {
-									var error = new Error();
-									error.status = 400;
-									error.message = 'Bad Request';
-									throw error;
-								}
-							});
+				var keyPath = accessControl.getPermissionKeyPath('update');
+				if(keyPath) {
+					if(!model.getProperty(keyPath)) {
+						throw new Error('Invalid key path `' + keyPath + '`.');
 					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
+
+					// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
+					whereMap[keyPath] = authenticator;
+				}
+
+				if(model.options.automaticPropertyName) {
+					whereMap[model.options.automaticPropertyName] = authenticator;
+				}
+
+				whereMap.id = $id;
+				return [Q.when(_canUpdateProperties(Object.keys(self.body), model)), whereMap, authenticator];
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
+		})
+		.all()
+		.spread(function(canUpdateProperties, whereMap, authenticator) {
+			if(canUpdateProperties) {
+				return Q.all([model.updateOne(whereMap, self.body), authenticator]);
+			}
+			else {
+				var error = new Error();
+				error.status = 400;
+				error.message = 'Bad Request';
+				throw error;
+			}
+		})
+		.spread(function(instance, authenticator) {
+			if(instance) {
+				return instance;
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
 		})
 		.catch(function(error) {
 			throw error;

@@ -37,6 +37,7 @@ describe('models find select', function() {
                 .then(function(test) {
                     assert.notEqual(typeof test.id, 'undefined');
                     assert.notEqual(typeof test.property1, 'undefined');
+
                     assert.equal(typeof test.property2, 'undefined');
                     assert.equal(typeof test.property3, 'undefined');
                     assert.equal(typeof test.property4, 'undefined');
