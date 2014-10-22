@@ -12,7 +12,13 @@ function FireModelInstance(setMap, model, path) {
 	this._map = setMap || {};
 	this._changes = {};
 	this._model = model;
-	this._endpoint = path + '/' + this._map.id;
+
+	if(this._map.id) {
+		this._endpoint = path + '/' + this._map.id;
+	}
+	else {
+		this._endpoint = null;
+	}
 }
 
 FireModelInstance.prototype.refresh = function(otherInstance) {
@@ -65,11 +71,11 @@ FireModel.prototype._prepare = function(params) {
 	return map;
 };
 
-FireModel.prototype._action = function(verb, path, fields) {
+FireModel.prototype._action = function(verb, path, params, data) {
 	var defer = this.$q.defer();
 
 	var self = this;
-	this.$http({method: verb, url: path, data: fields, headers: {'x-json-params': true}})
+	this.$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true}})
 		.success(function(result) {
 			defer.resolve(self.parseResult(result, path));
 		})
@@ -81,15 +87,15 @@ FireModel.prototype._action = function(verb, path, fields) {
 };
 
 FireModel.prototype._post = function(path, fields) {
-	return this._action('post', path, this._prepare(fields));
+	return this._action('post', path, null, this._prepare(fields));
 };
 
 FireModel.prototype._get = function(path, params) {
-	return this._action('get', path, {params: this._prepare(params)});
+	return this._action('get', path, this._prepare(params));
 };
 
 FireModel.prototype._put = function(path, fields) {
-	return this._action('put', path, this._prepare(fields));
+	return this._action('put', path, null, this._prepare(fields));
 };
 
 FireModel.prototype.update = function(id, model) {
@@ -108,7 +114,7 @@ FireModel.prototype.update = function(id, model) {
 };
 
 FireModel.prototype.remove = function(id) {
-	return this._action('delete', this.endpoint + '/' + id, {})
+	return this._action('delete', this.endpoint + '/' + id);
 };
 
 FireModel.prototype.findOrCreate = function(where, set) {
