@@ -272,6 +272,20 @@ FireModel{{name}}.prototype.parseResult = function(setMapOrList, path) {
 {{#isAuthenticator}}
 var __authenticator = null;
 
+FireModel{{name}}.prototype.forgotPassword = function({{authenticatingPropertyName}}) {
+	return this._post(this.endpoint + '/forgot-password', { {{authenticatingPropertyName}}: {{authenticatingPropertyName}} });
+};
+
+FireModel{{name}}.prototype.resetPassword = function(resetToken, password, confirmPassword) {
+	if(password != confirmPassword) {
+		var defer = this.$q.defer();
+		defer.reject(new Error('The passwords you entered do not match. Please enter the same password twice.'));
+		return defer.promise;
+	}
+
+	return this._post(this.endpoint + '/reset-password', {resetToken: resetToken, password: password});
+};
+
 FireModel{{name}}.prototype.authorize = function(fields) {
 	return this._post(this.endpoint + '/authorize', fields)
 		.then(function(authenticator) {

@@ -76,6 +76,70 @@ UserModelController.prototype.doAuthorize = ['/api/Users/authorize', function() 
 		});
 }];
 
+UserModelController.prototype.doForgotPassword = ['/api/Users/forgot-password', function() {
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			if(authenticator) {
+				var error = new Error('Forbidden');
+				error.status = 403;
+				throw error;
+			}
+		})
+		.then(function() {
+			var findMap = {
+				email: self.body.email
+			};
+
+			return self.models.User.findOne(findMap);
+		})
+		.then(function(authenticator) {
+			if(authenticator) {
+				return Q.all([authenticator, self.models.UserResetPassword.findOrCreate({authenticator: authenticator})])
+					.spread(function(authenticator, resetPassword) {
+						if(authenticator.onForgotPassword) {
+							return authenticator.onForgotPassword.call(authenticator, resetPassword);
+						}
+					});
+			}
+
+
+		})
+		.then(function() {
+			// TODO: What should we return other than status code 200?
+			return {};
+		});
+}];
+
+UserModelController.prototype.doResetPassword = ['/api/Users/reset-password', function() {
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			if(authenticator) {
+				var error = new Error('Forbidden');
+				error.status = 403;
+				throw error;
+			}
+		})
+		.then(function() {
+			return self.models.UserResetPassword.getOne({
+				token: self.body.resetToken
+			});
+		})
+		.then(function(resetPassword) {
+			return Q.all([self.models.User.updateOne({id: resetPassword.authenticator}, {password: self.body.password}), self.models.UserResetPassword.remove({id: resetPassword.id})]);
+		})
+		.spread(function(authenticator) {
+			if(authenticator && authenticator.onResetPassword) {
+				return authenticator.onResetPassword.call(authenticator);
+			}
+		})
+		.then(function() {
+			// TODO: What should we return other than status code 200?
+			return {};
+		});
+}];
+
 UserModelController.prototype.createUser = function() {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
@@ -277,6 +341,10 @@ UserModelController.prototype.deleteUser = function($id) {
 				});
 		});
 };
+
+
+
+
 
 
 

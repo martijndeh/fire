@@ -75,6 +75,70 @@ app.controller({{controllerName}});
 			throw error;
 		});
 }];
+
+{{controllerName}}.prototype.doForgotPassword = ['/api/{{model.pluralName}}/forgot-password', function() {
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			if(authenticator) {
+				var error = new Error('Forbidden');
+				error.status = 403;
+				throw error;
+			}
+		})
+		.then(function() {
+			var findMap = {
+				{{model.authenticatingPropertyName}}: self.body.{{model.authenticatingPropertyName}}
+			};
+
+			return self.models.{{model.name}}.findOne(findMap);
+		})
+		.then(function(authenticator) {
+			if(authenticator) {
+				return Q.all([authenticator, self.models.{{model.name}}ResetPassword.findOrCreate({authenticator: authenticator})])
+					.spread(function(authenticator, resetPassword) {
+						if(authenticator.onForgotPassword) {
+							return authenticator.onForgotPassword.call(authenticator, resetPassword);
+						}
+					});
+			}
+
+
+		})
+		.then(function() {
+			// TODO: What should we return other than status code 200?
+			return {};
+		});
+}];
+
+{{controllerName}}.prototype.doResetPassword = ['/api/{{model.pluralName}}/reset-password', function() {
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			if(authenticator) {
+				var error = new Error('Forbidden');
+				error.status = 403;
+				throw error;
+			}
+		})
+		.then(function() {
+			return self.models.{{model.name}}ResetPassword.getOne({
+				token: self.body.resetToken
+			});
+		})
+		.then(function(resetPassword) {
+			return Q.all([self.models.{{model.name}}.updateOne({id: resetPassword.authenticator}, {password: self.body.password}), self.models.{{model.name}}ResetPassword.remove({id: resetPassword.id})]);
+		})
+		.spread(function(authenticator) {
+			if(authenticator && authenticator.onResetPassword) {
+				return authenticator.onResetPassword.call(authenticator);
+			}
+		})
+		.then(function() {
+			// TODO: What should we return other than status code 200?
+			return {};
+		});
+}];
 {{/model.isAuthenticator}}
 {{controllerName}}.prototype.create{{model.name}} = function() {
 	var model = this.models.{{model.name}};
