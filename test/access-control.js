@@ -56,16 +56,18 @@ describe('access control', function() {
 				modules = [];
 
 				app.models.forEach(function(model) {
-					result = result.then(function() {
-						var writeStream = fs.createWriteStream(path.join(__dirname, '..', 'temp', model.getName().toLowerCase() + '.js'));
+					if(!model.disableAutomaticModelController) {
+						result = result.then(function() {
+							var writeStream = fs.createWriteStream(path.join(__dirname, '..', 'temp', model.getName().toLowerCase() + '.js'));
 
-						return app.API.generateModelController(model, writeStream)
-							.then(function() {
-								modules.push(writeStream.path);
+							return app.API.generateModelController(model, writeStream)
+								.then(function() {
+									modules.push(writeStream.path);
 
-								require(writeStream.path);
-							});
-					});
+									require(writeStream.path);
+								});
+						});
+					}
 				});
 
 				return result;
