@@ -306,9 +306,12 @@ FireModel{{name}}.prototype.getMe = function() {
 		defer.resolve(__authenticator);
 	}
 	else {
+		var self = this;
 		this._get(this.endpoint + '/me')
 			.then(function(authenticator) {
 				if(authenticator) {
+					authenticator.endpoint = self.endpoint + '/' + authenticator.id;
+
 					__authenticator = authenticator;
 					defer.resolve(__authenticator);
 				}
