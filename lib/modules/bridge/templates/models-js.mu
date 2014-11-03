@@ -287,9 +287,12 @@ FireModel{{name}}.prototype.resetPassword = function(resetToken, password, confi
 };
 
 FireModel{{name}}.prototype.authorize = function(fields) {
+	var self = this;
 	return this._post(this.endpoint + '/authorize', fields)
 		.then(function(authenticator) {
 			if(authenticator) {
+				authenticator._endpoint = self.endpoint + '/' + authenticator.id;
+
 				__authenticator = authenticator;
 				return __authenticator;
 			}
@@ -310,7 +313,7 @@ FireModel{{name}}.prototype.getMe = function() {
 		this._get(this.endpoint + '/me')
 			.then(function(authenticator) {
 				if(authenticator) {
-					authenticator.endpoint = self.endpoint + '/' + authenticator.id;
+					authenticator._endpoint = self.endpoint + '/' + authenticator.id;
 
 					__authenticator = authenticator;
 					defer.resolve(__authenticator);
