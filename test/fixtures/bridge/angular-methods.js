@@ -193,7 +193,15 @@ FireModel.prototype.findOne = function(fields, options) {
 		var modelID = fieldsMap.id;
 		delete fieldsMap.id;
 
-		return this._get(this.endpoint + '/' + fieldsMap.id, fieldsMap);
+		var self = this;
+		return this._get(this.endpoint + '/' + modelID, fieldsMap)
+			.then(function(modelInstance) {
+				if(modelInstance) {
+					modelInstance._endpoint = self.endpoint + '/' + modelID;
+				}
+
+				return modelInstance;
+			});
 	}
 	else {
 		var optionsMap = options || {};

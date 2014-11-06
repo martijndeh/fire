@@ -29,12 +29,12 @@ describe('triggers', function() {
 			helper.app.model(Event);
 
 			function MyTrigger() {
-				this.on = 'User.create';
+				//
 			}
 			helper.app.trigger(MyTrigger);
 
-			MyTrigger.prototype.when = function(modelInstance) {
-				return (modelInstance.name == 'Martijn');
+			MyTrigger.prototype.where = function(modelInstance) {
+				return this.models.User.findOne({})
 			};
 
 			MyTrigger.prototype.run = function(modelInstance) {
