@@ -565,6 +565,9 @@ describe('model methods', function() {
     });
 
     it('can create model with many reference in reverse order', function(done) {
+        models.Client = 'Client';
+        models.Project = 'Project';
+
         function Client() {
             this.name = [this.String];
             this.projects = [this.AutoFetch, this.HasMany(this.models.Project)];
@@ -578,22 +581,14 @@ describe('model methods', function() {
         app.model(Project);
 
         setImmediate(function() {
-            models.loadModelConstructor(Client);
-            models.loadModelConstructor(Project);
-
-            var modelName;
-            for(modelName in models.internals) {
-                var ModelClass = models.internals[modelName];
-
-                models._addModel(ModelClass, modelName);
-            }
-
-            for(modelName in models.internals) {
-                var model = models.internals[modelName];
-                model.getAllProperties();
-            }
-
-            done();
+            models.Client.setup()
+                .then(function() {
+                    return models.Project.setup();
+                })
+                .then(function() {
+                    done();
+                })
+                .done();
         });
     });
 
