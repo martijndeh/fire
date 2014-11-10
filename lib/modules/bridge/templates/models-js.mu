@@ -228,7 +228,11 @@ function FireModelInstance{{name}}(setMap, model, path) {
 
 	Object.defineProperty(this, '{{name}}', {
 		get: function() {
-			return self._changes['{{name}}'] || self._map['{{name}}'];
+			if(typeof self._changes['{{name}}'] != 'undefined') {
+				return self._changes['{{name}}'];
+			}
+
+			return self._map['{{name}}'];
 		},
 
 		set: function(value) {

@@ -278,7 +278,11 @@ function FireModelInstancePet(setMap, model, path) {
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
-			return self._changes['id'] || self._map['id'];
+			if(typeof self._changes['id'] != 'undefined') {
+				return self._changes['id'];
+			}
+
+			return self._map['id'];
 		},
 
 		set: function(value) {
@@ -290,7 +294,11 @@ function FireModelInstancePet(setMap, model, path) {
 
 	Object.defineProperty(this, 'name', {
 		get: function() {
-			return self._changes['name'] || self._map['name'];
+			if(typeof self._changes['name'] != 'undefined') {
+				return self._changes['name'];
+			}
+
+			return self._map['name'];
 		},
 
 		set: function(value) {
@@ -337,7 +345,11 @@ function FireModelInstanceUser(setMap, model, path) {
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
-			return self._changes['id'] || self._map['id'];
+			if(typeof self._changes['id'] != 'undefined') {
+				return self._changes['id'];
+			}
+
+			return self._map['id'];
 		},
 
 		set: function(value) {
@@ -349,7 +361,11 @@ function FireModelInstanceUser(setMap, model, path) {
 
 	Object.defineProperty(this, 'name', {
 		get: function() {
-			return self._changes['name'] || self._map['name'];
+			if(typeof self._changes['name'] != 'undefined') {
+				return self._changes['name'];
+			}
+
+			return self._map['name'];
 		},
 
 		set: function(value) {
@@ -372,7 +388,11 @@ function FireModelInstanceUser(setMap, model, path) {
 
 	Object.defineProperty(this, 'votes', {
 		get: function() {
-			return self._changes['votes'] || self._map['votes'];
+			if(typeof self._changes['votes'] != 'undefined') {
+				return self._changes['votes'];
+			}
+
+			return self._map['votes'];
 		},
 
 		set: function(value) {
@@ -384,7 +404,11 @@ function FireModelInstanceUser(setMap, model, path) {
 
 	Object.defineProperty(this, 'accessControl', {
 		get: function() {
-			return self._changes['accessControl'] || self._map['accessControl'];
+			if(typeof self._changes['accessControl'] != 'undefined') {
+				return self._changes['accessControl'];
+			}
+
+			return self._map['accessControl'];
 		},
 
 		set: function(value) {
@@ -442,7 +466,11 @@ function FireModelInstanceArticle(setMap, model, path) {
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
-			return self._changes['id'] || self._map['id'];
+			if(typeof self._changes['id'] != 'undefined') {
+				return self._changes['id'];
+			}
+
+			return self._map['id'];
 		},
 
 		set: function(value) {
@@ -454,7 +482,11 @@ function FireModelInstanceArticle(setMap, model, path) {
 
 	Object.defineProperty(this, 'title', {
 		get: function() {
-			return self._changes['title'] || self._map['title'];
+			if(typeof self._changes['title'] != 'undefined') {
+				return self._changes['title'];
+			}
+
+			return self._map['title'];
 		},
 
 		set: function(value) {
@@ -477,7 +509,11 @@ function FireModelInstanceArticle(setMap, model, path) {
 
 	Object.defineProperty(this, 'voters', {
 		get: function() {
-			return self._changes['voters'] || self._map['voters'];
+			if(typeof self._changes['voters'] != 'undefined') {
+				return self._changes['voters'];
+			}
+
+			return self._map['voters'];
 		},
 
 		set: function(value) {
@@ -489,7 +525,11 @@ function FireModelInstanceArticle(setMap, model, path) {
 
 	Object.defineProperty(this, 'accessControl', {
 		get: function() {
-			return self._changes['accessControl'] || self._map['accessControl'];
+			if(typeof self._changes['accessControl'] != 'undefined') {
+				return self._changes['accessControl'];
+			}
+
+			return self._map['accessControl'];
 		},
 
 		set: function(value) {
@@ -558,7 +598,11 @@ function FireModelInstanceArticleVoterUserVote(setMap, model, path) {
 
 	Object.defineProperty(this, 'userVote', {
 		get: function() {
-			return self._changes['userVote'] || self._map['userVote'];
+			if(typeof self._changes['userVote'] != 'undefined') {
+				return self._changes['userVote'];
+			}
+
+			return self._map['userVote'];
 		},
 
 		set: function(value) {
@@ -581,7 +625,11 @@ function FireModelInstanceArticleVoterUserVote(setMap, model, path) {
 
 	Object.defineProperty(this, 'articleVoter', {
 		get: function() {
-			return self._changes['articleVoter'] || self._map['articleVoter'];
+			if(typeof self._changes['articleVoter'] != 'undefined') {
+				return self._changes['articleVoter'];
+			}
+
+			return self._map['articleVoter'];
 		},
 
 		set: function(value) {
