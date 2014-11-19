@@ -1,3 +1,10 @@
+function FireError(message) {
+    this.name = 'FireError';
+    this.message = message || '';
+	this.number = -1;
+}
+FireError.prototype = new Error();
+
 function FireModelInstance(setMap, model, path) {
 	this._map = setMap || {};
 	this._changes = {};
@@ -69,8 +76,10 @@ FireModel.prototype._action = function(verb, path, params, data) {
 		.success(function(result) {
 			defer.resolve(self.parseResult(result, path));
 		})
-		.error(function(data) {
-			defer.reject(new Error(data));
+		.error(function(data, statusCode) {
+            var error = new FireError(data);
+            error.number = statusCode;
+			defer.reject(error);
 		});
 
 	return defer.promise;
@@ -203,7 +212,9 @@ FireModel.prototype.getOne = function(fields) {
 				defer.resolve(model);
 			}
 			else {
-				defer.reject(new Error('Not Found'));
+				var error = new FireError('Not Found');
+				error.number = 404;
+				defer.reject(error);
 			}
 		});
 	return defer.promise;
@@ -291,7 +302,9 @@ FireModel{{name}}.prototype.forgotPassword = function({{authenticatingPropertyNa
 FireModel{{name}}.prototype.resetPassword = function(resetToken, password, confirmPassword) {
 	if(password != confirmPassword) {
 		var defer = this.$q.defer();
-		defer.reject(new Error('The passwords you entered do not match. Please enter the same password twice.'));
+		var error = new FireError('The passwords do not match! Please enter the same password twice.');
+		error.number = 400;
+		defer.reject(error);
 		return defer.promise;
 	}
 
@@ -299,19 +312,30 @@ FireModel{{name}}.prototype.resetPassword = function(resetToken, password, confi
 };
 
 FireModel{{name}}.prototype.authorize = function(fields) {
-	var self = this;
-	return this._post(this.endpoint + '/authorize', fields)
-		.then(function(authenticator) {
-			if(authenticator) {
-				authenticator._endpoint = self.endpoint + '/' + authenticator.id;
+	if(!fields.password || !fields.{{authenticatingPropertyName}}) {
+		var defer = this.$q.defer();
+		var error = new FireError('Please fill in a {{authenticatingPropertyName}} and password!');
+		error.number = 400;
+		defer.reject(error);
+		return defer.promise;
+	}
+	else {
+		var self = this;
+		return this._post(this.endpoint + '/authorize', fields)
+			.then(function(authenticator) {
+				if(authenticator) {
+					authenticator._endpoint = self.endpoint + '/' + authenticator.id;
 
-				__authenticator = authenticator;
-				return __authenticator;
-			}
-			else {
-				throw new Error('Errored');
-			}
-		});
+					__authenticator = authenticator;
+					return __authenticator;
+				}
+				else {
+					var error = new FireError();
+					error.number = 404;
+					throw error;
+				}
+			});
+	}
 };
 
 FireModel{{name}}.prototype.getMe = function() {
