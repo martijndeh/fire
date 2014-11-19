@@ -140,7 +140,7 @@ FireModel.prototype.findOrCreate = function(where, set) {
 
 FireModel.prototype._create = function(path, fields) {
 	var createMap = {};
-	Object.keys(fields).forEach(function(key) {
+	Object.keys(fields || {}).forEach(function(key) {
 		var value = fields[key];
 		if(value && typeof value.toQueryValue != 'undefined') {
 			createMap[key] = value.toQueryValue();
