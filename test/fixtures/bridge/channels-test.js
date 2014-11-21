@@ -8,6 +8,13 @@ var app = angular.module('example', []);
 
 
 
+function FireError(message) {
+    this.name = 'FireError';
+    this.message = message || '';
+	this.number = -1;
+}
+FireError.prototype = new Error();
+
 function FireModelInstance(setMap, model, path) {
 	this._map = setMap || {};
 	this._changes = {};
@@ -79,8 +86,10 @@ FireModel.prototype._action = function(verb, path, params, data) {
 		.success(function(result) {
 			defer.resolve(self.parseResult(result, path));
 		})
-		.error(function(data) {
-			defer.reject(new Error(data));
+		.error(function(data, statusCode) {
+            var error = new FireError(data);
+            error.number = statusCode;
+			defer.reject(error);
 		});
 
 	return defer.promise;
@@ -141,7 +150,7 @@ FireModel.prototype.findOrCreate = function(where, set) {
 
 FireModel.prototype._create = function(path, fields) {
 	var createMap = {};
-	Object.keys(fields).forEach(function(key) {
+	Object.keys(fields || {}).forEach(function(key) {
 		var value = fields[key];
 		if(value && typeof value.toQueryValue != 'undefined') {
 			createMap[key] = value.toQueryValue();
@@ -213,7 +222,9 @@ FireModel.prototype.getOne = function(fields) {
 				defer.resolve(model);
 			}
 			else {
-				defer.reject(new Error('Not Found'));
+				var error = new FireError('Not Found');
+				error.number = 404;
+				defer.reject(error);
 			}
 		});
 	return defer.promise;
