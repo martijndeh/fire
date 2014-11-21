@@ -18,7 +18,6 @@
   "version": "0.13.0",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "main": "index.js",
-  "bin": "bin/fire",
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",
