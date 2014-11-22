@@ -39,36 +39,6 @@ describe('models find orderBy', function() {
             };
         });
 
-        it('can orderBy SQL-ish statement', function(done) {
-            helper.app.models.Tester.find({}, {orderBy:'$position'})
-                .then(function(testers) {
-                    assert.equal(testers.length, 3);
-                    for(var i = 0, il = testers.length; i < il; i++) {
-                        var position = (i + 1);
-                        assert.equal(testers[i].name, 'Test ' + position);
-                        assert.equal(testers[i].position, position);
-                    }
-                    done();
-                })
-                .done();
-        });
-
-        it('can orderBy reverse SQL-ish statement', function(done) {
-            helper.app.models.Tester.find({}, {orderBy:'-$position'})
-                .then(function(testers) {
-                    assert.equal(testers.length, 3);
-
-                    for(var i = 0, il = testers.length; i < il; i++) {
-                        var position = 3 - i;
-
-                        assert.equal(testers[i].name, 'Test ' + position);
-                        assert.equal(testers[i].position, position);
-                    }
-                    done();
-                })
-                .done();
-        });
-
         it('can orderBy sort map', function(done) {
             helper.app.models.Tester.find({}, {orderBy:{position:1}})
                 .then(function(testers) {
@@ -186,44 +156,6 @@ describe('models find orderBy', function() {
             };
         });
 
-        it('can orderBy associations count', function(done) {
-            helper.app.models.TestArticle.find({}, {orderBy:'-$count("comments")'})
-                .then(function(articles) {
-                    assert.equal(articles.length, 3);
-
-                    assert.equal(articles[0].name, 'Test 3');
-                    assert.equal(articles[0].comments.length, 20);
-
-                    assert.equal(articles[1].name, 'Test 1');
-                    assert.equal(articles[1].comments.length, 10);
-
-                    assert.equal(articles[2].name, 'Test 2');
-                    assert.equal(articles[2].comments.length, 8);
-
-                    done();
-                })
-                .done();
-        });
-
-        it('can orderBy assocations count reverse', function(done) {
-            helper.app.models.TestArticle.find({}, {orderBy:'$count("comments")'})
-                .then(function(articles) {
-                    assert.equal(articles.length, 3);
-
-                    assert.equal(articles[2].name, 'Test 3');
-                    assert.equal(articles[2].comments.length, 20);
-
-                    assert.equal(articles[1].name, 'Test 1');
-                    assert.equal(articles[1].comments.length, 10);
-
-                    assert.equal(articles[0].name, 'Test 2');
-                    assert.equal(articles[0].comments.length, 8);
-
-                    done();
-                })
-                .done();
-        });
-
         it('can orderBy read-only property', function(done) {
             helper.app.models.TestArticle.find({}, {orderBy:{numberOfComments:'ASC'}})
                 .then(function(articles) {
@@ -241,47 +173,6 @@ describe('models find orderBy', function() {
                     done();
                 })
                 .done();
-        })
-    });
-
-    describe('assocations many-to-many', function() {
-        before(function() {
-            helper.setup = function(app) {
-                function Test1() {
-                    this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
-                }
-                app.model(Test1);
-
-                function Test2() {
-                    this.tests = [this.HasMany(this.models.Test1)];
-                }
-                app.model(Test2);
-            };
-
-            helper.createModels = function(app) {
-                return Q.all([app.models.Test1.create({}), app.models.Test1.create({})])
-                    .spread(function(a, b) {
-                        return Q.all([app.models.Test2.create({}), app.models.Test2.create({}), app.models.Test2.create({}), app.models.Test2.create({})])
-                            .spread(function(c, d, e, f) {
-                                return Q.all([
-                                    a.addTest(c),
-                                    a.addTest(d),
-                                    a.addTest(e),
-                                    b.addTest(f)
-                                ]);
-                            });
-                    });
-            };
-        });
-
-        it('can order by associations count', function(done) {
-            return helper.app.models.Test1.find({}, {orderBy:'-$count("tests")'})
-                .then(function(tests) {
-                    assert.equal(tests.length, 2);
-                    assert.equal(tests[0].tests.length, 3);
-                    assert.equal(tests[1].tests.length, 1);
-                    done();
-                });
         });
     });
 });
