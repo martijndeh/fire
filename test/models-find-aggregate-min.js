@@ -69,8 +69,8 @@ describe('models find aggregate', function() {
         };
     });
 
-    it('can select min aggregate property', function(done) {
-        helper.app.models.Tester.find({}, {groupBy:'name', orderBy:{'name': 1}, select:['name', 'minPosition']})
+    it('can select min aggregate property', function() {
+        return helper.app.models.Tester.find({}, {groupBy:'name', orderBy:{'name': 1}, select:['name', 'minPosition']})
             .then(function(testers) {
                 assert.equal(testers.length, 3);
                 assert.equal(testers[0].name, 'Test 1');
@@ -81,23 +81,24 @@ describe('models find aggregate', function() {
 
                 assert.equal(testers[2].name, 'Test 3');
                 assert.equal(testers[2].minPosition, -333);
-
-                done();
-            })
-            .done();
+            });
     });
 
-    it('can select min aggregate property and order by', function(done) {
-        helper.app.models.Tester.find({}, {groupBy:'name', orderBy:{'minPosition': 1}, select:['name', 'minPosition']})
+    it('can select min aggregate property and order by', function() {
+        return helper.app.models.Tester.find({}, {groupBy:'name', orderBy:{'minPosition': 1}, select:['name', 'minPosition']})
             .then(function(testers) {
                 assert.equal(testers.length, 3);
                 assert.equal(testers[0].name, 'Test 3');
                 assert.equal(testers[1].name, 'Test 2');
                 assert.equal(testers[2].name, 'Test 1');
+            });
+    });
 
-                done();
-            })
-            .done();
+    it('can findOne without aggregate', function() {
+        return helper.app.models.Tester.findOne({})
+            .then(function(tester) {
+                assert.notEqual(tester, null);
+            });
     });
 
     // TODO: Implement something like HAVING or to use in WHERE
