@@ -658,7 +658,7 @@ FireModelInstanceArticleVoterUserVote.prototype = FireModelInstance.prototype;
 function FireModelArticleVoterUserVote($http, $q, models) {
 	FireModel.call(this, $http, $q, models);
 
-	this.endpoint = '/api/articlevoteruservotes';
+	this.endpoint = '/api/article-voter-user-votes';
 }
 FireModelArticleVoterUserVote.prototype = new FireModel();
 

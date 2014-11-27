@@ -41,7 +41,7 @@ app.controller({{controllerName}});
 {{controllerName}}.prototype.basePathComponents = ['api'];
 
 {{#model.isAuthenticator}}
-{{controllerName}}.prototype.getMe = ['/api/{{model.pluralName}}/me', function() {
+{{controllerName}}.prototype.getMe = ['/api/{{model.resourceName}}/me', function() {
 	return this.findAuthenticator()
 		.then(function(authenticator) {
 			if(authenticator) {
@@ -55,7 +55,7 @@ app.controller({{controllerName}});
 		});
 }];
 
-{{controllerName}}.prototype.doAuthorize = ['/api/{{model.pluralName}}/authorize', function() {
+{{controllerName}}.prototype.doAuthorize = ['/api/{{model.resourceName}}/authorize', function() {
 	// TODO: What if we're already authorized? Should we somehow disallow this? If so, we need a deauthorize method as well.
 
 	var model = this.models.{{model.name}};
@@ -76,7 +76,7 @@ app.controller({{controllerName}});
 		});
 }];
 
-{{controllerName}}.prototype.doForgotPassword = ['/api/{{model.pluralName}}/forgot-password', function() {
+{{controllerName}}.prototype.doForgotPassword = ['/api/{{model.resourceName}}/forgot-password', function() {
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -111,7 +111,7 @@ app.controller({{controllerName}});
 		});
 }];
 
-{{controllerName}}.prototype.doResetPassword = ['/api/{{model.pluralName}}/reset-password', function() {
+{{controllerName}}.prototype.doResetPassword = ['/api/{{model.resourceName}}/reset-password', function() {
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -345,7 +345,7 @@ app.controller({{controllerName}});
 {{#model.properties}}
 
 {{#hasMethod}}
-{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.pluralName}}/:id/{{name}}', function($id) {
+{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{name}}', function($id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -366,7 +366,7 @@ app.controller({{controllerName}});
 }];
 {{/hasMethod}}
 {{#hasMany}}
-{{controllerName}}.prototype.create{{capitalName}} = ['/api/{{model.pluralName}}/:id/{{name}}', function($id) {
+{{controllerName}}.prototype.create{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{name}}', function($id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -400,7 +400,7 @@ app.controller({{controllerName}});
 		});
 }];
 
-{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.pluralName}}/:id/{{name}}', function($id) {
+{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{name}}', function($id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -432,7 +432,7 @@ app.controller({{controllerName}});
 		});
 }];
 
-{{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.pluralName}}/:id/{{name}}/:associationID', function($id, $associationID) {
+{{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{name}}/:associationID', function($id, $associationID) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
