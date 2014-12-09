@@ -250,7 +250,7 @@ CollectionModelController.prototype.deleteCollection = function($id) {
 
 
 
-CollectionModelController.prototype.getApps = ['/api/Collections/:id/apps', function($id) {
+CollectionModelController.prototype.getApps = ['/api/collections/:id/apps', function($id) {
 	var model = this.models.Collection;
 	var accessControl = model.getAccessControl();
 

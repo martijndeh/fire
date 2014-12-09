@@ -432,6 +432,39 @@ app.controller({{controllerName}});
 		});
 }];
 
+{{controllerName}}.prototype.delete{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{name}}/:associationID', function($id, $associationID) {
+	var model = this.models.{{model.name}};
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
+		})
+		.spread(function(canDelete, authenticator) {
+			if(!canDelete) {
+				throw unauthenticatedError(authenticator);
+			}
+			else {
+				var association = model.getProperty('{{name}}');
+
+				var removeMap = {};
+				removeMap[association.options.throughPropertyName] = $id;
+				removeMap[association.options.relationshipVia.options.throughPropertyName] = $associationID;
+
+				var queryMap = self.query || {};
+				var optionsMap = {};
+
+				if(queryMap.$options) {
+					optionsMap = queryMap.$options;
+					delete queryMap.$options;
+				}
+
+				return self.models[association.options.through.getName()].remove(removeMap, optionsMap);
+			}
+		});
+}];
+
 {{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{name}}/:associationID', function($id, $associationID) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();

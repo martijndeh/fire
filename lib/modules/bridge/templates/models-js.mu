@@ -265,6 +265,19 @@ FireModelInstance{{name}}.prototype.{{createMethodName}} = function(map) {
 			return self.refresh(otherInstance);
 		});
 };
+
+FireModelInstance{{name}}.prototype.{{removeMethodName}} = function(mapOrId) {
+    var id = null;
+
+    if(typeof mapOrId == 'object') {
+        id = mapOrId.id;
+    }
+    else {
+        id = mapOrId;
+    }
+    
+    return this._model._action('delete', this._model.endpoint + '/' + this.id + '/{{resource}}/' + id);
+};
 {{/manyToMany}}
 {{^manyToMany}}
 FireModelInstance{{name}}.prototype.{{getMethodName}} = function(queryMap, optionsMap) {

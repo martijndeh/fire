@@ -442,6 +442,19 @@ FireModelInstanceUser.prototype.createVote = function(map) {
 		});
 };
 
+FireModelInstanceUser.prototype.removeVote = function(mapOrId) {
+    var id = null;
+
+    if(typeof mapOrId == 'object') {
+        id = mapOrId.id;
+    }
+    else {
+        id = mapOrId;
+    }
+    
+    return this._model._action('delete', this._model.endpoint + '/' + this.id + '/votes/' + id);
+};
+
 
 
 
@@ -561,6 +574,19 @@ FireModelInstanceArticle.prototype.createVoter = function(map) {
 		.then(function(otherInstance) {
 			return self.refresh(otherInstance);
 		});
+};
+
+FireModelInstanceArticle.prototype.removeVoter = function(mapOrId) {
+    var id = null;
+
+    if(typeof mapOrId == 'object') {
+        id = mapOrId.id;
+    }
+    else {
+        id = mapOrId;
+    }
+    
+    return this._model._action('delete', this._model.endpoint + '/' + this.id + '/voters/' + id);
 };
 
 

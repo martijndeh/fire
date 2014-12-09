@@ -41,7 +41,7 @@ app.controller(UserModelController);
 UserModelController.prototype.basePathComponents = ['api'];
 
 
-UserModelController.prototype.getMe = ['/api/Users/me', function() {
+UserModelController.prototype.getMe = ['/api/users/me', function() {
 	return this.findAuthenticator()
 		.then(function(authenticator) {
 			if(authenticator) {
@@ -55,7 +55,7 @@ UserModelController.prototype.getMe = ['/api/Users/me', function() {
 		});
 }];
 
-UserModelController.prototype.doAuthorize = ['/api/Users/authorize', function() {
+UserModelController.prototype.doAuthorize = ['/api/users/authorize', function() {
 	// TODO: What if we're already authorized? Should we somehow disallow this? If so, we need a deauthorize method as well.
 
 	var model = this.models.User;
@@ -76,7 +76,7 @@ UserModelController.prototype.doAuthorize = ['/api/Users/authorize', function() 
 		});
 }];
 
-UserModelController.prototype.doForgotPassword = ['/api/Users/forgot-password', function() {
+UserModelController.prototype.doForgotPassword = ['/api/users/forgot-password', function() {
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {
@@ -111,7 +111,7 @@ UserModelController.prototype.doForgotPassword = ['/api/Users/forgot-password', 
 		});
 }];
 
-UserModelController.prototype.doResetPassword = ['/api/Users/reset-password', function() {
+UserModelController.prototype.doResetPassword = ['/api/users/reset-password', function() {
 	var self = this;
 	return this.findAuthenticator()
 		.then(function(authenticator) {

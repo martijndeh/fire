@@ -255,7 +255,7 @@ ContainerModelController.prototype.deleteContainer = function($id) {
 
 
 
-ContainerModelController.prototype.createUsers = ['/api/Containers/:id/users', function($id) {
+ContainerModelController.prototype.createUsers = ['/api/containers/:id/users', function($id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -289,7 +289,7 @@ ContainerModelController.prototype.createUsers = ['/api/Containers/:id/users', f
 		});
 }];
 
-ContainerModelController.prototype.getUsers = ['/api/Containers/:id/users', function($id) {
+ContainerModelController.prototype.getUsers = ['/api/containers/:id/users', function($id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -321,7 +321,40 @@ ContainerModelController.prototype.getUsers = ['/api/Containers/:id/users', func
 		});
 }];
 
-ContainerModelController.prototype.updateUsers = ['/api/Containers/:id/users/:associationID', function($id, $associationID) {
+ContainerModelController.prototype.deleteUsers = ['/api/containers/:id/users/:associationID', function($id, $associationID) {
+	var model = this.models.Container;
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+		.then(function(authenticator) {
+			return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
+		})
+		.spread(function(canDelete, authenticator) {
+			if(!canDelete) {
+				throw unauthenticatedError(authenticator);
+			}
+			else {
+				var association = model.getProperty('users');
+
+				var removeMap = {};
+				removeMap[association.options.throughPropertyName] = $id;
+				removeMap[association.options.relationshipVia.options.throughPropertyName] = $associationID;
+
+				var queryMap = self.query || {};
+				var optionsMap = {};
+
+				if(queryMap.$options) {
+					optionsMap = queryMap.$options;
+					delete queryMap.$options;
+				}
+
+				return self.models[association.options.through.getName()].remove(removeMap, optionsMap);
+			}
+		});
+}];
+
+ContainerModelController.prototype.updateUsers = ['/api/containers/:id/users/:associationID', function($id, $associationID) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 

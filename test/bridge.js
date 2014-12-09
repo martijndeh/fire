@@ -8,7 +8,7 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
-var write = true;
+var write = false;
 
 describe('bridge', function() {
 	var app = null;
