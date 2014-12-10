@@ -11,9 +11,15 @@
 			"../fire/lib/modules/api",
 			"../fire/lib/modules/bridge",
 			"../fire/lib/modules/bridge/generators",
+			"../fire/lib/modules/channels",
+			"../fire/lib/modules/clock",
+			"../fire/lib/modules/configure-functions",
 			"../fire/lib/modules/controllers",
+			"../fire/lib/modules/http-server",
+			"../fire/lib/modules/message-queue",
 			"../fire/lib/modules/migrations",
 			"../fire/lib/modules/models",
+			"../fire/lib/modules/module-properties",
 			"../fire/lib/modules/seo",
 			"../fire/lib/modules/static",
 			"../fire/lib/modules/templates",
@@ -25,7 +31,8 @@
 			"../fire/lib/modules/http-server",
 			"../fire/lib/modules/module-properties",
 			"../fire/lib/modules/tasks",
-			"../fire/lib/modules/websockets"
+			"../fire/lib/modules/websockets",
+			"../fire/lib/modules/workers"
 		],
 		"includePattern": ".*\\.(js|md)$"
 	},

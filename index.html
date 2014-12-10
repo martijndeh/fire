@@ -21,7 +21,7 @@
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li><a href="/documentation">Documentation</a></li>
 					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
+					<!--li><a href="/tutorials">Tutorials</a></li-->
 				</ul>
 			</div>
 		</div>
@@ -33,14 +33,36 @@
 				<span class="h1">Node on Fire</span>
 			</div>
 
-			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, real-time web framework built on top of AngularJS, express,  PostgreSQL, and RabbitMQ.</p>
+			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, real-time web framework built on top of AngularJS, express,  PostgreSQL and RabbitMQ.</p>
+		</div>
+
+		<div class="row">
+			<div class="buttons col-md-8 col-md-offset-2 text-center">
+				<a class="twitter-follow-button"
+href="https://twitter.com/nodeonfire"
+data-show-count="false"
+data-lang="en">
+Follow @twitterdev
+</a>
+<script type="text/javascript">
+window.twttr = (function (d, s, id) {
+var t, js, fjs = d.getElementsByTagName(s)[0];
+if (d.getElementById(id)) return;
+js = d.createElement(s); js.id = id;
+js.src= "https://platform.twitter.com/widgets.js";
+fjs.parentNode.insertBefore(js, fjs);
+return window.twttr || (t = { _e: [], ready: function (f) { t._e.push(f) } });
+}(document, "script", "twitter-wjs"));
+</script> <iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
+			</div>
 		</div>
 
 		<div class="row pitch">
 			<div class="col-md-8 col-md-offset-2">
 				<h1>What is Node on Fire?</h1>
 
-				<p>Node on Fire is a JavaScript-everywhere, model-driven, real-time web framework to rapidly create advanced web-worker applications following the <a href="http://12factor.net">12factor methodology</a>. Go to our <a href="/getting-started">getting started</a> section to learn how to set up a working Hello World project.</p>
+				<p>Node on Fire is collection of JavaScript modules to rapidly create advanced web-worker applications following the <a href="http://12factor.net">12factor methodology</a>. Go to our <a href="/getting-started">getting started</a> section to learn how to set up a working Hello World project.</p>
 			</div>
 		</div>
 
@@ -59,8 +81,6 @@
 	channel.sendMessage({text: 'Hello, world!'});
 }
 app.controller(MyController);</pre>
-
-				<p><small>* If you prefer, you can also write you app in CoffeeScript, of course.</small></p>
 			</div>
 
 			<div class="col-md-5">
@@ -74,7 +94,7 @@ app.controller(MyController);</pre>
 	this.createdAt 	= [this.DateTime];
 }
 app.model(Article);</pre>
-				<p>Node on Fire automatically generates migrations, the database schema, a RESTful CRUD API, client&mdash;server equal models API and client- and server-context routing.</p>
+				<p>Node on Fire automatically generates migrations, the database schema, a RESTful CRUD API and a client&mdash;server equal models API .</p>
 			</div>
 		</div>
 
@@ -84,22 +104,31 @@ app.model(Article);</pre>
 
 				<p>Node on Fire completely embraces the <a href="https://angularjs.org/">superheoric AngularJS framework</a> for all things client-side.</p>
 				<pre class="prettyprint">function NewsController(ArticleModel, UserModel, $scope) {
-	$scope.articles = ArticleModel.find({}, {orderBy:{position:1}});
-	$scope.user 	= UserModel.getMe();
+	ArticleModel.find({}, {orderBy:{position:1}})
+		.then(function(articles) {
+			$scope.articles = articles;
+		})
 
 	$scope.voteArticle = function(article) {
-		return article.createVoter({user: $scope.user});
+		return article.createVoter({user: UserModel.getMe()});
 	};
 }
 app.controller(NewsController);</pre>
 			</div>
 
 			<div class="col-md-5">
-				<h2>JavaScript Everywhere</h2>
+				<h2>Routing</h2>
 
-				<p>You write both you server-side and client-side in JavaScript*. But you don't have to write separate files for your client- or your server-side: your controllers handle both the server- and the client-side.</p>
+				<p>Your controller methods are automatically routable and all views are automatically added to your $locationProvider. You don't have to keep track of separate routing tables for express and angular.</p>
 
-				<p><small>* If you prefer, you can also write you app in CoffeeScript, of course.</small></p>
+				<pre class="prettyprint">function TestController($scope) {
+	$scope.test = 'Hello, world!';
+}
+app.controller(TestController);
+
+TestController.prototype.view = function() {
+	return this.template('index.jade');
+};
 			</div>
 		</div>
 
@@ -150,35 +179,26 @@ DeactiveTask.prototype.run = function() {
 			</div>
 		</div>
 
-		<div class="row desc">
-			<hr/>
-
-			<div class="col-md-offset-1 col-md-5">
-				<h2>Newsletter</h2>
-				<p>Sign up for our newsletter to receive occasional updates on Node on Fire.</p>
-
-				<link href="//cdn-images.mailchimp.com/embedcode/classic-081711.css" rel="stylesheet" type="text/css">
-				<style type="text/css">
-					#mc_embed_signup{background:#fff; clear:left; font:14px Helvetica,Arial,sans-serif; }
-					/* Add your own MailChimp form style overrides in your site stylesheet or in this style block.
-					   We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
-				</style>
-				<div id="mc_embed_signup">
-				<form action="//ff00ff.us9.list-manage.com/subscribe/post?u=695bb623f0e64230b0de02e66&amp;id=e8ee6483bb" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
-
-				<div class="mc-field-group">
-					<label for="mce-EMAIL">Email Address </label>
-					<input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL">
-				</div>
-					<div id="mce-responses" class="clear">
-						<div class="response" id="mce-error-response" style="display:none"></div>
-						<div class="response" id="mce-success-response" style="display:none"></div>
-					</div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
-				    <div style="position: absolute; left: -5000px;"><input type="text" name="b_695bb623f0e64230b0de02e66_e8ee6483bb" tabindex="-1" value=""></div>
-				    <div class="clear"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"></div>
-				</form>
-				</div>
-				<script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script><script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';fnames[1]='FNAME';ftypes[1]='text';fnames[2]='LNAME';ftypes[2]='text';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
+		<div class="row">
+			<div class="buttons col-md-8 col-md-offset-2 text-center">
+				<a class="twitter-follow-button"
+href="https://twitter.com/nodeonfire"
+data-show-count="false"
+data-lang="en">
+Follow @twitterdev
+</a>
+<script type="text/javascript">
+window.twttr = (function (d, s, id) {
+var t, js, fjs = d.getElementsByTagName(s)[0];
+if (d.getElementById(id)) return;
+js = d.createElement(s); js.id = id;
+js.src= "https://platform.twitter.com/widgets.js";
+fjs.parentNode.insertBefore(js, fjs);
+return window.twttr || (t = { _e: [], ready: function (f) { t._e.push(f) } });
+}(document, "script", "twitter-wjs"));
+</script> <iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
+allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
+			</div>
 		</div>
 	</div>
 </body>

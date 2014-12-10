@@ -20,7 +20,7 @@
 					<li class="active"><a href="/getting-started">Getting Started</a></li>
 					<li><a href="/documentation">Documentation</a></li>
 					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
+					<!--li><a href="/tutorials">Tutorials</a></li-->
 				</ul>
 			</div>
 		</div>
@@ -122,34 +122,26 @@ TestController.prototype.view = function() {
 			</div>
 		</div>
 
-		<div class="row desc">
-			<hr/>
-
-			<div class="col-md-offset-1 col-md-5">
-				<h2>Newsletter</h2>
-				<p>Sign up for our newsletter to receive occasional updates on Node on Fire.</p>
-
-				<div id="mc_embed_signup">
-				<form action="//blobmedia.us1.list-manage.com/subscribe/post?u=4feb48ecaabb298155244a2ad&amp;id=8e4335d553" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank">
-
-					<div id="mce-responses" class="clear">
-						<div class="response" id="mce-error-response" style="display:none"></div>
-						<div class="response" id="mce-success-response" style="display:none"></div>
-					</div>
-
-					<label for="mce-EMAIL">Email Address </label>
-					<div class="input-group">
-						<input type="email" name="EMAIL" id="mce-EMAIL" class="form-control">
-						<span class="input-group-btn">
-							<input type="submit" value="Subscribe" id="mc-embedded-subscribe" name="subscribe" class="btn btn-default"/>
-						</span>
-					</div>
-
-					<div style="position: absolute; left: -5000px;"><input type="text" name="b_4feb48ecaabb298155244a2ad_8e4335d553" tabindex="-1" value=""></div>
-				</form>
-				</div>
+		<div class="row">
+			<div class="buttons col-md-8 col-md-offset-2 text-center">
+				<a class="twitter-follow-button"
+href="https://twitter.com/nodeonfire"
+data-show-count="false"
+data-lang="en">
+Follow @twitterdev
+</a>
+<script type="text/javascript">
+window.twttr = (function (d, s, id) {
+var t, js, fjs = d.getElementsByTagName(s)[0];
+if (d.getElementById(id)) return;
+js = d.createElement(s); js.id = id;
+js.src= "https://platform.twitter.com/widgets.js";
+fjs.parentNode.insertBefore(js, fjs);
+return window.twttr || (t = { _e: [], ready: function (f) { t._e.push(f) } });
+}(document, "script", "twitter-wjs"));
+</script> <iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
+allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
 			</div>
-			<script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script><script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';fnames[1]='FNAME';ftypes[1]='text';fnames[2]='LNAME';ftypes[2]='text';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
 		</div>
 	</div>
 </body>

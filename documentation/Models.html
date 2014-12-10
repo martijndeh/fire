@@ -61,9 +61,10 @@
     
     
     <div class="description">
-        <p>The models module.</p>
-<p>Every registered model will be available through this module.</p>
-<p>For example, when creating a <code>User</code> model:</p>
+        <p>The models module which is Node on Fire's ORM backed by PostgreSQL. It is designed to have a similar API on the front-end and the back-end. This allows you to do most things in the front-end, but move performance-critical and sensitive code to the back-end.</p>
+<p>Using the Models module you can define models. A model contains a list of properties and associations. One-to-one, one-to-many and many-to-many associations are supported.</p>
+<p>Models are persisted to the database. This happens in the release phase in the Migrations module. See <a href="Migrations.html">Migrations</a>.</p>
+<p>To create a model. For example, when creating a <code>User</code> model:</p>
 <pre class="prettyprint source lang-js"><code>function User() {
     this.name = [this.String];
 }

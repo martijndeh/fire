@@ -64,7 +64,6 @@ h1, h2 {
 	margin-bottom:100px;
 }
 .pitch h1 {
-	margin-top:100px;
 	text-align:center;
 	font-size:3em;
 }
@@ -162,4 +161,7 @@ div.row pre.prettyprint {
 }
 .bs-callout-danger h4 {
 	color:#d9534f;
+}
+div.buttons {
+	margin-top:100px;
 }

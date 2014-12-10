@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Global - Node on Fire</title>
+	<title>Documentation Class: Clock - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,12 @@
 				
 
 
-	<h1 class="page-title">Global</h1>
+	<h1 class="page-title">Class: Clock</h1>
 <section>
 
 <header>
     <h2>
-    
+    Clock
     </h2>
     
 </header>
@@ -52,117 +52,8 @@
 
     
         
-
-        
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        <dl>
-            
-<dt class="name" id="">
-    <h4><span class="type-signature"></span><span class="type-signature"></span></h4>
-
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>App and Firestarter create a circular require. Set the exports early, before requiring App, so that it's available in App already.</p>
-    </div>
-    
-
-    
-
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-</dd>
-
-        </dl>
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        <dl>
-            
 <dt>
-    <h4 class="name" id="__parseRow"><span class="type-signature"></span>__parseRow<span class="signature">(row)</span></h4>
+    <h4 class="name" id="Clock"><span class="type-signature"></span>new Clock<span class="signature">(app)</span></h4>
     
     
 </dt>
@@ -170,7 +61,12 @@
     
     
     <div class="description">
-        <p>Parses the row and returns the associations and the column map parsed.</p>
+        <p>The clock module is responsible for the clock process type. The clock process schedules tasks to run at scheduled time intervals in your worker processes. The clock module is used by e.g. the Triggers and the Scheduler module. The clock module guarantees to schedule tasks without skipping an interval.</p>
+<p>Because the clock process might at some point restart or crash and potentially skip a scheduled tasks, the clock process checks at startup if it skipped any task based on the date of the previous executed task. If it identifies a skipped task, it'll schedule the task immediately.</p>
+<p>For example, consider a task which sends a mail to all users every month at the 1st day of the month at 13:00 hour exactly. If the clock process crashes at 12:59 hour and starts again at 13:01 the time interval was skipped. The clock module recognizes this and schedules the task at 13:01 instead.</p>
+<p>(When the clock module starts the first time, and there are no results, it inserts a fake clock result).</p>
+<p>To start the clock process simply invoke the app with the <code>--clock</code> argument. For example, add the following entry to your <code>Procfile</code>:</p>
+<pre class="prettyprint source"><code>clock: node index.js --clock</code></pre>
     </div>
     
 
@@ -204,13 +100,13 @@
 
         <tr>
             
-                <td class="name"><code>row</code></td>
+                <td class="name"><code>app</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">Dictionary</span>
+<span class="label label-primary param-type"><a href="App.html">App</a></span>
 
 
 
@@ -221,7 +117,7 @@
 
             
 
-            <td class="description last"><p>A single row from the datastore.</p></td>
+            <td class="description last"></td>
         </tr>
 
 	
@@ -271,38 +167,32 @@
     
     
     
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>Multiple return values in an array. At index 0 the columns found, and at index 1 the associations found. The array contains 2 items.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Array</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>
 
-        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
             
 <dt>
-    <h4 class="name" id="parseAuthorization"><span class="type-signature"></span>parseAuthorization<span class="signature">(authorization)</span></h4>
+    <h4 class="name" id="addTask"><span class="type-signature"></span>addTask<span class="signature">(timingPattern, taskName, callback)</span></h4>
     
     
 </dt>
@@ -310,8 +200,8 @@
     
     
     <div class="description">
-        <p>Parses the authorization header and returns an array with two values: the user name, the password.</p>
-<p>This function either returns null, or an array with always a length of 2.</p>
+        <p>Creates a task to run at a time interval. The callback is guaranteed to run. The callback should schedule a job on a worker process and not actually execute any work.</p>
+<p>Check the Schedule or Trigger modules instead if you want to schedule periodic tasks.</p>
     </div>
     
 
@@ -345,7 +235,7 @@
 
         <tr>
             
-                <td class="name"><code>authorization</code></td>
+                <td class="name"><code>timingPattern</code></td>
             
 
             <td class="type">
@@ -362,13 +252,127 @@
 
             
 
-            <td class="description last"><p>The basic auth value. The word &quot;Basic &quot; followed by a base64 encoded username and password combination concatenated by a colon character.</p></td>
+            <td class="description last"><p>A cron-style timing pattern. For more information, see https://github.com/ncb000gt/node-cron.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>taskName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the task to run.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The function which schedules a job on a worker process.</p></td>
         </tr>
 
 	
 	</tbody>
 </table>
 
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Stops all the tasks. This is executed when the app is killed.</p>
+    </div>
+    
+
+    
+    
+    
+    
     
     
     

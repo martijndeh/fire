@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Global - Node on Fire</title>
+	<title>Documentation Class: ConfigureFunctions - Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
@@ -36,12 +36,12 @@
 				
 
 
-	<h1 class="page-title">Global</h1>
+	<h1 class="page-title">Class: ConfigureFunctions</h1>
 <section>
 
 <header>
     <h2>
-    
+    ConfigureFunctions
     </h2>
     
 </header>
@@ -52,72 +52,35 @@
 
     
         
-
-        
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-        
+<dt>
+    <h4 class="name" id="ConfigureFunctions"><span class="type-signature"></span>new ConfigureFunctions<span class="signature">()</span></h4>
     
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        <dl>
-            
-<dt class="name" id="">
-    <h4><span class="type-signature"></span><span class="type-signature"></span></h4>
-
     
 </dt>
 <dd>
     
+    
     <div class="description">
-        <p>App and Firestarter create a circular require. Set the exports early, before requiring App, so that it's available in App already.</p>
+        <p>The configure module creates App#configure which...:</p>
+<p>Sets a configure function to be run in the server-context right before the app starts. This is useful because code may be invoked when generating code, migrations and so on. The configureFunction is guaranteed only to be run when the app starts.</p>
+<p>You may invoke this method multiple times to configure multiple functions. If you return a promise, the start up of the app continues once the promise resolves. The function is only invoked on the web process.</p>
+<p>For example:</p>
+<pre class="prettyprint source"><code>var app = fire.app('myTestApp', {modules: ['ngRoute']});
+
+app.configure(function(environment) {
+    // Do something
+});
+
+app.start();</code></pre>
     </div>
     
 
     
-
+    
+    
+    
+    
+    
     
 <dl class="details">
 	
@@ -149,11 +112,33 @@
 	
 </dl>
 
+    
+    
 
+    
+
+    
+    
+    
+    
+    
+    
     
 </dd>
 
-        </dl>
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
     
 
     
@@ -162,7 +147,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="__parseRow"><span class="type-signature"></span>__parseRow<span class="signature">(row)</span></h4>
+    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">()</span></h4>
     
     
 </dt>
@@ -170,7 +155,7 @@
     
     
     <div class="description">
-        <p>Parses the row and returns the associations and the column map parsed.</p>
+        <p>Executes all App#configure functions. This is only invoked on the web process.</p>
     </div>
     
 
@@ -178,56 +163,6 @@
     
     
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>row</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Dictionary</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>A single row from the datastore.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
     
     
     
@@ -271,30 +206,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>Multiple return values in an array. At index 0 the columns found, and at index 1 the associations found. The array contains 2 items.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Array</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>
@@ -302,7 +213,7 @@
         
             
 <dt>
-    <h4 class="name" id="parseAuthorization"><span class="type-signature"></span>parseAuthorization<span class="signature">(authorization)</span></h4>
+    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">()</span></h4>
     
     
 </dt>
@@ -310,8 +221,7 @@
     
     
     <div class="description">
-        <p>Parses the authorization header and returns an array with two values: the user name, the password.</p>
-<p>This function either returns null, or an array with always a length of 2.</p>
+        <p>Executes all App#configure functions. This is only invoked on the web process.</p>
     </div>
     
 
@@ -320,55 +230,259 @@
     
     
     
-        <h5>Parameters:</h5>
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+	<h1 class="page-title">Class: ConfigureFunctions</h1>
+<section>
+
+<header>
+    <h2>
+    ConfigureFunctions
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
         
+<dt>
+    <h4 class="name" id="ConfigureFunctions"><span class="type-signature"></span>new ConfigureFunctions<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>The configure module creates App#configure which...:</p>
+<p>Sets a configure function to be run in the server-context right before the app starts. This is useful because code may be invoked when generating code, migrations and so on. The configureFunction is guaranteed only to be run when the app starts.</p>
+<p>You may invoke this method multiple times to configure multiple functions. If you return a promise, the start up of the app continues once the promise resolves. The function is only invoked on the web process.</p>
+<p>For example:</p>
+<pre class="prettyprint source"><code>var app = fire.app('myTestApp', {modules: ['ngRoute']});
 
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
+app.configure(function(environment) {
+    // Do something
+});
 
-		<th>Type</th>
+app.start();</code></pre>
+    </div>
+    
 
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
 	
 
-        <tr>
-            
-                <td class="name"><code>authorization</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The basic auth value. The word &quot;Basic &quot; followed by a base64 encoded username and password combination concatenated by a colon character.</p></td>
-        </tr>
+	
 
 	
-	</tbody>
-</table>
 
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Executes all App#configure functions. This is only invoked on the web process.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Executes all App#configure functions. This is only invoked on the web process.</p>
+    </div>
+    
+
+    
+    
+    
+    
     
     
     

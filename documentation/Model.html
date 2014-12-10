@@ -236,7 +236,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="count"><span class="type-signature"></span>count<span class="signature">(whereMap)</span></h4>
+    <h4 class="name" id="create"><span class="type-signature"></span>create<span class="signature">(createMap)</span></h4>
     
     
 </dt>
@@ -244,158 +244,28 @@
     
     
     <div class="description">
-        <p>This is not implemented yet and will throw an error.</p>
-<p>Counts the number of model instances.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>whereMap</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Dictionary</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>There where clause. See <a href="Model.html#find">Model#find</a>.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>Resolves the number of model instances.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="create"><span class="type-signature"></span>create<span class="signature">(fields)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Creates one or more model instances.</p>
-<p>For example, to create one user model instance:</p>
-<pre class="prettyprint source"><code>models.User.create({
-    name: 'Martijn'
-});</code></pre><p>But, you can also create multiple model instances:</p>
-<pre class="prettyprint source"><code>models.User.create([{
+        <p>Creates a model instance. This method is available on both ends.</p>
+<p>For example, to create one model instance in the back-end:</p>
+<pre class="prettyprint source"><code>TestController.prototype.createUser = function() {
+    return models.User.create({
         name: 'Martijn'
-    }, {
-        name: 'John'
-    }
-]);</code></pre><p>When creating multiple model instances, they are created one-by-one and no bulk-insert is performed. This is an improvement for a future release.</p>
+ });
+}</code></pre><p>In the front-end:</p>
+<pre class="prettyprint source lang-js"><code>function TestController(UserModel) {
+    UserModel.create({name: 'Martijn'})
+        .then(function(user) {
+            //
+        });
+}</code></pre><p>But, on the back-end you can create multiple model instances:</p>
+<pre class="prettyprint source"><code>TestController.prototype.createUsers = function() {
+    return models.User.create([{
+     name: 'Martijn'
+ }, {
+     name: 'John'
+ }]).spread(function(user1, user2) {
+     //
+ });
+}</code></pre><p>When creating multiple model instances, they are created one-by-one and no bulk-insert is performed. This is an improvement for a future release.</p>
     </div>
     
 
@@ -429,15 +299,12 @@
 
         <tr>
             
-                <td class="name"><code>fields</code></td>
+                <td class="name"><code>createMap</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">Array</span>
-|
-
 <span class="label label-primary param-type">Dictionary</span>
 
 
@@ -449,7 +316,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>The dictionary to create the model. On the back-end side, this may be an array. On the front-end this must be a dictionary.</p></td>
         </tr>
 
 	
@@ -538,7 +405,12 @@
     
     
     <div class="description">
-        <p>Executes an SQLish statement on the model. To execute a raw sql statement, see {Models#execute}.</p>
+        <p>This method is only available on the back-end.</p>
+<p>Executes an SQLish statement on the model. To execute a raw sql statement, see <a href="Models.html#execute">Models#execute</a>.</p>
+<p>For example, on the back-end:</p>
+<pre class="prettyprint source lang-js"><code>TestController.prototype.getTest = function() {
+    return this.models.Test.execute('SELECT * form tests');
+};</code></pre>
     </div>
     
 
@@ -667,7 +539,7 @@
     
             
 <div class="param-desc">
-    <p>Resolves with an array of model instances.</p>
+    <p>Resolves with an array of model instances. Even if the result is one model instance, an array is returned with just one model instance.</p>
 </div>
 
 
@@ -886,6 +758,33 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
             
 
             <td class="description last"><p>Orders the model instances. <code>orderBy</code> can either be an SQLish statement (see Table#parseSQLishStatement) or a dictionary with property name and value pairs. The value of a pair can either be a string (DESC, or ASC) or a number (-1 and lower for DESC and 0 and higher ASC).</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>groupBy</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+|
+
+<span class="label label-primary param-type">Array:<a href="global.html"></a>.&lt;String:<a href="global.html"></a>></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The property name(s) to group by.</p></td>
         </tr>
 
 	
@@ -1335,7 +1234,7 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
         
             
 <dt>
-    <h4 class="name" id="getAllAssociations"><span class="type-signature"></span>getAllAssociations<span class="signature">()</span></h4>
+    <h4 class="name" id="getMe"><span class="type-signature"></span>getMe<span class="signature">()</span></h4>
     
     
 </dt>
@@ -1343,7 +1242,8 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
     
     
     <div class="description">
-        <p>Returns all the property names-property pairs which are part of an association.</p>
+        <p>Only available on an authenticator model.</p>
+<p>Returns the currently authenticated model instance.</p>
     </div>
     
 
@@ -1394,487 +1294,6 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
     
     
     
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Dictionary</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getAllProperties"><span class="type-signature"></span>getAllProperties<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Returns all properties in a string-property dictionary.</p>
-<p>If the properties are not initialised yet, this internally creates the properties. In this phase the default <code>id</code> property is also created.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Dictionary:<a href="global.html"></a>.&lt;String:<a href="global.html"></a>, Property:<a href="global.html"></a>></span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getAssociation"><span class="type-signature"></span>getAssociation<span class="signature">(associationName)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Returns a property which is an association.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>associationName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The name of the property</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Property</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getAssociations"><span class="type-signature"></span>getAssociations<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Synonym of <a href="Model.html#getAllAssociations">Model#getAllAssociations</a>.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getFileName"><span class="type-signature"></span>getFileName<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Dasherizes the model's name as the naming convention of the file name (without the extension).</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">String</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getName"><span class="type-signature"></span>getName<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Returns the name of the model.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">String</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>
@@ -1954,324 +1373,6 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
 	<dd>
 		
 <span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getProperty"><span class="type-signature"></span>getProperty<span class="signature">(keyPath)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Finds a property with a given key path. A key path is a string referring to a property or a property of any association.</p>
-<p>For example, given an Article model with an author association to the User model. The following key path would refer to the author's name: &quot;author.name&quot;.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>keyPath</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getTable"><span class="type-signature"></span>getTable<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Returns the table.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    <h5>Throws:</h5>
-    
-            
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        If table is not set.
-        </div>
-    </dt>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="label label-primary param-type">Error</span>
-
-
-
-            </dd>
-        </dl>
-    </dt>
-</dl>
-
-
-        
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type"><a href="Table.html">Table</a></span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="isAuthenticator"><span class="type-signature"></span>isAuthenticator<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Returns true if this model is the authenticator. The authenticator is, for example, the User model. This is defined by setting the <a href="PropertyTypes.html#Authenticate">PropertyTypes#Authenticate</a> property type.</p>
-<p>If you need to get the authenticator model, use <a href="Models.html#getAuthenticator">Models#getAuthenticator</a>.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Boolean</span>
 
 
 
@@ -2423,7 +1524,7 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
         
             
 <dt>
-    <h4 class="name" id="removeAll"><span class="type-signature"></span>removeAll<span class="signature">()</span></h4>
+    <h4 class="name" id="update"><span class="type-signature"></span>update<span class="signature">(whereMap, setMap, optionsMap)</span></h4>
     
     
 </dt>
@@ -2431,353 +1532,7 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
     
     
     <div class="description">
-        <p>Removes all model instances.</p>
-<p>This method is only available on the server-context.</p>
-<p>In the server-context:</p>
-<pre class="prettyprint source"><code>MyController.prototype.deleteUsers = function() {
-    return this.models.User.removeAll();
-};</code></pre>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="removeAllAssociations"><span class="type-signature"></span>removeAllAssociations<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Removes all properties which are part of an association.</p>
-<p>This method is invoked when a model gets destroyed during a migration.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="setActiveMigration"><span class="type-signature"></span>setActiveMigration<span class="signature">(migration)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Sets the active migration. When an active migration is set, all calls are proxied to the migration instead.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>migration</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="Migration.html">Migration</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The currently running migration.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Sets up the model's table. This creates the table and is usually called from migrations.</p>
-<p>If an active migration is running, this is added as a task to the migration.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>The database result. See <a href="Datastore.html#query">Datastore#query</a>.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Mixed</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="update"><span class="type-signature"></span>update<span class="signature">(whereMap, setMap)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Updates a model instance.</p>
-<p>Currently this only updates one model instance.</p>
+        <p>Updates model instances.</p>
     </div>
     
 
@@ -2859,6 +1614,128 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
         </tr>
 
 	
+
+        <tr>
+            
+                <td class="name"><code>optionsMap</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Additional options to provide, similar to <a href="Model.html#find">Model#find</a>.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>limit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Limits the number of instances to update to <code>limit</code>.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>skip</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Skips the first <code>skip</code> number of instances to update.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>orderBy</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary:<a href="global.html"></a>.&lt;String:<a href="global.html"></a>, Mixed:<a href="global.html"></a>></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Orders the model instances to update. Please note: while using this works properly in combination with the skip and limit option, the returned model instances are returned in the correct order.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+            </td>
+        </tr>
+
+	
 	</tbody>
 </table>
 
@@ -2908,6 +1785,10 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
     <h5>Returns:</h5>
     
             
+<div class="param-desc">
+    <p>Returns an array of model instances.</p>
+</div>
+
 
 
 <dl>
@@ -2916,7 +1797,7 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
 	</dt>
 	<dd>
 		
-<span class="label label-primary param-type">Array:<a href="global.html"></a>.&lt;<a href="ModelInstance.html">ModelInstance</a>:<a href="global.html"></a>></span>
+<span class="label label-primary param-type">Promise</span>
 
 
 
@@ -2940,7 +1821,7 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
     
     
     <div class="description">
-        <p>Updates one model instance.</p>
+        <p>Updates model instance with a limit of 1 and returns 1 model instance.</p>
     </div>
     
 
@@ -3068,6 +1949,30 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
     
     
     
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Resolves with 1 model instance.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
     
     
 </dd>

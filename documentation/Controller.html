@@ -702,6 +702,7 @@ MyController.prototype.getTests = function() {
     
     <div class="description">
         <p>This method returns the current authenticated authenticator instance, for example, the currently signed in user.</p>
+<p>The authenticator is either retrieved from the session, if the <code>at</code> property is set, or from the Authorization header, if Basic base64 (authenticating property:access token) is set.</p>
 <p>An authenticator is configured via the <a href="PropertyTypes.html#Authenticate">PropertyTypes#Authenticate</a> property type.</p>
 <p>This method does not cache the return value.</p>
     </div>

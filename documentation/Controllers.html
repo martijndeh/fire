@@ -196,12 +196,11 @@
     
     <div class="description">
         <p>This is a route delegate method and is invoked whenever the router creates a route for a controller's method.</p>
-<p>If the route is a view route, two GET routes are created. A method is considered a view route if the method's name starts with view and returns a Template instance.</p>
-<pre class="prettyprint source"><code>    1. A route to the template returned by the view method.
-    2. A route to the view—returning the application's main view.</code></pre><p>Consider the following view method:</p>
+<p>If the route is a view route, a single GET route is created. A method is considered a view route if the method's name starts with view and returns a Template instance. A route to the view—returning the application's main view.</p>
+<p>Consider the following view method:</p>
 <pre class="prettyprint source lang-js"><code>TestController.prototype.view = function() {
     return this.template('index.jade');
-};</code></pre><p>This view method would produce a route to <code>GET /</code> returning the app's view and a route to <code>GET /templates/index.jade</code> returning the compiled template.</p>
+};</code></pre><p>This view method would produce a route to <code>GET /</code> returning the app's view.</p>
 <p>The app's default view is view.jade and is used as main template in angular. The view should contain the ngApp and ngView directives.</p>
 <p>If the route is not a view route, a controller route is created.</p>
 <p>When a request matches the route, roughly the following happens:</p>
