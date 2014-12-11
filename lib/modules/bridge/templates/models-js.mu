@@ -325,7 +325,10 @@ FireModel{{name}}.prototype.resetPassword = function(resetToken, password, confi
 };
 
 FireModel{{name}}.prototype.signOut = function() {
-    return this._post(this.endpoint + '/sign-out');
+    return this._post(this.endpoint + '/sign-out')
+        .then(function() {
+            __authenticator = null;
+        });
 };
 
 FireModel{{name}}.prototype.authorize = function(fields) {
