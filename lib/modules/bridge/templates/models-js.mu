@@ -275,7 +275,7 @@ FireModelInstance{{name}}.prototype.{{removeMethodName}} = function(mapOrId) {
     else {
         id = mapOrId;
     }
-    
+
     return this._model._action('delete', this._model.endpoint + '/' + this.id + '/{{resource}}/' + id);
 };
 {{/manyToMany}}
@@ -322,6 +322,10 @@ FireModel{{name}}.prototype.resetPassword = function(resetToken, password, confi
 	}
 
 	return this._post(this.endpoint + '/reset-password', {resetToken: resetToken, password: password});
+};
+
+FireModel{{name}}.prototype.signOut = function() {
+    return this._post(this.endpoint + '/sign-out');
 };
 
 FireModel{{name}}.prototype.authorize = function(fields) {

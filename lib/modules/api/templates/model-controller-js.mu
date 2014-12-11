@@ -55,6 +55,11 @@ app.controller({{controllerName}});
 		});
 }];
 
+{{controllerName}}.prototype.doSignOut = ['/api/{{model.resourceName}}/sign-out', function() {
+	this.session.at = null;
+	return {};
+}];
+
 {{controllerName}}.prototype.doAuthorize = ['/api/{{model.resourceName}}/authorize', function() {
 	// TODO: What if we're already authorized? Should we somehow disallow this? If so, we need a deauthorize method as well.
 

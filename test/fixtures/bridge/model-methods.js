@@ -451,7 +451,7 @@ FireModelInstanceUser.prototype.removeVote = function(mapOrId) {
     else {
         id = mapOrId;
     }
-    
+
     return this._model._action('delete', this._model.endpoint + '/' + this.id + '/votes/' + id);
 };
 
@@ -585,7 +585,7 @@ FireModelInstanceArticle.prototype.removeVoter = function(mapOrId) {
     else {
         id = mapOrId;
     }
-    
+
     return this._model._action('delete', this._model.endpoint + '/' + this.id + '/voters/' + id);
 };
 

@@ -55,6 +55,11 @@ UserModelController.prototype.getMe = ['/api/users/me', function() {
 		});
 }];
 
+UserModelController.prototype.doSignOut = ['/api/users/sign-out', function() {
+	this.session.at = null;
+	return {};
+}];
+
 UserModelController.prototype.doAuthorize = ['/api/users/authorize', function() {
 	// TODO: What if we're already authorized? Should we somehow disallow this? If so, we need a deauthorize method as well.
 
