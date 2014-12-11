@@ -292,8 +292,15 @@ app.model(Tester);</code></pre><p>When retrieving a model instance, the aggregat
     
     
     <div class="description">
-        <p>Sets a property to be the authenticating property and sets the model as the authenticator.</p>
-<p>The authenticator is used</p>
+        <p>Sets a property to be the authenticating property and sets the model as the authenticator. Currently, there can only be one authenticator.</p>
+<p>The authenticator is used for authentication and is e.g. the User or Account model.</p>
+<p>To create an authenticator, see the below example:</p>
+<pre class="prettyprint source"><code>function User() {
+    this.email = [this.String, this.Authenticate];
+}
+app.model(User);</code></pre><p>This creates an authenticator with <code>email</code> as the authenticating property. A <code>password</code> property is automatically created, and an <code>accessToken</code> property is also created which is used for session authentication.</p>
+<p>Several methods are created on an authenticator automatically: <a href="Model.html#authorize">Model#authorize</a>, <a href="Model.html#getMe">Model#getMe</a>, <a href="Model.html#signOut">Model#signOut</a>, <a href="Model.html#resetPassword">Model#resetPassword</a>, <a href="Model.html#forgotPassword">Model#forgotPassword</a>.</p>
+<p>To sign in an authenticator, see <a href="Model.html#authorize">Model#authorize</a>.</p>
     </div>
     
 

@@ -780,9 +780,6 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
             <td class="type">
             
                 
-<span class="label label-primary param-type">String</span>
-|
-
 <span class="label label-primary param-type">Dictionary:<a href="global.html"></a>.&lt;String:<a href="global.html"></a>, Mixed:<a href="global.html"></a>></span>
 
 
@@ -794,7 +791,8 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
 
             
 
-            <td class="description last"><p>Orders the model instances. <code>orderBy</code> can either be an SQLish statement (see Table#parseSQLishStatement) or a dictionary with property name and value pairs. The value of a pair can either be a string (DESC, or ASC) or a number (-1 and lower for DESC and 0 and higher ASC).</p></td>
+            <td class="description last"><p>Orders the model instances.
+The value should be a dictionary with property name and value pairs. The value of a pair can either be a string (DESC, or ASC) or a number (-1 and lower for DESC and 0 and higher ASC).</p></td>
         </tr>
 
 	
@@ -1341,8 +1339,14 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
     
     
     <div class="description">
-        <p>Only available on an authenticator model.</p>
-<p>Returns the currently authenticated model instance.</p>
+        <p>Returns the currently authenticated model instance, or null if not authenticated. Only returns a model instance if <a href="Model.html#authorize">Model#authorize</a> is previously called, otherwise this method returns null.</p>
+<pre class="prettyprint source"><code>function UserController(UserModel) {
+    UserModel.getMe()
+        .then(funcion(user) {
+            //
+        });
+}
+app.controller(UserModel);</code></pre><p>Only available on an authenticator model. To define an authenticator model, have a look at <a href="PropertyTypes.html#Authenticate">PropertyTypes#Authenticate</a>.</p>
     </div>
     
 
@@ -1694,7 +1698,16 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
     
     <div class="description">
         <p>Signs out the current authenticator. To sign in a user, see <a href="Model.html#authorize">Model#authorize</a>.</p>
-<p>This method is only available on the authenticator model.</p>
+<p>For example, the below signs out a currently signed in user:</p>
+<pre class="prettyprint source"><code>function AccountController($scope, UserModel, $location) {
+    $scope.signOut = function() {
+        return UserModel.signOut()
+            .then(function() {
+                $location.path('/');
+            });
+    };
+}
+app.controller(AccountController);</code></pre><p>This method is only available on the authenticator model.</p>
     </div>
     
 
