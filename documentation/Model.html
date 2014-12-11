@@ -53,7 +53,7 @@
     
         
 <dt>
-    <h4 class="name" id="Model"><span class="type-signature"></span>new Model<span class="signature">(name, models, activeMigration)</span></h4>
+    <h4 class="name" id="Model"><span class="type-signature"></span>new Model<span class="signature">()</span></h4>
     
     
 </dt>
@@ -62,7 +62,7 @@
     
     <div class="description">
         <p>Do not construct a <code>Model</code> instance yourself, instead, you can construct a model via App#model.</p>
-<p>The model is a collection of properties and associations. Through a model you can find, update, create and delete model instances.</p>
+<p>The model is a collection of properties and associations. Through a model you can find, update, create and delete (CRUD) model instances.</p>
     </div>
     
 
@@ -70,104 +70,6 @@
     
     
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The name of the model.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>models</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="Models.html">Models</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The model collection instance.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>activeMigration</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type"><a href="Migration.html">Migration</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The active migration, if any.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
     
     
     
@@ -234,6 +136,141 @@
         <h3 class="subsection-title">Methods</h3>
 
         <dl>
+            
+<dt>
+    <h4 class="name" id="authorize"><span class="type-signature"></span>authorize<span class="signature">(authenticateMap)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Authorizes the current authenticator, for example, your user model. To declare an authenticator have a look at <a href="PropertyTypes.html#Authenticate">PropertyTypes#Authenticate</a>.</p>
+<p>For example, consider the following authenticator model:</p>
+<pre class="prettyprint source"><code>function User() {
+    this.email = [this.String, this.Authenticate];
+    this.fullName = [this.String];
+}
+app.model(User);</code></pre><p>In your controller, you can sign in the user via the following:</p>
+<pre class="prettyprint source"><code>function SignInController($scope, UserModel) {
+    $scope.signIn = function(email, password) {
+        return UserModel.authorize({email: email, password: password})
+            .then(function(user) {
+                // The user signed in. TODO: redirect the user to the signed-in area: $location.path('/dashboard')
+            })
+            .catch(function(error) {
+                // TODO: Show the user some error.
+            });
+    };
+}
+app.controller(SignInController);</code></pre><p>To sign out a user you can use <a href="Model.html#signOut">Model#signOut</a>. To return the currently signed in user, have a look at <a href="Model.html#getMe">Model#getMe</a>.</p>
+<p>This method is only available on the front-end. This method is not available on the back-end.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>authenticateMap</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Dictionary</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Dictionary containing the authenticating property and the password.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
             
 <dt>
     <h4 class="name" id="create"><span class="type-signature"></span>create<span class="signature">(createMap)</span></h4>
@@ -1234,6 +1271,68 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
         
             
 <dt>
+    <h4 class="name" id="forgotPassword"><span class="type-signature"></span>forgotPassword<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="getMe"><span class="type-signature"></span>getMe<span class="signature">()</span></h4>
     
     
@@ -1517,6 +1616,135 @@ app.controller(MyController);</code></pre><p>The same example in a controller in
 
 
         
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="resetPassword"><span class="type-signature"></span>resetPassword<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="signOut"><span class="type-signature"></span>signOut<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Signs out the current authenticator. To sign in a user, see <a href="Model.html#authorize">Model#authorize</a>.</p>
+<p>This method is only available on the authenticator model.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
     
     
 </dd>
