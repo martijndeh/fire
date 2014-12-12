@@ -71,7 +71,26 @@ app.scheduler(ReportsScheduler);
 
 ReportsScheduler.prototype.run = function() {
     // Do something. Make sure to return a promise.
-}</code></pre><p>The <code>timingPattern</code> allows you to set when to run your scheduler exactly. The format is cron-like, for more information and the exact syntax have a look at https://github.com/ncb000gt/node-cron. The time of execution of your schedulers may not always be exactly when you define,</p>
+}</code></pre><p>The <code>timingPattern</code> allows you to set when to run your scheduler exactly. The format is cron-like. You can set 6 different values in the pattern each separated with a space in the following order:</p>
+<ol>
+<li>Seconds: 0-59</li>
+<li>Minutes: 0-59</li>
+<li>Hours: 0-23</li>
+<li>Day of Month: 1-31</li>
+<li>Months: 0-11</li>
+<li>Day of Week: 0-6</li>
+</ol>
+<p>The <code>*</code> character indicates a wildcard and matches everything. For example, to run a scheduler:</p>
+<ul>
+<li>every minute on the 30th second: <code>30 * * * * *</code>.</li>
+<li>every hour: <code>0 0 * * * *</code></li>
+<li>every hour every day in January: <code>0 0 * * 1 *</code></li>
+</ul>
+<p>You can also use a range.</p>
+<ul>
+<li>every weekday at 11:30 AM: <code>0 30 11 * * 1-5</code></li>
+</ul>
+<p>To read about more advanced patterns have a look at <a href="https://github.com/ncb000gt/node-cron">https://github.com/ncb000gt/node-cron</a> and <a href="http://crontab.org">http://crontab.org</a>.</p>
 <p>Internally the schedulers module uses the <a href="Clock.html">Clock</a> module, which guarantees your schedulers are run, even if your server processes crash right before the task should be scheduled and the processes start again right after the processes should've been scheduled. If multiple tasks were skipped, only one task is run. For example, you have a scheduler to run every hour, and your server crashes and is down for 4 hours. When your server, and Node on Fire, start again, your scheduler will notice it skipped several runs. It will run once after the crash, but not 4 times.</p>
 <p>You can store your schedulers in the <code>schedulers/</code> folder which will automatically load.</p>
 <p>Please make sure you have a worker declared in your <code>Procfile</code> to actually execute schedulers. You need just one worker with the <code>--schedulers</code> argument:</p>
