@@ -49,7 +49,12 @@ FireModelInstance.prototype.save = function() {
 	return this._model._put(this._endpoint, saveMap)
 		.then(function(instance) {
 			self._changes = {};
-			self._map = instance._map;
+
+            Object.keys(instance._map).forEach(function(key) {
+                if(instance._map[key] !== null) {
+                    self._map[key] = instance._map[key];
+                }
+            });
 			return self;
 		});
 };
@@ -228,11 +233,11 @@ function FireModelInstance{{name}}(setMap, model, path) {
 	if(typeof setMap.{{name}} != 'undefined' && setMap.{{name}} !== null) {
 		if(Array.isArray(setMap.{{name}})) {
 			setMap.{{name}} = setMap.{{name}}.map(function(object) {
-				return new FireModelInstance{{getAssociatedModelName}}(object, model.models.{{getAssociatedModelName}}, path + '/' + setMap.id + '/{{resource}}');
+                return new FireModelInstance{{getAssociatedModelName}}(object, model.models.{{getAssociatedModelName}}, path + '/' + '{{resourceName}}');
 			});
 		}
 		else {
-			setMap.{{name}} = new FireModelInstance{{getAssociatedModelName}}(setMap.{{name}}, model.models.{{getAssociatedModelName}}, path + '/' + setMap.id + '/{{resource}}');
+			setMap.{{name}} = new FireModelInstance{{getAssociatedModelName}}(object, model.models.{{getAssociatedModelName}}, path + '/' + '{{resourceName}}');
 		}
 	}
 	{{/isAssociation}}
