@@ -618,8 +618,11 @@ app.controller(SignInController);</code></pre><p>To sign out a user you can use 
     this.age = [this.Integer];
 }
 app.model(User);</code></pre><p>In a controller in the client-context, to fetch up to 123 user's named &quot;Martijn&quot;:</p>
-<pre class="prettyprint source"><code>function MyController(fire) {
-    fire.models.User.find({name: 'Martijn'}, {limit:123})
+<pre class="prettyprint source"><code>function MyController(UserModel) {
+    UserModel.find({name: 'Martijn'}, {limit:123})
+        .then(function(users) {
+            //
+        });
 }
 app.controller(MyController);</code></pre><p>The same example in a controller in the server-context:</p>
 <pre class="prettyprint source"><code>MyController.prototype.getMartijn = function() {

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Documentation Class: Schedulers - Node on Fire</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="/styles/default.css"/>
+</head>
+
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="col-md-8 col-md-offset-2">
+				<ul class="nav navbar-nav">
+					<li><a href="/">Home</a></li>
+					<li><a href="/getting-started">Getting Started</a></li>
+					<li class="active"><a href="/documentation">Documentation</a></li>
+					<li><a href="/examples">Examples</a></li>
+					<li><a href="/tutorials">Tutorials</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-offset-1 col-md-3">
+				
+				<div id="toc"></div>
+				
+			</div>
+
+			<div id="main" class="col-md-7">
+				
+
+
+	<h1 class="page-title">Class: Schedulers</h1>
+<section>
+
+<header>
+    <h2>
+    Schedulers
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+<dt>
+    <h4 class="name" id="Schedulers"><span class="type-signature"></span>new Schedulers<span class="signature">(app)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>The schedulers module. This module allows you to execute tasks during a cron-like time pattern. If you want to execute tasks after a certain action, have a look at the <a href="Triggers.html">Triggers</a> module instead. If you need actions to be executed real time (after a given action), consider executing workers in your model hooks instead.</p>
+<p>To create a scheduler which runs every minute:</p>
+<pre class="prettyprint source"><code>function ReportsScheduler() {
+    // Runs every minute at 0 seconds.
+    this.timingPattern = '0 * * * * *';
+}
+app.scheduler(ReportsScheduler);
+
+ReportsScheduler.prototype.run = function() {
+    // Do something. Make sure to return a promise.
+}</code></pre><p>The <code>timingPattern</code> allows you to set when to run your scheduler exactly. The format is cron-like, for more information and the exact syntax have a look at https://github.com/ncb000gt/node-cron. The time of execution of your schedulers may not always be exactly when you define,</p>
+<p>Internally the schedulers module uses the <a href="Clock.html">Clock</a> module, which guarantees your schedulers are run, even if your server processes crash right before the task should be scheduled and the processes start again right after the processes should've been scheduled. If multiple tasks were skipped, only one task is run. For example, you have a scheduler to run every hour, and your server crashes and is down for 4 hours. When your server, and Node on Fire, start again, your scheduler will notice it skipped several runs. It will run once after the crash, but not 4 times.</p>
+<p>You can store your schedulers in the <code>schedulers/</code> folder which will automatically load.</p>
+<p>Please make sure you have a worker declared in your <code>Procfile</code> to actually execute schedulers. You need just one worker with the <code>--schedulers</code> argument:</p>
+<pre class="prettyprint source"><code>worker: node index.js --schedulers</code></pre><p>Please make sure a clock process type is defined in your <code>Procfile</code> or your schedulers will <em>not</em> work:</p>
+<pre class="prettyprint source"><code>clock: node index.js --clock</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>app</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type"><a href="App.html">App</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The app.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				<p class="expl disqus-expl">Do you have any questions or comments on this page? Start a discussion below.</p>
+
+			    <div id="disqus_thread"></div>
+				<script type="text/javascript">
+    			var disqus_shortname = 'nodeonfire';
+    			(function() {
+        			var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    			})();
+				</script>
+				<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				This is the footer.
+			</div>
+		</div>
+	</div>
+
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="scripts/toc.js"></script>
+	<script>
+		$( function () {
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+		} );
+	 </script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-52717773-3', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>

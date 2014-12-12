@@ -31,6 +31,8 @@
 			"../fire/lib/modules/http-server",
 			"../fire/lib/modules/module-properties",
 			"../fire/lib/modules/tasks",
+			"../fire/lib/modules/triggers",
+			"../fire/lib/modules/schedulers",
 			"../fire/lib/modules/websockets",
 			"../fire/lib/modules/workers"
 		],

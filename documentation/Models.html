@@ -73,8 +73,8 @@ app.model(User);</code></pre><p>A <code>User</code> key is added to models insta
 <pre class="prettyprint source"><code>MyController.prototype.getUsers = function() {
     return this.models.User.find({});
 };</code></pre><p>In the client-context, in a controller, you use the fire dependency:</p>
-<pre class="prettyprint source"><code>function MyController($scope, fire) {
-    fire.models.User.find()
+<pre class="prettyprint source"><code>function MyController($scope, UserModel) {
+    UserModel.find()
         .then(function(users) {
           // Do something with `users`.
         })

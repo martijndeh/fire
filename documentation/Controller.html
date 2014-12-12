@@ -281,8 +281,8 @@ MyController.prototype.getUsers = function() {
 <pre class="prettyprint source lang-js"><code>MyController.prototype.getUser = function($id) {
     return this.models.User.findOne({id: $id});
 };</code></pre><p>In a controller, in the client-context, you can access the models via the <code>fire</code> service:</p>
-<pre class="prettyprint source"><code>function MyController($scope, fire) {
-    fire.models.User.findOne({name: 'Martijn'})
+<pre class="prettyprint source"><code>function MyController($scope, UserModel) {
+    UserModel.findOne({name: 'Martijn'})
         .then(function(user) {
             // Do something with `user`.
         })
@@ -762,7 +762,7 @@ MyController.prototype.getTests = function() {
         
             
 <dt>
-    <h4 class="name" id="getRouter"><span class="type-signature"></span>getRouter<span class="signature">(controllerConstructor, filePath)</span></h4>
+    <h4 class="name" id="page"><span class="type-signature"></span>page<span class="signature">()</span></h4>
     
     
 </dt>
@@ -770,93 +770,14 @@ MyController.prototype.getTests = function() {
     
     
     <div class="description">
-        <p>Creates and returns a router. The router is responsible for creating the routes of the controller. For example, if you have a method named <code>getUser($id)</code> on your controller, the router creates the HTTP route to it, in the default router's case <code>GET /users/:id</code>.</p>
-<p>If you want to override the default router behaviour of your controller(s), override this method and return a custom router. See <a href="Router.html">Router</a> for more information on how to override the router.</p>
-<p>This method is not invoked on an instance, but rather, the method is retrieved from the controller constructor's prototype. <code>this</code> will be undefined when this method is invoked. Do not rely on it.</p>
+        <p>The page of the controller. The page contains the main view, which is the initial html used to render and includes the <code>ngView</code> directive.</p>
     </div>
     
 
     
     
     
-        <h5>This:</h5>
-        <ul><li>undefined</li></ul>
     
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>controllerConstructor</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Constructor</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The controller's constructor. The default router loops over this constructor's prototype to build the  routes for every method.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>filePath</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The path to the controller's file. The default router sets Controller#basePathComponents based on subdirectories the controller's file is located in. For example, if your controller is saved in a file at <code>controllers/api/controller.js</code> the <code>basePathComponents</code> is set to <code>['api']</code>.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
     
     
     
@@ -900,30 +821,6 @@ MyController.prototype.getTests = function() {
     
     
     
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>The newly created router.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type"><a href="Router.html">Router</a></span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>
