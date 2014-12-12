@@ -228,11 +228,11 @@ function FireModelInstance{{name}}(setMap, model, path) {
 	if(typeof setMap.{{name}} != 'undefined' && setMap.{{name}} !== null) {
 		if(Array.isArray(setMap.{{name}})) {
 			setMap.{{name}} = setMap.{{name}}.map(function(object) {
-				return new FireModelInstance{{getAssociatedModelName}}(object);
+				return new FireModelInstance{{getAssociatedModelName}}(object, model.models.{{getAssociatedModelName}}, path + '/' + setMap.id + '/{{resource}}');
 			});
 		}
 		else {
-			setMap.{{name}} = new FireModelInstance{{getAssociatedModelName}}(setMap.{{name}});
+			setMap.{{name}} = new FireModelInstance{{getAssociatedModelName}}(setMap.{{name}}, model.models.{{getAssociatedModelName}}, path + '/' + setMap.id + '/{{resource}}');
 		}
 	}
 	{{/isAssociation}}
