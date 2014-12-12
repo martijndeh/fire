@@ -237,7 +237,7 @@ function FireModelInstance{{name}}(setMap, model, path) {
 			});
 		}
 		else {
-			setMap.{{name}} = new FireModelInstance{{getAssociatedModelName}}(setMap, model.models.{{getAssociatedModelName}}, path + '/' + '{{resourceName}}');
+			setMap.{{name}} = new FireModelInstance{{getAssociatedModelName}}(setMap.{{name}}, model.models.{{getAssociatedModelName}}, path + '/' + '{{resourceName}}');
 		}
 	}
 	{{/isAssociation}}
