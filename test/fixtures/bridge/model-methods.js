@@ -110,7 +110,12 @@ FireModelInstance.prototype.save = function() {
 	return this._model._put(this._endpoint, saveMap)
 		.then(function(instance) {
 			self._changes = {};
-			self._map = instance._map;
+
+            Object.keys(instance._map).forEach(function(key) {
+                if(instance._map[key] !== null) {
+                    self._map[key] = instance._map[key];
+                }
+            });
 			return self;
 		});
 };
@@ -388,11 +393,11 @@ function FireModelInstanceUser(setMap, model, path) {
 	if(typeof setMap.votes != 'undefined' && setMap.votes !== null) {
 		if(Array.isArray(setMap.votes)) {
 			setMap.votes = setMap.votes.map(function(object) {
-				return new FireModelInstanceArticle(object);
+                return new FireModelInstanceArticle(object, model.models.Article, path + '/' + 'votes');
 			});
 		}
 		else {
-			setMap.votes = new FireModelInstanceArticle(setMap.votes);
+			setMap.votes = new FireModelInstanceArticle(setMap.votes, model.models.Article, path + '/' + 'votes');
 		}
 	}
 	
@@ -522,11 +527,11 @@ function FireModelInstanceArticle(setMap, model, path) {
 	if(typeof setMap.voters != 'undefined' && setMap.voters !== null) {
 		if(Array.isArray(setMap.voters)) {
 			setMap.voters = setMap.voters.map(function(object) {
-				return new FireModelInstanceUser(object);
+                return new FireModelInstanceUser(object, model.models.User, path + '/' + 'voters');
 			});
 		}
 		else {
-			setMap.voters = new FireModelInstanceUser(setMap.voters);
+			setMap.voters = new FireModelInstanceUser(setMap.voters, model.models.User, path + '/' + 'voters');
 		}
 	}
 	
@@ -624,11 +629,11 @@ function FireModelInstanceArticleVoterUserVote(setMap, model, path) {
 	if(typeof setMap.userVote != 'undefined' && setMap.userVote !== null) {
 		if(Array.isArray(setMap.userVote)) {
 			setMap.userVote = setMap.userVote.map(function(object) {
-				return new FireModelInstanceUser(object);
+                return new FireModelInstanceUser(object, model.models.User, path + '/' + 'user-votes');
 			});
 		}
 		else {
-			setMap.userVote = new FireModelInstanceUser(setMap.userVote);
+			setMap.userVote = new FireModelInstanceUser(setMap.userVote, model.models.User, path + '/' + 'user-votes');
 		}
 	}
 	
@@ -651,11 +656,11 @@ function FireModelInstanceArticleVoterUserVote(setMap, model, path) {
 	if(typeof setMap.articleVoter != 'undefined' && setMap.articleVoter !== null) {
 		if(Array.isArray(setMap.articleVoter)) {
 			setMap.articleVoter = setMap.articleVoter.map(function(object) {
-				return new FireModelInstanceArticle(object);
+                return new FireModelInstanceArticle(object, model.models.Article, path + '/' + 'article-voters');
 			});
 		}
 		else {
-			setMap.articleVoter = new FireModelInstanceArticle(setMap.articleVoter);
+			setMap.articleVoter = new FireModelInstanceArticle(setMap.articleVoter, model.models.Article, path + '/' + 'article-voters');
 		}
 	}
 	

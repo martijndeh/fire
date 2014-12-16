@@ -61,7 +61,12 @@ FireModelInstance.prototype.save = function() {
 	return this._model._put(this._endpoint, saveMap)
 		.then(function(instance) {
 			self._changes = {};
-			self._map = instance._map;
+
+            Object.keys(instance._map).forEach(function(key) {
+                if(instance._map[key] !== null) {
+                    self._map[key] = instance._map[key];
+                }
+            });
 			return self;
 		});
 };
