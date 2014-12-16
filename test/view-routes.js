@@ -28,6 +28,7 @@ describe('view routes', function() {
         app.template('test1', 'test1');
         app.template('test2', 'test2');
         app.template('test3', 'test3');
+        app.template('test4', 'test4');
 
         TestController.prototype.view = function() {
             return this.template('test1');
@@ -38,6 +39,19 @@ describe('view routes', function() {
         };
 
         TestController.prototype.viewSpecial = ['/special/page', function() {
+            return this.template('test3');
+        }];
+
+        function Test2Controller() {}
+        app.controller(Test2Controller);
+
+        Test2Controller.prototype.page = function() {
+            return {
+                template: 'test4'
+            };
+        };
+
+        Test2Controller.prototype.viewTest = ['/test', function() {
             return this.template('test3');
         }];
 
@@ -98,6 +112,15 @@ describe('view routes', function() {
             .get('/templates/test3')
             .expect(200, function(error, response) {
                 assert.equal(response.text, 'test3');
+                done(error);
+            });
+    });
+
+    it('can find custom page', function(done) {
+        request(app.HTTPServer.express)
+            .get('/test')
+            .expect(200, function(error, response) {
+                assert.equal(response.text, 'test4');
                 done(error);
             });
     });
