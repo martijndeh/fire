@@ -38,19 +38,10 @@ FireModelInstance.prototype.save = function() {
     return this.$q.when(Object.keys(this._changes).length)
         .then(function(numberOfChanges) {
             if(numberOfChanges) {
-                var saveMap = {};
-                Object.keys(self._changes).forEach(function(key) {
-                    var value = self._changes[key];
-                    if(value && typeof value.toQueryValue != 'undefined') {
-                        saveMap[key] = value.toQueryValue();
-                    }
-                    else {
-                        saveMap[key] = value;
-                    }
-                });
+                var queryMap = transformQueryMap(self._changes);
 
-                return self._model._put(self._endpoint, saveMap)
-                    .then(function(instance) {                        
+                return self._model._put(self._endpoint, queryMap)
+                    .then(function(instance) {
                         self._changes = {};
 
                         Object.keys(instance._map).forEach(function(key) {
@@ -111,18 +102,9 @@ FireModel.prototype._put = function(path, fields) {
 };
 
 FireModel.prototype.update = function(id, model) {
-	var updateMap = {};
-	Object.keys(model).forEach(function(key) {
-		var value = model[key];
-		if(value && typeof value.toQueryValue != 'undefined') {
-			updateMap[key] = value.toQueryValue();
-		}
-		else {
-			updateMap[key] = value;
-		}
-	});
+    var queryMap = transformQueryMap(model);
 
-	return this._put(this.endpoint + '/' + id, updateMap);
+	return this._put(this.endpoint + '/' + id, queryMap);
 };
 
 FireModel.prototype.remove = function(id) {
@@ -152,31 +134,37 @@ FireModel.prototype.findOrCreate = function(where, set) {
 };
 
 FireModel.prototype._create = function(path, fields) {
-	var createMap = {};
-	Object.keys(fields || {}).forEach(function(key) {
-		var value = fields[key];
-		if(value && typeof value.toQueryValue != 'undefined') {
-			createMap[key] = value.toQueryValue();
-		}
-		else {
-			createMap[key] = value;
-		}
-	});
+    var queryMap = transformQueryMap(fields);
 
-	return this._post(path, createMap);
+	return this._post(path, queryMap);
 };
 
 FireModel.prototype.create = function(fields) {
 	return this._create(this.endpoint, fields);
 };
 
+function transformQueryMap(fields) {
+    var queryMap = {};
+
+    Object.keys(fields || {}).forEach(function(key) {
+        var value = fields[key];
+        if(value && typeof value.toQueryValue != 'undefined') {
+            queryMap[key] = value.toQueryValue();
+        }
+        else {
+            queryMap[key] = value;
+        }
+    });
+
+    if(options) {
+        queryMap.$options = options;
+    }
+
+    return queryMap;
+}
+
 FireModel.prototype._find = function(path, fields, options) {
-	var queryMap = fields || {};
-
-	if(options) {
-		queryMap.$options = options;
-	}
-
+	var queryMap = transformQueryMap(fields, options);
 	return this._get(path, queryMap);
 };
 
@@ -191,7 +179,7 @@ FireModel.prototype.findOne = function(fields, options) {
 		delete fieldsMap.id;
 
 		var self = this;
-		return this._get(this.endpoint + '/' + modelID, fieldsMap)
+		return this._get(this.endpoint + '/' + modelID, transformQueryMap(fieldsMap))
 			.then(function(modelInstance) {
 				if(modelInstance) {
 					modelInstance._endpoint = self.endpoint + '/' + modelID;
