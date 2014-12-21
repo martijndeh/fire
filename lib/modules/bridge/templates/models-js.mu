@@ -34,29 +34,37 @@ FireModelInstance.prototype.remove = function() {
 FireModelInstance.prototype.save = function() {
 	// TODO: Check validation locally.
 
-	var self = this;
-	var saveMap = {};
-	Object.keys(this._changes).forEach(function(key) {
-		var value = self._changes[key];
-		if(value && typeof value.toQueryValue != 'undefined') {
-			saveMap[key] = value.toQueryValue();
-		}
-		else {
-			saveMap[key] = value;
-		}
-	});
+    var self = this;
+    return this.$q.when(Object.keys(this._changes).length)
+        .then(function(numberOfChanges) {
+            if(numberOfChanges) {
+                var saveMap = {};
+                Object.keys(self._changes).forEach(function(key) {
+                    var value = self._changes[key];
+                    if(value && typeof value.toQueryValue != 'undefined') {
+                        saveMap[key] = value.toQueryValue();
+                    }
+                    else {
+                        saveMap[key] = value;
+                    }
+                });
 
-	return this._model._put(this._endpoint, saveMap)
-		.then(function(instance) {
-			self._changes = {};
+                return self._model._put(self._endpoint, saveMap)
+                    .then(function(instance) {                        
+                        self._changes = {};
 
-            Object.keys(instance._map).forEach(function(key) {
-                if(instance._map[key] !== null) {
-                    self._map[key] = instance._map[key];
-                }
-            });
-			return self;
-		});
+                        Object.keys(instance._map).forEach(function(key) {
+                            if(instance._map[key] !== null) {
+                                self._map[key] = instance._map[key];
+                            }
+                        });
+                        return self;
+                    });
+            }
+            else {
+                return self;
+            }
+        });
 };
 
 function FireModel($http, $q, models) {
