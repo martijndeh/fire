@@ -107,8 +107,10 @@ FireModel.prototype.update = function(id, model) {
 	return this._put(this.endpoint + '/' + id, queryMap);
 };
 
-FireModel.prototype.remove = function(id) {
-	return this._action('delete', this.endpoint + '/' + id);
+FireModel.prototype.remove = function(modelInstanceOrUUID) {
+    var UUID = _getUUID(modelInstanceOrUUID)
+
+	return this._action('delete', this.endpoint + '/' + UUID);
 };
 
 FireModel.prototype.findOrCreate = function(where, set) {
@@ -143,7 +145,7 @@ FireModel.prototype.create = function(fields) {
 	return this._create(this.endpoint, fields);
 };
 
-function transformQueryMap(fields) {
+function transformQueryMap(fields, options) {
     var queryMap = {};
 
     Object.keys(fields || {}).forEach(function(key) {
@@ -255,36 +257,111 @@ function FireModelInstance{{name}}(setMap, model, path) {
 
 	FireModelInstance.call(this, setMap, model, path);
 }
-FireModelInstance{{name}}.prototype = FireModelInstance.prototype;
+FireModelInstance{{name}}.prototype = new FireModelInstance();
 
 {{#methods}}
-{{#manyToMany}}
-FireModelInstance{{name}}.prototype.{{createMethodName}} = function(map) {
-	var self = this;
-	return this._model._create(this._model.endpoint + '/' + this.id + '/{{resource}}', map)
-		.then(function(otherInstance) {
-			return self.refresh(otherInstance);
-		});
+{{#isOneToOne}}
+FireModelInstance{{name}}.prototype.get{{methodName}} = function(queryMap, optionsMap) {
+    var self = this;
+    return this._model.models.{{modelName}}._find(this._model.endpoint + '/' + this.id + '/{{resource}}', queryMap, optionsMap)
+        .then(function(modelInstances) {
+            if(modelInstances && modelInstances.length) {
+                self.{{propertyName}} = modelInstances[0];
+                return modelInstances[0];
+            }
+            else {
+                return null;
+            }
+        });
 };
 
-FireModelInstance{{name}}.prototype.{{removeMethodName}} = function(mapOrId) {
-    var id = null;
+FireModelInstance{{name}}.prototype.create{{methodName}} = function(queryMap) {
+    var self = this;
+    return this._model.models.{{modelName}}._create(this._model.endpoint + '/' + this.id + '/{{resource}}', queryMap)
+        .then(function(modelInstance) {
+            self.{{propertyName}} = modelInstance;
+            return modelInstance;
+        });
+};
 
-    if(typeof mapOrId == 'object') {
-        id = mapOrId.id;
+FireModelInstance{{name}}.prototype.remove{{methodName}} = function() {
+    var self = this;
+    return this._model.models.{{modelName}}._action('delete', this._model.endpoint + '/' + this.id + '/{{resource}}')
+        .then(function(removeModelInstance) {
+            self.{{propertyName}} = null;
+            return removeModelInstance;
+        });
+};
+{{/isOneToOne}}
+{{#isManyToMany}}
+FireModelInstance{{name}}.prototype.get{{pluralMethodName}} = function(queryMap, optionsMap) {
+    var self = this;
+	return this._model.models.{{modelName}}._find(this._model.endpoint + '/' + this.id + '/{{resource}}', queryMap, optionsMap)
+        .then(function(modelInstances) {
+            self.{{propertyName}} = modelInstances;
+            return modelInstances;
+        })
+};
+
+FireModelInstance{{name}}.prototype.create{{singularMethodName}} = function(queryMap) {
+    var self = this;
+    return this._model.models.{{modelName}}._create(this._model.endpoint + '/' + this.id + '/{{resource}}', queryMap)
+        .then(function(createdModelInstance) {
+            if(!self.{{propertyName}}) {
+                self.{{propertyName}} = [];
+            }
+
+            // TODO: How should we sort these associations?
+            self.{{propertyName}}.push(createdModelInstance);
+            return createdModelInstance;
+        });
+};
+
+function _getUUID(modelInstanceOrUUID) {
+    var UUID;
+
+    if(typeof modelInstanceOrUUID.toQueryValue != 'undefined') {
+        UUID = modelInstanceOrUUID.toQueryValue();
+    }
+    else if(typeof modelInstanceOrUUID.id != 'undefined') {
+        UUID = modelInstanceOrUUID.id;
     }
     else {
-        id = mapOrId;
+        if(typeof modelInstanceorUUID != 'string') {
+            var error = new FireError('Parameter is not a valid UUID.');
+            error.status = 400;
+            throw error;
+        }
+
+        UUID = modelInstanceOrUUID;
     }
 
-    return this._model._action('delete', this._model.endpoint + '/' + this.id + '/{{resource}}/' + id);
+    return UUID;
+}
+
+FireModelInstance{{name}}.prototype.remove{{singularMethodName}} = function(modelInstanceOrUUID) {
+    var UUID = _getUUID(modelInstanceOrUUID);
+
+    var self = this;
+    return this._model.models.{{modelName}}._action('delete', this._model.endpoint + '/' + this.id + '/{{resource}}/' + UUID)
+        .then(function(removeModelInstance) {
+            for(var i = 0, il = self.{{propertyName}}.length; i < il; i++) {
+                var modelInstance = self.{{propertyName}}[i];
+
+                if(modelInstance.id === UUID) {
+                    self.{{propertyName}}.splice(i, 1);
+                    break;
+                }
+            }
+            return removeModelInstance;
+        });
 };
-{{/manyToMany}}
-{{^manyToMany}}
+{{/isManyToMany}}
+{{#isHasMethod}}
 FireModelInstance{{name}}.prototype.{{getMethodName}} = function(queryMap, optionsMap) {
-	return this._model.models.{{modelName}}._find(this._model.endpoint + '/' + this.id + '/{{resource}}', queryMap, optionsMap);
+    return this._model.models.{{modelName}}._find(this._model.endpoint + '/' + this.id + '/{{resource}}', queryMap, optionsMap);
 };
-{{/manyToMany}}
+{{/isHasMethod}}
 {{/methods}}
 
 function FireModel{{name}}($http, $q, models) {

@@ -62,9 +62,17 @@ describe('models api associations', function() {
 							return (!articleUser);
 						});
 				})];
-				this.accessControl 	= [this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return false; })];
+				this.accessControl 	= [this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return true; })];
+				this.location = [this.HasOne(this.models.ArticleLocation)];
 			}
 			app.model(Article);
+
+			function ArticleLocation() {
+				this.article = [this.BelongsTo(this.models.Article)];
+				this.latitude = [this.Integer];
+				this.longitude = [this.Integer];
+			}
+			app.model(ArticleLocation);
 		};
 
 		helper.createModels = function(app) {
@@ -104,6 +112,13 @@ describe('models api associations', function() {
 						id: user3ID,
 						name: 'User 3'
 					}]);
+				})
+				.then(function() {
+					return app.models.ArticleLocation.create({
+						article: article1ID,
+						latitude: 1,
+						longitude: 2
+					});
 				});
 		};
 	});
@@ -127,6 +142,38 @@ describe('models api associations', function() {
 			.expect(200, function(error, response) {
 				assert.equal(response.body.voters.length, 1);
 
+				done(error);
+			});
+	});
+
+	it('can create one-to-many', function(done) {
+		request(helper.app.HTTPServer.express)
+			.post('/api/parents/' + parentID + '/childs')
+			.send({
+				name: 'New Child'
+			})
+			.expect(200, function(error) {
+				done(error);
+			});
+	});
+
+	it('can delete one-to-many', function(done) {
+		request(helper.app.HTTPServer.express)
+			.delete('/api/parents/' + parentID + '/childs/' + child1ID)
+			.send()
+			.expect(200, function(error) {
+				done(error);
+			});
+	});
+
+	it('can update one-to-many', function(done) {
+		request(helper.app.HTTPServer.express)
+			.put('/api/parents/' + parentID + '/childs/' + child1ID)
+			.send({
+				name: 'Updated Child Name'
+			})
+			.expect(200, function(error, response) {
+				assert.equal(response.body.name, 'Updated Child Name');
 				done(error);
 			});
 	});
@@ -178,8 +225,57 @@ describe('models api associations', function() {
 			.get('/api/parents/' + parentID + '/list')
 			.send()
 			.expect(200, function(error, response) {
-				assert.equal(error, null);
 				assert.equal(response.body.length, 3);
+
+				done(error);
+			});
+	});
+
+	it('can find one-to-one property', function(done) {
+		request(helper.app.HTTPServer.express)
+			.get('/api/articles/' + article1ID + '/location')
+			.send()
+			.expect(200, function(error, response) {
+				assert.equal(response.body.article, article1ID);
+
+				done(error);
+			});
+	});
+
+	it('can create one-to-one property', function(done) {
+		request(helper.app.HTTPServer.express)
+			.post('/api/articles/' + article2ID + '/location')
+			.send({
+				latitude: 3,
+				longitude: 4
+			})
+			.expect(200, function(error, response) {
+				assert.equal(response.body.article, article2ID);
+				done(error);
+			});
+	});
+
+	it('can remove one-to-one property', function(done) {
+		request(helper.app.HTTPServer.express)
+			.delete('/api/articles/' + article1ID + '/location')
+			.send()
+			.expect(200, function(error, response) {
+				console.log(error);
+
+				assert.equal(response.body.article, article1ID);
+				done(error);
+			});
+	});
+
+	it('can update one-to-one property', function(done) {
+		request(helper.app.HTTPServer.express)
+			.put('/api/articles/' + article1ID + '/location')
+			.send({
+				latitude: 5
+			})
+			.expect(200, function(error, response) {
+				assert.equal(response.body.article, article1ID);
+				assert.equal(response.body.latitude, 5);
 
 				done(error);
 			});
