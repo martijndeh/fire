@@ -57,7 +57,7 @@ describe('models remove many-to-many', function() {
 			request(helper.app.HTTPServer.express)
 				.delete('/api/projects/' + projectID + '/tags/' + tagID)
 				.expect(200, function(error) {
-					if(error) {
+					if(error) {						
 						defer.reject(error);
 					}
 					else {

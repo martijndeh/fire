@@ -88,7 +88,9 @@ describe('api generate model controllers', function() {
 	});
 
 	it('write authenticator model controller', function(done) {
-		var writeStream = new streams.WritableStream();
+		var writeStream = new streams.WritableStream({
+			highWaterMark: 32768
+		});
 
 		return app.API.generateModelController(app.models.User, writeStream)
 			.then(function() {

@@ -43,16 +43,16 @@ app.controller({{controllerName}});
 {{#model.isAuthenticator}}
 {{controllerName}}.prototype.getMe = ['/api/{{model.resourceName}}/me', function() {
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			if(authenticator) {
-				return authenticator;
-			}
-			else {
-				var error = new Error('Unauthorized');
-				error.status = 401;
-				throw error;
-			}
-		});
+	.then(function(authenticator) {
+		if(authenticator) {
+			return authenticator;
+		}
+		else {
+			var error = new Error('Unauthorized');
+			error.status = 401;
+			throw error;
+		}
+	});
 }];
 
 {{controllerName}}.prototype.doSignOut = ['/api/{{model.resourceName}}/sign-out', function() {
@@ -71,78 +71,78 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return model.getOne(map)
-		.then(function(instance) {
-			// TODO: Do not hardcode `accessToken` like this...
-			self.session.at = instance.accessToken;
-			return instance;
-		})
-		.catch(function(error) {
-			throw error;
-		});
+	.then(function(instance) {
+		// TODO: Do not hardcode `accessToken` like this...
+		self.session.at = instance.accessToken;
+		return instance;
+	})
+	.catch(function(error) {
+		throw error;
+	});
 }];
 
 {{controllerName}}.prototype.doForgotPassword = ['/api/{{model.resourceName}}/forgot-password', function() {
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			if(authenticator) {
-				var error = new Error('Forbidden');
-				error.status = 403;
-				throw error;
-			}
-		})
-		.then(function() {
-			var findMap = {
-				{{model.authenticatingPropertyName}}: self.body.{{model.authenticatingPropertyName}}
-			};
+	.then(function(authenticator) {
+		if(authenticator) {
+			var error = new Error('Forbidden');
+			error.status = 403;
+			throw error;
+		}
+	})
+	.then(function() {
+		var findMap = {
+			{{model.authenticatingPropertyName}}: self.body.{{model.authenticatingPropertyName}}
+		};
 
-			return self.models.{{model.name}}.findOne(findMap);
-		})
-		.then(function(authenticator) {
-			if(authenticator) {
-				return Q.all([authenticator, self.models.{{model.name}}ResetPassword.findOrCreate({authenticator: authenticator})])
-					.spread(function(authenticator, resetPassword) {
-						if(authenticator.onForgotPassword) {
-							return authenticator.onForgotPassword.call(authenticator, resetPassword);
-						}
-					});
-			}
+		return self.models.{{model.name}}.findOne(findMap);
+	})
+	.then(function(authenticator) {
+		if(authenticator) {
+			return Q.all([authenticator, self.models.{{model.name}}ResetPassword.findOrCreate({authenticator: authenticator})])
+			.spread(function(authenticator, resetPassword) {
+				if(authenticator.onForgotPassword) {
+					return authenticator.onForgotPassword.call(authenticator, resetPassword);
+				}
+			});
+		}
 
 
-		})
-		.then(function() {
-			// TODO: What should we return other than status code 200?
-			return {};
-		});
+	})
+	.then(function() {
+		// TODO: What should we return other than status code 200?
+		return {};
+	});
 }];
 
 {{controllerName}}.prototype.doResetPassword = ['/api/{{model.resourceName}}/reset-password', function() {
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			if(authenticator) {
-				var error = new Error('Forbidden');
-				error.status = 403;
-				throw error;
-			}
-		})
-		.then(function() {
-			return self.models.{{model.name}}ResetPassword.getOne({
-				token: self.body.resetToken
-			});
-		})
-		.then(function(resetPassword) {
-			return Q.all([self.models.{{model.name}}.updateOne({id: resetPassword.authenticator}, {password: self.body.password}), self.models.{{model.name}}ResetPassword.remove({id: resetPassword.id})]);
-		})
-		.spread(function(authenticator) {
-			if(authenticator && authenticator.onResetPassword) {
-				return authenticator.onResetPassword.call(authenticator);
-			}
-		})
-		.then(function() {
-			// TODO: What should we return other than status code 200?
-			return {};
+	.then(function(authenticator) {
+		if(authenticator) {
+			var error = new Error('Forbidden');
+			error.status = 403;
+			throw error;
+		}
+	})
+	.then(function() {
+		return self.models.{{model.name}}ResetPassword.getOne({
+			token: self.body.resetToken
 		});
+	})
+	.then(function(resetPassword) {
+		return Q.all([self.models.{{model.name}}.updateOne({id: resetPassword.authenticator}, {password: self.body.password}), self.models.{{model.name}}ResetPassword.remove({id: resetPassword.id})]);
+	})
+	.spread(function(authenticator) {
+		if(authenticator && authenticator.onResetPassword) {
+			return authenticator.onResetPassword.call(authenticator);
+		}
+	})
+	.then(function() {
+		// TODO: What should we return other than status code 200?
+		return {};
+	});
 }];
 {{/model.isAuthenticator}}
 {{controllerName}}.prototype.create{{model.name}} = function() {
@@ -153,41 +153,41 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.canCreate(authenticator))
-				.then(function(canCreate) {
-					if(canCreate) {
-						var createMap = self.body || {};
-						if(model.options.automaticPropertyName) {
-							// If a authenticator model does not exists there is some wrong.
-							if(!self.models.getAuthenticator()) {
-								throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-							}
-
-							// This is definitely a bad request if the user tries to set the automatic property manually.
-							if(createMap[model.options.automaticPropertyName]) {
-								var error = new Error('Cannot set automatic property manually.');
-								error.status = 400;
-								throw error;
-							}
-
-							createMap[model.options.automaticPropertyName] = authenticator;
-						}
-
-						return model.create(createMap)
-							.then(function(instance) {
-								if(model.isAuthenticator()) {
-									self.session.at = instance.accessToken;
-								}
-
-								return instance;
-							});
+	.then(function(authenticator) {
+		return Q.when(accessControl.canCreate(authenticator))
+		.then(function(canCreate) {
+			if(canCreate) {
+				var createMap = self.body || {};
+				if(model.options.automaticPropertyName) {
+					// If a authenticator model does not exists there is some wrong.
+					if(!self.models.getAuthenticator()) {
+						throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
 					}
-					else {
-						throw unauthenticatedError(authenticator);
+
+					// This is definitely a bad request if the user tries to set the automatic property manually.
+					if(createMap[model.options.automaticPropertyName]) {
+						var error = new Error('Cannot set automatic property manually.');
+						error.status = 400;
+						throw error;
 					}
+
+					createMap[model.options.automaticPropertyName] = authenticator;
+				}
+
+				return model.create(createMap)
+				.then(function(instance) {
+					if(model.isAuthenticator()) {
+						self.session.at = instance.accessToken;
+					}
+
+					return instance;
 				});
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
 		});
+	});
 };
 
 {{controllerName}}.prototype.get{{model.pluralName}} = function() {
@@ -198,31 +198,31 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.canRead(authenticator))
-				.then(function(canRead) {
-					if(canRead) {
-						var queryMap = self.query || {};
-						var optionsMap = {};
+	.then(function(authenticator) {
+		return Q.when(accessControl.canRead(authenticator))
+		.then(function(canRead) {
+			if(canRead) {
+				var queryMap = self.query || {};
+				var optionsMap = {};
 
-						// TODO: Move this to Model#find instead.
+				// TODO: Move this to Model#find instead.
 
-						if(queryMap.$options) {
-							optionsMap = queryMap.$options;
-							delete queryMap.$options;
-						}
+				if(queryMap.$options) {
+					optionsMap = queryMap.$options;
+					delete queryMap.$options;
+				}
 
-						if(model.options.automaticPropertyName) {
-							queryMap[model.options.automaticPropertyName] = authenticator;
-						}
+				if(model.options.automaticPropertyName) {
+					queryMap[model.options.automaticPropertyName] = authenticator;
+				}
 
-						return model.find(queryMap, optionsMap);
-					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
+				return model.find(queryMap, optionsMap);
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
 		});
+	});
 };
 
 {{controllerName}}.prototype.get{{model.name}} = function($id) {
@@ -232,23 +232,23 @@ app.controller({{controllerName}});
 	// TODO: Use Controller#canCreate.
 
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.all([Q.when(accessControl.canRead(authenticator)), authenticator]);
-		})
-		.spread(function(canRead, authenticator) {
-			if(canRead) {
-				var whereMap = {id: $id};
+	.then(function(authenticator) {
+		return Q.all([Q.when(accessControl.canRead(authenticator)), authenticator]);
+	})
+	.spread(function(canRead, authenticator) {
+		if(canRead) {
+			var whereMap = {id: $id};
 
-				if(model.options.automaticPropertyName) {
-					whereMap[model.options.automaticPropertyName] = authenticator;
-				}
+			if(model.options.automaticPropertyName) {
+				whereMap[model.options.automaticPropertyName] = authenticator;
+			}
 
-				return model.getOne(whereMap);
-			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
-		});
+			return model.getOne(whereMap);
+		}
+		else {
+			throw unauthenticatedError(authenticator);
+		}
+	});
 };
 
 {{controllerName}}.prototype.update{{model.name}} = function($id) {
@@ -257,14 +257,108 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.all([Q.when(accessControl.getPermissionFunction('update')(authenticator)), authenticator]);
-		})
-		.spread(function(canUpdate, authenticator) {
-			if(canUpdate) {
-				var whereMap = {};
+	.then(function(authenticator) {
+		return Q.all([Q.when(accessControl.getPermissionFunction('update')(authenticator)), authenticator]);
+	})
+	.spread(function(canUpdate, authenticator) {
+		if(canUpdate) {
+			var whereMap = {};
 
-				var keyPath = accessControl.getPermissionKeyPath('update');
+			var keyPath = accessControl.getPermissionKeyPath('update');
+			if(keyPath) {
+				if(!model.getProperty(keyPath)) {
+					throw new Error('Invalid key path `' + keyPath + '`.');
+				}
+
+				// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
+				whereMap[keyPath] = authenticator;
+			}
+
+			if(model.options.automaticPropertyName) {
+				whereMap[model.options.automaticPropertyName] = authenticator;
+			}
+
+			whereMap.id = $id;
+			return [Q.when(_canUpdateProperties(Object.keys(self.body), model)), whereMap, authenticator];
+		}
+		else {
+			throw unauthenticatedError(authenticator);
+		}
+	})
+	.all()
+	.spread(function(canUpdateProperties, whereMap, authenticator) {
+		if(canUpdateProperties) {
+			return Q.all([model.updateOne(whereMap, self.body), authenticator]);
+		}
+		else {
+			var error = new Error();
+			error.status = 400;
+			error.message = 'Bad Request';
+			throw error;
+		}
+	})
+	.spread(function(instance, authenticator) {
+		if(instance) {
+			return instance;
+		}
+		else {
+			throw unauthenticatedError(authenticator);
+		}
+	})
+	.catch(function(error) {
+		throw error;
+	});
+};
+
+{{controllerName}}.prototype.delete{{model.pluralName}} = function() {
+	var model = this.models.{{model.name}};
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+	.then(function(authenticator) {
+		return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
+		.then(function(canDelete) {
+			if(canDelete) {
+				var whereMap = self.query || {};
+
+				var keyPath = accessControl.getPermissionKeyPath('delete');
+				if(keyPath) {
+					if(!model.getProperty(keyPath)) {
+						throw new Error('Invalid key path `' + keyPath + '`.');
+					}
+
+					whereMap[keyPath] = authenticator;
+				}
+
+				if(model.options.automaticPropertyName) {
+					whereMap[model.options.automaticPropertyName] = authenticator;
+				}
+
+				return model.remove(whereMap);
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
+		});
+	});
+};
+
+{{controllerName}}.prototype.delete{{model.name}} = function($id) {
+	var model = this.models.{{model.name}};
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+	.then(function(authenticator) {
+		return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
+		.then(function(canDelete) {
+			if(canDelete) {
+				var whereMap = {
+					id: $id
+				};
+
+				var keyPath = accessControl.getPermissionKeyPath('delete');
 				if(keyPath) {
 					if(!model.getProperty(keyPath)) {
 						throw new Error('Invalid key path `' + keyPath + '`.');
@@ -278,107 +372,13 @@ app.controller({{controllerName}});
 					whereMap[model.options.automaticPropertyName] = authenticator;
 				}
 
-				whereMap.id = $id;
-				return [Q.when(_canUpdateProperties(Object.keys(self.body), model)), whereMap, authenticator];
+				return model.removeOne(whereMap);
 			}
 			else {
 				throw unauthenticatedError(authenticator);
 			}
-		})
-		.all()
-		.spread(function(canUpdateProperties, whereMap, authenticator) {
-			if(canUpdateProperties) {
-				return Q.all([model.updateOne(whereMap, self.body), authenticator]);
-			}
-			else {
-				var error = new Error();
-				error.status = 400;
-				error.message = 'Bad Request';
-				throw error;
-			}
-		})
-		.spread(function(instance, authenticator) {
-			if(instance) {
-				return instance;
-			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
-		})
-		.catch(function(error) {
-			throw error;
 		});
-};
-
-{{controllerName}}.prototype.delete{{model.pluralName}} = function() {
-	var model = this.models.{{model.name}};
-	var accessControl = model.getAccessControl();
-
-	var self = this;
-	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
-				.then(function(canDelete) {
-					if(canDelete) {
-						var whereMap = self.query || {};
-
-						var keyPath = accessControl.getPermissionKeyPath('delete');
-						if(keyPath) {
-							if(!model.getProperty(keyPath)) {
-								throw new Error('Invalid key path `' + keyPath + '`.');
-							}
-
-							whereMap[keyPath] = authenticator;
-						}
-
-						if(model.options.automaticPropertyName) {
-							whereMap[model.options.automaticPropertyName] = authenticator;
-						}
-
-						return model.remove(whereMap);
-					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
-		});
-};
-
-{{controllerName}}.prototype.delete{{model.name}} = function($id) {
-	var model = this.models.{{model.name}};
-	var accessControl = model.getAccessControl();
-
-	var self = this;
-	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
-				.then(function(canDelete) {
-					if(canDelete) {
-						var whereMap = {
-							id: $id
-						};
-
-						var keyPath = accessControl.getPermissionKeyPath('delete');
-						if(keyPath) {
-							if(!model.getProperty(keyPath)) {
-								throw new Error('Invalid key path `' + keyPath + '`.');
-							}
-
-							// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
-							whereMap[keyPath] = authenticator;
-						}
-
-						if(model.options.automaticPropertyName) {
-							whereMap[model.options.automaticPropertyName] = authenticator;
-						}
-
-						return model.removeOne(whereMap);
-					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
-		});
+	});
 };
 
 {{#model.properties}}
@@ -389,18 +389,18 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.canRead(authenticator))
-				.then(function(canRead) {
-					if(canRead) {
-						var property = model.getProperty('{{name}}');
-						return property.options.hasMethod.call(self, $id);
-					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
+	.then(function(authenticator) {
+		return Q.when(accessControl.canRead(authenticator))
+		.then(function(canRead) {
+			if(canRead) {
+				var property = model.getProperty('{{name}}');
+				return property.options.hasMethod.call(self, $id);
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
 		});
+	});
 }];
 {{/hasMethod}}
 {{#isOneToOne}}
@@ -410,44 +410,44 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			var property = model.getProperty('{{name}}');
-			return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
-		})
-		.spread(function(canCreate, authenticator) {
-			if(!canCreate) {
-				throw unauthenticatedError(authenticator);
-			}
-			else {
-				return authenticator;
-			}
-		})
-		.then(function(authenticator) {
-			var createMap = self.body;
+	.then(function(authenticator) {
+		var property = model.getProperty('{{name}}');
+		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+	})
+	.spread(function(canCreate, authenticator) {
+		if(!canCreate) {
+			throw unauthenticatedError(authenticator);
+		}
+		else {
+			return authenticator;
+		}
+	})
+	.then(function(authenticator) {
+		var createMap = self.body;
 
-			var property = model.getProperty('{{name}}');
-			var associatedModel = property.getAssociatedModel();
+		var property = model.getProperty('{{name}}');
+		var associatedModel = property.getAssociatedModel();
 
-			createMap[property.options.hasOne || property.options.belongsTo] = $id;
+		createMap[property.options.hasOne || property.options.belongsTo] = $id;
 
-			if(associatedModel.options.automaticPropertyName) {
-				// If a authenticator model does not exists there is some wrong.
-				if(!self.models.getAuthenticator()) {
-					throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-				}
-
-				// This is definitely a bad request if the user tries to set the automatic property manually.
-				if(createMap[associatedModel.options.automaticPropertyName]) {
-					var error = new Error('Cannot set automatic property manually.');
-					error.status = 400;
-					throw error;
-				}
-
-				createMap[associatedModel.options.automaticPropertyName] = authenticator;
+		if(associatedModel.options.automaticPropertyName) {
+			// If a authenticator model does not exists there is some wrong.
+			if(!self.models.getAuthenticator()) {
+				throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
 			}
 
-			return associatedModel.create(createMap);
-		});
+			// This is definitely a bad request if the user tries to set the automatic property manually.
+			if(createMap[associatedModel.options.automaticPropertyName]) {
+				var error = new Error('Cannot set automatic property manually.');
+				error.status = 400;
+				throw error;
+			}
+
+			createMap[associatedModel.options.automaticPropertyName] = authenticator;
+		}
+
+		return associatedModel.create(createMap);
+	});
 }];
 
 {{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
@@ -456,82 +456,10 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.canRead(authenticator))
-				.then(function(canRead) {
-					if(canRead) {
-						var queryMap = self.query || {};
-						var optionsMap = {};
-
-						if(queryMap.$options) {
-							optionsMap = queryMap.$options;
-							delete queryMap.$options;
-						}
-
-						var association = model.getProperty('{{name}}');
-						var associatedModel = association.options.relationshipVia.model;
-
-						queryMap[association.options.relationshipVia.name] = $id;
-
-						if(associatedModel.options.automaticPropertyName) {
-							if(!self.models.getAuthenticator()) {
-								throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-							}
-
-							if(queryMap[associatedModel.options.automaticPropertyName]) {
-								var error = new Error('Cannot set automatic property manually.');
-								error.status = 400;
-								throw error;
-							}
-
-							queryMap[associatedModel.options.automaticPropertyName] = authenticator;
-						}
-
-						return associatedModel.findOne(queryMap, optionsMap);
-					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
-		});
-}];
-
-{{controllerName}}.prototype.delete{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
-	var model = this.models.{{model.name}};
-	var accessControl = model.getAccessControl();
-
-	var self = this;
-	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
-		})
-		.spread(function(canDelete, authenticator) {
-			if(!canDelete) {
-				throw unauthenticatedError(authenticator);
-			}
-			else {
-				var association = model.getProperty('{{name}}');
-				var associatedModel = association.getAssociatedModel();
-
-				var removeMap = {};
-				removeMap[association.options.hasOne || association.options.belongsTo] = $id;
-
-				if(associatedModel.options.automaticPropertyName) {
-					// If a authenticator model does not exists there is some wrong.
-					if(!self.models.getAuthenticator()) {
-						throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-					}
-
-					// This is definitely a bad request if the user tries to set the automatic property manually.
-					if(removeMap[associatedModel.options.automaticPropertyName]) {
-						var error = new Error('Cannot set automatic property manually.');
-						error.status = 400;
-						throw error;
-					}
-
-					removeMap[associatedModel.options.automaticPropertyName] = authenticator;
-				}
-
+	.then(function(authenticator) {
+		return Q.when(accessControl.canRead(authenticator))
+		.then(function(canRead) {
+			if(canRead) {
 				var queryMap = self.query || {};
 				var optionsMap = {};
 
@@ -540,9 +468,81 @@ app.controller({{controllerName}});
 					delete queryMap.$options;
 				}
 
-				return associatedModel.removeOne(removeMap, optionsMap);
+				var association = model.getProperty('{{name}}');
+				var associatedModel = association.options.relationshipVia.model;
+
+				queryMap[association.options.relationshipVia.name] = $id;
+
+				if(associatedModel.options.automaticPropertyName) {
+					if(!self.models.getAuthenticator()) {
+						throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
+					}
+
+					if(queryMap[associatedModel.options.automaticPropertyName]) {
+						var error = new Error('Cannot set automatic property manually.');
+						error.status = 400;
+						throw error;
+					}
+
+					queryMap[associatedModel.options.automaticPropertyName] = authenticator;
+				}
+
+				return associatedModel.findOne(queryMap, optionsMap);
+			}
+			else {
+				throw unauthenticatedError(authenticator);
 			}
 		});
+	});
+}];
+
+{{controllerName}}.prototype.delete{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+	var model = this.models.{{model.name}};
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+	.then(function(authenticator) {
+		return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
+	})
+	.spread(function(canDelete, authenticator) {
+		if(!canDelete) {
+			throw unauthenticatedError(authenticator);
+		}
+		else {
+			var association = model.getProperty('{{name}}');
+			var associatedModel = association.getAssociatedModel();
+
+			var removeMap = {};
+			removeMap[association.options.hasOne || association.options.belongsTo] = $id;
+
+			if(associatedModel.options.automaticPropertyName) {
+				// If a authenticator model does not exists there is some wrong.
+				if(!self.models.getAuthenticator()) {
+					throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
+				}
+
+				// This is definitely a bad request if the user tries to set the automatic property manually.
+				if(removeMap[associatedModel.options.automaticPropertyName]) {
+					var error = new Error('Cannot set automatic property manually.');
+					error.status = 400;
+					throw error;
+				}
+
+				removeMap[associatedModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var queryMap = self.query || {};
+			var optionsMap = {};
+
+			if(queryMap.$options) {
+				optionsMap = queryMap.$options;
+				delete queryMap.$options;
+			}
+
+			return associatedModel.removeOne(removeMap, optionsMap);
+		}
+	});
 }];
 
 {{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
@@ -551,60 +551,60 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.getPermissionFunction('update')(authenticator))
-				.then(function(canUpdate) {
-					if(canUpdate) {
-						var association = model.getProperty('{{name}}');
-						return Q.when(_canUpdateProperties(Object.keys(self.body), association.options.relationshipVia.model))
-							.then(function(canUpdateProperties) {
-								if(canUpdateProperties) {
-									var associatedModel = association.getAssociatedModel();
+	.then(function(authenticator) {
+		return Q.when(accessControl.getPermissionFunction('update')(authenticator))
+		.then(function(canUpdate) {
+			if(canUpdate) {
+				var association = model.getProperty('{{name}}');
+				return Q.when(_canUpdateProperties(Object.keys(self.body), association.options.relationshipVia.model))
+				.then(function(canUpdateProperties) {
+					if(canUpdateProperties) {
+						var associatedModel = association.getAssociatedModel();
 
-									var whereMap = {};
+						var whereMap = {};
 
-									var keyPath = accessControl.getPermissionKeyPath('update');
-									if(keyPath) {
-										if(!model.getProperty(keyPath)) {
-											throw new Error('Invalid key path `' + keyPath + '`.');
-										}
+						var keyPath = accessControl.getPermissionKeyPath('update');
+						if(keyPath) {
+							if(!model.getProperty(keyPath)) {
+								throw new Error('Invalid key path `' + keyPath + '`.');
+							}
 
-										whereMap[keyPath] = authenticator;
-									}
+							whereMap[keyPath] = authenticator;
+						}
 
-									whereMap[association.options.hasOne || association.options.belongsTo] = $id;
+						whereMap[association.options.hasOne || association.options.belongsTo] = $id;
 
-									if(associatedModel.options.automaticPropertyName) {
-										// If a authenticator model does not exists there is some wrong.
-										if(!self.models.getAuthenticator()) {
-											throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-										}
+						if(associatedModel.options.automaticPropertyName) {
+							// If a authenticator model does not exists there is some wrong.
+							if(!self.models.getAuthenticator()) {
+								throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
+							}
 
-										// This is definitely a bad request if the user tries to set the automatic property manually.
-										if(whereMap[associatedModel.options.automaticPropertyName]) {
-											var error = new Error('Cannot set automatic property manually.');
-											error.status = 400;
-											throw error;
-										}
+							// This is definitely a bad request if the user tries to set the automatic property manually.
+							if(whereMap[associatedModel.options.automaticPropertyName]) {
+								var error = new Error('Cannot set automatic property manually.');
+								error.status = 400;
+								throw error;
+							}
 
-										whereMap[associatedModel.options.automaticPropertyName] = authenticator;
-									}
+							whereMap[associatedModel.options.automaticPropertyName] = authenticator;
+						}
 
-									return associatedModel.updateOne(whereMap, self.body);
-								}
-								else {
-									var error = new Error();
-									error.status = 400;
-									error.message = 'Bad Request';
-									throw error;
-								}
-							});
+						return associatedModel.updateOne(whereMap, self.body);
 					}
 					else {
-						throw unauthenticatedError(authenticator);
+						var error = new Error();
+						error.status = 400;
+						error.message = 'Bad Request';
+						throw error;
 					}
 				});
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
 		});
+	});
 }];
 {{/isOneToOne}}
 {{#isOneToMany}}
@@ -614,45 +614,45 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			var property = model.getProperty('{{name}}');
-			return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
-		})
-		.spread(function(canCreate, authenticator) {
-			if(!canCreate) {
-				throw unauthenticatedError(authenticator);
-			}
-			else {
-				return authenticator;
-			}
-		})
-		.then(function(authenticator) {
-			var association = model.getAssociation('{{name}}');
-			var associatedModel = association.getAssociatedModel();
+	.then(function(authenticator) {
+		var property = model.getProperty('{{name}}');
+		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+	})
+	.spread(function(canCreate, authenticator) {
+		if(!canCreate) {
+			throw unauthenticatedError(authenticator);
+		}
+		else {
+			return authenticator;
+		}
+	})
+	.then(function(authenticator) {
+		var association = model.getAssociation('{{name}}');
+		var associatedModel = association.getAssociatedModel();
 
-			var createMap = self.body;
+		var createMap = self.body;
 
-			var property = model.getProperty('{{name}}');
-			createMap[property.options.hasMany] = $id;
+		var property = model.getProperty('{{name}}');
+		createMap[property.options.hasMany] = $id;
 
-			if(associatedModel.options.automaticPropertyName) {
-				// If a authenticator model does not exists there is some wrong.
-				if(!self.models.getAuthenticator()) {
-					throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-				}
-
-				// This is definitely a bad request if the user tries to set the automatic property manually.
-				if(createMap[associatedModel.options.automaticPropertyName]) {
-					var error = new Error('Cannot set automatic property manually.');
-					error.status = 400;
-					throw error;
-				}
-
-				createMap[associatedModel.options.automaticPropertyName] = authenticator;
+		if(associatedModel.options.automaticPropertyName) {
+			// If a authenticator model does not exists there is some wrong.
+			if(!self.models.getAuthenticator()) {
+				throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
 			}
 
-			return associatedModel.create(createMap);
-		});
+			// This is definitely a bad request if the user tries to set the automatic property manually.
+			if(createMap[associatedModel.options.automaticPropertyName]) {
+				var error = new Error('Cannot set automatic property manually.');
+				error.status = 400;
+				throw error;
+			}
+
+			createMap[associatedModel.options.automaticPropertyName] = authenticator;
+		}
+
+		return associatedModel.create(createMap);
+	});
 }];
 
 {{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
@@ -661,83 +661,10 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.canRead(authenticator))
-				.then(function(canRead) {
-					if(canRead) {
-						var queryMap = self.query || {};
-						var optionsMap = {};
-
-						if(queryMap.$options) {
-							optionsMap = queryMap.$options;
-							delete queryMap.$options;
-						}
-
-						var association = model.getProperty('{{name}}');
-						var associatedModel = association.options.relationshipVia.model;
-
-						queryMap[association.options.relationshipVia.name] = $id;
-
-						if(associatedModel.options.automaticPropertyName) {
-							if(!self.models.getAuthenticator()) {
-								throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-							}
-
-							if(queryMap[associatedModel.options.automaticPropertyName]) {
-								var error = new Error('Cannot set automatic property manually.');
-								error.status = 400;
-								throw error;
-							}
-
-							queryMap[associatedModel.options.automaticPropertyName] = authenticator;
-						}
-
-						return associatedModel.find(queryMap, optionsMap);
-					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
-		});
-}];
-
-{{controllerName}}.prototype.delete{{singularName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function($id, $associationID) {
-	var model = this.models.{{model.name}};
-	var accessControl = model.getAccessControl();
-
-	var self = this;
-	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
-		})
-		.spread(function(canDelete, authenticator) {
-			if(!canDelete) {
-				throw unauthenticatedError(authenticator);
-			}
-			else {
-				var association = model.getProperty('{{name}}');
-				var associatedModel = association.getAssociatedModel();
-
-				var removeMap = {};
-				removeMap[association.options.hasMany] = $id;
-				removeMap['id'] = $associationID;
-
-				if(associatedModel.options.automaticPropertyName) {
-					// If a authenticator model does not exists there is some wrong.
-					if(!self.models.getAuthenticator()) {
-						throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-					}
-
-					// This is definitely a bad request if the user tries to set the automatic property manually.
-					if(removeMap[associatedModel.options.automaticPropertyName]) {
-						var error = new Error('Cannot set automatic property manually.');
-						error.status = 400;
-						throw error;
-					}
-
-					removeMap[associatedModel.options.automaticPropertyName] = authenticator;
-				}
-
+	.then(function(authenticator) {
+		return Q.when(accessControl.canRead(authenticator))
+		.then(function(canRead) {
+			if(canRead) {
 				var queryMap = self.query || {};
 				var optionsMap = {};
 
@@ -746,9 +673,82 @@ app.controller({{controllerName}});
 					delete queryMap.$options;
 				}
 
-				return associatedModel.removeOne(removeMap, optionsMap);
+				var association = model.getProperty('{{name}}');
+				var associatedModel = association.options.relationshipVia.model;
+
+				queryMap[association.options.relationshipVia.name] = $id;
+
+				if(associatedModel.options.automaticPropertyName) {
+					if(!self.models.getAuthenticator()) {
+						throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
+					}
+
+					if(queryMap[associatedModel.options.automaticPropertyName]) {
+						var error = new Error('Cannot set automatic property manually.');
+						error.status = 400;
+						throw error;
+					}
+
+					queryMap[associatedModel.options.automaticPropertyName] = authenticator;
+				}
+
+				return associatedModel.find(queryMap, optionsMap);
+			}
+			else {
+				throw unauthenticatedError(authenticator);
 			}
 		});
+	});
+}];
+
+{{controllerName}}.prototype.delete{{singularName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function($id, $associationID) {
+	var model = this.models.{{model.name}};
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+	.then(function(authenticator) {
+		return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
+	})
+	.spread(function(canDelete, authenticator) {
+		if(!canDelete) {
+			throw unauthenticatedError(authenticator);
+		}
+		else {
+			var association = model.getProperty('{{name}}');
+			var associatedModel = association.getAssociatedModel();
+
+			var removeMap = {};
+			removeMap[association.options.hasMany] = $id;
+			removeMap['id'] = $associationID;
+
+			if(associatedModel.options.automaticPropertyName) {
+				// If a authenticator model does not exists there is some wrong.
+				if(!self.models.getAuthenticator()) {
+					throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
+				}
+
+				// This is definitely a bad request if the user tries to set the automatic property manually.
+				if(removeMap[associatedModel.options.automaticPropertyName]) {
+					var error = new Error('Cannot set automatic property manually.');
+					error.status = 400;
+					throw error;
+				}
+
+				removeMap[associatedModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var queryMap = self.query || {};
+			var optionsMap = {};
+
+			if(queryMap.$options) {
+				optionsMap = queryMap.$options;
+				delete queryMap.$options;
+			}
+
+			return associatedModel.removeOne(removeMap, optionsMap);
+		}
+	});
 }];
 
 {{controllerName}}.prototype.delete{{pluralName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
@@ -757,46 +757,46 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
-		})
-		.spread(function(canDelete, authenticator) {
-			if(!canDelete) {
-				throw unauthenticatedError(authenticator);
-			}
-			else {
-				var association = model.getProperty('{{name}}');
-				var associatedModel = association.getAssociatedModel();
+	.then(function(authenticator) {
+		return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
+	})
+	.spread(function(canDelete, authenticator) {
+		if(!canDelete) {
+			throw unauthenticatedError(authenticator);
+		}
+		else {
+			var association = model.getProperty('{{name}}');
+			var associatedModel = association.getAssociatedModel();
 
-				var removeMap = self.query || {};
-				removeMap[association.options.hasMany] = $id;
+			var removeMap = self.query || {};
+			removeMap[association.options.hasMany] = $id;
 
-				if(associatedModel.options.automaticPropertyName) {
-					// If a authenticator model does not exists there is some wrong.
-					if(!self.models.getAuthenticator()) {
-						throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-					}
-
-					// This is definitely a bad request if the user tries to set the automatic property manually.
-					if(removeMap[associatedModel.options.automaticPropertyName]) {
-						var error = new Error('Cannot set automatic property manually.');
-						error.status = 400;
-						throw error;
-					}
-
-					removeMap[associatedModel.options.automaticPropertyName] = authenticator;
+			if(associatedModel.options.automaticPropertyName) {
+				// If a authenticator model does not exists there is some wrong.
+				if(!self.models.getAuthenticator()) {
+					throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
 				}
 
-				var optionsMap = {};
-
-				if(removeMap.$options) {
-					optionsMap = removeMap.$options;
-					delete removeMap.$options;
+				// This is definitely a bad request if the user tries to set the automatic property manually.
+				if(removeMap[associatedModel.options.automaticPropertyName]) {
+					var error = new Error('Cannot set automatic property manually.');
+					error.status = 400;
+					throw error;
 				}
 
-				return associatedModel.remove(removeMap, optionsMap);
+				removeMap[associatedModel.options.automaticPropertyName] = authenticator;
 			}
-		});
+
+			var optionsMap = {};
+
+			if(removeMap.$options) {
+				optionsMap = removeMap.$options;
+				delete removeMap.$options;
+			}
+
+			return associatedModel.remove(removeMap, optionsMap);
+		}
+	});
 }];
 
 {{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function($id, $associationID) {
@@ -805,61 +805,61 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.getPermissionFunction('update')(authenticator))
-			.then(function(canUpdate) {
-				if(canUpdate) {
-					// TODO: Simply use the model via `this.models.FooBar`
-					var association = model.getProperty('{{name}}');
-					return Q.when(_canUpdateProperties(Object.keys(self.body), association.options.relationshipVia.model))
-						.then(function(canUpdateProperties) {
-							if(canUpdateProperties) {
-								var whereMap = {};
+	.then(function(authenticator) {
+		return Q.when(accessControl.getPermissionFunction('update')(authenticator))
+		.then(function(canUpdate) {
+			if(canUpdate) {
+				// TODO: Simply use the model via `this.models.FooBar`
+				var association = model.getProperty('{{name}}');
+				return Q.when(_canUpdateProperties(Object.keys(self.body), association.options.relationshipVia.model))
+				.then(function(canUpdateProperties) {
+					if(canUpdateProperties) {
+						var whereMap = {};
 
-								var keyPath = accessControl.getPermissionKeyPath('update');
-								if(keyPath) {
-									if(!model.getProperty(keyPath)) {
-										throw new Error('Invalid key path `' + keyPath + '`.');
-									}
-
-									whereMap[keyPath] = authenticator;
-								}
-
-								whereMap[association.options.relationshipVia.name] = $id;
-								whereMap.id = $associationID;
-
-								var associatedModel = association.options.relationshipVia.model;
-								if(associatedModel.options.automaticPropertyName) {
-									// If a authenticator model does not exists there is some wrong.
-									if(!self.models.getAuthenticator()) {
-										throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-									}
-
-									// This is definitely a bad request if the user tries to set the automatic property manually.
-									if(whereMap[associatedModel.options.automaticPropertyName]) {
-										var error = new Error('Cannot set automatic property manually.');
-										error.status = 400;
-										throw error;
-									}
-
-									whereMap[associatedModel.options.automaticPropertyName] = authenticator;
-								}
-
-								return associatedModel.updateOne(whereMap, self.body);
+						var keyPath = accessControl.getPermissionKeyPath('update');
+						if(keyPath) {
+							if(!model.getProperty(keyPath)) {
+								throw new Error('Invalid key path `' + keyPath + '`.');
 							}
-							else {
-								var error = new Error();
+
+							whereMap[keyPath] = authenticator;
+						}
+
+						whereMap[association.options.relationshipVia.name] = $id;
+						whereMap.id = $associationID;
+
+						var associatedModel = association.options.relationshipVia.model;
+						if(associatedModel.options.automaticPropertyName) {
+							// If a authenticator model does not exists there is some wrong.
+							if(!self.models.getAuthenticator()) {
+								throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
+							}
+
+							// This is definitely a bad request if the user tries to set the automatic property manually.
+							if(whereMap[associatedModel.options.automaticPropertyName]) {
+								var error = new Error('Cannot set automatic property manually.');
 								error.status = 400;
-								error.message = 'Bad Request';
 								throw error;
 							}
-						});
-				}
-				else {
-					throw unauthenticatedError(authenticator);
-				}
-			});
+
+							whereMap[associatedModel.options.automaticPropertyName] = authenticator;
+						}
+
+						return associatedModel.updateOne(whereMap, self.body);
+					}
+					else {
+						var error = new Error();
+						error.status = 400;
+						error.message = 'Bad Request';
+						throw error;
+					}
+				});
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
 		});
+	});
 }];
 {{/isOneToMany}}
 {{#isManyToMany}}
@@ -869,33 +869,33 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			var property = model.getProperty('{{name}}');
-			return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
-		})
-		.spread(function(canCreate, authenticator) {
-			if(!canCreate) {
-				throw unauthenticatedError(authenticator);
-			}
-			else {
-				return authenticator;
-			}
-		})
-		.then(function(authenticator) {
-			var association = model.getAssociation('{{name}}');
-			var createMap = self.body;
+	.then(function(authenticator) {
+		var property = model.getProperty('{{name}}');
+		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+	})
+	.spread(function(canCreate, authenticator) {
+		if(!canCreate) {
+			throw unauthenticatedError(authenticator);
+		}
+		else {
+			return authenticator;
+		}
+	})
+	.then(function(authenticator) {
+		var association = model.getAssociation('{{name}}');
+		var createMap = self.body;
 
-			var property = model.getProperty('{{name}}');
-			createMap[property.options.throughPropertyName] = $id;
+		var property = model.getProperty('{{name}}');
+		createMap[property.options.throughPropertyName] = $id;
 
-			// TODO: Do we need to set the automatic property name?
+		// TODO: Do we need to set the automatic property name?
 
-			return association.options.through.create(createMap);
-		})
-		.then(function() {
-			// TODO: Are we returning the correct model instance here?
-			return model.findOne({id: $id});
-		});
+		return association.options.through.create(createMap);
+	})
+	.then(function() {
+		// TODO: Are we returning the correct model instance here?
+		return model.findOne({id: $id});
+	});
 }];
 
 {{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
@@ -904,54 +904,10 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.canRead(authenticator))
-				.then(function(canRead) {
-					if(canRead) {
-						var queryMap = self.query || {};
-						var optionsMap = {};
-
-						if(queryMap.$options) {
-							optionsMap = queryMap.$options;
-							delete queryMap.$options;
-						}
-
-						var association = model.getProperty('{{name}}');
-						queryMap[association.options.relationshipVia.name] = $id;
-
-						// TODO: What about the automatic property?
-
-						return association.options.relationshipVia.model.find(queryMap, optionsMap);
-					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
-		});
-}];
-
-{{controllerName}}.prototype.delete{{singularName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function($id, $associationID) {
-	var model = this.models.{{model.name}};
-	var accessControl = model.getAccessControl();
-
-	var self = this;
-	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
-		})
-		.spread(function(canDelete, authenticator) {
-			if(!canDelete) {
-				throw unauthenticatedError(authenticator);
-			}
-			else {
-				var association = model.getProperty('{{name}}');
-
-				var removeMap = {};
-				removeMap[association.options.throughPropertyName] = $id;
-				removeMap[association.options.relationshipVia.options.throughPropertyName] = $associationID;
-
-				// TODO: The automatic property name ... ?
-
+	.then(function(authenticator) {
+		return Q.when(accessControl.canRead(authenticator))
+		.then(function(canRead) {
+			if(canRead) {
 				var queryMap = self.query || {};
 				var optionsMap = {};
 
@@ -960,9 +916,53 @@ app.controller({{controllerName}});
 					delete queryMap.$options;
 				}
 
-				return self.models[association.options.through.getName()].removeOne(removeMap, optionsMap);
+				var association = model.getProperty('{{name}}');
+				queryMap[association.options.relationshipVia.name] = $id;
+
+				// TODO: What about the automatic property?
+
+				return association.options.relationshipVia.model.find(queryMap, optionsMap);
+			}
+			else {
+				throw unauthenticatedError(authenticator);
 			}
 		});
+	});
+}];
+
+{{controllerName}}.prototype.delete{{singularName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function($id, $associationID) {
+	var model = this.models.{{model.name}};
+	var accessControl = model.getAccessControl();
+
+	var self = this;
+	return this.findAuthenticator()
+	.then(function(authenticator) {
+		return Q.all([Q.when(accessControl.getPermissionFunction('delete')(authenticator)), authenticator]);
+	})
+	.spread(function(canDelete, authenticator) {
+		if(!canDelete) {
+			throw unauthenticatedError(authenticator);
+		}
+		else {
+			var association = model.getProperty('{{name}}');
+
+			var removeMap = {};
+			removeMap[association.options.throughPropertyName] = $id;
+			removeMap[association.options.relationshipVia.options.throughPropertyName] = $associationID;
+
+			// TODO: The automatic property name ... ?
+
+			var queryMap = self.query || {};
+			var optionsMap = {};
+
+			if(queryMap.$options) {
+				optionsMap = queryMap.$options;
+				delete queryMap.$options;
+			}
+
+			return self.models[association.options.through.getName()].removeOne(removeMap, optionsMap);
+		}
+	});
 }];
 
 {{controllerName}}.prototype.delete{{pluralName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
@@ -1004,61 +1004,61 @@ app.controller({{controllerName}});
 
 	var self = this;
 	return this.findAuthenticator()
-		.then(function(authenticator) {
-			return Q.when(accessControl.getPermissionFunction('update')(authenticator))
-				.then(function(canUpdate) {
-					if(canUpdate) {
-						var association = model.getProperty('{{name}}');
-						return Q.when(_canUpdateProperties(Object.keys(self.body), association.options.relationshipVia.model))
-							.then(function(canUpdateProperties) {
-								if(canUpdateProperties) {
-									var whereMap = {};
+	.then(function(authenticator) {
+		return Q.when(accessControl.getPermissionFunction('update')(authenticator))
+		.then(function(canUpdate) {
+			if(canUpdate) {
+				var association = model.getProperty('{{name}}');
+				return Q.when(_canUpdateProperties(Object.keys(self.body), association.options.relationshipVia.model))
+				.then(function(canUpdateProperties) {
+					if(canUpdateProperties) {
+						var whereMap = {};
 
-									var keyPath = accessControl.getPermissionKeyPath('update');
-									if(keyPath) {
-										if(!model.getProperty(keyPath)) {
-											throw new Error('Invalid key path `' + keyPath + '`.');
-										}
+						var keyPath = accessControl.getPermissionKeyPath('update');
+						if(keyPath) {
+							if(!model.getProperty(keyPath)) {
+								throw new Error('Invalid key path `' + keyPath + '`.');
+							}
 
-										whereMap[keyPath] = authenticator;
-									}
+							whereMap[keyPath] = authenticator;
+						}
 
-									whereMap[association.options.relationshipVia.name] = $id;
-									whereMap.id = $associationID;
+						whereMap[association.options.relationshipVia.name] = $id;
+						whereMap.id = $associationID;
 
-									var associatedModel = association.options.relationshipVia.model;
+						var associatedModel = association.options.relationshipVia.model;
 
-									if(associatedModel.options.automaticPropertyName) {
-										// If a authenticator model does not exists there is some wrong.
-										if(!self.models.getAuthenticator()) {
-											throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
-										}
+						if(associatedModel.options.automaticPropertyName) {
+							// If a authenticator model does not exists there is some wrong.
+							if(!self.models.getAuthenticator()) {
+								throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
+							}
 
-										// This is definitely a bad request if the user tries to set the automatic property manually.
-										if(whereMap[associatedModel.options.automaticPropertyName]) {
-											var error = new Error('Cannot set automatic property manually.');
-											error.status = 400;
-											throw error;
-										}
+							// This is definitely a bad request if the user tries to set the automatic property manually.
+							if(whereMap[associatedModel.options.automaticPropertyName]) {
+								var error = new Error('Cannot set automatic property manually.');
+								error.status = 400;
+								throw error;
+							}
 
-										whereMap[associatedModel.options.automaticPropertyName] = authenticator;
-									}
+							whereMap[associatedModel.options.automaticPropertyName] = authenticator;
+						}
 
-									return associatedModel.updateOne(whereMap, self.body);
-								}
-								else {
-									var error = new Error();
-									error.status = 400;
-									error.message = 'Bad Request';
-									throw error;
-								}
-							});
+						return associatedModel.updateOne(whereMap, self.body);
 					}
 					else {
-						throw unauthenticatedError(authenticator);
+						var error = new Error();
+						error.status = 400;
+						error.message = 'Bad Request';
+						throw error;
 					}
 				});
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
 		});
+	});
 }];
 {{/isManyToMany}}
 {{/model.properties}}
