@@ -59,29 +59,28 @@ FireModelInstance.prototype.remove = function() {
 FireModelInstance.prototype.save = function() {
 	// TODO: Check validation locally.
 
-	var self = this;
-	var saveMap = {};
-	Object.keys(this._changes).forEach(function(key) {
-		var value = self._changes[key];
-		if(value && typeof value.toQueryValue != 'undefined') {
-			saveMap[key] = value.toQueryValue();
-		}
-		else {
-			saveMap[key] = value;
-		}
-	});
+    var self = this;
+    return this.$q.when(Object.keys(this._changes).length)
+        .then(function(numberOfChanges) {
+            if(numberOfChanges) {
+                var queryMap = transformQueryMap(self._changes);
 
-	return this._model._put(this._endpoint, saveMap)
-		.then(function(instance) {
-			self._changes = {};
+                return self._model._put(self._endpoint, queryMap)
+                    .then(function(instance) {
+                        self._changes = {};
 
-            Object.keys(instance._map).forEach(function(key) {
-                if(instance._map[key] !== null) {
-                    self._map[key] = instance._map[key];
-                }
-            });
-			return self;
-		});
+                        Object.keys(instance._map).forEach(function(key) {
+                            if(instance._map[key] !== null) {
+                                self._map[key] = instance._map[key];
+                            }
+                        });
+                        return self;
+                    });
+            }
+            else {
+                return self;
+            }
+        });
 };
 
 function FireModel($http, $q, models) {
@@ -128,22 +127,27 @@ FireModel.prototype._put = function(path, fields) {
 };
 
 FireModel.prototype.update = function(id, model) {
-	var updateMap = {};
-	Object.keys(model).forEach(function(key) {
-		var value = model[key];
-		if(value && typeof value.toQueryValue != 'undefined') {
-			updateMap[key] = value.toQueryValue();
-		}
-		else {
-			updateMap[key] = value;
-		}
-	});
+    var queryMap = transformQueryMap(model);
 
-	return this._put(this.endpoint + '/' + id, updateMap);
+	return this._put(this.endpoint + '/' + id, queryMap);
 };
 
-FireModel.prototype.remove = function(id) {
-	return this._action('delete', this.endpoint + '/' + id);
+FireModel.prototype.remove = function(modelInstanceMapOrUUID) {
+    var UUID = null;
+
+    if(typeof modelInstanceMapOrUUID.toQueryValue != 'undefined') {
+        UUID = modelInstanceMapOrUUID.toQueryValue();
+    }
+    else if(typeof modelInstanceMapOrUUID == 'string') {
+        UUID = modelInstanceMapOrUUID;
+    }
+
+    if(UUID) {
+        return this._action('delete', this.endpoint + '/' + UUID);
+    }
+    else {
+        return this._action('delete', this.endpoint, this._prepare(transformQueryMap(modelInstanceMapOrUUID)));
+    }
 };
 
 FireModel.prototype.findOrCreate = function(where, set) {
@@ -169,31 +173,37 @@ FireModel.prototype.findOrCreate = function(where, set) {
 };
 
 FireModel.prototype._create = function(path, fields) {
-	var createMap = {};
-	Object.keys(fields || {}).forEach(function(key) {
-		var value = fields[key];
-		if(value && typeof value.toQueryValue != 'undefined') {
-			createMap[key] = value.toQueryValue();
-		}
-		else {
-			createMap[key] = value;
-		}
-	});
+    var queryMap = transformQueryMap(fields);
 
-	return this._post(path, createMap);
+	return this._post(path, queryMap);
 };
 
 FireModel.prototype.create = function(fields) {
 	return this._create(this.endpoint, fields);
 };
 
+function transformQueryMap(fields, options) {
+    var queryMap = {};
+
+    Object.keys(fields || {}).forEach(function(key) {
+        var value = fields[key];
+        if(value && typeof value.toQueryValue != 'undefined') {
+            queryMap[key] = value.toQueryValue();
+        }
+        else {
+            queryMap[key] = value;
+        }
+    });
+
+    if(options) {
+        queryMap.$options = options;
+    }
+
+    return queryMap;
+}
+
 FireModel.prototype._find = function(path, fields, options) {
-	var queryMap = fields || {};
-
-	if(options) {
-		queryMap.$options = options;
-	}
-
+	var queryMap = transformQueryMap(fields, options);
 	return this._get(path, queryMap);
 };
 
@@ -208,7 +218,7 @@ FireModel.prototype.findOne = function(fields, options) {
 		delete fieldsMap.id;
 
 		var self = this;
-		return this._get(this.endpoint + '/' + modelID, fieldsMap)
+		return this._get(this.endpoint + '/' + modelID, transformQueryMap(fieldsMap))
 			.then(function(modelInstance) {
 				if(modelInstance) {
 					modelInstance._endpoint = self.endpoint + '/' + modelID;
@@ -252,7 +262,6 @@ FireModel.prototype.getOne = function(fields) {
 
 
 
-// TODO: Remove this in favour of the model factories (which is more angularism).
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
 }]);
