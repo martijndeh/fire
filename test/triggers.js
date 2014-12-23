@@ -17,15 +17,15 @@ describe('triggers', function() {
 				myTriggerModelInstance = null;
 				myTriggerCalled = 0;
 
-				function User() {
+				function User(EventModel) {
 					this.name = [this.String, this.Authenticate];
-					this.events = [this.HasMany(this.models.Event)];
+					this.events = [this.HasMany(EventModel)];
 				}
 				helper.app.model(User);
 
-				function Event() {
+				function Event(UserModel) {
 					this.name = [this.String];
-					this.user = [this.BelongsTo(this.models.User)];
+					this.user = [this.BelongsTo(UserModel)];
 				}
 				helper.app.model(Event);
 
