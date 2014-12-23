@@ -107,10 +107,22 @@ FireModel.prototype.update = function(id, model) {
 	return this._put(this.endpoint + '/' + id, queryMap);
 };
 
-FireModel.prototype.remove = function(modelInstanceOrUUID) {
-    var UUID = _getUUID(modelInstanceOrUUID)
+FireModel.prototype.remove = function(modelInstanceMapOrUUID) {
+    var UUID = null;
 
-	return this._action('delete', this.endpoint + '/' + UUID);
+    if(typeof modelInstanceMapOrUUID.toQueryValue != 'undefined') {
+        UUID = modelInstanceMapOrUUID.toQueryValue();
+    }
+    else if(typeof modelInstanceMapOrUUID == 'string') {
+        UUID = modelInstanceMapOrUUID;
+    }
+
+    if(UUID) {
+        return this._action('delete', this.endpoint + '/' + UUID);
+    }
+    else {
+        return this._action('delete', this.endpoint, this._prepare(transformQueryMap(modelInstanceMapOrUUID)));
+    }
 };
 
 FireModel.prototype.findOrCreate = function(where, set) {
@@ -323,17 +335,13 @@ function _getUUID(modelInstanceOrUUID) {
     if(typeof modelInstanceOrUUID.toQueryValue != 'undefined') {
         UUID = modelInstanceOrUUID.toQueryValue();
     }
-    else if(typeof modelInstanceOrUUID.id != 'undefined') {
-        UUID = modelInstanceOrUUID.id;
+    else if(typeof modelInstanceOrUUID == 'string') {
+        UUID = modelInstanceOrUUID;
     }
     else {
-        if(typeof modelInstanceorUUID != 'string') {
-            var error = new FireError('Parameter is not a valid UUID.');
-            error.status = 400;
-            throw error;
-        }
-
-        UUID = modelInstanceOrUUID;
+        var error = new FireError('Parameter `' + modelInstanceOrUUID + '` is not a valid model instance or UUID.');
+        error.status = 400;
+        throw error;
     }
 
     return UUID;
@@ -344,7 +352,7 @@ FireModelInstance{{name}}.prototype.remove{{singularMethodName}} = function(mode
 
     var self = this;
     return this._model.models.{{modelName}}._action('delete', this._model.endpoint + '/' + this.id + '/{{resource}}/' + UUID)
-        .then(function(removeModelInstance) {
+        .then(function(removedModelInstance) {
             for(var i = 0, il = self.{{propertyName}}.length; i < il; i++) {
                 var modelInstance = self.{{propertyName}}[i];
 
@@ -353,7 +361,23 @@ FireModelInstance{{name}}.prototype.remove{{singularMethodName}} = function(mode
                     break;
                 }
             }
-            return removeModelInstance;
+            return removedModelInstance;
+        });
+};
+
+FireModelInstance{{name}}.prototype.remove{{pluralMethodName}} = function(map) {
+    var self = this;
+    return this._model.models.{{modelName}}._action('delete', this._model.endpoint + '/' + this.id + '/{{resource}}', this._model._prepare(transformQueryMap(map)))
+        .then(function(removedModelInstances) {
+            var ids = removedModelInstances.map(function(modelInstance) {
+                return modelInstance.id;
+            });
+
+            self.{{propertyName}} = self.{{propertyName}}.filter(function(modelInstance) {
+                return (ids.indexOf(modelInstance.id) !== -1);
+            });
+
+            return removedModelInstances;
         });
 };
 {{/isManyToMany}}
@@ -470,7 +494,6 @@ app.factory('{{name}}Model', ['$http', '$q', 'FireModels', function($http, $q, F
 }]);
 {{/models}}
 
-// TODO: Remove this in favour of the model factories (which is more angularism).
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	{{#models}}
 	this.{{name}} = new FireModel{{name}}($http, $q, this);
