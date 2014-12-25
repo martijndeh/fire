@@ -225,7 +225,7 @@ app.controller({{controllerName}});
 	});
 };
 
-{{controllerName}}.prototype.get{{model.name}} = function($id) {
+{{controllerName}}.prototype.get{{model.name}} = function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -237,7 +237,7 @@ app.controller({{controllerName}});
 	})
 	.spread(function(canRead, authenticator) {
 		if(canRead) {
-			var whereMap = {id: $id};
+			var whereMap = {id: id};
 
 			if(model.options.automaticPropertyName) {
 				whereMap[model.options.automaticPropertyName] = authenticator;
@@ -251,7 +251,7 @@ app.controller({{controllerName}});
 	});
 };
 
-{{controllerName}}.prototype.update{{model.name}} = function($id) {
+{{controllerName}}.prototype.update{{model.name}} = function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -278,7 +278,7 @@ app.controller({{controllerName}});
 				whereMap[model.options.automaticPropertyName] = authenticator;
 			}
 
-			whereMap.id = $id;
+			whereMap.id = id;
 			return [Q.when(_canUpdateProperties(Object.keys(self.body), model)), whereMap, authenticator];
 		}
 		else {
@@ -344,7 +344,7 @@ app.controller({{controllerName}});
 	});
 };
 
-{{controllerName}}.prototype.delete{{model.name}} = function($id) {
+{{controllerName}}.prototype.delete{{model.name}} = function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -355,7 +355,7 @@ app.controller({{controllerName}});
 		.then(function(canDelete) {
 			if(canDelete) {
 				var whereMap = {
-					id: $id
+					id: id
 				};
 
 				var keyPath = accessControl.getPermissionKeyPath('delete');
@@ -383,7 +383,7 @@ app.controller({{controllerName}});
 
 {{#model.properties}}
 {{#hasMethod}}
-{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -394,7 +394,7 @@ app.controller({{controllerName}});
 		.then(function(canRead) {
 			if(canRead) {
 				var property = model.getProperty('{{name}}');
-				return property.options.hasMethod.call(self, $id);
+				return property.options.hasMethod.call(self, id);
 			}
 			else {
 				throw unauthenticatedError(authenticator);
@@ -404,7 +404,7 @@ app.controller({{controllerName}});
 }];
 {{/hasMethod}}
 {{#isOneToOne}}
-{{controllerName}}.prototype.create{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.create{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -412,7 +412,7 @@ app.controller({{controllerName}});
 	return this.findAuthenticator()
 	.then(function(authenticator) {
 		var property = model.getProperty('{{name}}');
-		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, id, authenticator) : function(){return true;}), authenticator]);
 	})
 	.spread(function(canCreate, authenticator) {
 		if(!canCreate) {
@@ -428,7 +428,7 @@ app.controller({{controllerName}});
 		var property = model.getProperty('{{name}}');
 		var associatedModel = property.getAssociatedModel();
 
-		createMap[property.options.hasOne || property.options.belongsTo] = $id;
+		createMap[property.options.hasOne || property.options.belongsTo] = id;
 
 		if(associatedModel.options.automaticPropertyName) {
 			// If a authenticator model does not exists there is some wrong.
@@ -450,7 +450,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -471,7 +471,7 @@ app.controller({{controllerName}});
 				var association = model.getProperty('{{name}}');
 				var associatedModel = association.options.relationshipVia.model;
 
-				queryMap[association.options.relationshipVia.name] = $id;
+				queryMap[association.options.relationshipVia.name] = id;
 
 				if(associatedModel.options.automaticPropertyName) {
 					if(!self.models.getAuthenticator()) {
@@ -496,7 +496,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.delete{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.delete{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -514,7 +514,7 @@ app.controller({{controllerName}});
 			var associatedModel = association.getAssociatedModel();
 
 			var removeMap = {};
-			removeMap[association.options.hasOne || association.options.belongsTo] = $id;
+			removeMap[association.options.hasOne || association.options.belongsTo] = id;
 
 			if(associatedModel.options.automaticPropertyName) {
 				// If a authenticator model does not exists there is some wrong.
@@ -545,7 +545,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -572,7 +572,7 @@ app.controller({{controllerName}});
 							whereMap[keyPath] = authenticator;
 						}
 
-						whereMap[association.options.hasOne || association.options.belongsTo] = $id;
+						whereMap[association.options.hasOne || association.options.belongsTo] = id;
 
 						if(associatedModel.options.automaticPropertyName) {
 							// If a authenticator model does not exists there is some wrong.
@@ -608,7 +608,7 @@ app.controller({{controllerName}});
 }];
 {{/isOneToOne}}
 {{#isOneToMany}}
-{{controllerName}}.prototype.create{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.create{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -616,7 +616,7 @@ app.controller({{controllerName}});
 	return this.findAuthenticator()
 	.then(function(authenticator) {
 		var property = model.getProperty('{{name}}');
-		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, id, authenticator) : function(){return true;}), authenticator]);
 	})
 	.spread(function(canCreate, authenticator) {
 		if(!canCreate) {
@@ -633,7 +633,7 @@ app.controller({{controllerName}});
 		var createMap = self.body;
 
 		var property = model.getProperty('{{name}}');
-		createMap[property.options.hasMany] = $id;
+		createMap[property.options.hasMany] = id;
 
 		if(associatedModel.options.automaticPropertyName) {
 			// If a authenticator model does not exists there is some wrong.
@@ -655,7 +655,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -676,7 +676,7 @@ app.controller({{controllerName}});
 				var association = model.getProperty('{{name}}');
 				var associatedModel = association.options.relationshipVia.model;
 
-				queryMap[association.options.relationshipVia.name] = $id;
+				queryMap[association.options.relationshipVia.name] = id;
 
 				if(associatedModel.options.automaticPropertyName) {
 					if(!self.models.getAuthenticator()) {
@@ -701,7 +701,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.delete{{singularName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function($id, $associationID) {
+{{controllerName}}.prototype.delete{{singularName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function(id, associationID) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -719,8 +719,8 @@ app.controller({{controllerName}});
 			var associatedModel = association.getAssociatedModel();
 
 			var removeMap = {};
-			removeMap[association.options.hasMany] = $id;
-			removeMap['id'] = $associationID;
+			removeMap[association.options.hasMany] = id;
+			removeMap['id'] = associationID;
 
 			if(associatedModel.options.automaticPropertyName) {
 				// If a authenticator model does not exists there is some wrong.
@@ -751,7 +751,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.delete{{pluralName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.delete{{pluralName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -769,7 +769,7 @@ app.controller({{controllerName}});
 			var associatedModel = association.getAssociatedModel();
 
 			var removeMap = self.query || {};
-			removeMap[association.options.hasMany] = $id;
+			removeMap[association.options.hasMany] = id;
 
 			if(associatedModel.options.automaticPropertyName) {
 				// If a authenticator model does not exists there is some wrong.
@@ -799,7 +799,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function($id, $associationID) {
+{{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function(id, associationID) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -825,8 +825,8 @@ app.controller({{controllerName}});
 							whereMap[keyPath] = authenticator;
 						}
 
-						whereMap[association.options.relationshipVia.name] = $id;
-						whereMap.id = $associationID;
+						whereMap[association.options.relationshipVia.name] = id;
+						whereMap.id = associationID;
 
 						var associatedModel = association.options.relationshipVia.model;
 						if(associatedModel.options.automaticPropertyName) {
@@ -863,7 +863,7 @@ app.controller({{controllerName}});
 }];
 {{/isOneToMany}}
 {{#isManyToMany}}
-{{controllerName}}.prototype.create{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.create{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -871,7 +871,7 @@ app.controller({{controllerName}});
 	return this.findAuthenticator()
 	.then(function(authenticator) {
 		var property = model.getProperty('{{name}}');
-		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, id, authenticator) : function(){return true;}), authenticator]);
 	})
 	.spread(function(canCreate, authenticator) {
 		if(!canCreate) {
@@ -886,7 +886,7 @@ app.controller({{controllerName}});
 		var createMap = self.body;
 
 		var property = model.getProperty('{{name}}');
-		createMap[property.options.throughPropertyName] = $id;
+		createMap[property.options.throughPropertyName] = id;
 
 		// TODO: Do we need to set the automatic property name?
 
@@ -894,11 +894,11 @@ app.controller({{controllerName}});
 	})
 	.then(function() {
 		// TODO: Are we returning the correct model instance here?
-		return model.findOne({id: $id});
+		return model.findOne({id: id});
 	});
 }];
 
-{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.get{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -917,7 +917,7 @@ app.controller({{controllerName}});
 				}
 
 				var association = model.getProperty('{{name}}');
-				queryMap[association.options.relationshipVia.name] = $id;
+				queryMap[association.options.relationshipVia.name] = id;
 
 				// TODO: What about the automatic property?
 
@@ -930,7 +930,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.delete{{singularName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function($id, $associationID) {
+{{controllerName}}.prototype.delete{{singularName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function(id, associationID) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -947,8 +947,8 @@ app.controller({{controllerName}});
 			var association = model.getProperty('{{name}}');
 
 			var removeMap = {};
-			removeMap[association.options.throughPropertyName] = $id;
-			removeMap[association.options.relationshipVia.options.throughPropertyName] = $associationID;
+			removeMap[association.options.throughPropertyName] = id;
+			removeMap[association.options.relationshipVia.options.throughPropertyName] = associationID;
 
 			// TODO: The automatic property name ... ?
 
@@ -965,7 +965,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.delete{{pluralName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function($id) {
+{{controllerName}}.prototype.delete{{pluralName}} = ['/api/{{model.resourceName}}/:id/{{resource}}', function(id) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -982,7 +982,7 @@ app.controller({{controllerName}});
 			var association = model.getProperty('{{name}}');
 
 			var removeMap = self.query || {};
-			removeMap[association.options.throughPropertyName] = $id;
+			removeMap[association.options.throughPropertyName] = id;
 
 			// TODO: The automatic property name ... ?
 
@@ -998,7 +998,7 @@ app.controller({{controllerName}});
 	});
 }];
 
-{{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function($id, $associationID) {
+{{controllerName}}.prototype.update{{capitalName}} = ['/api/{{model.resourceName}}/:id/{{resource}}/:associationID', function(id, associationID) {
 	var model = this.models.{{model.name}};
 	var accessControl = model.getAccessControl();
 
@@ -1023,8 +1023,8 @@ app.controller({{controllerName}});
 							whereMap[keyPath] = authenticator;
 						}
 
-						whereMap[association.options.relationshipVia.name] = $id;
-						whereMap.id = $associationID;
+						whereMap[association.options.relationshipVia.name] = id;
+						whereMap.id = associationID;
 
 						var associatedModel = association.options.relationshipVia.model;
 
