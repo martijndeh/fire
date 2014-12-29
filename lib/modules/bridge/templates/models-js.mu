@@ -1,3 +1,5 @@
+/* global $, Q */
+
 function FireError(message) {
     this.name = 'FireError';
     this.message = message || '';
@@ -35,7 +37,7 @@ FireModelInstance.prototype.save = function() {
 	// TODO: Check validation locally.
 
     var self = this;
-    return this.$q.when(Object.keys(this._changes).length)
+    return Q.when(Object.keys(this._changes).length)
         .then(function(numberOfChanges) {
             if(numberOfChanges) {
                 var queryMap = transformQueryMap(self._changes);
@@ -58,9 +60,7 @@ FireModelInstance.prototype.save = function() {
         });
 };
 
-function FireModel($http, $q, models) {
-	this.$http = $http;
-	this.$q = $q;
+function FireModel(models) {
 	this.models = models;
 }
 
@@ -73,18 +73,29 @@ FireModel.prototype._prepare = function(params) {
 };
 
 FireModel.prototype._action = function(verb, path, params, data) {
-	var defer = this.$q.defer();
+	var defer = Q.defer();
+
+    if(params && Object.keys(params).length) {
+        path += '?' + Object.keys(params).map(function(key) {
+            return key + '=' + params[key];
+        }).join('&');
+    }
 
 	var self = this;
-	this.$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true}})
-		.success(function(result) {
-			defer.resolve(self.parseResult(result, path));
-		})
-		.error(function(data, statusCode) {
+	$.ajax({
+        type: verb,
+        url: path,
+        data: data,
+        headers: {'x-json-params': true},
+        error: function(xhr, textStatus, errorThrown) {
             var error = new FireError(data);
-            error.number = statusCode;
-			defer.reject(error);
-		});
+            error.number = xhr.status;
+            defer.reject(error);
+        },
+        success: function(result) {
+            defer.resolve(self.parseResult(result, path));
+        }
+    });
 
 	return defer.promise;
 };
@@ -220,7 +231,7 @@ FireModel.prototype.findOne = function(fields, options) {
 };
 
 FireModel.prototype.getOne = function(fields) {
-	var defer = this.$q.defer();
+	var defer = Q.defer();
 	this.findOne(fields)
 		.then(function(model) {
 			if(model) {
@@ -234,6 +245,8 @@ FireModel.prototype.getOne = function(fields) {
 		});
 	return defer.promise;
 };
+
+var FireModels = {};
 
 {{#models}}
 function FireModelInstance{{name}}(setMap, model, path) {
@@ -388,8 +401,8 @@ FireModelInstance{{name}}.prototype.{{getMethodName}} = function(queryMap, optio
 {{/isHasMethod}}
 {{/methods}}
 
-function FireModel{{name}}($http, $q, models) {
-	FireModel.call(this, $http, $q, models);
+function FireModel{{name}}(models) {
+	FireModel.call(this, models);
 
 	this.endpoint = '/api/{{resource}}';
 }
@@ -416,7 +429,7 @@ FireModel{{name}}.prototype.forgotPassword = function({{authenticatingPropertyNa
 
 FireModel{{name}}.prototype.resetPassword = function(resetToken, password, confirmPassword) {
 	if(password != confirmPassword) {
-		var defer = this.$q.defer();
+		var defer = Q.defer();
 		var error = new FireError('The passwords do not match! Please enter the same password twice.');
 		error.number = 400;
 		defer.reject(error);
@@ -435,7 +448,7 @@ FireModel{{name}}.prototype.signOut = function() {
 
 FireModel{{name}}.prototype.authorize = function(fields) {
 	if(!fields.password || !fields.{{authenticatingPropertyName}}) {
-		var defer = this.$q.defer();
+		var defer = Q.defer();
 		var error = new FireError('Please fill in a {{authenticatingPropertyName}} and password!');
 		error.number = 400;
 		defer.reject(error);
@@ -461,7 +474,7 @@ FireModel{{name}}.prototype.authorize = function(fields) {
 };
 
 FireModel{{name}}.prototype.getMe = function() {
-	var defer = this.$q.defer();
+	var defer = Q.defer();
 
 	if(__authenticator) {
 		defer.resolve(__authenticator);
@@ -489,13 +502,9 @@ FireModel{{name}}.prototype.getMe = function() {
 };
 {{/isAuthenticator}}
 
-app.factory('{{name}}Model', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
-	return new FireModel{{name}}($http, $q, FireModels);
-}]);
-{{/models}}
+FireModels.{{name}} = new FireModel{{name}}(FireModels);
 
-app.service('FireModels', ['$http', '$q', function($http, $q) {
-	{{#models}}
-	this.{{name}} = new FireModel{{name}}($http, $q, this);
-	{{/models}}
-}]);
+app.inject('{{name}}Model', function() {
+    return FireModels.{{name}};
+});
+{{/models}}

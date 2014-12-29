@@ -1,86 +1,117 @@
-function unwrap(promise, initialValue) {
-    var value = initialValue;
+App.prototype.loadController = function(path) {
+    var self = this;
 
-    promise.then(function(newValue) {
-        angular.copy(newValue, value);
-    });
-
-    return value;
-};
-
-{{#controllers}}
-app.service('Fire{{name}}', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    {{#routes}}
-    {{^isView}}
-    this.{{methodName}} = function({{argumentNames}}) {
-        var defer = $q.defer();
-
-        $http['{{verb}}']('{{transformedPath}}', {params: {{transformedParams}}, headers: {'X-JSON-Params': true}})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
+    function loadController(controllerName, templateUrl) {
+        $.get(templateUrl, function(templateHtml) {
+            var controllerMap = app.controllersMap[controllerName];
+            var data = {};
+            var ractive = new Ractive({
+                el: 'view',
+                template: templateHtml,
+                data: data,
+                error: function(error) {
+                    console.log('An error occured.');
+                    console.log(error);
+                }
             });
 
-        return defer.promise;
-    };
-    {{/isView}}
-    {{/routes}}
-}]);
+            var controller = {
+                ractive: null,
+                location: function(path) {
+                    return app.location(path);
+                },
+                wrapCallback: function(callback) {
+                    return function() {
+                        var args = new Array(arguments.length);
+                        for(var i = 0; i < args.length; ++i) {
+                            args[i] = arguments[i];
+                        }
 
-app.service('{{name}}Controller', ['$http', '$q', function($http, $q) {
-    {{#routes}}
-    {{^isView}}
-    this.{{methodName}} = function({{argumentNames}}) {
-        var defer = $q.defer();
+                        var result = callback.apply(this, args);
 
-        $http['{{verb}}']('{{transformedPath}}', {params: {{transformedParams}}, headers: {'X-JSON-Params': true}})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
+                        if(Q.isPromise(result)) {
+                            result.catch(function(error) {
+                                if(controller.error) {
+                                    controller.error(error);
+                                }
+                            });
+                        }
+                        else {
+                            //
+                        }
+                    };
+                },
+                on: function(event, callback) {
+                    return ractive.on(event, this.wrapCallback(callback));
+                },
+                observe: function(keypath, callback) {
+                    return ractive.observe(keypath, this.wrapCallback(callback), {
+                        init: false
+                    });
+                }
+            };
+
+            var ignoreKeys = Object.keys(controller);
+
+            self.execute(controllerMap.constructor, controller, controllerMap.params);
+
+            Object.keys(controller).forEach(function(key) {
+                if(ignoreKeys.indexOf(key) === -1) {
+                    var promise = controller[key];
+
+                    Object.defineProperty(controller, key, {
+                        set: function(value) {
+                            data[key] = value;
+                            ractive.set(key, value);
+
+                            if(typeof value == 'function') {
+                                ractive[key] = value;
+                            }
+                        },
+
+                        get: function() {
+                            return data[key];
+                        }
+                    });
+
+                    if(Q.isPromise(promise)) {
+                        promise
+                            .then(function(value) {
+                                controller[key] = value;
+                                //ractive.data[key] = value;
+                                //ractive[key] = value;
+                                //ractive.set(key, value);
+                            })
+                            .catch(function(error) {
+                                controller[key] = null;
+
+                                if(controller.error) {
+                                    controller.error(error);
+                                }
+                            });
+                    }
+                    else {
+                        if(typeof promise == 'function') {
+                            controller[key] = controller.wrapCallback(promise);
+                        }
+                        else {
+                            data[key] = promise;
+                            ractive.set(key, promise);
+                        }
+                    }
+
+
+                }
             });
-
-        return defer.promise;
-    };
-    {{/isView}}
-    {{/routes}}
-}]);
-{{/controllers}}
-
-app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
         });
+    }
 
-        return value;
-    };
-    this.unwrap = unwrap;
-    this.models = FireModels;
-}]);
+    {{#controllers}}{{#routes}}{{#isView}}
+    if(new RegExp('^{{pathRegex}}$', 'i').test(path)) {
+        loadController('{{name}}', '{{templatePath}}');
+        return;
+    }
+    {{/isView}}{{/routes}}{{/controllers}}
 
-app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
-    $locationProvider.html5Mode({
-        enabled: true,
-        requireBase: false
-    });
-
-{{#controllers}}
-{{#routes}}
-    {{#isView}}
-    $routeProvider.when('{{path}}', {
-        templateUrl: '{{templatePath}}',
-        controller: '{{name}}'
-    });
-    {{/isView}}
-{{/routes}}
-{{/controllers}}
-}]);
+    // TODO: What if we found no route?
+};
