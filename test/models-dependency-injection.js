@@ -15,6 +15,8 @@ describe('models dependency injection', function() {
 			}
 			app.model(User);
 		};
+
+		helper.createModels = null;
 	});
 
 	it('can inject unknown dependecies', function() {

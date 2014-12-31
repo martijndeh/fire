@@ -121,7 +121,7 @@ CollectionModelController.prototype.getCollections = function() {
 	});
 };
 
-CollectionModelController.prototype.getCollection = function($id) {
+CollectionModelController.prototype.getCollection = function(id) {
 	var model = this.models.Collection;
 	var accessControl = model.getAccessControl();
 
@@ -133,7 +133,7 @@ CollectionModelController.prototype.getCollection = function($id) {
 	})
 	.spread(function(canRead, authenticator) {
 		if(canRead) {
-			var whereMap = {id: $id};
+			var whereMap = {id: id};
 
 			if(model.options.automaticPropertyName) {
 				whereMap[model.options.automaticPropertyName] = authenticator;
@@ -147,7 +147,7 @@ CollectionModelController.prototype.getCollection = function($id) {
 	});
 };
 
-CollectionModelController.prototype.updateCollection = function($id) {
+CollectionModelController.prototype.updateCollection = function(id) {
 	var model = this.models.Collection;
 	var accessControl = model.getAccessControl();
 
@@ -174,7 +174,7 @@ CollectionModelController.prototype.updateCollection = function($id) {
 				whereMap[model.options.automaticPropertyName] = authenticator;
 			}
 
-			whereMap.id = $id;
+			whereMap.id = id;
 			return [Q.when(_canUpdateProperties(Object.keys(self.body), model)), whereMap, authenticator];
 		}
 		else {
@@ -240,7 +240,7 @@ CollectionModelController.prototype.deleteCollections = function() {
 	});
 };
 
-CollectionModelController.prototype.deleteCollection = function($id) {
+CollectionModelController.prototype.deleteCollection = function(id) {
 	var model = this.models.Collection;
 	var accessControl = model.getAccessControl();
 
@@ -251,7 +251,7 @@ CollectionModelController.prototype.deleteCollection = function($id) {
 		.then(function(canDelete) {
 			if(canDelete) {
 				var whereMap = {
-					id: $id
+					id: id
 				};
 
 				var keyPath = accessControl.getPermissionKeyPath('delete');
@@ -284,7 +284,7 @@ CollectionModelController.prototype.deleteCollection = function($id) {
 
 
 
-CollectionModelController.prototype.getApps = ['/api/collections/:id/apps', function($id) {
+CollectionModelController.prototype.getApps = ['/api/collections/:id/apps', function(id) {
 	var model = this.models.Collection;
 	var accessControl = model.getAccessControl();
 
@@ -295,7 +295,7 @@ CollectionModelController.prototype.getApps = ['/api/collections/:id/apps', func
 		.then(function(canRead) {
 			if(canRead) {
 				var property = model.getProperty('apps');
-				return property.options.hasMethod.call(self, $id);
+				return property.options.hasMethod.call(self, id);
 			}
 			else {
 				throw unauthenticatedError(authenticator);

@@ -121,7 +121,7 @@ TesterModelController.prototype.getTesters = function() {
 	});
 };
 
-TesterModelController.prototype.getTester = function($id) {
+TesterModelController.prototype.getTester = function(id) {
 	var model = this.models.Tester;
 	var accessControl = model.getAccessControl();
 
@@ -133,7 +133,7 @@ TesterModelController.prototype.getTester = function($id) {
 	})
 	.spread(function(canRead, authenticator) {
 		if(canRead) {
-			var whereMap = {id: $id};
+			var whereMap = {id: id};
 
 			if(model.options.automaticPropertyName) {
 				whereMap[model.options.automaticPropertyName] = authenticator;
@@ -147,7 +147,7 @@ TesterModelController.prototype.getTester = function($id) {
 	});
 };
 
-TesterModelController.prototype.updateTester = function($id) {
+TesterModelController.prototype.updateTester = function(id) {
 	var model = this.models.Tester;
 	var accessControl = model.getAccessControl();
 
@@ -174,7 +174,7 @@ TesterModelController.prototype.updateTester = function($id) {
 				whereMap[model.options.automaticPropertyName] = authenticator;
 			}
 
-			whereMap.id = $id;
+			whereMap.id = id;
 			return [Q.when(_canUpdateProperties(Object.keys(self.body), model)), whereMap, authenticator];
 		}
 		else {
@@ -240,7 +240,7 @@ TesterModelController.prototype.deleteTesters = function() {
 	});
 };
 
-TesterModelController.prototype.deleteTester = function($id) {
+TesterModelController.prototype.deleteTester = function(id) {
 	var model = this.models.Tester;
 	var accessControl = model.getAccessControl();
 
@@ -251,7 +251,7 @@ TesterModelController.prototype.deleteTester = function($id) {
 		.then(function(canDelete) {
 			if(canDelete) {
 				var whereMap = {
-					id: $id
+					id: id
 				};
 
 				var keyPath = accessControl.getPermissionKeyPath('delete');

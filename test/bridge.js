@@ -78,8 +78,8 @@ describe('bridge', function() {
 			return a;
 		};
 
-		TestController.prototype.getTest4 = function($id) {
-			return $id;
+		TestController.prototype.getTest4 = function(id) {
+			return id;
 		};
 
 		var writeStream = new streams.WritableStream();

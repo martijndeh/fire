@@ -121,7 +121,7 @@ ContainerModelController.prototype.getContainers = function() {
 	});
 };
 
-ContainerModelController.prototype.getContainer = function($id) {
+ContainerModelController.prototype.getContainer = function(id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -133,7 +133,7 @@ ContainerModelController.prototype.getContainer = function($id) {
 	})
 	.spread(function(canRead, authenticator) {
 		if(canRead) {
-			var whereMap = {id: $id};
+			var whereMap = {id: id};
 
 			if(model.options.automaticPropertyName) {
 				whereMap[model.options.automaticPropertyName] = authenticator;
@@ -147,7 +147,7 @@ ContainerModelController.prototype.getContainer = function($id) {
 	});
 };
 
-ContainerModelController.prototype.updateContainer = function($id) {
+ContainerModelController.prototype.updateContainer = function(id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -174,7 +174,7 @@ ContainerModelController.prototype.updateContainer = function($id) {
 				whereMap[model.options.automaticPropertyName] = authenticator;
 			}
 
-			whereMap.id = $id;
+			whereMap.id = id;
 			return [Q.when(_canUpdateProperties(Object.keys(self.body), model)), whereMap, authenticator];
 		}
 		else {
@@ -240,7 +240,7 @@ ContainerModelController.prototype.deleteContainers = function() {
 	});
 };
 
-ContainerModelController.prototype.deleteContainer = function($id) {
+ContainerModelController.prototype.deleteContainer = function(id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -251,7 +251,7 @@ ContainerModelController.prototype.deleteContainer = function($id) {
 		.then(function(canDelete) {
 			if(canDelete) {
 				var whereMap = {
-					id: $id
+					id: id
 				};
 
 				var keyPath = accessControl.getPermissionKeyPath('delete');
@@ -291,7 +291,7 @@ ContainerModelController.prototype.deleteContainer = function($id) {
 
 
 
-ContainerModelController.prototype.createUsers = ['/api/containers/:id/users', function($id) {
+ContainerModelController.prototype.createUsers = ['/api/containers/:id/users', function(id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -299,7 +299,7 @@ ContainerModelController.prototype.createUsers = ['/api/containers/:id/users', f
 	return this.findAuthenticator()
 	.then(function(authenticator) {
 		var property = model.getProperty('users');
-		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, id, authenticator) : function(){return true;}), authenticator]);
 	})
 	.spread(function(canCreate, authenticator) {
 		if(!canCreate) {
@@ -316,7 +316,7 @@ ContainerModelController.prototype.createUsers = ['/api/containers/:id/users', f
 		var createMap = self.body;
 
 		var property = model.getProperty('users');
-		createMap[property.options.hasMany] = $id;
+		createMap[property.options.hasMany] = id;
 
 		if(associatedModel.options.automaticPropertyName) {
 			// If a authenticator model does not exists there is some wrong.
@@ -338,7 +338,7 @@ ContainerModelController.prototype.createUsers = ['/api/containers/:id/users', f
 	});
 }];
 
-ContainerModelController.prototype.getUsers = ['/api/containers/:id/users', function($id) {
+ContainerModelController.prototype.getUsers = ['/api/containers/:id/users', function(id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -359,7 +359,7 @@ ContainerModelController.prototype.getUsers = ['/api/containers/:id/users', func
 				var association = model.getProperty('users');
 				var associatedModel = association.options.relationshipVia.model;
 
-				queryMap[association.options.relationshipVia.name] = $id;
+				queryMap[association.options.relationshipVia.name] = id;
 
 				if(associatedModel.options.automaticPropertyName) {
 					if(!self.models.getAuthenticator()) {
@@ -384,7 +384,7 @@ ContainerModelController.prototype.getUsers = ['/api/containers/:id/users', func
 	});
 }];
 
-ContainerModelController.prototype.deleteUser = ['/api/containers/:id/users/:associationID', function($id, $associationID) {
+ContainerModelController.prototype.deleteUser = ['/api/containers/:id/users/:associationID', function(id, associationID) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -402,8 +402,8 @@ ContainerModelController.prototype.deleteUser = ['/api/containers/:id/users/:ass
 			var associatedModel = association.getAssociatedModel();
 
 			var removeMap = {};
-			removeMap[association.options.hasMany] = $id;
-			removeMap['id'] = $associationID;
+			removeMap[association.options.hasMany] = id;
+			removeMap['id'] = associationID;
 
 			if(associatedModel.options.automaticPropertyName) {
 				// If a authenticator model does not exists there is some wrong.
@@ -434,7 +434,7 @@ ContainerModelController.prototype.deleteUser = ['/api/containers/:id/users/:ass
 	});
 }];
 
-ContainerModelController.prototype.deleteUsers = ['/api/containers/:id/users', function($id) {
+ContainerModelController.prototype.deleteUsers = ['/api/containers/:id/users', function(id) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -452,7 +452,7 @@ ContainerModelController.prototype.deleteUsers = ['/api/containers/:id/users', f
 			var associatedModel = association.getAssociatedModel();
 
 			var removeMap = self.query || {};
-			removeMap[association.options.hasMany] = $id;
+			removeMap[association.options.hasMany] = id;
 
 			if(associatedModel.options.automaticPropertyName) {
 				// If a authenticator model does not exists there is some wrong.
@@ -482,7 +482,7 @@ ContainerModelController.prototype.deleteUsers = ['/api/containers/:id/users', f
 	});
 }];
 
-ContainerModelController.prototype.updateUsers = ['/api/containers/:id/users/:associationID', function($id, $associationID) {
+ContainerModelController.prototype.updateUsers = ['/api/containers/:id/users/:associationID', function(id, associationID) {
 	var model = this.models.Container;
 	var accessControl = model.getAccessControl();
 
@@ -508,8 +508,8 @@ ContainerModelController.prototype.updateUsers = ['/api/containers/:id/users/:as
 							whereMap[keyPath] = authenticator;
 						}
 
-						whereMap[association.options.relationshipVia.name] = $id;
-						whereMap.id = $associationID;
+						whereMap[association.options.relationshipVia.name] = id;
+						whereMap.id = associationID;
 
 						var associatedModel = association.options.relationshipVia.model;
 						if(associatedModel.options.automaticPropertyName) {

@@ -225,7 +225,7 @@ UserModelController.prototype.getUsers = function() {
 	});
 };
 
-UserModelController.prototype.getUser = function($id) {
+UserModelController.prototype.getUser = function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -237,7 +237,7 @@ UserModelController.prototype.getUser = function($id) {
 	})
 	.spread(function(canRead, authenticator) {
 		if(canRead) {
-			var whereMap = {id: $id};
+			var whereMap = {id: id};
 
 			if(model.options.automaticPropertyName) {
 				whereMap[model.options.automaticPropertyName] = authenticator;
@@ -251,7 +251,7 @@ UserModelController.prototype.getUser = function($id) {
 	});
 };
 
-UserModelController.prototype.updateUser = function($id) {
+UserModelController.prototype.updateUser = function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -278,7 +278,7 @@ UserModelController.prototype.updateUser = function($id) {
 				whereMap[model.options.automaticPropertyName] = authenticator;
 			}
 
-			whereMap.id = $id;
+			whereMap.id = id;
 			return [Q.when(_canUpdateProperties(Object.keys(self.body), model)), whereMap, authenticator];
 		}
 		else {
@@ -344,7 +344,7 @@ UserModelController.prototype.deleteUsers = function() {
 	});
 };
 
-UserModelController.prototype.deleteUser = function($id) {
+UserModelController.prototype.deleteUser = function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -355,7 +355,7 @@ UserModelController.prototype.deleteUser = function($id) {
 		.then(function(canDelete) {
 			if(canDelete) {
 				var whereMap = {
-					id: $id
+					id: id
 				};
 
 				var keyPath = accessControl.getPermissionKeyPath('delete');
@@ -394,7 +394,7 @@ UserModelController.prototype.deleteUser = function($id) {
 
 
 
-UserModelController.prototype.createResetpassword = ['/api/users/:id/reset-password', function($id) {
+UserModelController.prototype.createResetpassword = ['/api/users/:id/reset-password', function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -402,7 +402,7 @@ UserModelController.prototype.createResetpassword = ['/api/users/:id/reset-passw
 	return this.findAuthenticator()
 	.then(function(authenticator) {
 		var property = model.getProperty('resetPassword');
-		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, id, authenticator) : function(){return true;}), authenticator]);
 	})
 	.spread(function(canCreate, authenticator) {
 		if(!canCreate) {
@@ -418,7 +418,7 @@ UserModelController.prototype.createResetpassword = ['/api/users/:id/reset-passw
 		var property = model.getProperty('resetPassword');
 		var associatedModel = property.getAssociatedModel();
 
-		createMap[property.options.hasOne || property.options.belongsTo] = $id;
+		createMap[property.options.hasOne || property.options.belongsTo] = id;
 
 		if(associatedModel.options.automaticPropertyName) {
 			// If a authenticator model does not exists there is some wrong.
@@ -440,7 +440,7 @@ UserModelController.prototype.createResetpassword = ['/api/users/:id/reset-passw
 	});
 }];
 
-UserModelController.prototype.getResetpassword = ['/api/users/:id/reset-password', function($id) {
+UserModelController.prototype.getResetpassword = ['/api/users/:id/reset-password', function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -461,7 +461,7 @@ UserModelController.prototype.getResetpassword = ['/api/users/:id/reset-password
 				var association = model.getProperty('resetPassword');
 				var associatedModel = association.options.relationshipVia.model;
 
-				queryMap[association.options.relationshipVia.name] = $id;
+				queryMap[association.options.relationshipVia.name] = id;
 
 				if(associatedModel.options.automaticPropertyName) {
 					if(!self.models.getAuthenticator()) {
@@ -486,7 +486,7 @@ UserModelController.prototype.getResetpassword = ['/api/users/:id/reset-password
 	});
 }];
 
-UserModelController.prototype.deleteResetpassword = ['/api/users/:id/reset-password', function($id) {
+UserModelController.prototype.deleteResetpassword = ['/api/users/:id/reset-password', function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -504,7 +504,7 @@ UserModelController.prototype.deleteResetpassword = ['/api/users/:id/reset-passw
 			var associatedModel = association.getAssociatedModel();
 
 			var removeMap = {};
-			removeMap[association.options.hasOne || association.options.belongsTo] = $id;
+			removeMap[association.options.hasOne || association.options.belongsTo] = id;
 
 			if(associatedModel.options.automaticPropertyName) {
 				// If a authenticator model does not exists there is some wrong.
@@ -535,7 +535,7 @@ UserModelController.prototype.deleteResetpassword = ['/api/users/:id/reset-passw
 	});
 }];
 
-UserModelController.prototype.updateResetpassword = ['/api/users/:id/reset-password', function($id) {
+UserModelController.prototype.updateResetpassword = ['/api/users/:id/reset-password', function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -562,7 +562,7 @@ UserModelController.prototype.updateResetpassword = ['/api/users/:id/reset-passw
 							whereMap[keyPath] = authenticator;
 						}
 
-						whereMap[association.options.hasOne || association.options.belongsTo] = $id;
+						whereMap[association.options.hasOne || association.options.belongsTo] = id;
 
 						if(associatedModel.options.automaticPropertyName) {
 							// If a authenticator model does not exists there is some wrong.
@@ -612,7 +612,7 @@ UserModelController.prototype.updateResetpassword = ['/api/users/:id/reset-passw
 
 
 
-UserModelController.prototype.createContainer = ['/api/users/:id/container', function($id) {
+UserModelController.prototype.createContainer = ['/api/users/:id/container', function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -620,7 +620,7 @@ UserModelController.prototype.createContainer = ['/api/users/:id/container', fun
 	return this.findAuthenticator()
 	.then(function(authenticator) {
 		var property = model.getProperty('container');
-		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, $id, authenticator) : function(){return true;}), authenticator]);
+		return Q.all([Q.when(typeof property.options.canCreate != 'undefined' ? property.options.canCreate.call(self, id, authenticator) : function(){return true;}), authenticator]);
 	})
 	.spread(function(canCreate, authenticator) {
 		if(!canCreate) {
@@ -636,7 +636,7 @@ UserModelController.prototype.createContainer = ['/api/users/:id/container', fun
 		var property = model.getProperty('container');
 		var associatedModel = property.getAssociatedModel();
 
-		createMap[property.options.hasOne || property.options.belongsTo] = $id;
+		createMap[property.options.hasOne || property.options.belongsTo] = id;
 
 		if(associatedModel.options.automaticPropertyName) {
 			// If a authenticator model does not exists there is some wrong.
@@ -658,7 +658,7 @@ UserModelController.prototype.createContainer = ['/api/users/:id/container', fun
 	});
 }];
 
-UserModelController.prototype.getContainer = ['/api/users/:id/container', function($id) {
+UserModelController.prototype.getContainer = ['/api/users/:id/container', function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -679,7 +679,7 @@ UserModelController.prototype.getContainer = ['/api/users/:id/container', functi
 				var association = model.getProperty('container');
 				var associatedModel = association.options.relationshipVia.model;
 
-				queryMap[association.options.relationshipVia.name] = $id;
+				queryMap[association.options.relationshipVia.name] = id;
 
 				if(associatedModel.options.automaticPropertyName) {
 					if(!self.models.getAuthenticator()) {
@@ -704,7 +704,7 @@ UserModelController.prototype.getContainer = ['/api/users/:id/container', functi
 	});
 }];
 
-UserModelController.prototype.deleteContainer = ['/api/users/:id/container', function($id) {
+UserModelController.prototype.deleteContainer = ['/api/users/:id/container', function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -722,7 +722,7 @@ UserModelController.prototype.deleteContainer = ['/api/users/:id/container', fun
 			var associatedModel = association.getAssociatedModel();
 
 			var removeMap = {};
-			removeMap[association.options.hasOne || association.options.belongsTo] = $id;
+			removeMap[association.options.hasOne || association.options.belongsTo] = id;
 
 			if(associatedModel.options.automaticPropertyName) {
 				// If a authenticator model does not exists there is some wrong.
@@ -753,7 +753,7 @@ UserModelController.prototype.deleteContainer = ['/api/users/:id/container', fun
 	});
 }];
 
-UserModelController.prototype.updateContainer = ['/api/users/:id/container', function($id) {
+UserModelController.prototype.updateContainer = ['/api/users/:id/container', function(id) {
 	var model = this.models.User;
 	var accessControl = model.getAccessControl();
 
@@ -780,7 +780,7 @@ UserModelController.prototype.updateContainer = ['/api/users/:id/container', fun
 							whereMap[keyPath] = authenticator;
 						}
 
-						whereMap[association.options.hasOne || association.options.belongsTo] = $id;
+						whereMap[association.options.hasOne || association.options.belongsTo] = id;
 
 						if(associatedModel.options.automaticPropertyName) {
 							// If a authenticator model does not exists there is some wrong.
