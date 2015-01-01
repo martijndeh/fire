@@ -15,16 +15,21 @@ describe('migrations', function() {
     afterEach(function(done) {
         // We should drop everything
         migrations.destroyAllModels()
-        .then(function() {
-            return app.stop();
-        })
-        .then(function() {
-            done();
-        })
-        .catch(function(error) {
-            done(error);
-        })
-        .done();
+            .then(function() {
+                return app.stop();
+            })
+            .then(function() {
+                var defer = Q.defer();
+                app.models.datastore.knex.destroy(defer.makeNodeResolver());
+                return defer.promise;
+            })
+            .then(function() {
+                done();
+            })
+            .catch(function(error) {
+                done(error);
+            })
+            .done();
     });
 
     beforeEach(function(done) {
@@ -519,7 +524,7 @@ describe('migrations', function() {
         migrations.migrate(0, 13)
             .then(function() {
                 return models.TestChild.create({
-                    name: 'This should fail as we\'re not setting a parent'
+                    name: "This should fail as we're not setting a parent"
                 });
             })
             .catch(function(error) {

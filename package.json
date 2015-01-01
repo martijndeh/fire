@@ -45,6 +45,7 @@
     "express": "^4.4.4",
     "inflection": "^1.3.5",
     "jade": "^1.3.0",
+    "knex": "^0.7.3",
     "less-middleware": "^1.0.3",
     "merge": "^1.1.2",
     "minimist": "0.0.8",

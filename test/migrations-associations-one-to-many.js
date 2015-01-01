@@ -14,16 +14,21 @@ describe('migrations-associations-one-to-many', function() {
 
     afterEach(function(done) {
         migrations.destroyAllModels()
-        .then(function() {
-            return app.stop();
-        })
-        .then(function() {
-            done();
-        })
-        .catch(function(error) {
-            done(error);
-        })
-        .done();
+            .then(function() {
+                return app.stop();
+            })
+            .then(function() {
+                var defer = Q.defer();
+                app.models.datastore.knex.destroy(defer.makeNodeResolver());
+                return defer.promise;
+            })
+            .then(function() {
+                done();
+            })
+            .catch(function(error) {
+                done(error);
+            })
+            .done();
     });
 
     beforeEach(function(done) {

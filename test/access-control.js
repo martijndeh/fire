@@ -166,8 +166,7 @@ describe('access control', function() {
 					agent.post('/api/users/authorize')
 						.set('X-JSON-Params', true)
 						.send(helper.jsonify({name: 'Martijn', password: 'test'}))
-						.expect(200, function(error, response) {
-							assert.equal(error, null);
+						.expect(200, function(error, response) {							
 							assert.equal(response.body.name, 'Martijn');
 							assert.notEqual(response.body.accessToken, null);
 							assert.equal(response.body.password, null);

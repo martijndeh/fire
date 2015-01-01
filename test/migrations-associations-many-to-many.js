@@ -13,16 +13,21 @@ describe('migrations-associations-many-to-many', function() {
 
     afterEach(function(done) {
         migrations.destroyAllModels()
-        .then(function() {
-            return app.stop();
-        })
-        .then(function() {
-            done();
-        })
-        .catch(function(error) {
-            done(error);
-        })
-        .done();
+            .then(function() {
+                return app.stop();
+            })
+            .then(function() {
+                var defer = Q.defer();
+                app.models.datastore.knex.destroy(defer.makeNodeResolver());
+                return defer.promise;
+            })
+            .then(function() {
+                done();
+            })
+            .catch(function(error) {
+                done(error);
+            })
+            .done();
     });
 
     beforeEach(function(done) {
@@ -86,46 +91,46 @@ describe('migrations-associations-many-to-many', function() {
         };
 
         migrations.addMigration(Migration, 1);
-        return migrations.migrate(0, 1)
-            .then(function() {
-                assert.notEqual(models.ArticleVoterUserVote, null);
-                return models.ArticleVoterUserVote.exists();
-            })
-            .then(function(exists) {
-                assert.equal(exists, true);
+            return migrations.migrate(0, 1)
+                .then(function() {
+                    assert.notEqual(models.ArticleVoterUserVote, null);
+                    return models.ArticleVoterUserVote.exists();
+                })
+                .then(function(exists) {
+                    assert.equal(exists, true);
 
-                return Q.all([
-                    models.User.create({name: 'Test 1'}),
-                    models.User.create({name: 'Test 2'})
-                ]);
-            })
-            .spread(function(user1, user2) {
-                return models.Article.create({title: 'Test', url: 'https://github.com/martijndeh/fire', submitter: user1})
-                    .then(function(article) {
-                        return article.addVoter(user2)
-                            .then(function() {
-                                return models.Comment.create({article: article, author: user2, text: 'This is a comment!'});
-                            });
-                    });
-            })
-            .then(function() {
-                return models.Article.findOne();
-            })
-            .then(function(article) {
-                assert.notEqual(article, null);
-                assert.equal(article.title, 'Test');
+                    return Q.all([
+                        models.User.create({name: 'Test 1'}),
+                        models.User.create({name: 'Test 2'})
+                    ]);
+                })
+                .spread(function(user1, user2) {
+                    return models.Article.create({title: 'Test', url: 'https://github.com/martijndeh/fire', submitter: user1})
+                        .then(function(article) {
+                            return article.addVoter(user2)
+                                .then(function() {
+                                    return models.Comment.create({article: article, author: user2, text: 'This is a comment!'});
+                                });
+                        });
+                })
+                .then(function() {
+                    return models.Article.findOne();
+                })
+                .then(function(article) {
+                    assert.notEqual(article, null);
+                    assert.equal(article.title, 'Test');
 
-                assert.equal(article.submitter.name, 'Test 1');
-                assert.equal(article.voters.length, 1);
-                assert.equal(article.comments.length, 1);
+                    assert.equal(article.submitter.name, 'Test 1');
+                    assert.equal(article.voters.length, 1);
+                    assert.equal(article.comments.length, 1);
 
-                var comment = article.comments[0];
-                assert.equal(comment.author.name, 'Test 2');
-                assert.equal(comment.text, 'This is a comment!');
+                    var comment = article.comments[0];
+                    assert.equal(comment.author.name, 'Test 2');
+                    assert.equal(comment.text, 'This is a comment!');
 
-                var voter = article.voters[0];
-                assert.equal(voter.name, 'Test 2');
-            });
+                    var voter = article.voters[0];
+                    assert.equal(voter.name, 'Test 2');
+                });
     });
 
     it('can create model with M:N association', function(done) {
