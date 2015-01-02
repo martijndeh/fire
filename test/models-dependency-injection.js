@@ -19,20 +19,6 @@ describe('models dependency injection', function() {
 		helper.createModels = null;
 	});
 
-	it('can inject unknown dependecies', function() {
-		var called = 0;
-
-		function Test(TestModel) {
-			assert.equal(TestModel, 'Test');
-
-			called++;
-		}
-
-		var model = helper.app.models._createModel(Test);
-		assert.notEqual(model, null);
-		assert.equal(called, 1);
-	});
-
 	it('can inject known dependecies', function() {
 		var called = 0;
 
@@ -47,7 +33,7 @@ describe('models dependency injection', function() {
 		assert.equal(called, 1);
 	});
 
-	it('throws error with invalid dependecy', function() {
+	it('throws error with invalid dependency', function() {
 		function Test(Something) { //jshint ignore:line
 
 		}

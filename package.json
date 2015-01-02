@@ -48,6 +48,7 @@
     "knex": "^0.7.3",
     "less-middleware": "^1.0.3",
     "merge": "^1.1.2",
+    "methods": "^1.1.1",
     "minimist": "0.0.8",
     "mu2": "^0.5.20",
     "node-uuid": "^1.4.1",
