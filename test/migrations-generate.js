@@ -66,7 +66,7 @@ describe('migrations generate', function() {
                     });
                 }
             };
-            generate.createMigrations();
+            generate.createMigrations(true);
         });
     });
     */
