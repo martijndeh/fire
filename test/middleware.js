@@ -3,7 +3,6 @@
 
 var helper = require('./support/helper');
 var assert = require('assert');
-var helper = require('./support/helper');
 var request = require('supertest');
 
 describe('middleware', function() {
