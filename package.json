@@ -37,7 +37,7 @@
     "amqplib": "^0.2.1",
     "body": "^4.4.2",
     "body-parser": "^1.2.0",
-    "cookie-session": "^1.0.2",
+    "cookie-session": "^1.1.0",
     "cookies": "^0.5.0",
     "cron": "^1.0.5",
     "debug": "^0.8.0",

@@ -4,7 +4,6 @@
 var helper = require('./support/helper');
 var assert = require('assert');
 var request = require('supertest');
-var crypto = require('crypto');
 
 describe('forgot password', function() {
 	var onForgotPasswordCalled = false;
@@ -112,13 +111,12 @@ describe('forgot password', function() {
 						assert.equal(error2, null);
 						assert.equal(onResetPasswordCalled, true);
 
-						var hash = crypto.createHash('sha512');
-						hash.update('test');
-						var hashedPassword = hash.digest('hex');
-
 						helper.app.models.User.findOne({email: 'martijn@nodeonfire.org'})
 							.then(function(user) {
-								assert.equal(user.password, hashedPassword);
+								return user.validateHash('password', 'test');
+							})
+							.then(function(result) {
+								assert.equal(result, true);
 								return helper.app.models.UserResetPassword.findOne({});
 							})
 							.then(function(resetPassword) {

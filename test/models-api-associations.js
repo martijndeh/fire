@@ -260,8 +260,6 @@ describe('models api associations', function() {
 			.delete('/api/articles/' + article1ID + '/location')
 			.send()
 			.expect(200, function(error, response) {
-				console.log(error);
-
 				assert.equal(response.body.article, article1ID);
 				done(error);
 			});

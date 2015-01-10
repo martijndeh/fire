@@ -42,17 +42,19 @@ UserModelController.prototype.basePathComponents = ['api'];
 
 
 UserModelController.prototype.getMe = ['/api/users/me', function() {
+	var self = this;
 	return this.findAuthenticator()
-	.then(function(authenticator) {
-		if(authenticator) {
-			return authenticator;
-		}
-		else {
-			var error = new Error('Unauthorized');
-			error.status = 401;
-			throw error;
-		}
-	});
+		.then(function(authenticator) {
+			if(authenticator) {
+				self.session.save();
+				return authenticator;
+			}
+			else {
+				var error = new Error('Unauthorized');
+				error.status = 401;
+				throw error;
+			}
+		});
 }];
 
 UserModelController.prototype.doSignOut = ['/api/users/sign-out', function() {
@@ -65,20 +67,26 @@ UserModelController.prototype.doAuthorize = ['/api/users/authorize', function() 
 
 	var model = this.models.User;
 	var map = {
-		email: this.body.email,
-		password: this.body.password
+		email: this.body.email
 	};
 
 	var self = this;
 	return model.getOne(map)
-	.then(function(instance) {
-		// TODO: Do not hardcode `accessToken` like this...
-		self.session.at = instance.accessToken;
-		return instance;
-	})
-	.catch(function(error) {
-		throw error;
-	});
+		.then(function(instance) {
+			if(instance.validateHash('password', self.body.password)) {
+				return instance;
+			}
+			else {
+				throw new Error('Incorrect password provided.');
+			}
+		})
+		.then(function(instance) {
+			self.session.at = instance.accessToken;
+			return instance;
+		})
+		.catch(function(error) {
+			throw error;
+		});
 }];
 
 UserModelController.prototype.doForgotPassword = ['/api/users/forgot-password', function() {
@@ -119,30 +127,30 @@ UserModelController.prototype.doForgotPassword = ['/api/users/forgot-password', 
 UserModelController.prototype.doResetPassword = ['/api/users/reset-password', function() {
 	var self = this;
 	return this.findAuthenticator()
-	.then(function(authenticator) {
-		if(authenticator) {
-			var error = new Error('Forbidden');
-			error.status = 403;
-			throw error;
-		}
-	})
-	.then(function() {
-		return self.models.UserResetPassword.getOne({
-			token: self.body.resetToken
+		.then(function(authenticator) {
+			if(authenticator) {
+				var error = new Error('Forbidden');
+				error.status = 403;
+				throw error;
+			}
+		})
+		.then(function() {
+			return self.models.UserResetPassword.getOne({
+				token: self.body.resetToken
+			});
+		})
+		.then(function(resetPassword) {
+			return Q.all([self.models.User.updateOne({id: resetPassword.authenticator}, {password: self.body.password}), self.models.UserResetPassword.remove({id: resetPassword.id})]);
+		})
+		.spread(function(authenticator) {
+			if(authenticator && authenticator.onResetPassword) {
+				return authenticator.onResetPassword.call(authenticator);
+			}
+		})
+		.then(function() {
+			// TODO: What should we return other than status code 200?
+			return {};
 		});
-	})
-	.then(function(resetPassword) {
-		return Q.all([self.models.User.updateOne({id: resetPassword.authenticator}, {password: self.body.password}), self.models.UserResetPassword.remove({id: resetPassword.id})]);
-	})
-	.spread(function(authenticator) {
-		if(authenticator && authenticator.onResetPassword) {
-			return authenticator.onResetPassword.call(authenticator);
-		}
-	})
-	.then(function() {
-		// TODO: What should we return other than status code 200?
-		return {};
-	});
 }];
 
 UserModelController.prototype.createUser = function() {

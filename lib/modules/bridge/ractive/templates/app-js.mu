@@ -84,9 +84,6 @@ App.prototype.event = function(eventName, parameters) {
 
 App.prototype.decorator = function(decoratorName, parameters) {
 	Ractive.decorators[dasherize(decoratorName)] = function() {
-		console.log('Decorator arguments:');
-		console.log(arguments);
-
 		// TODO: Pass node and params
 
 		return {

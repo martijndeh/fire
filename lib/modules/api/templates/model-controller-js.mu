@@ -42,17 +42,19 @@ app.controller({{controllerName}});
 
 {{#model.isAuthenticator}}
 {{controllerName}}.prototype.getMe = ['/api/{{model.resourceName}}/me', function() {
+	var self = this;
 	return this.findAuthenticator()
-	.then(function(authenticator) {
-		if(authenticator) {
-			return authenticator;
-		}
-		else {
-			var error = new Error('Unauthorized');
-			error.status = 401;
-			throw error;
-		}
-	});
+		.then(function(authenticator) {
+			if(authenticator) {
+				self.session.save();
+				return authenticator;
+			}
+			else {
+				var error = new Error('Unauthorized');
+				error.status = 401;
+				throw error;
+			}
+		});
 }];
 
 {{controllerName}}.prototype.doSignOut = ['/api/{{model.resourceName}}/sign-out', function() {
@@ -65,20 +67,26 @@ app.controller({{controllerName}});
 
 	var model = this.models.{{model.name}};
 	var map = {
-		{{model.authenticatingPropertyName}}: this.body.{{model.authenticatingPropertyName}},
-		password: this.body.password
+		{{model.authenticatingPropertyName}}: this.body.{{model.authenticatingPropertyName}}
 	};
 
 	var self = this;
 	return model.getOne(map)
-	.then(function(instance) {
-		// TODO: Do not hardcode `accessToken` like this...
-		self.session.at = instance.accessToken;
-		return instance;
-	})
-	.catch(function(error) {
-		throw error;
-	});
+		.then(function(instance) {
+			if(instance.validateHash('password', self.body.password)) {
+				return instance;
+			}
+			else {
+				throw new Error('Incorrect password provided.');
+			}
+		})
+		.then(function(instance) {
+			self.session.at = instance.accessToken;
+			return instance;
+		})
+		.catch(function(error) {
+			throw error;
+		});
 }];
 
 {{controllerName}}.prototype.doForgotPassword = ['/api/{{model.resourceName}}/forgot-password', function() {
@@ -119,30 +127,30 @@ app.controller({{controllerName}});
 {{controllerName}}.prototype.doResetPassword = ['/api/{{model.resourceName}}/reset-password', function() {
 	var self = this;
 	return this.findAuthenticator()
-	.then(function(authenticator) {
-		if(authenticator) {
-			var error = new Error('Forbidden');
-			error.status = 403;
-			throw error;
-		}
-	})
-	.then(function() {
-		return self.models.{{model.name}}ResetPassword.getOne({
-			token: self.body.resetToken
+		.then(function(authenticator) {
+			if(authenticator) {
+				var error = new Error('Forbidden');
+				error.status = 403;
+				throw error;
+			}
+		})
+		.then(function() {
+			return self.models.{{model.name}}ResetPassword.getOne({
+				token: self.body.resetToken
+			});
+		})
+		.then(function(resetPassword) {
+			return Q.all([self.models.{{model.name}}.updateOne({id: resetPassword.authenticator}, {password: self.body.password}), self.models.{{model.name}}ResetPassword.remove({id: resetPassword.id})]);
+		})
+		.spread(function(authenticator) {
+			if(authenticator && authenticator.onResetPassword) {
+				return authenticator.onResetPassword.call(authenticator);
+			}
+		})
+		.then(function() {
+			// TODO: What should we return other than status code 200?
+			return {};
 		});
-	})
-	.then(function(resetPassword) {
-		return Q.all([self.models.{{model.name}}.updateOne({id: resetPassword.authenticator}, {password: self.body.password}), self.models.{{model.name}}ResetPassword.remove({id: resetPassword.id})]);
-	})
-	.spread(function(authenticator) {
-		if(authenticator && authenticator.onResetPassword) {
-			return authenticator.onResetPassword.call(authenticator);
-		}
-	})
-	.then(function() {
-		// TODO: What should we return other than status code 200?
-		return {};
-	});
 }];
 {{/model.isAuthenticator}}
 {{controllerName}}.prototype.create{{model.name}} = function() {
