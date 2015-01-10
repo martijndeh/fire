@@ -50,8 +50,6 @@ describe('forgot password', function() {
 
 
 	it('can call forgot password', function(done) {
-		//var agent = request.agent(helper.app.HTTPServer.express);
-
 		// We authorize. This should set a session variable.
 		request(helper.app.HTTPServer.express)
 			.post('/api/users/forgot-password')
