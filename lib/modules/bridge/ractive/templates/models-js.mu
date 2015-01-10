@@ -473,6 +473,34 @@ FireModel{{name}}.prototype.authorize = function(fields) {
 	}
 };
 
+FireModel{{name}}.prototype.findMe = function() {
+	var defer = Q.defer();
+
+	if(__authenticator) {
+		defer.resolve(__authenticator);
+	}
+	else {
+		var self = this;
+		this._get(this.endpoint + '/me')
+			.then(function(authenticator) {
+				if(authenticator) {
+					authenticator._endpoint = self.endpoint + '/' + authenticator.id;
+
+					__authenticator = authenticator;
+					defer.resolve(__authenticator);
+				}
+				else {
+					defer.resolve(null);
+				}
+			})
+			.catch(function(error) {
+				defer.resolve(null);
+			});
+	}
+
+	return defer.promise;
+};
+
 FireModel{{name}}.prototype.getMe = function() {
 	var defer = Q.defer();
 
