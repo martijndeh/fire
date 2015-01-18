@@ -79,13 +79,17 @@ app.get('/api/users/me', function(request, UserModel) {
 		});
 });
 
-app.get('/api/users/sign-out', function(request, UserModel) {
-	request.session.at = null;
-
+app.post('/api/users/sign-out', function(request, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
-			authenticator.accessToken = null;
-			return authenticator.save();
+			if(authenticator) {
+				request.session.at = null;
+				authenticator.accessToken = null;
+				return authenticator.save();
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
 		})
 		.then(function() {
 			return {};
