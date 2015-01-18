@@ -1,8 +1,34 @@
 # Changelog
 
-# 0.20.0
+## 0.21.0
 
 ### Bug fixes
+
+- Fixes issue where `Models#execute` would run multiple times during migrations.
+- Fixes issue where sessions would expire even during activity.
+- Fixes issue where `grunt release` sometimes wouldn't work.
+
+### Breaking changes
+
+- It's not possible anymore to query on a property with a hash method. Instead, use `ModelInstance#validateHash`.
+- When a model is created, update or deleted it's considered partial and any association keys are not included.
+- Removes less middleware and compiles less and jade in the build phase. This also means referring to `/templates/my-template.jade` is deprecated. Instead, you need to refer to `/templates/my-template.html`.
+- Read, update and delete actions in the API now also use query params in the where clause.
+- Access control methods `CanCreate`, `CanRead`, `CanUpdate` and `CanDelete` do not have a `this` anymore and use dependency injection instead.
+- `PropertyTypesHas` now uses dependency injection and does not have a `this` anymore.
+- Changes `AMQP_URL` to `BROKER_URL`.
+- Sign out now clears the authenticator's access token in the datastore.
+
+### Improvements
+
+- Adds salt property to authenticator model. This should be backwards compatible.
+- Implements authenticator#findMe.
+- `grunt release` doesn't return an error anymore when the datastore is already up-to-date.
+
+## 0.20.0
+
+### Bug fixes
+
 - Fixes issue where Node on Fire migrations are not executed. This change should create ClockTaskResult and TriggerResult models and triggerResult property to authenticator during the next migration, if they not already exist.
 
 ### Breaking changes
@@ -13,7 +39,7 @@
 
 - Optimizes dependency injection to prepare once and execute many times.
 
-# 0.19.0
+## 0.19.0
 
 ### Bug fixes
 - Fixes crash in HTTP handler when error an error occurs but it's null.
