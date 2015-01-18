@@ -46,7 +46,8 @@ describe('model authorize', function() {
 		return agent
 			.post('/api/users/sign-out')
 			.send()
-			.expect(200, function() {
+			.expect(200, function(error) {
+				assert.equal(null, error);
 				agent
 					.get('/api/users/me')
 					.send()
