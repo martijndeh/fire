@@ -203,7 +203,6 @@ describe('access control', function() {
 					title: 'Malicious'
 				}))
 				.expect(401, function(error, response) {
-					console.log(response.body);
 					done(error);
 				});
 		});
@@ -246,8 +245,6 @@ describe('access control', function() {
 				agent.put('/api/articles/' + articleId)
 					.send({title: 'Rename'})
 					.expect(200, function(error, response) {
-						console.log(response.body);
-
 						assert.equal(response.body.id, articleId);
 						assert.equal(response.body.title, 'Rename');
 

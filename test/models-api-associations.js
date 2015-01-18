@@ -27,8 +27,8 @@ describe('models api associations', function() {
 				this.name = [this.String];
 				this.childs = [this.HasMany(this.models.Child)];
 				this.privates = [this.HasMany(this.models.Private), this.Private];
-				this.list = [this.Has(this.models.Child, function(parent) {
-					return this.models.Child.find({parent: parent});
+				this.list = [this.Has(this.models.Child, function(ChildModel, request) {
+					return ChildModel.find({parent: request.param('id')});
 				})];
 				this.accessControl = [this.CanCreate(function() { return true; }), this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return true; })];
 			}
@@ -56,8 +56,8 @@ describe('models api associations', function() {
 
 			function Article() {
 				this.title 			= [this.String, this.Required];
-				this.voters 		= [this.HasMany(this.models.User, 'votes'), this.AutoFetch, this.CanCreate(function(articleID) {
-					return this.models.ArticleVoterUserVote.findOne({userVote: this.body.userVote, articleVoter: articleID})
+				this.voters 		= [this.HasMany(this.models.User, 'votes'), this.AutoFetch, this.CanCreate(function(request, ArticleVoterUserVoteModel) {
+					return ArticleVoterUserVoteModel.findOne({userVote: request.body.userVote, articleVoter: request.params.id})
 						.then(function(articleUser) {
 							return (!articleUser);
 						});
