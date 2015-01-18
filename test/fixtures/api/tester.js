@@ -25,7 +25,7 @@ function _canUpdateProperties(propertyNames, model) {
 		var property = model.getProperty(propertyName);
 
 		// TODO: Implement function-based checks.
-		if(property && typeof property.options.canUpdate != 'undefined' && !property.options.canUpdate) {
+		if(property && typeof property.options.canUpdate != 'undefined' && property.options.canUpdate !== true) {
 			return false;
 		}
 	}
@@ -33,255 +33,235 @@ function _canUpdateProperties(propertyNames, model) {
 	return true;
 }
 
-function TesterModelController() {
+function findAuthenticator(authenticatorModel, request) {
+	if(!authenticatorModel) {
+		return Q.when(null);
+	}
 
+	var credentials = null;
+	if(request.headers.authorization && request.headers.authorization.length > 6) {
+		credentials = (new Buffer(request.headers.authorization.substring(6), 'base64')).toString('utf8').split(':');
+
+		if(!credentials.length) {
+			credentials = null;
+		}
+		else if(credentials.length == 1) {
+			credentials.push('');
+		}
+	}
+
+	if(credentials) {
+		var findMap = {};
+		findMap[authenticatorModel.options.authenticatingProperty.name] = credentials[0];
+		findMap.accessToken = credentials[1];
+		return authenticatorModel.findOne(findMap);
+	}
+
+	if(!request.session.at) {
+		return Q.when(null);
+	}
+
+	return authenticatorModel.findOne({accessToken: request.session.at});
 }
-app.controller(TesterModelController);
-
-TesterModelController.prototype.basePathComponents = ['api'];
 
 
-TesterModelController.prototype.createTester = function() {
-	var model = this.models.Tester;
-	var accessControl = model.getAccessControl();
+app.post('/api/testers', function(app, response, request, TesterModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var accessControl = TesterModel.getAccessControl();
+			return Q.when(accessControl.canCreate(app, {authenticator: authenticator, request: request, response: response}))
+				.then(function(canCreate) {
+					if(canCreate === true) {
+						var createMap = request.body || {};
+						if(TesterModel.options.automaticPropertyName) {
+							if(createMap[TesterModel.options.automaticPropertyName]) {
+								var error = new Error('Cannot set automatic property manually.');
+								error.status = 400;
+								throw error;
+							}
 
-	// TODO: Use Controller#canCreate.
+							createMap[TesterModel.options.automaticPropertyName] = authenticator;
+						}
 
-	var self = this;
-	return this.findAuthenticator()
-	.then(function(authenticator) {
-		return Q.when(accessControl.canCreate(authenticator))
-		.then(function(canCreate) {
-			if(canCreate) {
-				var createMap = self.body || {};
-				if(model.options.automaticPropertyName) {
-					// If a authenticator model does not exists there is some wrong.
-					if(!self.models.getAuthenticator()) {
-						throw new Error('Cannot find authenticator model. Did you define an authenticator via `PropertyTypes#Authenticate`?');
+						return TesterModel.create(createMap);
 					}
-
-					// This is definitely a bad request if the user tries to set the automatic property manually.
-					if(createMap[model.options.automaticPropertyName]) {
-						var error = new Error('Cannot set automatic property manually.');
-						error.status = 400;
-						throw error;
+					else {
+						throw unauthenticatedError(authenticator);
 					}
-
-					createMap[model.options.automaticPropertyName] = authenticator;
-				}
-
-				return model.create(createMap)
-				.then(function(instance) {
-					if(model.isAuthenticator()) {
-						self.session.at = instance.accessToken;
-					}
-
-					return instance;
 				});
+		});
+});
+
+app.get('/api/testers', function(request, response, app,  TesterModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var accessControl = TesterModel.getAccessControl();
+			return Q.when(accessControl.canRead(app, {authenticator: authenticator, request: request, response: response}))
+				.then(function(canRead) {
+					if(canRead === true) {
+						var queryMap = request.query || {};
+						var optionsMap = {};
+
+						if(queryMap.$options) {
+							optionsMap = queryMap.$options;
+							delete queryMap.$options;
+						}
+
+						if(TesterModel.options.automaticPropertyName) {
+							queryMap[TesterModel.options.automaticPropertyName] = authenticator;
+						}
+
+						return TesterModel.find(queryMap, optionsMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.get('/api/testers/:id', function(request, response, app,  TesterModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var accessControl = TesterModel.getAccessControl();
+			return Q.all([accessControl.canRead(app, {authenticator: authenticator, request: request, response: response}), authenticator]);
+		})
+		.spread(function(canRead, authenticator) {
+			if(canRead === true) {
+				var whereMap = request.query || {};
+				whereMap.id = request.param('id');
+
+				if(TesterModel.options.automaticPropertyName) {
+					whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+				}
+
+				return TesterModel.getOne(whereMap);
 			}
 			else {
 				throw unauthenticatedError(authenticator);
 			}
 		});
-	});
-};
+});
 
-TesterModelController.prototype.getTesters = function() {
-	var model = this.models.Tester;
-	var accessControl = model.getAccessControl();
-
-	// TODO: Use Controller#canRead.
-
-	var self = this;
-	return this.findAuthenticator()
-	.then(function(authenticator) {
-		return Q.when(accessControl.canRead(authenticator))
-		.then(function(canRead) {
-			if(canRead) {
-				var queryMap = self.query || {};
-				var optionsMap = {};
-
-				// TODO: Move this to Model#find instead.
-
-				if(queryMap.$options) {
-					optionsMap = queryMap.$options;
-					delete queryMap.$options;
-				}
-
-				if(model.options.automaticPropertyName) {
-					queryMap[model.options.automaticPropertyName] = authenticator;
-				}
-
-				return model.find(queryMap, optionsMap);
-			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
-		});
-	});
-};
-
-TesterModelController.prototype.getTester = function(id) {
-	var model = this.models.Tester;
-	var accessControl = model.getAccessControl();
-
-	// TODO: Use Controller#canCreate.
-
-	return this.findAuthenticator()
-	.then(function(authenticator) {
-		return Q.all([Q.when(accessControl.canRead(authenticator)), authenticator]);
-	})
-	.spread(function(canRead, authenticator) {
-		if(canRead) {
-			var whereMap = {id: id};
-
-			if(model.options.automaticPropertyName) {
-				whereMap[model.options.automaticPropertyName] = authenticator;
-			}
-
-			return model.getOne(whereMap);
-		}
-		else {
-			throw unauthenticatedError(authenticator);
-		}
-	});
-};
-
-TesterModelController.prototype.updateTester = function(id) {
-	var model = this.models.Tester;
-	var accessControl = model.getAccessControl();
-
-	var self = this;
-	return this.findAuthenticator()
-	.then(function(authenticator) {
-		return Q.all([Q.when(accessControl.getPermissionFunction('update')(authenticator)), authenticator]);
-	})
-	.spread(function(canUpdate, authenticator) {
-		if(canUpdate) {
-			var whereMap = {};
-
+app.put('/api/testers/:id', function(request, response, app,  TesterModel, UserModel) {
+	var accessControl = TesterModel.getAccessControl();
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
 			var keyPath = accessControl.getPermissionKeyPath('update');
-			if(keyPath) {
-				if(!model.getProperty(keyPath)) {
-					throw new Error('Invalid key path `' + keyPath + '`.');
+			return Q.all([keyPath ? true : app.injector.call(accessControl.getPermissionFunction('update'), {authenticator: authenticator, request: request, response: response}), authenticator]);
+		})
+		.spread(function(canUpdate, authenticator) {
+			if(canUpdate) {
+				var whereMap = request.query || {};
+
+				var keyPath = accessControl.getPermissionKeyPath('update');
+				if(keyPath) {
+					if(!TesterModel.getProperty(keyPath)) {
+						throw new Error('Invalid key path `' + keyPath + '`.');
+					}
+
+					whereMap[keyPath] = authenticator;
 				}
 
-				// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
-				whereMap[keyPath] = authenticator;
-			}
+				if(TesterModel.options.automaticPropertyName) {
+					whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+				}
 
-			if(model.options.automaticPropertyName) {
-				whereMap[model.options.automaticPropertyName] = authenticator;
+				whereMap.id = request.param('id');
+				return [_canUpdateProperties(Object.keys(request.body), TesterModel), whereMap, authenticator];
 			}
-
-			whereMap.id = id;
-			return [Q.when(_canUpdateProperties(Object.keys(self.body), model)), whereMap, authenticator];
-		}
-		else {
-			throw unauthenticatedError(authenticator);
-		}
-	})
-	.all()
-	.spread(function(canUpdateProperties, whereMap, authenticator) {
-		if(canUpdateProperties) {
-			return Q.all([model.updateOne(whereMap, self.body), authenticator]);
-		}
-		else {
-			var error = new Error();
-			error.status = 400;
-			error.message = 'Bad Request';
+			else {
+				throw unauthenticatedError(authenticator);
+			}
+		})
+		.all()
+		.spread(function(canUpdateProperties, whereMap, authenticator) {
+			if(canUpdateProperties) {
+				return Q.all([TesterModel.updateOne(whereMap, request.body), authenticator]);
+			}
+			else {
+				var error = new Error();
+				error.status = 400;
+				error.message = 'Bad Request';
+				throw error;
+			}
+		})
+		.spread(function(modelInstance, authenticator) {
+			if(modelInstance) {
+				return modelInstance;
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
+		})
+		.catch(function(error) {
 			throw error;
-		}
-	})
-	.spread(function(instance, authenticator) {
-		if(instance) {
-			return instance;
-		}
-		else {
-			throw unauthenticatedError(authenticator);
-		}
-	})
-	.catch(function(error) {
-		throw error;
-	});
-};
+		});
+});
 
-TesterModelController.prototype.deleteTesters = function() {
-	var model = this.models.Tester;
-	var accessControl = model.getAccessControl();
+app.delete('/api/testers', function(request, response, app,  TesterModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var accessControl = TesterModel.getAccessControl();
+			return Q.when(app.injector.call(accessControl.getPermissionFunction('delete'), {authenticator: authenticator, request: request, response: response}))
+				.then(function(canDelete) {
+					if(canDelete === true) {
+						var whereMap = request.query || {};
 
-	var self = this;
-	return this.findAuthenticator()
-	.then(function(authenticator) {
-		return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
-		.then(function(canDelete) {
-			if(canDelete) {
-				var whereMap = self.query || {};
+						var keyPath = accessControl.getPermissionKeyPath('delete');
+						if(keyPath) {
+							if(!TesterModel.getProperty(keyPath)) {
+								throw new Error('Invalid key path `' + keyPath + '`.');
+							}
 
-				var keyPath = accessControl.getPermissionKeyPath('delete');
-				if(keyPath) {
-					if(!model.getProperty(keyPath)) {
-						throw new Error('Invalid key path `' + keyPath + '`.');
+							whereMap[keyPath] = authenticator;
+						}
+
+						if(TesterModel.options.automaticPropertyName) {
+							whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+						}
+
+						return TesterModel.remove(whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.delete('/api/testers/:id', function(request, response, app,  TesterModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var accessControl = TesterModel.getAccessControl();
+			return Q.when(app.injector.call(accessControl.getPermissionFunction('delete'), {authenticator: authenticator, request: request, response: response}))
+			.then(function(canDelete) {
+				if(canDelete === true) {
+					var whereMap = request.query || {};
+
+					whereMap.id = request.param('id');
+
+					var keyPath = accessControl.getPermissionKeyPath('delete');
+					if(keyPath) {
+						if(!TesterModel.getProperty(keyPath)) {
+							throw new Error('Invalid key path `' + keyPath + '`.');
+						}
+
+						whereMap[keyPath] = authenticator;
 					}
 
-					whereMap[keyPath] = authenticator;
-				}
-
-				if(model.options.automaticPropertyName) {
-					whereMap[model.options.automaticPropertyName] = authenticator;
-				}
-
-				return model.remove(whereMap);
-			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
-		});
-	});
-};
-
-TesterModelController.prototype.deleteTester = function(id) {
-	var model = this.models.Tester;
-	var accessControl = model.getAccessControl();
-
-	var self = this;
-	return this.findAuthenticator()
-	.then(function(authenticator) {
-		return Q.when(accessControl.getPermissionFunction('delete')(authenticator))
-		.then(function(canDelete) {
-			if(canDelete) {
-				var whereMap = {
-					id: id
-				};
-
-				var keyPath = accessControl.getPermissionKeyPath('delete');
-				if(keyPath) {
-					if(!model.getProperty(keyPath)) {
-						throw new Error('Invalid key path `' + keyPath + '`.');
+					if(TesterModel.options.automaticPropertyName) {
+						whereMap[TesterModel.options.automaticPropertyName] = authenticator;
 					}
 
-					// TODO: We need a way to resolve a key path if it references child properties via the dot syntax e.g. team.clients.
-					whereMap[keyPath] = authenticator;
+					return TesterModel.removeOne(whereMap);
 				}
-
-				if(model.options.automaticPropertyName) {
-					whereMap[model.options.automaticPropertyName] = authenticator;
+				else {
+					throw unauthenticatedError(authenticator);
 				}
-
-				return model.removeOne(whereMap);
-			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
+			});
 		});
-	});
-};
-
-
-
-
-
-
+});
 
 
 
