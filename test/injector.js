@@ -68,4 +68,20 @@ describe('injector', function() {
 		helper.app.injector.execute(TestConstructor, {});
 		assert.equal(called, 1);
 	});
+
+	it('can not access return value', function() {
+		function testFunction() {
+			return 123;
+		}
+
+		assert.notEqual(helper.app.injector.execute(testFunction, {}), 123);
+	});
+
+	it('can access return value', function() {
+		function testFunction() {
+			return 123;
+		}
+
+		assert.equal(helper.app.injector.call(testFunction, {}), 123);
+	});
 });
