@@ -141,8 +141,8 @@ describe('access control', function() {
 				function Article() {
 					this.title = [this.String];
 					this.author = [this.BelongsTo(this.models.User), this.Automatic, this.AutoFetch];
-					this.accessControl = [this.CanRead(function() { return true; }), this.CanUpdate('author'), this.CanDelete(function() { return false; }), this.CanCreate(function(user) {
-						return (user && user.name == 'Martijn');
+					this.accessControl = [this.CanRead(true), this.CanUpdate('author'), this.CanDelete(false), this.CanCreate(function(authenticator) {
+						return (authenticator && authenticator.name == 'Martijn');
 					})];
 				}
 				app.model(Article);
@@ -202,7 +202,8 @@ describe('access control', function() {
 				.send(helper.jsonify({
 					title: 'Malicious'
 				}))
-				.expect(401, function(error) {
+				.expect(401, function(error, response) {
+					console.log(response.body);
 					done(error);
 				});
 		});
@@ -245,6 +246,8 @@ describe('access control', function() {
 				agent.put('/api/articles/' + articleId)
 					.send({title: 'Rename'})
 					.expect(200, function(error, response) {
+						console.log(response.body);
+
 						assert.equal(response.body.id, articleId);
 						assert.equal(response.body.title, 'Rename');
 
