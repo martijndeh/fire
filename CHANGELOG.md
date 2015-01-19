@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.22.0
+
+### Bug fixes
+
+- Fixes issue where migrations would not get generated.
+
+### Breaking changes
+
+- `PropertyTypes#Has` now only accepts one argument. `hasModel` is deprecated.
+
+### Improvements
+
+- Middleware module extended with express-esque App#use.
+- You can now define which properties may be set through the api via PropertyTypes#CanSet.
+
 ## 0.21.0
 
 ### Bug fixes
