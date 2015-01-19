@@ -33,7 +33,7 @@ describe('api generate model controllers', function() {
 			app.model(User);
 
 			function Collection() {
-				this.apps = [this.Has(this.models.Tester, function() {
+				this.apps = [this.Has(function() {
 					return [];
 				})];
 			}
@@ -108,7 +108,9 @@ describe('api generate model controllers', function() {
 	});
 
 	it('write has method in model controller', function(done) {
-		var writeStream = new streams.WritableStream();
+		var writeStream = new streams.WritableStream({
+			highWaterMark: 32768
+		});
 
 		return app.API.generateModelController(app.models.Collection, writeStream)
 			.then(function() {
@@ -126,7 +128,9 @@ describe('api generate model controllers', function() {
 	});
 
 	it('write associations in model controller', function(done) {
-		var writeStream = new streams.WritableStream();
+		var writeStream = new streams.WritableStream({
+			highWaterMark: 32768
+		});
 
 		return app.API.generateModelController(app.models.Container, writeStream)
 			.then(function() {
@@ -139,6 +143,8 @@ describe('api generate model controllers', function() {
 				done();
 			})
 			.catch(function(error) {
+				console.log(error);
+
 				done(error);
 			});
 	});

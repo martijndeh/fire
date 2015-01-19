@@ -18,14 +18,27 @@ function unauthenticatedError(authenticator) {
 	return error;
 }
 
-// TODO: Move this to a shared location. In the model or access control?
 function _canUpdateProperties(propertyNames, model) {
 	for(var i = 0, il = propertyNames.length; i < il; i++) {
 		var propertyName = propertyNames[i];
 		var property = model.getProperty(propertyName);
 
 		// TODO: Implement function-based checks.
-		if(property && typeof property.options.canUpdate != 'undefined' && property.options.canUpdate !== true) {
+		if(property && (typeof property.options.canUpdate != 'undefined' && property.options.canUpdate !== true || typeof property.options.canSet != 'undefined' && property.options.canSet !== true)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function _canSetProperties(propertyNames, model) {
+	for(var i = 0, il = propertyNames.length; i < il; i++) {
+		var propertyName = propertyNames[i];
+		var property = model.getProperty(propertyName);
+
+		// TODO: Implement function-based checks.
+		if(property && typeof property.options.canSet != 'undefined' && property.options.canSet !== true) {
 			return false;
 		}
 	}
@@ -97,8 +110,6 @@ app.post('/api/users/sign-out', function(request, UserModel) {
 });
 
 app.post('/api/users/authorize', function(request, UserModel) {
-	// TODO: What if we're already authorised?
-
 	return UserModel.getOne({'email': request.body.email })
 		.then(function(modelInstance) {
 			if(modelInstance.validateHash('password', request.body.password)) {
@@ -198,11 +209,18 @@ app.post('/api/users', function(app, response, request, UserModel) {
 							createMap[UserModel.options.automaticPropertyName] = authenticator;
 						}
 
-						return UserModel.create(createMap)
-							.then(function(modelInstance) {
-								request.session.at = modelInstance.accessToken;
-								return modelInstance;
-							});
+						if(_canSetProperties(Object.keys(createMap), UserModel)) {
+							return UserModel.create(createMap)
+								.then(function(modelInstance) {
+									request.session.at = modelInstance.accessToken;
+									return modelInstance;
+								});
+						}
+						else {
+							var error = new Error('Bad Request');
+							error.status = 400;
+							throw error;
+						}
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -431,7 +449,14 @@ app.post('/api/users/:id/reset-password', function(request, response, app,  User
 				createMap[associatedModel.options.automaticPropertyName] = authenticator;
 			}
 
-			return associatedModel.create(createMap);
+			if(_canSetProperties(Object.keys(createMap), associatedModel)) {
+				return associatedModel.create(createMap);
+			}
+			else {
+				var error = new Error('Bad Request');
+				error.status = 400;
+				throw error;
+			}
 		});
 });
 
@@ -618,7 +643,14 @@ app.post('/api/users/:id/container', function(request, response, app,  UserModel
 				createMap[associatedModel.options.automaticPropertyName] = authenticator;
 			}
 
-			return associatedModel.create(createMap);
+			if(_canSetProperties(Object.keys(createMap), associatedModel)) {
+				return associatedModel.create(createMap);
+			}
+			else {
+				var error = new Error('Bad Request');
+				error.status = 400;
+				throw error;
+			}
 		});
 });
 

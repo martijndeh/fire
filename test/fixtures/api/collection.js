@@ -18,14 +18,27 @@ function unauthenticatedError(authenticator) {
 	return error;
 }
 
-// TODO: Move this to a shared location. In the model or access control?
 function _canUpdateProperties(propertyNames, model) {
 	for(var i = 0, il = propertyNames.length; i < il; i++) {
 		var propertyName = propertyNames[i];
 		var property = model.getProperty(propertyName);
 
 		// TODO: Implement function-based checks.
-		if(property && typeof property.options.canUpdate != 'undefined' && property.options.canUpdate !== true) {
+		if(property && (typeof property.options.canUpdate != 'undefined' && property.options.canUpdate !== true || typeof property.options.canSet != 'undefined' && property.options.canSet !== true)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function _canSetProperties(propertyNames, model) {
+	for(var i = 0, il = propertyNames.length; i < il; i++) {
+		var propertyName = propertyNames[i];
+		var property = model.getProperty(propertyName);
+
+		// TODO: Implement function-based checks.
+		if(property && typeof property.options.canSet != 'undefined' && property.options.canSet !== true) {
 			return false;
 		}
 	}
@@ -83,7 +96,14 @@ app.post('/api/collections', function(app, response, request, CollectionModel, U
 							createMap[CollectionModel.options.automaticPropertyName] = authenticator;
 						}
 
-						return CollectionModel.create(createMap);
+						if(_canSetProperties(Object.keys(createMap), CollectionModel)) {
+							return CollectionModel.create(createMap);
+						}
+						else {
+							var error = new Error('Bad Request');
+							error.status = 400;
+							throw error;
+						}
 					}
 					else {
 						throw unauthenticatedError(authenticator);

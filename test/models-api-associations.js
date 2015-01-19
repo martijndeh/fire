@@ -27,7 +27,7 @@ describe('models api associations', function() {
 				this.name = [this.String];
 				this.childs = [this.HasMany(this.models.Child)];
 				this.privates = [this.HasMany(this.models.Private), this.Private];
-				this.list = [this.Has(this.models.Child, function(ChildModel, request) {
+				this.list = [this.Has(function(ChildModel, request) {
 					return ChildModel.find({parent: request.param('id')});
 				})];
 				this.accessControl = [this.CanCreate(function() { return true; }), this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return true; })];
