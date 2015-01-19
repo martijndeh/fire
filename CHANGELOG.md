@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.1
+
+### Breaking changes
+
+- Disables less css source maps.
+
 ## 0.22.0
 
 ### Bug fixes
