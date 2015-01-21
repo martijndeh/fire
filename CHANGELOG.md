@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.3
+
+### Bug fixes
+
+- Fixes issue where update and delete statements would escape values incorrectly with a limit clause.
+
 ## 0.22.2
 
 ### Bug fixes
