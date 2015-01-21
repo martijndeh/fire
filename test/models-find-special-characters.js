@@ -35,4 +35,10 @@ describe('models find special characters', function() {
 				assert.notEqual(row, null);
 			});
 	});
+
+	it('can update', function() {
+		var name = '\'';
+
+		return helper.app.models.Tester.update({name: name}, {name: name}, {limit: 1});
+	});
 });
