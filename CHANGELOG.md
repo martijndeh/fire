@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.2
+
+### Bug fixes
+
+- Fixes issues where some queries with ? would produce the wrong results.
+
 ## 0.22.1
 
 ### Breaking changes
