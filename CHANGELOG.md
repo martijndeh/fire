@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.4
+
+### Bug fixes
+
+- Fixes issue where promises wouldn't resolve in Ractive-based apps.
+
 ## 0.22.3
 
 ### Bug fixes
