@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.23.0
+
+### Improvements
+
+- Implement Controller#ready which gets called when the view is ready and attached to the DOM.
+
 ## 0.22.5
 
 ### Bug fixes
