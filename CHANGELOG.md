@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.5
+
+### Bug fixes
+
+- Fixes issue where an error would throw when clicking anchor tags with empty hrefs.
+
 ## 0.22.4
 
 ### Bug fixes
