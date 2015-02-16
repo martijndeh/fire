@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.24.0
+
+### Improvements
+
+- Falls back to page reloads in browsers not supporting `pushState`.
+
 ## 0.23.0
 
 ### Improvements
