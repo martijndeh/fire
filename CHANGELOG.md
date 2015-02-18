@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.24.2
+
+### Bug fixes
+
+- Fixes issue where `next` in middleware methods would be unavailable.
+
 ## 0.24.1
 
 ### Bug fixes
