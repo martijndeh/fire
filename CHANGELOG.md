@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.24.1
+
+### Bug fixes
+
+- Fixes issue where using middleware methods would throw error during the build phase.
+
 ## 0.24.0
 
 ### Improvements
