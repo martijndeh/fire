@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.24.3
+
+### Bug fixes
+
+- Fixes issue where web process would crash if message broker disconnects.
+
+### Breaking changes
+
+- Channel#get now returns a promise which resolves to a channel instance, instead of returning a channel directly.
+
 ## 0.24.2
 
 ### Bug fixes
