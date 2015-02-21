@@ -62,10 +62,9 @@ describe('workers', function() {
 			called++;
 		};
 
-		workers2.setup()
-			.then(function() {
-				return workers2.startConsumingTasks(['TestWorker']);
-			})
+		workers2.setup();
+
+		return workers2.startConsumingTasks(['TestWorker'])
 			.then(function() {
 				helper.app.workers.TestWorker.doSomething();
 

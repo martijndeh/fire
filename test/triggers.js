@@ -63,15 +63,16 @@ describe('triggers', function() {
 			assert.equal(myTriggerModelInstance, null);
 			assert.notEqual(helper.app.triggers._triggersMap.MyTrigger, null);
 
-			helper.app.triggers.startConsuming();
-
-			return helper.app.triggers.startTrigger(helper.app.triggers._triggersMap.MyTrigger)
+			return helper.app.triggers.startConsuming()
 				.then(function() {
-					return Q.delay(100);
-				})
-				.then(function() {
-					assert.notEqual(myTriggerModelInstance, null);
-					assert.equal(myTriggerModelInstance.name, 'Martijn');
+					return helper.app.triggers.startTrigger(helper.app.triggers._triggersMap.MyTrigger)
+						.then(function() {
+							return Q.delay(100);
+						})
+						.then(function() {
+							assert.notEqual(myTriggerModelInstance, null);
+							assert.equal(myTriggerModelInstance.name, 'Martijn');
+						});
 				});
 		});
 
@@ -79,27 +80,28 @@ describe('triggers', function() {
 			assert.equal(myTriggerModelInstance, null);
 			assert.equal(myTriggerCalled, 0);
 
-			helper.app.triggers.startConsuming();
+			return helper.app.triggers.startConsuming()
+				.then(function() {
+					return helper.app.triggers.startTrigger(helper.app.triggers._triggersMap.MyTrigger)
+						.then(function() {
+							return Q.delay(100);
+						})
+						.then(function() {
+							assert.notEqual(myTriggerModelInstance, null);
 
-			return helper.app.triggers.startTrigger(helper.app.triggers._triggersMap.MyTrigger)
-				.then(function() {
-					return Q.delay(100);
-				})
-				.then(function() {
-					assert.notEqual(myTriggerModelInstance, null);
-
-					assert.equal(myTriggerCalled, 1);
-					assert.equal(myTriggerModelInstance.name, 'Martijn');
-				})
-				.then(function() {
-					return helper.app.triggers.startTrigger(helper.app.triggers._triggersMap.MyTrigger);
-				})
-				.then(function() {
-					return Q.delay(100);
-				})
-				.then(function() {
-					assert.equal(myTriggerCalled, 1);
-					assert.equal(myTriggerModelInstance.name, 'Martijn');
+							assert.equal(myTriggerCalled, 1);
+							assert.equal(myTriggerModelInstance.name, 'Martijn');
+						})
+						.then(function() {
+							return helper.app.triggers.startTrigger(helper.app.triggers._triggersMap.MyTrigger);
+						})
+						.then(function() {
+							return Q.delay(100);
+						})
+						.then(function() {
+							assert.equal(myTriggerCalled, 1);
+							assert.equal(myTriggerModelInstance.name, 'Martijn');
+						});
 				});
 		});
 	});
@@ -145,16 +147,17 @@ describe('triggers', function() {
 			assert.equal(myTriggerModelInstance, null);
 			assert.notEqual(helper.app.triggers._triggersMap.MyTrigger, null);
 
-			helper.app.triggers.startConsuming();
-
-			return helper.app.triggers.startTrigger(helper.app.triggers._triggersMap.MyTrigger)
+			return helper.app.triggers.startConsuming()
 				.then(function() {
-					return Q.delay(100);
-				})
-				.then(function() {
-					assert.notEqual(myTriggerModelInstance, null);
-					assert.equal(myTriggerModelInstance.name, 'Martijn');
-				});
+					return helper.app.triggers.startTrigger(helper.app.triggers._triggersMap.MyTrigger)
+						.then(function() {
+							return Q.delay(100);
+						})
+						.then(function() {
+							assert.notEqual(myTriggerModelInstance, null);
+							assert.equal(myTriggerModelInstance.name, 'Martijn');
+						});
+				});			
 		});
 	});
 });
