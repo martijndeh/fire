@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.25.0
+
+### Breaking changes
+
+- `Clock` now cleans up clock task result rows (all but the 25 most recent ones per task).
+
+### Bug fixes
+
+- Fixes setting name on model constructor functions which caused errors in Node v0.12.0.
+
 ## 0.24.3
 
 ### Bug fixes
