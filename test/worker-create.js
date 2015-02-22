@@ -3,7 +3,7 @@
 
 var helper = require('./support/helper');
 var assert = require('assert');
-
+var Q = require('q');
 var Workers = require('./../lib/modules/workers');
 
 describe('workers', function() {
@@ -33,17 +33,19 @@ describe('workers', function() {
 		assert.notEqual(helper.app.workers.TestWorker, null);
 	});
 
-	it('can publish message and consume', function(done) {
+	it('can publish message and consume', function() {
 		assert.equal(called, 0);
 
-		helper.app.workers.startConsumingTasks(['TestWorker']);
-
-		helper.app.workers.TestWorker.createTask('doSomething', []);
-
-		setTimeout(function() {
-			assert.equal(called, 1);
-			done();
-		}, 50);
+		return helper.app.workers.startConsumingTasks(['TestWorker'])
+			.then(function() {
+				return helper.app.workers.TestWorker.createTask('doSomething', []);
+			})
+			.then(function() {
+				return Q.delay(50);
+			})
+			.then(function() {
+				assert.equal(called, 1);
+			});
 	});
 
 	it('can swizzle worker methods', function(done) {
