@@ -119,4 +119,31 @@ describe('clock', function() {
 				assert.equal(executed, 1);
 			});
 	});
+
+	it('cleans up task results', function() {
+		this.timeout(4000);
+
+		var executed = 0;
+
+		var task = helper.app.clock.addTask('* * * * * *', 'MyTask', function() {
+			executed++;
+		});
+
+		var result = Q.when(true);
+
+		var i = 100;
+		while(i--) {
+			result = result.then(function() {
+				return task.run();
+			}); //jshint ignore:line
+		}
+
+		return result
+			.then(function() {
+				return helper.app.models.ClockTaskResult.find({name: 'MyTask'});
+			})
+			.then(function(results) {
+				assert.equal(results.length, 25);
+			});
+	});
 });
