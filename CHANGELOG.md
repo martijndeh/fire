@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.26.1
+
+### Breaking changes
+
+- When destroying an already destroyed model, `Models` will not throw an error anymore.
+
+## Bug fixes
+
+- Fixes an issue where sorting 1 task would sometimes fail.
+
 ## 0.26.0
 
 ### Breaking changes
