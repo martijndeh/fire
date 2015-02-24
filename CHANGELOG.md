@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.26.0
+
+### Breaking changes
+
+- `Static` is now initialised after `Middleware`. This allows `Middleware` to intercept static files.
+
+## Improvements
+
+- It is now possible to remove module via `App#removeModule`.
+
 ## 0.25.0
 
 ### Breaking changes
