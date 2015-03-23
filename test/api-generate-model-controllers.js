@@ -53,7 +53,7 @@ describe('api generate model controllers', function() {
 				return app.models.setup();
 			})
 			.then(function() {
-				return app.start();
+				return fire.start();
 			})
 			.then(function() {
 				done();
@@ -61,12 +61,8 @@ describe('api generate model controllers', function() {
 			.done();
 	});
 
-	afterEach(function(done) {
-		return app.stop()
-			.then(function() {
-				done();
-			})
-			.done();
+	afterEach(function() {
+		return fire.stop();
 	});
 
 	it('write basic model controller', function(done) {
