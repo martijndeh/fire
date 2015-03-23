@@ -6,7 +6,7 @@ var test1App = fire.app('test', 'app1', {
 	isMaster: true
 });
 
-test1App.run(['TestsService', function(TestsService) {
+test1App.run(function(TestsService) {
 	TestsService.delegate = {
 		participate: function(test, variant) {
 			console.log('Join test ' + test + ' with variant ' + variant);
@@ -18,7 +18,7 @@ test1App.run(['TestsService', function(TestsService) {
 			*/
 		}
 	};
-}]);
+});
 
 test1App.test(function ColorTest() {
 	return {

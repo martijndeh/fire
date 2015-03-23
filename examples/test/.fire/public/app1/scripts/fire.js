@@ -6,7 +6,7 @@
 var app = angular.module('app1', ['ngRoute']);
 
 
-app.run(['TestsService',function (TestsService) {
+app.run(['TestsService', function(TestsService) {
 	TestsService.delegate = {
 		participate: function(test, variant) {
 			console.log('Join test ' + test + ' with variant ' + variant);
