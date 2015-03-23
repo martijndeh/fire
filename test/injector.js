@@ -10,10 +10,10 @@ describe('injector', function() {
 
 	before(function() {
 		helper.setup = function(app) {
-			function Test() {
+			function Shoe() {
 				this.name = [this.String, this.Required];
 			}
-			app.model(Test);
+			app.model(Shoe);
 		};
 
 		helper.createModels = function() {
@@ -24,8 +24,8 @@ describe('injector', function() {
 	it('can inject model', function() {
 		var called = 0;
 
-		function TestConstructor(TestModel) {
-			assert.equal(TestModel, helper.app.models.Test);
+		function TestConstructor(ShoeModel) {
+			assert.equal(ShoeModel, helper.app.models.Shoe);
 			called++;
 		}
 

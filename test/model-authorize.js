@@ -8,7 +8,7 @@ var request = require('supertest');
 describe('model authorize', function() {
 	var agent = null;
 
-	beforeEach(helper.beforeEach());
+	beforeEach(helper.beforeEach({migrate: true}));
 	afterEach(helper.afterEach());
 
 	before(function() {

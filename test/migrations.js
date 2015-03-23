@@ -1,8 +1,7 @@
+/* global Migrations */
 'use strict';
 
 var fire = require('..');
-var Models = require('./../lib/modules/models');
-var Model = require('./../lib/modules/models/model');
 var Migrations = require('./../lib/modules/migrations');
 var assert = require('assert');
 var Q = require('q');
@@ -12,34 +11,40 @@ describe('migrations', function() {
     var app = null;
     var migrations = null;
 
-    afterEach(function(done) {
-        // We should drop everything
-        migrations.destroyAllModels()
+    afterEach(function() {
+        return migrations.destroyAllModels()
             .then(function() {
-                return app.stop();
+                return fire.stop();
             })
             .then(function() {
                 var defer = Q.defer();
                 app.models.datastore.knex.destroy(defer.makeNodeResolver());
                 return defer.promise;
-            })
-            .then(function() {
-                done();
-            })
-            .catch(function(error) {
-                done(error);
-            })
-            .done();
+            });
     });
 
     beforeEach(function(done) {
+
         app = fire.app('migrations', {});
-        app.start()
+
+        app.modules.forEach(function(module_) {
+            if(module_.migrate) {
+                module_.migrate(app.models);
+            }
+        });
+
+        fire.start()
             .then(function() {
                 models = app.models;
 
-                migrations = new Migrations();
-                migrations.setup(null, models)
+                migrations = new Migrations(app, models);
+                migrations.setup(null)
+                    .then(function() {
+                        return models.Schema.exists()
+                            .then(function(exists) {
+                                return !exists && models.Schema.setup();
+                            });
+                    })
                     .then(function() {
                         return models.Schema.removeAll();
                     })
@@ -532,90 +537,5 @@ describe('migrations', function() {
                 done();
             })
             .done();
-    });
-
-    it('can add many-to-many reference', function() {
-        function Migration13() {}
-        Migration13.prototype.up = function() {
-            this.models.ThirdTest.addProperties({
-                teams: [this.HasMany(this.models.Team)]
-            });
-
-            this.models.Team.addProperties({
-                testChildren: [this.HasMany(this.models.ThirdTest)]
-            });
-        };
-        Migration13.prototype.down = function() {
-            this.models.Team.removeProperties(['testChildren']);
-            this.models.ThirdTest.removeProperties(['teams']);
-        };
-
-        migrations.addMigration(Migration13, 13);
-
-        return migrations.migrate(0, 13)
-            .then(function() {
-                return models.Project.create({
-                    name: 'Test Project :)'
-                });
-            })
-            .then(function(project) {
-                return models.Team.create({
-                    name: 'Team Name',
-                    project: project
-                });
-            })
-            .then(function(team) {
-                assert.equal(typeof team.addTestChild, 'function');
-
-                return team.addTestChild(models.ThirdTest.create({name: 'Third Test 1 Name'}))
-                    .then(function() {
-                        return team.addTestChild(models.ThirdTest.create({name: 'Third Test 2 Name'}));
-                    })
-                    .then(function() {
-                        return team.addTestChild(models.ThirdTest.create({name: 'Third Test 3 Name'}));
-                    })
-                    .then(function() {
-                        return models.Team.findOne();
-                    });
-            })
-            .then(function(team) {
-                assert.notEqual(team, null);
-                return team.getTestChildren();
-            })
-            .then(function(children) {
-                assert.notEqual(children, null);
-                assert.equal(children.length, 3);
-
-                return models.Team.findOne()
-                    .then(function(team) {
-                        return children[0].addTeam(team)
-                            .then(function() {
-                                return children[1].addTeam(team);
-                            })
-                            .then(function() {
-                                return children[2].addTeam(team);
-                            });
-                    });
-            })
-            .then(function() {
-                return models.ThirdTest.find();
-            })
-            .then(function(tests) {
-                assert.notEqual(tests, null);
-                assert.equal(tests.length, 3);
-
-                return tests[0].getTeams();
-            })
-            .then(function(teams) {
-                assert.notEqual(teams, null);
-                assert.equal(teams.length, 1);
-                assert.equal(teams[0].name, 'Team Name');
-
-                return models.Team.find();
-            })
-            .then(function(teams) {
-                assert.equal(teams.length, 1);
-                assert.equal(teams[0].name, 'Team Name');
-            });
     });
 });

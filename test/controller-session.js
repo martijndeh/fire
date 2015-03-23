@@ -37,19 +37,15 @@ describe('controller session', function() {
 			};
 		};
 
-		app.start()
+		fire.start()
 			.then(function() {
 				done();
 			})
 			.done();
 	});
 
-	afterEach(function(done) {
-		app.stop()
-			.then(function() {
-				done();
-			})
-			.done();
+	afterEach(function() {
+		return fire.stop();
 	});
 
 	it('keeps track of count', function(done) {

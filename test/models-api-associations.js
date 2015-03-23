@@ -30,16 +30,32 @@ describe('models api associations', function() {
 				this.list = [this.Has(function(ChildModel, request) {
 					return ChildModel.find({parent: request.param('id')});
 				})];
-				this.accessControl = [this.CanCreate(function() { return true; }), this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return true; })];
 			}
 			app.model(Parent);
+
+			Parent.prototype.accessControl = function() {
+				return {
+					canCreate: true,
+					canRead: true,
+					canUpdate: true,
+					canDelete: true
+				};
+			};
 
 			function Child() {
 				this.name = [this.String];
 				this.parent = [this.BelongsTo(this.models.Parent)];
-				this.accessControl = [this.CanCreate(function() { return true; }), this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return true; })];
 			}
 			app.model(Child);
+
+			Child.prototype.accessControl = function() {
+				return {
+					canCreate: true,
+					canRead: true,
+					canUpdate: true,
+					canDelete: true
+				};
+			};
 
 			function Private() {
 				this.name = [this.String];
@@ -49,23 +65,30 @@ describe('models api associations', function() {
 
 			function User() {
 				this.name 			= [this.String, this.Unique];
-				this.votes 			= [this.HasMany(this.models.Article, 'voters')];
-				this.accessControl 	= [this.CanRead(function() { return false; }), this.CanUpdate(function() { return false; })];
 			}
 			app.model(User);
 
+			User.prototype.accessControl = function() {
+				return {
+					canCreate: false,
+					canUpdate: false
+				};
+			};
+
 			function Article() {
 				this.title 			= [this.String, this.Required];
-				this.voters 		= [this.HasMany(this.models.User, 'votes'), this.AutoFetch, this.CanCreate(function(request, ArticleVoterUserVoteModel) {
-					return ArticleVoterUserVoteModel.findOne({userVote: request.body.userVote, articleVoter: request.params.id})
-						.then(function(articleUser) {
-							return (!articleUser);
-						});
-				})];
-				this.accessControl 	= [this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return true; })];
 				this.location = [this.HasOne(this.models.ArticleLocation)];
 			}
 			app.model(Article);
+
+			Article.prototype.accessControl = function() {
+				return {
+					canCreate: false,
+					canRead: true,
+					canUpdate: true,
+					canDelete: true
+				};
+			};
 
 			function ArticleLocation() {
 				this.article = [this.BelongsTo(this.models.Article)];
@@ -73,6 +96,15 @@ describe('models api associations', function() {
 				this.longitude = [this.Integer];
 			}
 			app.model(ArticleLocation);
+
+			ArticleLocation.prototype.accessControl = function() {
+				return {
+					canCreate: true,
+					canRead: true,
+					canUpdate: true,
+					canDelete: true
+				};
+			};
 		};
 
 		helper.createModels = function(app) {
@@ -133,19 +165,6 @@ describe('models api associations', function() {
 			});
 	});
 
-	it('can create many-to-many', function(done) {
-		request(helper.app.HTTPServer.express)
-			.post('/api/articles/' + article1ID + '/voters')
-			.send({
-				userVote: user1ID
-			})
-			.expect(200, function(error, response) {
-				assert.equal(response.body.voters.length, 1);
-
-				done(error);
-			});
-	});
-
 	it('can create one-to-many', function(done) {
 		request(helper.app.HTTPServer.express)
 			.post('/api/parents/' + parentID + '/childs')
@@ -175,26 +194,6 @@ describe('models api associations', function() {
 			.expect(200, function(error, response) {
 				assert.equal(response.body.name, 'Updated Child Name');
 				done(error);
-			});
-	});
-
-	it('cannot create multiple many-to-many', function(done) {
-		request(helper.app.HTTPServer.express)
-			.post('/api/articles/' + article1ID + '/voters')
-			.send({
-				userVote: user1ID
-			})
-			.expect(200, function(error, response) {
-				assert.equal(response.body.voters.length, 1);
-
-				request(helper.app.HTTPServer.express)
-					.post('/api/articles/' + article1ID + '/voters')
-					.send({
-						userVote: user1ID
-					})
-					.expect(401, function(error2) {
-						done(error2);
-					});
 			});
 	});
 

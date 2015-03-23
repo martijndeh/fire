@@ -8,7 +8,7 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
-var write = false;
+var write = true;
 
 describe('bridge', function() {
 	var app = null;
@@ -18,19 +18,15 @@ describe('bridge', function() {
 		app = fire.app('example', {disabled: true});
 		bridge = app.bridge;
 
-		app.start()
+		fire.start()
 			.then(function() {
 				done();
 			})
 			.done();
 	});
 
-	afterEach(function(done) {
-		app.stop()
-			.then(function() {
-				done();
-			})
-			.done();
+	afterEach(function() {
+		return fire.stop();
 	});
 
 	it('can replace constructor', function(done) {
@@ -111,19 +107,10 @@ describe('bridge', function() {
 
 		function User() {
 			this.name 			= [this.String, this.Unique];
-			this.votes 			= [this.HasMany(this.models.Article, 'voters')];
-			this.accessControl 	= [this.CanRead(function() { return false; }), this.CanUpdate(function() { return false; })];
 		}
 
 		function Article() {
 			this.title 			= [this.String, this.Required];
-			this.voters 		= [this.HasMany(this.models.User, 'votes'), this.AutoFetch, this.CanCreate(function(articleID) {
-				return this.models.ArticlesUsers.findOne({user: this.body.user, article: articleID})
-					.then(function(articleUser) {
-						return (!articleUser);
-					});
-			})];
-			this.accessControl 	= [this.CanRead(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanDelete(function() { return false; })];
 		}
 
 		function TestController ( $scope, fire/*), test*/ ){/* jshint ignore:start */$scope.user = null; //jshint ignore:line

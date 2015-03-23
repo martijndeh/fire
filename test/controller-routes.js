@@ -16,19 +16,15 @@ describe('controller routes', function() {
             createControllers();
         }
 
-        app.start()
+        fire.start()
             .then(function() {
                 done();
             })
             .done();
     });
 
-    afterEach(function(done) {
-        app.stop()
-            .then(function() {
-                done();
-            })
-            .done();
+    afterEach(function() {
+        return fire.stop();
     });
 
     describe('simple array-based route', function() {

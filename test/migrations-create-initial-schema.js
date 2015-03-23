@@ -1,11 +1,9 @@
+/* global it, describe, afterEach, beforeEach */
 'use strict';
 
 var fire = require('..');
-var Models = require('./../lib/modules/models');
-var Model = require('./../lib/modules/models/model');
 var Migrations = require('./../lib/modules/migrations');
 var assert = require('assert');
-var Q = require('q');
 
 describe('migrations create initial schema', function() {
 	var models = null;
@@ -16,7 +14,7 @@ describe('migrations create initial schema', function() {
         // We should drop everything
         migrations.destroyAllModels()
         .then(function() {
-            return app.stop();
+            return fire.stop();
         })
         .then(function() {
         	done();
@@ -27,28 +25,34 @@ describe('migrations create initial schema', function() {
         .done();
     });
 
-    beforeEach(function(done) {
-    	app = fire.app('migrations', {});
-    	app.start()
-    		.then(function() {
-		        models = app.models;
+	beforeEach(function() {
+		app = fire.app('migrations', {});
 
-		        migrations = new Migrations();
-		        migrations.setup(null, models)
-		            .then(function() {
-		                return models.Schema.removeAll();
-		            })
-		            .then(function() {
-		                done();
-		            })
-		            .catch(function(error) {
-		                done(error);
-		            })
-		            .done();
-	        });
-    });
+		app.modules.forEach(function(module_) {
+			if(module_.migrate) {
+				module_.migrate(app.models);
+			}
+		});
 
-	it('creating many related models', function(done) {
+		return fire.start()
+			.then(function() {
+				models = app.models;
+
+				migrations = new Migrations(app, models);
+				return migrations.setup(null)
+					.then(function() {
+						return models.Schema.exists()
+							.then(function(exists) {
+								return !exists && models.Schema.setup();
+							});
+					})
+					.then(function() {
+						return models.Schema.removeAll();
+					});
+			});
+	});
+
+	it('creating many related models', function() {
 		function Migration() {}
 
 		Migration.prototype.up = function() {
@@ -110,23 +114,21 @@ describe('migrations create initial schema', function() {
 			this.models.destroyModel('Team');
 			this.models.destroyModel('TimeTrack');
 			this.models.destroyModel('User');
+			this.models.destroyModel('Schema');
 		};
 
 		migrations.addMigration(Migration, 1);
 
-		migrations.migrate(0, 1)
+		return migrations.migrate(0, 1)
 			.then(function() {
 				return migrations.currentVersion();
 			})
 			.then(function(currentVersion) {
 				return assert.equal(currentVersion, 1);
-			})
-			.then(done)
-			.catch(done)
-			.done();
-	})
+			});
+	});
 
-	it('can destroy all models', function(done) {
+	it('can destroy all models', function() {
 		function Migration() {}
 
 		Migration.prototype.up = function() {
@@ -192,7 +194,7 @@ describe('migrations create initial schema', function() {
 
 		migrations.addMigration(Migration, 1);
 
-		migrations.migrate(0, 1)
+		return migrations.migrate(0, 1)
 			.then(function() {
 				return migrations.currentVersion();
 			})
@@ -210,9 +212,6 @@ describe('migrations create initial schema', function() {
 			})
 			.then(function(currentVersion) {
 				return assert.equal(currentVersion, 0);
-			})
-			.then(done)
-			.catch(done)
-			.done();
-	})
+			});
+	});
 });

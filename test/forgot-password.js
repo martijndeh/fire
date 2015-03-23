@@ -11,7 +11,7 @@ describe('forgot password', function() {
 	var resetPasswordInstance = null;
 	var userID = null;
 
-	beforeEach(helper.beforeEach());
+	beforeEach(helper.beforeEach({migrate: true}));
 	afterEach(helper.afterEach());
 
 	before(function() {

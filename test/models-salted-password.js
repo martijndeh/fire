@@ -6,7 +6,7 @@ var assert = require('assert');
 var crypto = require('crypto');
 
 describe('models salted password', function() {
-    beforeEach(helper.beforeEach());
+    beforeEach(helper.beforeEach({migrate: true}));
     afterEach(helper.afterEach());
 
     before(function() {

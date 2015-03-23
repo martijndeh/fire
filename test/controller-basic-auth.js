@@ -8,7 +8,7 @@ var request = require('supertest');
 describe('controller basic auth', function() {
 	var accessToken, id;
 
-	beforeEach(helper.beforeEach());
+	beforeEach(helper.beforeEach({migrate: true}));
 	afterEach(helper.afterEach());
 
 	before(function() {

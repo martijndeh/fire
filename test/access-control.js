@@ -15,13 +15,20 @@ describe('access control', function() {
 	var modules = null;
 
 	beforeEach(function(done) {
-		app = fire.app('accessControlTest', {});
+		app = fire.app('accessControlTest', {type: 'angular'});
 
 		if(createModels) {
 			createModels();
 		}
 
-		app.start()
+		fire.start()
+			.then(function() {
+				app.modules.forEach(function(module_) {
+					if(module_.migrate) {
+						module_.migrate(app.models);
+					}
+				});
+			})
 			.then(function() {
 				var result = Q.when(true);
 
@@ -91,20 +98,28 @@ describe('access control', function() {
 
         app.models.forEach(function(model) {
             result = result.then(function() {
-                return model.exists().then(function(exists) {
-                    if(exists) {
-                        return model.forceDestroy();
-                    }
-                    else {
-                        return Q.when(true);
-                    }
-                });
+                return model.exists()
+					.then(function(exists) {
+	                    if(exists) {
+	                        return model.forceDestroy();
+	                    }
+	                    else {
+	                        return Q.when(true);
+	                    }
+	                })
+					.then(function() {
+						delete app.models[model.getName()];
+						delete app.models.internals[model.getName()];
+					});
             });
         });
 
         result
+			.then(function() {
+				app.models._authenticator = null;
+			})
         	.then(function() {
-            	return app.stop();
+            	return fire.stop();
         	})
 			.then(function() {
 				if(modules) {
@@ -141,11 +156,23 @@ describe('access control', function() {
 				function Article() {
 					this.title = [this.String];
 					this.author = [this.BelongsTo(this.models.User), this.Automatic, this.AutoFetch];
-					this.accessControl = [this.CanRead(true), this.CanUpdate('author'), this.CanDelete(false), this.CanCreate(function(authenticator) {
-						return (authenticator && authenticator.name == 'Martijn');
-					})];
 				}
 				app.model(Article);
+
+				Article.prototype.accessControl = function() {
+					return {
+						canCreate: function(authenticator) {
+							return (authenticator && authenticator.name == 'Martijn');
+						},
+						canRead: true,
+						canUpdate: function(authenticator) {
+							return {
+								author: authenticator
+							};
+						},
+						canDelete: false
+					};
+				};
 
 				Article.prototype.toJSON = function() {
 					return {
@@ -202,7 +229,7 @@ describe('access control', function() {
 				.send(helper.jsonify({
 					title: 'Malicious'
 				}))
-				.expect(401, function(error, response) {
+				.expect(401, function(error) {
 					done(error);
 				});
 		});
@@ -313,6 +340,256 @@ describe('access control', function() {
 				.delete('/api/articles/1')
 				.send()
 				.expect(403, function(error) {
+					done(error);
+				});
+		});
+	});
+
+	describe('associations', function() {
+		before(function() {
+			createModels = function() {
+				function User(LockModel, SafeModel) {
+					this.name = [this.String, this.Authenticate];
+					this.locks = [this.HasMany(LockModel)];
+					this.safe = [this.HasOne(SafeModel)];
+				}
+				app.model(User);
+
+				User.prototype.accessControl = function() {
+					return {
+						canCreate: true,
+						canUpdate: true,
+						canDelete: true,
+						canRead: true
+					};
+				};
+
+				function Lock(UserModel) {
+					this.name = [this.String, this.Required];
+					this.user = [this.BelongsTo(UserModel), this.Required];
+				}
+				app.model(Lock);
+
+				Lock.prototype.accessControl = function() {
+					return {
+						canCreate: false,
+						canUpdate: false,
+						canDelete: false,
+						canRead: false
+					};
+				};
+
+				function Safe(UserModel) {
+					this.name = [this.String, this.Required];
+					this.user = [this.BelongsTo(UserModel), this.Required];
+				}
+				app.model(Safe);
+
+				Safe.prototype.accessControl = function() {
+					return {
+						canCreate: false,
+						canUpdate: false,
+						canDelete: false,
+						canRead: false
+					};
+				};
+			};
+		});
+
+		var userID = null;
+		var lockPath = null;
+		var detailLockPath = null;
+		var safePath = null;
+		var detailSafePath = null;
+
+		beforeEach(function() {
+			return app.models.User.create({name: 'Martijn', password: 'test'})
+				.then(function(user) {
+					userID = user.id;
+					lockPath = '/api/users/' + userID + '/locks';
+
+					return app.models.Lock.create({
+							name: 'A lock',
+							user: userID
+						})
+						.then(function(lock) {
+							detailLockPath = lockPath + '/' + lock.id;
+
+							return app.models.Safe.create({
+								name: 'A safe',
+								user: userID
+							});
+						})
+						.then(function(safe) {
+							safePath = '/api/users/' + userID + '/safe';
+							detailSafePath = safePath + '/' + safe.id;
+						});
+				});
+		});
+
+		it('cannot create one-to-many', function(done) {
+			request.agent(app.HTTPServer.express)
+				.post(lockPath)
+				.send({
+					name: 'Test Lock',
+					user: userID
+				})
+				.expect(401, function(error) {
+					done(error);
+				});
+		});
+
+		it('cannot read one-to-many', function(done) {
+			request.agent(app.HTTPServer.express)
+				.get(lockPath)
+				.send()
+				.expect(401, function(error) {
+					done(error);
+				});
+		});
+
+		it('cannot update one-to-many', function(done) {
+			request.agent(app.HTTPServer.express)
+				.put(detailLockPath)
+				.send({
+					name: 'Test Lock',
+					user: userID
+				})
+				.expect(401, function(error) {
+					done(error);
+				});
+		});
+
+		it('cannot delete one-to-many', function(done) {
+			request.agent(app.HTTPServer.express)
+				.delete(detailLockPath)
+				.send()
+				.expect(401, function(error) {
+					done(error);
+				});
+		});
+
+		it('cannot create one-to-one', function(done) {
+			request.agent(app.HTTPServer.express)
+				.post(safePath)
+				.send({
+					name: 'Test Lock',
+					user: userID
+				})
+				.expect(401, function(error) {
+					done(error);
+				});
+		});
+
+		it('cannot read one-to-one', function(done) {
+			request.agent(app.HTTPServer.express)
+				.get(safePath)
+				.send()
+				.expect(401, function(error) {
+					done(error);
+				});
+		});
+
+		it('cannot update one-to-one', function(done) {
+			request.agent(app.HTTPServer.express)
+				.put(safePath)
+				.send({
+					name: 'Test Lock',
+					user: userID
+				})
+				.expect(401, function(error) {
+					done(error);
+				});
+		});
+
+		it('cannot delete one-to-one', function(done) {
+			request.agent(app.HTTPServer.express)
+				.delete(safePath)
+				.send()
+				.expect(401, function(error) {
+					done(error);
+				});
+		});
+	});
+
+	describe('access control return object', function() {
+		before(function() {
+			createModels = function() {
+				function User() {
+					this.name = [this.String, this.Required];
+					this.value = [this.Integer, this.Required];
+				}
+				app.model(User);
+
+				User.prototype.accessControl = function() {
+					return {
+						canCreate: function() {
+							return {
+								value: 123
+							};
+						},
+
+						canRead: function() {
+							return {
+								value: 123
+							};
+						},
+
+						canUpdate: function() {
+							return {
+								value: 123
+							};
+						},
+
+						canDelete: function() {
+							return {
+								value: 123
+							};
+						}
+					};
+				};
+			};
+		});
+
+		var detailUserPath = null;
+
+		beforeEach(function() {
+			return app.models.User.create({name: 'Martijn', value: 124})
+				.then(function(user) {
+					detailUserPath = '/api/users/' + user.id;
+				})
+				.then(function() {
+					return app.models.User.create({name: 'Test', value: 123});
+				});
+		});
+
+		it('can create user', function(done) {
+			request.agent(app.HTTPServer.express)
+				.post('/api/users')
+				.send({
+					name: 'Test'
+				})
+				.expect(200, function(error, response) {
+					assert.equal(response.body.value, 123);
+					done(error);
+				});
+		});
+
+		it('can read users', function(done) {
+			request.agent(app.HTTPServer.express)
+				.get('/api/users')
+				.send()
+				.expect(200, function(error, response) {
+					assert.equal(response.body.length, 1);
+					done(error);
+				});
+		});
+
+		it('cannot read user', function(done) {
+			request.agent(app.HTTPServer.express)
+				.get(detailUserPath)
+				.send()
+				.expect(404, function(error) {
 					done(error);
 				});
 		});

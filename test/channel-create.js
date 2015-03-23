@@ -5,12 +5,8 @@ var helper = require('./support/helper');
 var assert = require('assert');
 var Q = require('q');
 
-var Channels = require('./../lib/modules/channels');
-
 describe('channels', function() {
-	var called = 0;
-
-	beforeEach(helper.beforeEach());
+	beforeEach(helper.beforeEach({migrate: true}));
 	afterEach(helper.afterEach());
 
 	describe('without authentication', function() {

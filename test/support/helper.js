@@ -17,11 +17,20 @@ function Helper() {
 Helper.prototype.beforeEach = function(options) {
     var self = this;
     return function(done) {
-        self.app = fire.app('test', options || {});
+        self.app = fire.app('test', options || {type: 'angular'});
 
         return (self.setup ? Q.when(self.setup(self.app)) : Q.when(true))
             .then(function() {
-                return self.app.start();
+                return fire.start();
+            })
+            .then(function() {
+                if(options && options.migrate) {
+                    self.app.modules.forEach(function(module_) {
+                        if(module_.migrate) {
+                            module_.migrate(self.app.models);
+                        }
+                    });
+                }
             })
             .then(function() {
                 var result = Q.when(true);
@@ -33,6 +42,9 @@ Helper.prototype.beforeEach = function(options) {
                 });
 
                 return result;
+            })
+            .then(function() {
+                return self.app.tests.createTests();
             })
             .then(function() {
                 if(self.createModels) {
@@ -81,6 +93,9 @@ Helper.prototype.beforeEach = function(options) {
             .then(function() {
                 done();
             })
+            .catch(function(error) {
+                console.log(error);
+            })
             .done();
     };
 };
@@ -105,12 +120,12 @@ Helper.prototype.afterEach = function() {
 
         result
             .then(function() {
-                return self.app.stop();
+                return fire.stop();
             })
             .then(function() {
                 return (self.modules && self.modules.forEach(function(modulePath) {
                     delete require.cache[modulePath];
-                    fs.unlinkSync(modulePath);
+                    //fs.unlinkSync(modulePath);
                 }));
             })
             .then(function() {

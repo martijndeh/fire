@@ -11,14 +11,14 @@ describe('middleware', function() {
 
 	before(function() {
 		helper.setup = function(app) {
-			function Test() {
+			function Shoe() {
 				this.name = [this.String, this.Required];
 			}
-			app.model(Test);
+			app.model(Shoe);
 		};
 
 		helper.createModels = function() {
-			return helper.app.models.Test.create({name: 'Test 1'});
+			return helper.app.models.Shoe.create({name: 'Test 1'});
 		};
 	});
 
@@ -34,12 +34,12 @@ describe('middleware', function() {
 	});
 
 	it('can get return value', function(done) {
-		helper.app.get('/tests', function(TestModel) {
-			return TestModel.find({});
+		helper.app.get('/shoes', function(ShoeModel) {
+			return ShoeModel.find({});
 		});
 
 		request(helper.app.HTTPServer.express)
-			.get('/tests')
+			.get('/shoes')
 			.expect(200, function(error, response) {
 				assert.equal(response.body.length, 1);
 				assert.equal(response.body[0].name, 'Test 1');

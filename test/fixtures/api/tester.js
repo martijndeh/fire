@@ -1,7 +1,16 @@
 'use strict';
 
 var Q = require('q');
-var app = require('./..').app('test');
+
+var fire = require('./..');
+var app = fire.app('test');
+
+function merge(dest, source) {
+	Object.keys(source).forEach(function(key) {
+		dest[key] = source[key];
+	});
+	return dest;
+}
 
 function unauthenticatedError(authenticator) {
 	var error = new Error();
@@ -82,10 +91,15 @@ app.post('/api/testers', function(app, response, request, TesterModel, UserModel
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
 			var accessControl = TesterModel.getAccessControl();
-			return Q.when(accessControl.canCreate(app, {authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canCreate({authenticator: authenticator, request: request, response: response}))
 				.then(function(canCreate) {
-					if(canCreate === true) {
+					if(canCreate) {
 						var createMap = request.body || {};
+
+						if(typeof canCreate == 'object') {
+							createMap = merge(createMap, canCreate);
+						}
+
 						if(TesterModel.options.automaticPropertyName) {
 							if(createMap[TesterModel.options.automaticPropertyName]) {
 								var error = new Error('Cannot set automatic property manually.');
@@ -116,11 +130,15 @@ app.get('/api/testers', function(request, response, app,  TesterModel, UserModel
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
 			var accessControl = TesterModel.getAccessControl();
-			return Q.when(accessControl.canRead(app, {authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response}))
 				.then(function(canRead) {
-					if(canRead === true) {
+					if(canRead) {
 						var queryMap = request.query || {};
 						var optionsMap = {};
+
+						if(typeof canRead == 'object') {
+							queryMap = merge(queryMap, canRead);
+						}
 
 						if(queryMap.$options) {
 							optionsMap = queryMap.$options;
@@ -144,12 +162,16 @@ app.get('/api/testers/:id', function(request, response, app,  TesterModel, UserM
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
 			var accessControl = TesterModel.getAccessControl();
-			return Q.all([accessControl.canRead(app, {authenticator: authenticator, request: request, response: response}), authenticator]);
+			return Q.all([accessControl.canRead({authenticator: authenticator, request: request, response: response}), authenticator]);
 		})
 		.spread(function(canRead, authenticator) {
-			if(canRead === true) {
+			if(canRead) {
 				var whereMap = request.query || {};
 				whereMap.id = request.param('id');
+
+				if(typeof canRead == 'object') {
+					whereMap = merge(whereMap, canRead);
+				}
 
 				if(TesterModel.options.automaticPropertyName) {
 					whereMap[TesterModel.options.automaticPropertyName] = authenticator;
@@ -167,20 +189,14 @@ app.put('/api/testers/:id', function(request, response, app,  TesterModel, UserM
 	var accessControl = TesterModel.getAccessControl();
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
-			var keyPath = accessControl.getPermissionKeyPath('update');
-			return Q.all([keyPath ? true : app.injector.call(accessControl.getPermissionFunction('update'), {authenticator: authenticator, request: request, response: response}), authenticator]);
+			return Q.all([accessControl.canUpdate({authenticator: authenticator, request: request, response: response}), authenticator]);
 		})
 		.spread(function(canUpdate, authenticator) {
 			if(canUpdate) {
 				var whereMap = request.query || {};
 
-				var keyPath = accessControl.getPermissionKeyPath('update');
-				if(keyPath) {
-					if(!TesterModel.getProperty(keyPath)) {
-						throw new Error('Invalid key path `' + keyPath + '`.');
-					}
-
-					whereMap[keyPath] = authenticator;
+				if(typeof canUpdate == 'object') {
+					whereMap = merge(whereMap, canUpdate);
 				}
 
 				if(TesterModel.options.automaticPropertyName) {
@@ -223,18 +239,13 @@ app.delete('/api/testers', function(request, response, app,  TesterModel, UserMo
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
 			var accessControl = TesterModel.getAccessControl();
-			return Q.when(app.injector.call(accessControl.getPermissionFunction('delete'), {authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response}))
 				.then(function(canDelete) {
-					if(canDelete === true) {
+					if(canDelete) {
 						var whereMap = request.query || {};
 
-						var keyPath = accessControl.getPermissionKeyPath('delete');
-						if(keyPath) {
-							if(!TesterModel.getProperty(keyPath)) {
-								throw new Error('Invalid key path `' + keyPath + '`.');
-							}
-
-							whereMap[keyPath] = authenticator;
+						if(typeof canDelete == 'object') {
+							whereMap = merge(whereMap, canDelete);
 						}
 
 						if(TesterModel.options.automaticPropertyName) {
@@ -254,21 +265,16 @@ app.delete('/api/testers/:id', function(request, response, app,  TesterModel, Us
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
 			var accessControl = TesterModel.getAccessControl();
-			return Q.when(app.injector.call(accessControl.getPermissionFunction('delete'), {authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response}))
 			.then(function(canDelete) {
-				if(canDelete === true) {
+				if(canDelete) {
 					var whereMap = request.query || {};
 
-					whereMap.id = request.param('id');
-
-					var keyPath = accessControl.getPermissionKeyPath('delete');
-					if(keyPath) {
-						if(!TesterModel.getProperty(keyPath)) {
-							throw new Error('Invalid key path `' + keyPath + '`.');
-						}
-
-						whereMap[keyPath] = authenticator;
+					if(typeof canDelete == 'object') {
+						whereMap = merge(whereMap, canDelete);
 					}
+
+					whereMap.id = request.param('id');
 
 					if(TesterModel.options.automaticPropertyName) {
 						whereMap[TesterModel.options.automaticPropertyName] = authenticator;
@@ -282,12 +288,6 @@ app.delete('/api/testers/:id', function(request, response, app,  TesterModel, Us
 			});
 		});
 });
-
-
-
-
-
-
 
 
 

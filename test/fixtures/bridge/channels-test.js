@@ -3,10 +3,28 @@
 /* jshint undef: true, unused: true */
 /* global angular */
 
-var app = angular.module('example', []);
+var app = angular.module('default', ['ngRoute']);
 
 
 
+
+function _getUUID(modelInstanceOrUUID) {
+    var UUID;
+
+    if(typeof modelInstanceOrUUID.toQueryValue != 'undefined') {
+        UUID = modelInstanceOrUUID.toQueryValue();
+    }
+    else if(typeof modelInstanceOrUUID == 'string') {
+        UUID = modelInstanceOrUUID;
+    }
+    else {
+        var error = new FireError('Parameter `' + modelInstanceOrUUID + '` is not a valid model instance or UUID.');
+        error.status = 400;
+        throw error;
+    }
+
+    return UUID;
+}
 
 function FireError(message) {
     this.name = 'FireError';
@@ -260,8 +278,6 @@ function unwrap(promise, initialValue) {
     return value;
 };
 
-
-
 app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
     function unwrap(promise, initialValue) {
         var value = initialValue;
@@ -281,7 +297,6 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         enabled: true,
         requireBase: false
     });
-
 
 }]);
 app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSocketService, $rootScope) {
@@ -427,4 +442,49 @@ app.factory('TestChannel', ['ChannelService', function(ChannelService) { //jshin
 		}
 	};
 }]);
+
+/* global window, app */
+app.service('_StorageService', [function _StorageService() {
+	var storage = {};
+
+	this.get = function(key) {
+		if(typeof storage[key] != 'undefined') {
+			return storage[key];
+		}
+		else {
+			return window.localStorage.getItem(key);
+		}
+	};
+
+	this.set = function(key, value) {
+		try {
+			window.localStorage.setItem(key, value);
+		}
+		catch(error) {
+			storage[key] = value;
+		}
+	};
+
+	this.unset = function(key) {
+		if(typeof storage[key] != 'undefined') {
+			delete storage[key];
+		}
+		else {
+			window.localStorage.removeItem(key);
+		}
+	};
+}]);
+
+app.service('TestsService', [function() {
+	this.delegate = null;
+	this.participate = function(test, variant) {
+		if(this.delegate === null) {
+			throw new Error('Please set the TestsService.delegate');
+		}
+		else {
+			this.delegate.participate(test, variant);
+		}
+	};
+}]);
+
 

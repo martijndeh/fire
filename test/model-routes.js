@@ -8,7 +8,7 @@ var uuid = require('node-uuid');
 var helper = require('./support/helper');
 
 describe('model routes', function() {
-	beforeEach(helper.beforeEach());
+	beforeEach(helper.beforeEach({migrate: true}));
 	afterEach(helper.afterEach());
 
 	describe('authentication session', function() {
@@ -19,9 +19,14 @@ describe('model routes', function() {
 				function User() {
 					this.name 		= [this.String, this.Authenticate];
 					this.actions 	= [this.HasMany(this.models.Action), this.AutoFetch, this.Virtual];
-					this.accessControl = [this.CanCreate(function() { return true; })];
 				}
 				app.model(User);
+
+				User.prototype.accessControl = function() {
+					return {
+						canCreate: true
+					};
+				};
 
 				User.prototype.toJSON = function() {
 					return {
@@ -124,28 +129,33 @@ describe('model routes', function() {
 	describe('basic routes', function() {
 		before(function() {
 			helper.setup = function(app) {
-				function Test() {
+				function Event() {
 					this.name = [this.String];
 					this.value = [this.Integer];
-					this.accessControl = [this.CanCreate(function() { return true; }), this.CanUpdate(function() { return true; }), this.CanRead(function() { return true; })];
 				}
-				app.model(Test);
+				app.model(Event);
 
-				Test.prototype.toJSON = function() {
+				Event.prototype.accessControl = function() {
+					return {
+						canCreate: true,
+						canUpdate: true,
+						canRead: true
+					};
+				};
+
+				Event.prototype.toJSON = function() {
 					return {
 						id: this.id,
 						name: this.name,
 						value: this.value
 					};
 				};
-
-				//app.models.internals['Model'] = Model;
 			};
 		});
 
 		it('can create model', function(done) {
 			request(helper.app.HTTPServer.express)
-				.post('/api/tests')
+				.post('/api/events')
 				.send({
 					name: 'Martijn'
 				})
@@ -167,7 +177,7 @@ describe('model routes', function() {
 				var defer = Q.defer();
 
 				request(helper.app.HTTPServer.express)
-					.post('/api/tests')
+					.post('/api/events')
 					.send(map)
 					.expect(200, function(error, response) {
 						if(error) {
@@ -205,7 +215,7 @@ describe('model routes', function() {
 
 			it('can get 1 model', function(done) {
 				request(helper.app.HTTPServer.express)
-					.get('/api/tests/' + model2ID)
+					.get('/api/events/' + model2ID)
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
 						assert.equal(response.body.name, 'Martijn 2');
@@ -217,7 +227,7 @@ describe('model routes', function() {
 
 			it('can get an array of 1 model', function(done) {
 				request(helper.app.HTTPServer.express)
-					.get('/api/tests?value=1')
+					.get('/api/events?value=1')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
 
@@ -233,7 +243,7 @@ describe('model routes', function() {
 
 			it('can get an array of multiple models', function(done) {
 				request(helper.app.HTTPServer.express)
-					.get('/api/tests?value=2')
+					.get('/api/events?value=2')
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
 
@@ -252,7 +262,7 @@ describe('model routes', function() {
 
 			it('can update 1 model', function(done) {
 				request(helper.app.HTTPServer.express)
-					.put('/api/tests/' + model3ID)
+					.put('/api/events/' + model3ID)
 					.send({
 						name: 'Martijn (Updated)'
 					})
@@ -268,7 +278,7 @@ describe('model routes', function() {
 
 			it('cannot update all models', function(done) {
 				request(helper.app.HTTPServer.express)
-					.put('/api/tests')
+					.put('/api/events')
 					.send(helper.jsonify({
 						name: 'Oopsie'
 					}))

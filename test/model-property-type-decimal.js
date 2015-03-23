@@ -10,15 +10,15 @@ describe('model property type decimal', function() {
 
 	before(function() {
 		helper.setup = function(app) {
-			function Test() {
+			function Shoe() {
 				this.name = [this.String];
 				this.value = [this.Decimal(4, 2)];
 			}
-			app.model(Test);
+			app.model(Shoe);
 		};
 
 		helper.createModels = function(app) {
-			return app.models.Test.create([{
+			return app.models.Shoe.create([{
 				name: 'Test 1',
 				value: 1.12
 			}]);
@@ -26,10 +26,10 @@ describe('model property type decimal', function() {
 	});
 
 	it('can create decimal', function() {
-		return helper.app.models.Test.find({name: 'Test 1'}, {})
-			.then(function(events) {
-				assert.equal(events.length, 1);
-				assert.equal(events[0].value, 1.12);
+		return helper.app.models.Shoe.find({name: 'Test 1'}, {})
+			.then(function(shoes) {
+				assert.equal(shoes.length, 1);
+				assert.equal(shoes[0].value, 1.12);
 			});
 	});
 });

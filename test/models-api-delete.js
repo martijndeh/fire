@@ -18,17 +18,33 @@ describe('models api delete', function() {
 			function Parent() {
 				this.name = [this.String];
 				this.childs = [this.HasMany(this.models.Child)];
-				this.accessControl = [this.CanDelete(function() { return true; })];
 			}
 			app.model(Parent);
+
+			Parent.prototype.accessControl = function() {
+				return {
+					canCreate: false,
+					canRead: false,
+					canUpdate: false,
+					canDelete: true
+				};
+			};
 
 			function Child() {
 				this.name = [this.String];
 				this.status = [this.String, this.Required];
 				this.parent = [this.BelongsTo(this.models.Parent)];
-				this.accessControl = [this.CanDelete(function() { return true; })];
 			}
 			app.model(Child);
+
+			Child.prototype.accessControl = function() {
+				return {
+					canCreate: true,
+					canRead: true,
+					canUpdate: true,
+					canDelete: true
+				};
+			};
 		};
 
 		helper.createModels = function(app) {

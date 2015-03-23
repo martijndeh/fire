@@ -8,24 +8,29 @@ var Migrations = require('./../lib/modules/migrations');
 describe('migrations execute', function() {
 	var migrations = null;
 
-	beforeEach(helper.beforeEach());
+	beforeEach(helper.beforeEach({
+		migrate: true
+	}));
 	afterEach(helper.afterEach());
 
 	before(function() {
 		helper.setup = function(app) {
-			function Test() {
+			function Shoe() {
 				this.value = [this.Integer, this.Required];
 			}
-			app.model(Test);
+			app.model(Shoe);
 		};
 
 		helper.createModels = function() {
-			return helper.app.models.Test.create({value: 1})
+			return helper.app.models.Shoe.create({value: 1})
 				.then(function() {
-					migrations = new Migrations();
-					return migrations.setup(null, helper.app.models)
+					migrations = new Migrations(helper.app, helper.app.models);
+					return migrations.setup(null)
 						.then(function() {
 							return helper.app.models.Schema.removeAll();
+						})
+						.catch(function(error) {
+							console.log(error);
 						});
 				});
 		};
@@ -34,22 +39,22 @@ describe('migrations execute', function() {
 	it('can call execute task once per migration', function() {
 		function Migration1() {}
 		Migration1.prototype.up = function() {
-			this.models.execute('UPDATE tests SET value = value + 1');
+			this.models.execute('UPDATE shoes SET value = value + 1');
 		};
 
 		Migration1.prototype.down = function() {
-			this.models.execute('UPDATE tests SET value = value - 1');
+			this.models.execute('UPDATE shoes SET value = value - 1');
 		};
 
 		migrations.addMigration(Migration1, 1);
 
 		function Migration2() {}
 		Migration2.prototype.up = function() {
-			this.models.execute('UPDATE tests SET value = value + 1');
+			this.models.execute('UPDATE shoes SET value = value + 1');
 		};
 
 		Migration2.prototype.down = function() {
-			this.models.execute('UPDATE tests SET value = value - 1');
+			this.models.execute('UPDATE shoes SET value = value - 1');
 		};
 
 		migrations.addMigration(Migration2, 2);
@@ -62,10 +67,10 @@ describe('migrations execute', function() {
 				return assert.equal(currentVersion, 2);
 			})
 			.then(function() {
-				return helper.app.models.Test.findOne({});
+				return helper.app.models.Shoe.findOne({});
 			})
-			.then(function(test) {
-				assert.equal(test.value, 2);
+			.then(function(shoe) {
+				assert.equal(shoe.value, 2);
 			});
 	});
 });

@@ -3,7 +3,7 @@
 /* jshint undef: true, unused: true */
 /* global angular */
 
-var app = angular.module('example', []);
+var app = angular.module('default', ['ngRoute']);
 
 
 
@@ -58,6 +58,24 @@ app.controller('fn0', ['param1', 'param2', function(param1, param2) { //jshint i
         	execute(param2, param1);
         	/* jshint ignore:end */
     	}]);
+
+function _getUUID(modelInstanceOrUUID) {
+    var UUID;
+
+    if(typeof modelInstanceOrUUID.toQueryValue != 'undefined') {
+        UUID = modelInstanceOrUUID.toQueryValue();
+    }
+    else if(typeof modelInstanceOrUUID == 'string') {
+        UUID = modelInstanceOrUUID;
+    }
+    else {
+        var error = new FireError('Parameter `' + modelInstanceOrUUID + '` is not a valid model instance or UUID.');
+        error.status = 400;
+        throw error;
+    }
+
+    return UUID;
+}
 
 function FireError(message) {
     this.name = 'FireError';
@@ -399,132 +417,10 @@ function FireModelInstanceUser(setMap, model, path) {
 		}
 	});
 
-	
-	if(typeof setMap.votes != 'undefined' && setMap.votes !== null) {
-		if(Array.isArray(setMap.votes)) {
-			setMap.votes = setMap.votes.map(function(object) {
-                return new FireModelInstanceArticle(object, model.models.Article, path + '/' + 'votes');
-			});
-		}
-		else {
-			setMap.votes = new FireModelInstanceArticle(setMap.votes, model.models.Article, path + '/' + 'votes');
-		}
-	}
-	
-
-	Object.defineProperty(this, 'votes', {
-		get: function() {
-			if(typeof self._changes['votes'] != 'undefined') {
-				return self._changes['votes'];
-			}
-
-			return self._map['votes'];
-		},
-
-		set: function(value) {
-			self._changes['votes'] = value;
-		}
-	});
-
-	
-
-	Object.defineProperty(this, 'accessControl', {
-		get: function() {
-			if(typeof self._changes['accessControl'] != 'undefined') {
-				return self._changes['accessControl'];
-			}
-
-			return self._map['accessControl'];
-		},
-
-		set: function(value) {
-			self._changes['accessControl'] = value;
-		}
-	});
-
 
 	FireModelInstance.call(this, setMap, model, path);
 }
 FireModelInstanceUser.prototype = new FireModelInstance();
-
-
-
-
-FireModelInstanceUser.prototype.getVotes = function(queryMap, optionsMap) {
-    var self = this;
-	return this._model.models.Article._find(this._model.endpoint + '/' + this.id + '/votes', queryMap, optionsMap)
-        .then(function(modelInstances) {
-            self.votes = modelInstances;
-            return modelInstances;
-        })
-};
-
-FireModelInstanceUser.prototype.createVote = function(queryMap) {
-    var self = this;
-    return this._model.models.Article._create(this._model.endpoint + '/' + this.id + '/votes', queryMap)
-        .then(function(createdModelInstance) {
-            if(!self.votes) {
-                self.votes = [];
-            }
-
-            // TODO: How should we sort these associations?
-            self.votes.push(createdModelInstance);
-            return createdModelInstance;
-        });
-};
-
-function _getUUID(modelInstanceOrUUID) {
-    var UUID;
-
-    if(typeof modelInstanceOrUUID.toQueryValue != 'undefined') {
-        UUID = modelInstanceOrUUID.toQueryValue();
-    }
-    else if(typeof modelInstanceOrUUID == 'string') {
-        UUID = modelInstanceOrUUID;
-    }
-    else {
-        var error = new FireError('Parameter `' + modelInstanceOrUUID + '` is not a valid model instance or UUID.');
-        error.status = 400;
-        throw error;
-    }
-
-    return UUID;
-}
-
-FireModelInstanceUser.prototype.removeVote = function(modelInstanceOrUUID) {
-    var UUID = _getUUID(modelInstanceOrUUID);
-
-    var self = this;
-    return this._model.models.Article._action('delete', this._model.endpoint + '/' + this.id + '/votes/' + UUID)
-        .then(function(removedModelInstance) {
-            for(var i = 0, il = self.votes.length; i < il; i++) {
-                var modelInstance = self.votes[i];
-
-                if(modelInstance.id === UUID) {
-                    self.votes.splice(i, 1);
-                    break;
-                }
-            }
-            return removedModelInstance;
-        });
-};
-
-FireModelInstanceUser.prototype.removeVotes = function(map) {
-    var self = this;
-    return this._model.models.Article._action('delete', this._model.endpoint + '/' + this.id + '/votes', this._model._prepare(transformQueryMap(map)))
-        .then(function(removedModelInstances) {
-            var ids = removedModelInstances.map(function(modelInstance) {
-                return modelInstance.id;
-            });
-
-            self.votes = self.votes.filter(function(modelInstance) {
-                return (ids.indexOf(modelInstance.id) !== -1);
-            });
-
-            return removedModelInstances;
-        });
-};
-
 
 
 
@@ -588,132 +484,10 @@ function FireModelInstanceArticle(setMap, model, path) {
 		}
 	});
 
-	
-	if(typeof setMap.voters != 'undefined' && setMap.voters !== null) {
-		if(Array.isArray(setMap.voters)) {
-			setMap.voters = setMap.voters.map(function(object) {
-                return new FireModelInstanceUser(object, model.models.User, path + '/' + 'voters');
-			});
-		}
-		else {
-			setMap.voters = new FireModelInstanceUser(setMap.voters, model.models.User, path + '/' + 'voters');
-		}
-	}
-	
-
-	Object.defineProperty(this, 'voters', {
-		get: function() {
-			if(typeof self._changes['voters'] != 'undefined') {
-				return self._changes['voters'];
-			}
-
-			return self._map['voters'];
-		},
-
-		set: function(value) {
-			self._changes['voters'] = value;
-		}
-	});
-
-	
-
-	Object.defineProperty(this, 'accessControl', {
-		get: function() {
-			if(typeof self._changes['accessControl'] != 'undefined') {
-				return self._changes['accessControl'];
-			}
-
-			return self._map['accessControl'];
-		},
-
-		set: function(value) {
-			self._changes['accessControl'] = value;
-		}
-	});
-
 
 	FireModelInstance.call(this, setMap, model, path);
 }
 FireModelInstanceArticle.prototype = new FireModelInstance();
-
-
-
-
-FireModelInstanceArticle.prototype.getVoters = function(queryMap, optionsMap) {
-    var self = this;
-	return this._model.models.User._find(this._model.endpoint + '/' + this.id + '/voters', queryMap, optionsMap)
-        .then(function(modelInstances) {
-            self.voters = modelInstances;
-            return modelInstances;
-        })
-};
-
-FireModelInstanceArticle.prototype.createVoter = function(queryMap) {
-    var self = this;
-    return this._model.models.User._create(this._model.endpoint + '/' + this.id + '/voters', queryMap)
-        .then(function(createdModelInstance) {
-            if(!self.voters) {
-                self.voters = [];
-            }
-
-            // TODO: How should we sort these associations?
-            self.voters.push(createdModelInstance);
-            return createdModelInstance;
-        });
-};
-
-function _getUUID(modelInstanceOrUUID) {
-    var UUID;
-
-    if(typeof modelInstanceOrUUID.toQueryValue != 'undefined') {
-        UUID = modelInstanceOrUUID.toQueryValue();
-    }
-    else if(typeof modelInstanceOrUUID == 'string') {
-        UUID = modelInstanceOrUUID;
-    }
-    else {
-        var error = new FireError('Parameter `' + modelInstanceOrUUID + '` is not a valid model instance or UUID.');
-        error.status = 400;
-        throw error;
-    }
-
-    return UUID;
-}
-
-FireModelInstanceArticle.prototype.removeVoter = function(modelInstanceOrUUID) {
-    var UUID = _getUUID(modelInstanceOrUUID);
-
-    var self = this;
-    return this._model.models.User._action('delete', this._model.endpoint + '/' + this.id + '/voters/' + UUID)
-        .then(function(removedModelInstance) {
-            for(var i = 0, il = self.voters.length; i < il; i++) {
-                var modelInstance = self.voters[i];
-
-                if(modelInstance.id === UUID) {
-                    self.voters.splice(i, 1);
-                    break;
-                }
-            }
-            return removedModelInstance;
-        });
-};
-
-FireModelInstanceArticle.prototype.removeVoters = function(map) {
-    var self = this;
-    return this._model.models.User._action('delete', this._model.endpoint + '/' + this.id + '/voters', this._model._prepare(transformQueryMap(map)))
-        .then(function(removedModelInstances) {
-            var ids = removedModelInstances.map(function(modelInstance) {
-                return modelInstance.id;
-            });
-
-            self.voters = self.voters.filter(function(modelInstance) {
-                return (ids.indexOf(modelInstance.id) !== -1);
-            });
-
-            return removedModelInstances;
-        });
-};
-
 
 
 
@@ -742,95 +516,6 @@ app.factory('ArticleModel', ['$http', '$q', 'FireModels', function($http, $q, Fi
 	return new FireModelArticle($http, $q, FireModels);
 }]);
 
-function FireModelInstanceArticleVoterUserVote(setMap, model, path) {
-	var self = this;
-
-	
-	if(typeof setMap.userVote != 'undefined' && setMap.userVote !== null) {
-		if(Array.isArray(setMap.userVote)) {
-			setMap.userVote = setMap.userVote.map(function(object) {
-                return new FireModelInstanceUser(object, model.models.User, path + '/' + 'user-votes');
-			});
-		}
-		else {
-			setMap.userVote = new FireModelInstanceUser(setMap.userVote, model.models.User, path + '/' + 'user-votes');
-		}
-	}
-	
-
-	Object.defineProperty(this, 'userVote', {
-		get: function() {
-			if(typeof self._changes['userVote'] != 'undefined') {
-				return self._changes['userVote'];
-			}
-
-			return self._map['userVote'];
-		},
-
-		set: function(value) {
-			self._changes['userVote'] = value;
-		}
-	});
-
-	
-	if(typeof setMap.articleVoter != 'undefined' && setMap.articleVoter !== null) {
-		if(Array.isArray(setMap.articleVoter)) {
-			setMap.articleVoter = setMap.articleVoter.map(function(object) {
-                return new FireModelInstanceArticle(object, model.models.Article, path + '/' + 'article-voters');
-			});
-		}
-		else {
-			setMap.articleVoter = new FireModelInstanceArticle(setMap.articleVoter, model.models.Article, path + '/' + 'article-voters');
-		}
-	}
-	
-
-	Object.defineProperty(this, 'articleVoter', {
-		get: function() {
-			if(typeof self._changes['articleVoter'] != 'undefined') {
-				return self._changes['articleVoter'];
-			}
-
-			return self._map['articleVoter'];
-		},
-
-		set: function(value) {
-			self._changes['articleVoter'] = value;
-		}
-	});
-
-
-	FireModelInstance.call(this, setMap, model, path);
-}
-FireModelInstanceArticleVoterUserVote.prototype = new FireModelInstance();
-
-
-
-function FireModelArticleVoterUserVote($http, $q, models) {
-	FireModel.call(this, $http, $q, models);
-
-	this.endpoint = '/api/article-voter-user-votes';
-}
-FireModelArticleVoterUserVote.prototype = new FireModel();
-
-FireModelArticleVoterUserVote.prototype.parseResult = function(setMapOrList, path) {
-	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-		var self = this;
-		return setMapOrList.map(function(setMap) {
-			return new FireModelInstanceArticleVoterUserVote(setMap, self, path);
-		});
-	}
-	else {
-		return new FireModelInstanceArticleVoterUserVote(setMapOrList, this, path);
-	}
-};
-
-
-
-app.factory('ArticleVoterUserVoteModel', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
-	return new FireModelArticleVoterUserVote($http, $q, FireModels);
-}]);
-
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
 	
@@ -839,8 +524,6 @@ app.service('FireModels', ['$http', '$q', function($http, $q) {
 	this.User = new FireModelUser($http, $q, this);
 	
 	this.Article = new FireModelArticle($http, $q, this);
-	
-	this.ArticleVoterUserVote = new FireModelArticleVoterUserVote($http, $q, this);
 	
 }]);
 function unwrap(promise, initialValue) {
@@ -852,139 +535,6 @@ function unwrap(promise, initialValue) {
 
     return value;
 };
-
-
-app.service('FireTestController', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    
-    
-    this.getTest = function() {
-        var defer = $q.defer();
-
-        $http['get']('/tests', {params: {}, headers: {'X-JSON-Params': true}})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
-            });
-
-        return defer.promise;
-    };
-    
-    
-}]);
-
-app.service('TestControllerController', ['$http', '$q', function($http, $q) {
-    
-    
-    this.getTest = function() {
-        var defer = $q.defer();
-
-        $http['get']('/tests', {params: {}, headers: {'X-JSON-Params': true}})
-            .success(function(result) {
-                defer.resolve(result);
-            })
-            .error(function(error) {
-                defer.reject(error);
-            });
-
-        return defer.promise;
-    };
-    
-    
-}]);
-
-app.service('Firefn7', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    
-}]);
-
-app.service('fn7Controller', ['$http', '$q', function($http, $q) {
-    
-}]);
-
-app.service('Firefn6', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    
-}]);
-
-app.service('fn6Controller', ['$http', '$q', function($http, $q) {
-    
-}]);
-
-app.service('Firefn5', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    
-}]);
-
-app.service('fn5Controller', ['$http', '$q', function($http, $q) {
-    
-}]);
-
-app.service('Firefn4', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    
-}]);
-
-app.service('fn4Controller', ['$http', '$q', function($http, $q) {
-    
-}]);
-
-app.service('Firefn3', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    
-}]);
-
-app.service('fn3Controller', ['$http', '$q', function($http, $q) {
-    
-}]);
-
-app.service('Firefn2', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    
-}]);
-
-app.service('fn2Controller', ['$http', '$q', function($http, $q) {
-    
-}]);
-
-app.service('Firefn1', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    
-}]);
-
-app.service('fn1Controller', ['$http', '$q', function($http, $q) {
-    
-}]);
-
-app.service('Firefn0', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
-    this.unwrap = unwrap;
-    this.models = FireModels;
-
-    
-}]);
-
-app.service('fn0Controller', ['$http', '$q', function($http, $q) {
-    
-}]);
-
 
 app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
     function unwrap(promise, initialValue) {
@@ -1006,26 +556,77 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         requireBase: false
     });
 
+    $routeProvider.when('', {
+        templateUrl: '/templates/test.html',
+        controller: 'TestController',
+        resolve: {
+        
+        }
+    });
 
+    $routeProvider.when('', {
+        templateUrl: '/templates/fn7.html',
+        controller: 'fn7',
+        resolve: {
+        
+        }
+    });
 
-    
+    $routeProvider.when('', {
+        templateUrl: '/templates/fn6.html',
+        controller: 'fn6',
+        resolve: {
+        
+        }
+    });
 
+    $routeProvider.when('', {
+        templateUrl: '/templates/fn5.html',
+        controller: 'fn5',
+        resolve: {
+        
+        }
+    });
 
+    $routeProvider.when('', {
+        templateUrl: '/templates/fn4.html',
+        controller: 'fn4',
+        resolve: {
+        
+        }
+    });
 
+    $routeProvider.when('', {
+        templateUrl: '/templates/fn3.html',
+        controller: 'fn3',
+        resolve: {
+        
+        }
+    });
 
+    $routeProvider.when('', {
+        templateUrl: '/templates/fn2.html',
+        controller: 'fn2',
+        resolve: {
+        
+        }
+    });
 
+    $routeProvider.when('', {
+        templateUrl: '/templates/fn1.html',
+        controller: 'fn1',
+        resolve: {
+        
+        }
+    });
 
-
-
-
-
-
-
-
-
-
-
-
+    $routeProvider.when('', {
+        templateUrl: '/templates/fn0.html',
+        controller: 'fn0',
+        resolve: {
+        
+        }
+    });
 
 }]);
 app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSocketService, $rootScope) {
@@ -1145,6 +746,51 @@ app.service('WebSocketService', ['$location', '$timeout', function($location, $t
 	this.parsePacket = null;
 
 	connect();
+}]);
+
+
+/* global window, app */
+app.service('_StorageService', [function _StorageService() {
+	var storage = {};
+
+	this.get = function(key) {
+		if(typeof storage[key] != 'undefined') {
+			return storage[key];
+		}
+		else {
+			return window.localStorage.getItem(key);
+		}
+	};
+
+	this.set = function(key, value) {
+		try {
+			window.localStorage.setItem(key, value);
+		}
+		catch(error) {
+			storage[key] = value;
+		}
+	};
+
+	this.unset = function(key) {
+		if(typeof storage[key] != 'undefined') {
+			delete storage[key];
+		}
+		else {
+			window.localStorage.removeItem(key);
+		}
+	};
+}]);
+
+app.service('TestsService', [function() {
+	this.delegate = null;
+	this.participate = function(test, variant) {
+		if(this.delegate === null) {
+			throw new Error('Please set the TestsService.delegate');
+		}
+		else {
+			this.delegate.participate(test, variant);
+		}
+	};
 }]);
 
 

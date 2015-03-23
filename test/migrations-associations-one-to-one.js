@@ -15,7 +15,7 @@ describe('migrations associations one-to-one', function() {
     afterEach(function(done) {
         migrations.destroyAllModels()
             .then(function() {
-                return app.stop();
+                return fire.stop();
             })
             .then(function() {
                 var defer = Q.defer();
@@ -31,24 +31,30 @@ describe('migrations associations one-to-one', function() {
             .done();
     });
 
-    beforeEach(function(done) {
+    beforeEach(function() {
         app = fire.app('migrations', {});
-        app.start()
+
+        app.modules.forEach(function(module_) {
+            if(module_.migrate) {
+                module_.migrate(app.models);
+            }
+        });
+
+        return fire.start()
             .then(function() {
                 models = app.models;
 
-                migrations = new Migrations();
-                migrations.setup(null, models)
+                migrations = new Migrations(app, models);
+                return migrations.setup(null)
+                    .then(function() {
+                        return models.Schema.exists()
+                            .then(function(exists) {
+                                return !exists && models.Schema.setup();
+                            });
+                    })
                     .then(function() {
                         return models.Schema.removeAll();
-                    })
-                    .then(function() {
-                        done();
-                    })
-                    .catch(function(error) {
-                        done(error);
-                    })
-                    .done();
+                    });
             });
     });
 

@@ -8,7 +8,7 @@ var Q = require('q');
 describe('triggers', function() {
 	var myTriggerModelInstance, myTriggerCalled;
 
-	beforeEach(helper.beforeEach());
+	beforeEach(helper.beforeEach({migrate: true}));
 	afterEach(helper.afterEach());
 
 	describe('user model', function() {
@@ -112,10 +112,10 @@ describe('triggers', function() {
 				myTriggerModelInstance = null;
 				myTriggerCalled = 0;
 
-				function Test() {
+				function User() {
 					this.name = [this.String, this.Authenticate];
 				}
-				helper.app.model(Test);
+				helper.app.model(User);
 
 				function MyTrigger() {
 					//
@@ -133,7 +133,7 @@ describe('triggers', function() {
 			};
 
 			helper.createModels = function() {
-				return helper.app.models.Test.create([{
+				return helper.app.models.User.create([{
 					name: 'Martijn',
 					password: 'test'
 				}, {
@@ -157,7 +157,7 @@ describe('triggers', function() {
 							assert.notEqual(myTriggerModelInstance, null);
 							assert.equal(myTriggerModelInstance.name, 'Martijn');
 						});
-				});			
+				});
 		});
 	});
 });

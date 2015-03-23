@@ -6,4 +6,4 @@ function User() {
 }
 app.model(User);
 
-app.start();
+fire.start();

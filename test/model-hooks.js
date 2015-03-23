@@ -11,7 +11,7 @@ describe('model hooks', function() {
 
     beforeEach(function(done) {
     	app = fire.app('hooks', {});
-        app.start()
+        fire.start()
             .then(function() {
             	models = app.models;
 
@@ -43,7 +43,7 @@ describe('model hooks', function() {
         result.then(function() {
             models = null;
 
-            return app.stop();
+            return fire.stop();
         })
         .then(function() {
         	done();

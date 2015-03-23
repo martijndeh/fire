@@ -10,15 +10,15 @@ describe('models update', function() {
 
     before(function() {
         helper.setup = function(app) {
-            function Test() {
+            function Shoe() {
                 this.name = [this.String];
                 this.position = [this.Integer];
             }
-            app.model(Test);
+            app.model(Shoe);
         };
 
         helper.createModels = function(app) {
-            return app.models.Test.create([{
+            return app.models.Shoe.create([{
                 name: 'Test 1',
                 position: 0
             }, {
@@ -32,14 +32,14 @@ describe('models update', function() {
     });
 
     it('can update model with limit', function() {
-        return helper.app.models.Test.update({name: 'Test 1'}, {position: 99}, {limit: 1})
+        return helper.app.models.Shoe.update({name: 'Test 1'}, {position: 99}, {limit: 1})
             .then(function(tests) {
                 assert.equal(tests.length, 1);
                 assert.equal(tests[0].name, 'Test 1');
                 assert.equal(tests[0].position, 99);
 
                 // Let's make sure we updated 1 model only
-                return helper.app.models.Test.find({position: 99});
+                return helper.app.models.Shoe.find({position: 99});
             })
             .then(function(tests) {
                 assert.equal(tests.length, 1);
@@ -48,7 +48,7 @@ describe('models update', function() {
     });
 
     it('can update multiple models', function() {
-        return helper.app.models.Test.update({name: 'Test 1'}, {position: -1})
+        return helper.app.models.Shoe.update({name: 'Test 1'}, {position: -1})
             .then(function(tests) {
                 assert.equal(tests.length, 1);
             });

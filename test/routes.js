@@ -10,11 +10,8 @@ describe('controller routes', function() {
 	var app = null;
 	var server = null;
 
-	after(function(done) {
-		app.stop()
-			.then(function() {
-				done();
-			});
+	after(function() {
+		return fire.stop();
 	});
 
 	before(function(done) {
@@ -29,7 +26,7 @@ describe('controller routes', function() {
 		ApiController.prototype.basePathComponents = ['1', 'api'];
 
 		ApiController.prototype.configure = function() {
-
+			
 		};
 
 		ApiController.prototype.before = function() {
@@ -58,7 +55,7 @@ describe('controller routes', function() {
 			};
 		};
 
-		app.start()
+		fire.start()
 			.then(function(s) {
 				server = s;
 

@@ -16,7 +16,7 @@ describe('model methods', function() {
 
     beforeEach(function(done) {
         app = fire.app('methods', {});
-        app.start()
+        fire.start()
             .then(function() {
                 models = app.models;
 
@@ -47,7 +47,7 @@ describe('model methods', function() {
 
         result.then(function() {
             models = null;
-            return app.stop();
+            return fire.stop();
         })
         .then(function() {
             done();
@@ -56,65 +56,6 @@ describe('model methods', function() {
             done(error);
         })
         .done();
-    });
-
-    it('can create model with multiple associations of the same model', function(done) {
-        models.Article = 'Article';
-        models.User = 'User';
-        models.UsersArticles = 'UsersArticles';
-
-        function Article() {
-            this.title = [this.String, this.Required];
-            this.url = [this.String, this.Required];
-            this.createdAt = [this.DateTime, this.Default('CURRENT_DATE')];
-            this.submitter = [this.BelongsTo(this.models.User, 'submittedArticles'), this.AutoFetch, this.Required];
-            this.voters = [this.HasMany(this.models.User, 'votedArticles'), this.AutoFetch];
-        }
-        app.model(Article);
-
-        function User() {
-            this.name = [this.String, this.Required];
-            this.votedArticles = [this.HasMany(this.models.Article, 'voters')];
-            this.submittedArticles = [this.HasMany(this.models.Article, 'submitter')];
-        }
-        app.model(User);
-
-        setImmediate(function() {
-            return models.User.setup()
-                .then(function() {
-                    return models.Article.setup();
-                })
-                .then(function() {
-                    return models.ArticleVoterUserVotedArticle.setup();
-                })
-                .then(function() {
-                    return models.User.create({
-                        name: 'Test Creator'
-                    });
-                })
-                .then(function(user) {
-                    return models.Article.create({
-                            title: 'Test title.',
-                            url: 'https://github.com/martijndeh/fire',
-                            submitter: user
-                        })
-                        .then(function(article) {
-                            assert.notEqual(article, null);
-
-                            return article.addVoter(user)
-                                .then(function() {
-                                    return models.Article.findOne({title: 'Test title.'});
-                                });
-                        })
-                        .then(function(article) {
-                            assert.equal(article.submitter.name, 'Test Creator');
-                            assert.equal(article.voters.length, 1);
-
-                            done();
-                        });
-                })
-                .done();
-        });
     });
 
     it('can create model when calling findOrCreate()', function(done) {
@@ -1324,31 +1265,31 @@ describe('model methods', function() {
     });
 
     it('can create read-only property', function(done) {
-        function Test() {
+        function Shoe() {
             this.testValue = [this.Integer, this.Required];
             this.position = [this.ReadOnly('$testValue * 3')];
         }
-        app.model(Test);
+        app.model(Shoe);
 
         setImmediate(function() {
-            models.Test.setup()
+            models.Shoe.setup()
                 .then(function() {
-                    return models.Test.create({
+                    return models.Shoe.create({
                         testValue: 123
                     });
                 })
-                .then(function(test) {
-                    assert.equal(test.position, 123 * 3);
+                .then(function(shoe) {
+                    assert.equal(shoe.position, 123 * 3);
 
-                    return models.Test.findOne();
+                    return models.Shoe.findOne();
                 })
-                .then(function(test) {
-                    assert.equal(test.position, 123 * 3);
+                .then(function(shoe) {
+                    assert.equal(shoe.position, 123 * 3);
 
-                    return models.Test.updateOne(test.id, {testValue: 234});
+                    return models.Shoe.updateOne(shoe.id, {testValue: 234});
                 })
-                .then(function(test) {
-                    assert.equal(test.position, 234 * 3);
+                .then(function(shoe) {
+                    assert.equal(shoe.position, 234 * 3);
 
                     done();
                 });
@@ -1469,127 +1410,6 @@ describe('model methods', function() {
         });
     });
 
-    it('can implement count property type in many-to-many relation', function(done) {
-        models.Test1 = 'Test1';
-        models.Test2 = 'Test2';
-
-        function Test1() {
-            this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
-            this.numberOfTests = [this.Count('tests')];
-        }
-        app.model(Test1);
-
-        function Test2() {
-            this.testValue = [this.Integer];
-            this.tests = [this.HasMany(this.models.Test1)];
-        }
-        app.model(Test2);
-
-        setImmediate(function() {
-            models.Test1.setup()
-                .then(function() {
-                    return models.Test2.setup();
-                })
-                .then(function() {
-                    return models.Test1TestTest2Test.setup();
-                })
-                .then(function() {
-                    return models.Test1.create({});
-                })
-                .then(function(test) {
-                    return Q.all([
-                        models.Test2.create({
-                            testValue: 1
-                        }),
-
-                        models.Test2.create({
-                            testValue: 2
-                        }),
-
-                        models.Test2.create({
-                            testValue: 3
-                        })
-                    ]).spread(function(a, b, c) {
-                        return Q.all([
-                            test.addTest(a),
-                            test.addTest(b),
-                            test.addTest(c)
-                        ]);
-                    });
-                })
-                .then(function() {
-                    return models.Test1.findOne();
-                })
-                .then(function(test) {
-                    assert.equal(test.numberOfTests, 3);
-
-                    done();
-                })
-                .done();
-        });
-    });
-
-    it('can implement $count in read-only many-to-many relation', function(done) {
-        models.Test1 = 'Test1';
-        models.Test2 = 'Test2';
-
-        function Test1() {
-            this.tests = [this.HasMany(this.models.Test2), this.AutoFetch];
-            this.value = [this.ReadOnly('$count("tests") * 2')];
-        }
-        app.model(Test1);
-
-        function Test2() {
-            this.testValue = [this.Integer];
-            this.tests = [this.HasMany(this.models.Test1)];
-        }
-        app.model(Test2);
-
-        setImmediate(function() {
-            models.Test1.setup()
-                .then(function() {
-                    return models.Test2.setup();
-                })
-                .then(function() {
-                    return models.Test1TestTest2Test.setup();
-                })
-                .then(function() {
-                    return models.Test1.create({});
-                })
-                .then(function(test) {
-                    return Q.all([
-                        models.Test2.create({
-                            testValue: 1
-                        }),
-
-                        models.Test2.create({
-                            testValue: 2
-                        }),
-
-                        models.Test2.create({
-                            testValue: 3
-                        })
-                    ])
-                    .spread(function(a, b, c) {
-                        return Q.all([
-                            test.addTest(a),
-                            test.addTest(b),
-                            test.addTest(c)
-                        ]);
-                    });
-                })
-                .then(function() {
-                    return models.Test1.findOne();
-                })
-                .then(function(test) {
-                    assert.equal(test.value, 3 * 2);
-
-                    done();
-                })
-                .done();
-        });
-    });
-
     it('can create with array', function(done) {
         function Test1() {
             this.value = [this.Integer];
@@ -1623,67 +1443,6 @@ describe('model methods', function() {
                 .done();
         });
     });
-
-    /*
-    it('can find with sub-property', function(done) {
-        models.Test1 = 'Test1';
-        models.Test2 = 'Test2';
-
-        function Test1() {
-            this.test2 = [this.BelongsTo(this.models.Test2)];
-            this.value = [this.Integer];
-        }
-        app.model(Test1);
-
-        function Test2() {
-            this.name = [this.String];
-            this.tests = [this.HasMany(this.models.Test1)];
-        }
-        app.model(Test2);
-
-        setImmediate(function() {
-            models.Test2.setup()
-                .then(function() {
-                    return models.Test1.setup();
-                })
-                .then(function() {
-                    return models.Test2.create([{name: 'Test 2 1'}, {name: 'Test 2 2'}, {name: 'Test 2 3'}]);
-                })
-                .then(function(test2s) {
-                    return models.Test1.create([
-                        {
-                            test2: test2s[0],
-                            value: 1
-                        }, {
-                            test2: test2s[1],
-                            value: 2
-                        }, {
-                            test2: test2s[2],
-                            value: 3
-                        },
-                    ]);
-                })
-                .then(function() {
-                    return models.Test2.findOne({
-                        'tests.value': 1
-                    });
-                })
-                .then(function(test) {
-                    assert.equal(test.name, 'Test 2 1');
-
-                    return models.Test1.findOne({
-                        'test2.name': 'Test 2 3'
-                    });
-                })
-                .then(function(test) {
-                    assert.equal(test.value, 3);
-
-                    done();
-                })
-                .done();
-        });
-    });
-    */
 
     it('find only one instance via sub-property', function(done) {
         models.App = 'App';

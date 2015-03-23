@@ -3,19 +3,14 @@ var fire = require('..');
 
 var request = require('supertest');
 var assert = require('assert');
-var path = require('path');
-var config = require('./../lib/helpers/config');
 
 describe('view routes', function() {
     var app = null;
 
-    var DEFAULT_HTML = '<!DOCTYPE html><html ng-app="routes" id="ng-app" xmlns:ng="http://angularjs.org"><head><meta charset="utf-8"><meta name="fragment" content="!"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title></title><script src="/bower_components/angular/angular.min.js"></script><script src="/bower_components/angular-route/angular-route.min.js"></script><script src="/scripts/fire.js"></script></head><body><div ng-view></div></body></html>';
+    var DEFAULT_HTML = '<!DOCTYPE html><html ng-app="default" id="ng-app" xmlns:ng="http://angularjs.org"><head><meta charset="utf-8"><meta name="fragment" content="!"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title></title><script src="/bower_components/angular/angular.min.js"></script><script src="/bower_components/angular-route/angular-route.min.js"></script><script src="/scripts/fire.min.js"></script></head><body><div ng-view></div></body></html>';
 
-    after(function(done) {
-        app.stop()
-            .then(function() {
-                done();
-            });
+    after(function() {
+        return fire.stop();
     });
 
     before(function(done) {
@@ -25,21 +20,21 @@ describe('view routes', function() {
         function TestController() {}
         app.controller(TestController);
 
-        app.template('test1', 'test1');
-        app.template('test2', 'test2');
-        app.template('test3', 'test3');
-        app.template('test4', 'test4');
+        app.template('/templates/test1', 'test1');
+        app.template('/templates/test2', 'test2');
+        app.template('/templates/test3', 'test3');
+        app.template('/templates/test4', 'test4');
 
         TestController.prototype.view = function() {
-            return this.template('test1');
+            return this.template('/templates/test1');
         };
 
         TestController.prototype.viewUser = function() {
-            return this.template('test2');
+            return this.template('/templates/test2');
         };
 
         TestController.prototype.viewSpecial = ['/special/page', function() {
-            return this.template('test3');
+            return this.template('/templates/test3');
         }];
 
         function Test2Controller() {}
@@ -47,15 +42,15 @@ describe('view routes', function() {
 
         Test2Controller.prototype.page = function() {
             return {
-                template: 'test4'
+                template: '/templates/test4'
             };
         };
 
         Test2Controller.prototype.viewTest = ['/test', function() {
-            return this.template('test3');
+            return this.template('/templates/test3');
         }];
 
-        app.start()
+        fire.start()
             .then(function() {
                 done();
             })

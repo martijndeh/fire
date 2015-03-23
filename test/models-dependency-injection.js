@@ -22,25 +22,25 @@ describe('models dependency injection', function() {
 	it('can inject known dependecies', function() {
 		var called = 0;
 
-		function Test(UserModel) {
+		function MyModel(UserModel) {
 			assert.equal(UserModel, helper.app.models.User);
 
 			called++;
 		}
 
-		var model = helper.app.models._createModel(Test);
-		assert.notEqual(model, null);
+		assert.equal(called, 0);
+		helper.app.models.addModelConstructor(MyModel);
 		assert.equal(called, 1);
 	});
 
 	it('throws error with invalid dependency', function() {
-		function Test(Something) { //jshint ignore:line
+		function MyModel(Something) { //jshint ignore:line
 
 		}
 
 		var exception = null;
 		try {
-			helper.app.models._createModel(Test);
+			helper.app.models._createModel(MyModel);
 		}
 		catch(e) {
 			exception = e;
