@@ -1,0 +1,12 @@
+{
+  "name": "test",
+  "dependencies": {
+    "fire": "^0.26.1",
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
+    "q": "*"
+},
+    "scripts": {
+        "postinstall": "./node_modules/grunt-cli/bin/grunt build && ./node_modules/grunt-cli/bin/grunt release"
+    }
+}
