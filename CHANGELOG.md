@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.1
+
+### Bug fixes
+
+- Fixes issue with anonymous functions in App#run.
+
 ## 0.27.0
 
 ### Breaking changes
