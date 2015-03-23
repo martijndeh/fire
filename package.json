@@ -1,21 +1,21 @@
 {
   "name": "fire",
-  "description": "A JavaScript-everywhere, model-driven, web framework built on top of [AngularJS](https://angularjs.org/), [express](http://expressjs.com/) and [PostgreSQL](http://www.postgresql.org/).",
+  "description": "An isomorphic web framework built on top of [AngularJS](https://angularjs.org/), [express](http://expressjs.com/) and [PostgreSQL](http://www.postgresql.org/).",
   "keywords": [
-    "fire",
-    "framework",
+    "models",
+    "isomorphic",
     "web",
     "rest",
     "router",
-    "database",
-    "everywhere",
+    "postgres",
+    "express",
     "api"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/martijndeh/fire.git"
   },
-  "version": "0.26.1",
+  "version": "0.27.0",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "main": "index.js",
   "devDependencies": {
@@ -31,7 +31,7 @@
     "supertest": "^0.13.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test ./node_modules/.bin/mocha -g '' --reporter spec ./test/*.js"
+    "test": "NODE_ENV=test ./node_modules/.bin/mocha -g '^' --reporter spec ./test/*.js"
   },
   "dependencies": {
     "amqplib": "^0.2.1",
@@ -53,7 +53,6 @@
     "mu2": "^0.5.20",
     "node-uuid": "^1.4.1",
     "pg": "^3.0.1",
-    "phantomjs": "^1.9.7-12",
     "q": "^1.0.1",
     "ws": "^0.4.32"
   }

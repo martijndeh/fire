@@ -1,12 +1,40 @@
 # Changelog
 
+## 0.27.0
+
+### Breaking changes
+
+- Moves `_api` and `_migrations` to `.fire` folder.
+- Removes SEO module (which implements PhantomJS).
+- PropertyTypes#Authenticate is now also set to unique.
+- Internal models are now also written to your migrations.
+- Removes automatic many-to-many relations. Create two one-to-many relations to a connecting model instead.
+- Dependency injection is now available in the model hooks e.g. Model#afterCreate.
+- Access control is now defined via a method Model#accessControl instead of a virtual property.
+- Controller's in Angular now automatic set the templateUrl of the controller based on the controller's name.
+- Deprecates ignoreDisabled in favor of stages.
+- Automatically generates a Procfile based on the workers, schedulers, triggers, etc.
+- Changes routing of controller's to just one path in App#controller.
+- Templates do not get compiled anymore in the run phase. Instead, templates get compiled during the build phase.
+
+### Bug fixes
+
+- Fixes issue where model's associations
+- Fixes issue where datastore transaction's would sometimes fail.
+- Fixes issue where sometimes model properties would collide with properties in user-land.
+
+### Improvements
+
+- Supports multiple apps per project (which app to run is configured through the NODE_APP environment variable).
+- Implements an A/B testing module.
+
 ## 0.26.1
 
 ### Breaking changes
 
 - When destroying an already destroyed model, `Models` will not throw an error anymore.
 
-## Bug fixes
+### Bug fixes
 
 - Fixes an issue where sorting 1 task would sometimes fail.
 
@@ -16,7 +44,7 @@
 
 - `Static` is now initialised after `Middleware`. This allows `Middleware` to intercept static files.
 
-## Improvements
+### Improvements
 
 - It is now possible to remove module via `App#removeModule`.
 
