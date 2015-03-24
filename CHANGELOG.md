@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.27.3
+
+### Bug fixes
+
+- Fixes transforming app.directive(string, function) properly.
+- Fixes loading the correct view.jade/view.html.
+
+### Improvements
+
+- Exposes app in build system (Gruntfile).
+- Implements `public/_shared` as public folder.
+
 ## 0.27.2
 
 ### Bug fixes
