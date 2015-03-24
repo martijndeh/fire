@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.2
+
+### Bug fixes
+
+- Fixes issue with upgrading the Schema model.
+
 ## 0.27.1
 
 ### Bug fixes
