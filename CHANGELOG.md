@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.27.4
+
+### Bug fixes
+
+- Fixes an issue where password property is unavailable on authenticator models
+- Fixes an issue where some return values in access control would cause errors.
+
 ## 0.27.3
 
 ### Bug fixes
