@@ -14,7 +14,6 @@ results
 npm-debug.log
 node_modules
 notes.md
-.env
 coverage.html
 .DS_Store
 bower_components
