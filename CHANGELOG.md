@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.28.0
+
+### New features
+
+- Re-implements many-to-many associations.
+
+### Bug fixes
+
+- Fixes issue where test models would be included in non-master migrations.
+- Fixes issue where password property is unavailable on authenticator models in non-master apps.
+- Fixes issue where reset password model would sometimes end up in migrations of non-master apps.
+
+### Improvements
+
+- Creates app setting `includeAPI` which sets whether the app, if it's not the master app, should include the HTTP API.
+- Includes example app.
+
 ## 0.27.4
 
 ### Bug fixes
