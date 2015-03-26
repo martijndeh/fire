@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.1
+
+### Bug fixes
+
+- Fixes issue where after a Node on Fire upgrade some migrations would throw errors.
+
 ## 0.28.0
 
 ### New features
