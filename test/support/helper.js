@@ -12,6 +12,7 @@ function Helper() {
     this.createModels = null;
     this.app = null;
     this.modules = null;
+    this.modelNames = null;
 }
 
 Helper.prototype.beforeEach = function(options) {
@@ -35,11 +36,21 @@ Helper.prototype.beforeEach = function(options) {
             .then(function() {
                 var result = Q.when(true);
 
-                self.app.models.forEach(function(model) {
-                    result = result.then(function() {
-                        return model.setup();
+                if(self.modelNames) {
+                    self.modelNames.forEach(function(modelName) {
+                        var model = self.app.models[modelName];
+                        result = result.then(function() {
+                            return model.setup();
+                        });
                     });
-                });
+                }
+                else {
+                    self.app.models.forEach(function(model) {
+                        result = result.then(function() {
+                            return model.setup();
+                        });
+                    });
+                }
 
                 return result;
             })
