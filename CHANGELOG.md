@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.2
+
+### Bug fixes
+
+- Fixes issue which sometimes prevented schemas from being created.
+
 ## 0.28.1
 
 ### Bug fixes
