@@ -5,11 +5,12 @@ var helper = require('./support/helper');
 var assert = require('assert');
 var Q = require('q');
 var Workers = require('./../lib/modules/workers');
+var fire = require('./..');
 
 describe('workers', function() {
 	var called = 0;
 
-	beforeEach(helper.beforeEach());
+	beforeEach(helper.beforeEach({isMaster: true}));
 	afterEach(helper.afterEach());
 
 	before(function() {
@@ -24,6 +25,18 @@ describe('workers', function() {
 			TestWorker.prototype.doSomething = function() {
 				called++;
 			};
+
+			var app2 = fire.app('test', 'another-app', {});
+			function AnotherWorker() {
+
+			}
+			app2.worker(AnotherWorker);
+
+			AnotherWorker.prototype.doSomethingCool = function() {
+				called++;
+			};
+
+			helper.app.workers.swizzleExternalMethods();
 		};
 		helper.createModels = null;
 	});
@@ -77,5 +90,11 @@ describe('workers', function() {
 					done();
 				}, 50);
 			});
+	});
+
+	describe('another app', function() {
+		it('worker exists in first app', function() {
+			assert.notEqual(helper.app.workers.AnotherWorker, null);
+		});
 	});
 });
