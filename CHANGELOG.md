@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.4
+
+### Bug fixes
+
+- Fixes issue where grunt release would fail if there are 0 migration files.
+
 ## 0.28.3
 
 ### Bug fixes
