@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.3
+
+### Bug fixes
+
+- Implements issue where workers of different apps were not available.
+
 ## 0.28.2
 
 ### Bug fixes
