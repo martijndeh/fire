@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.8
+
+### Bug fixes
+
+- Fixes duplicate process type names in Procfile.
+
 ## 0.28.7
 
 ### Bug fixes
