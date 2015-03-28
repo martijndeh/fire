@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.5
+
+### Bug fixes
+
+- Fixes issue where saving model instances sometimes failed.
+
 ## 0.28.4
 
 ### Bug fixes
