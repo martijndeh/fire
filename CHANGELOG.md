@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.6
+
+### Bug fixes
+
+- Fixes issue where only one path per controller instead of multiple would work.
+
 ## 0.28.5
 
 ### Bug fixes
