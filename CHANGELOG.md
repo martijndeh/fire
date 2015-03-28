@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.7
+
+### Bug fixes
+
+- Fixes issue where building Procfile would sometimes not include all workers.
+
 ## 0.28.6
 
 ### Bug fixes
