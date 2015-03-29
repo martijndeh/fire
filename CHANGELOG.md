@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.29.0
+
+### Improvements
+
+- Fixes access control in many-to-many associations. Access control is defined on the through model.
+- Moves installing uuid-ossp Postgres extension from run stage to release stage.
+
 ## 0.28.8
 
 ### Bug fixes
