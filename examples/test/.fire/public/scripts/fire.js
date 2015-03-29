@@ -3,7 +3,7 @@
 /* jshint undef: true, unused: true */
 /* global angular */
 
-var app = angular.module('app1', ['ngRoute']);
+var app = angular.module('default', ['ngRoute']);
 
 
 app.run(['TestsService', function(TestsService) {
@@ -11,22 +11,26 @@ app.run(['TestsService', function(TestsService) {
 		participate: function(test, variant) {
 			console.log('Join test ' + test + ' with variant ' + variant);
 
-			/*
 			var properties = {};
 			properties[test] = variant;
 			mixpanel.register(properties);
-			*/
 		}
 	};
 }]);
 
 
 
-app.controller('TestController', ['ColorTest', '$scope', function(ColorTest, $scope) {
-	console.log('Test controller!');
-	console.log('Variant is: ' + ColorTest.getVariant());
+app.controller('StartController', ['TextOfButtonTest', '$scope', function(TextOfButtonTest, $scope) {
+	if(TextOfButtonTest.getVariant() == 'A') {
+		$scope.buttonText = 'Register for FREE';
+	}
+	else {
+		$scope.buttonText = 'Register now';
+	}
 
-	$scope.variant = ColorTest.getVariant();
+	$scope.register = function() {
+		mixpanel.track('Register');
+	};
 }]);
 
 function _getUUID(modelInstanceOrUUID) {
@@ -81,10 +85,8 @@ FireModelInstance.prototype.remove = function() {
 };
 
 FireModelInstance.prototype.save = function() {
-	// TODO: Check validation locally.
-
     var self = this;
-    return this.$q.when(Object.keys(this._changes).length)
+    return this._model.$q.when(Object.keys(this._changes).length)
         .then(function(numberOfChanges) {
             if(numberOfChanges) {
                 var queryMap = transformQueryMap(self._changes);
@@ -285,445 +287,6 @@ FireModel.prototype.getOne = function(fields) {
 };
 
 
-function FireModelInstanceUser1(setMap, model, path) {
-	var self = this;
-
-	
-
-	Object.defineProperty(this, 'id', {
-		get: function() {
-			if(typeof self._changes['id'] != 'undefined') {
-				return self._changes['id'];
-			}
-
-			return self._map['id'];
-		},
-
-		set: function(value) {
-			self._changes['id'] = value;
-		}
-	});
-
-	
-
-	Object.defineProperty(this, 'name', {
-		get: function() {
-			if(typeof self._changes['name'] != 'undefined') {
-				return self._changes['name'];
-			}
-
-			return self._map['name'];
-		},
-
-		set: function(value) {
-			self._changes['name'] = value;
-		}
-	});
-
-
-	FireModelInstance.call(this, setMap, model, path);
-}
-FireModelInstanceUser1.prototype = new FireModelInstance();
-
-
-
-function FireModelUser1($http, $q, models) {
-	FireModel.call(this, $http, $q, models);
-
-	this.endpoint = '/api/user1s';
-}
-FireModelUser1.prototype = new FireModel();
-
-FireModelUser1.prototype.parseResult = function(setMapOrList, path) {
-	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-		var self = this;
-		return setMapOrList.map(function(setMap) {
-			return new FireModelInstanceUser1(setMap, self, path);
-		});
-	}
-	else {
-		return new FireModelInstanceUser1(setMapOrList, this, path);
-	}
-};
-
-
-
-app.factory('User1Model', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
-	return new FireModelUser1($http, $q, FireModels);
-}]);
-
-function FireModelInstanceShared(setMap, model, path) {
-	var self = this;
-
-	
-
-	Object.defineProperty(this, 'id', {
-		get: function() {
-			if(typeof self._changes['id'] != 'undefined') {
-				return self._changes['id'];
-			}
-
-			return self._map['id'];
-		},
-
-		set: function(value) {
-			self._changes['id'] = value;
-		}
-	});
-
-	
-
-	Object.defineProperty(this, 'value', {
-		get: function() {
-			if(typeof self._changes['value'] != 'undefined') {
-				return self._changes['value'];
-			}
-
-			return self._map['value'];
-		},
-
-		set: function(value) {
-			self._changes['value'] = value;
-		}
-	});
-
-
-	FireModelInstance.call(this, setMap, model, path);
-}
-FireModelInstanceShared.prototype = new FireModelInstance();
-
-
-
-function FireModelShared($http, $q, models) {
-	FireModel.call(this, $http, $q, models);
-
-	this.endpoint = '/api/shareds';
-}
-FireModelShared.prototype = new FireModel();
-
-FireModelShared.prototype.parseResult = function(setMapOrList, path) {
-	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-		var self = this;
-		return setMapOrList.map(function(setMap) {
-			return new FireModelInstanceShared(setMap, self, path);
-		});
-	}
-	else {
-		return new FireModelInstanceShared(setMapOrList, this, path);
-	}
-};
-
-
-
-app.factory('SharedModel', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
-	return new FireModelShared($http, $q, FireModels);
-}]);
-
-function FireModelInstanceUser(setMap, model, path) {
-	var self = this;
-
-	
-
-	Object.defineProperty(this, 'id', {
-		get: function() {
-			if(typeof self._changes['id'] != 'undefined') {
-				return self._changes['id'];
-			}
-
-			return self._map['id'];
-		},
-
-		set: function(value) {
-			self._changes['id'] = value;
-		}
-	});
-
-	
-
-	Object.defineProperty(this, 'email', {
-		get: function() {
-			if(typeof self._changes['email'] != 'undefined') {
-				return self._changes['email'];
-			}
-
-			return self._map['email'];
-		},
-
-		set: function(value) {
-			self._changes['email'] = value;
-		}
-	});
-
-	
-	if(typeof setMap.testParticipant != 'undefined' && setMap.testParticipant !== null) {
-		if(Array.isArray(setMap.testParticipant)) {
-			setMap.testParticipant = setMap.testParticipant.map(function(object) {
-                return new FireModelInstanceTestParticipant(object, model.models.TestParticipant, path + '/' + 'test-participants');
-			});
-		}
-		else {
-			setMap.testParticipant = new FireModelInstanceTestParticipant(setMap.testParticipant, model.models.TestParticipant, path + '/' + 'test-participants');
-		}
-	}
-	
-
-	Object.defineProperty(this, 'testParticipant', {
-		get: function() {
-			if(typeof self._changes['testParticipant'] != 'undefined') {
-				return self._changes['testParticipant'];
-			}
-
-			return self._map['testParticipant'];
-		},
-
-		set: function(value) {
-			self._changes['testParticipant'] = value;
-		}
-	});
-
-
-	FireModelInstance.call(this, setMap, model, path);
-}
-FireModelInstanceUser.prototype = new FireModelInstance();
-
-
-
-FireModelInstanceUser.prototype.getTestparticipant = function(queryMap, optionsMap) {
-    var self = this;
-    return this._model.models.TestParticipant._find(this._model.endpoint + '/' + this.id + '/test-participant', queryMap, optionsMap)
-        .then(function(modelInstances) {
-            if(modelInstances && modelInstances.length) {
-                self.testParticipant = modelInstances[0];
-                return modelInstances[0];
-            }
-            else {
-                return null;
-            }
-        });
-};
-
-FireModelInstanceUser.prototype.createTestparticipant = function(queryMap) {
-    var self = this;
-    return this._model.models.TestParticipant._create(this._model.endpoint + '/' + this.id + '/test-participant', queryMap)
-        .then(function(modelInstance) {
-            self.testParticipant = modelInstance;
-            return modelInstance;
-        });
-};
-
-FireModelInstanceUser.prototype.removeTestparticipant = function() {
-    var self = this;
-    return this._model.models.TestParticipant._action('delete', this._model.endpoint + '/' + this.id + '/test-participant')
-        .then(function(removeModelInstance) {
-            self.testParticipant = null;
-            return removeModelInstance;
-        });
-};
-
-
-
-
-
-function FireModelUser($http, $q, models) {
-	FireModel.call(this, $http, $q, models);
-
-	this.endpoint = '/api/users';
-}
-FireModelUser.prototype = new FireModel();
-
-FireModelUser.prototype.parseResult = function(setMapOrList, path) {
-	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-		var self = this;
-		return setMapOrList.map(function(setMap) {
-			return new FireModelInstanceUser(setMap, self, path);
-		});
-	}
-	else {
-		return new FireModelInstanceUser(setMapOrList, this, path);
-	}
-};
-
-
-var __authenticator = null;
-
-FireModelUser.prototype.forgotPassword = function(email) {
-	return this._post(this.endpoint + '/forgot-password', { email: email });
-};
-
-FireModelUser.prototype.resetPassword = function(resetToken, password, confirmPassword) {
-	if(password != confirmPassword) {
-		var defer = this.$q.defer();
-		var error = new FireError('The passwords do not match! Please enter the same password twice.');
-		error.number = 400;
-		defer.reject(error);
-		return defer.promise;
-	}
-
-	return this._post(this.endpoint + '/reset-password', {resetToken: resetToken, password: password});
-};
-
-FireModelUser.prototype.signOut = function() {
-    return this._post(this.endpoint + '/sign-out')
-        .then(function() {
-            __authenticator = null;
-        });
-};
-
-FireModelUser.prototype.authorize = function(fields) {
-	if(!fields.password || !fields.email) {
-		var defer = this.$q.defer();
-		var error = new FireError('Please fill in a email and password!');
-		error.number = 400;
-		defer.reject(error);
-		return defer.promise;
-	}
-	else {
-		var self = this;
-		return this._post(this.endpoint + '/authorize', fields)
-			.then(function(authenticator) {
-				if(authenticator) {
-					authenticator._endpoint = self.endpoint + '/' + authenticator.id;
-
-					__authenticator = authenticator;
-					return __authenticator;
-				}
-				else {
-					var error = new FireError();
-					error.number = 404;
-					throw error;
-				}
-			});
-	}
-};
-
-FireModelUser.prototype.findMe = function() {
-    var defer = this.$q.defer();
-
-    if(__authenticator) {
-        defer.resolve(__authenticator);
-    }
-    else {
-        var self = this;
-        this._get(this.endpoint + '/me')
-            .then(function(authenticator) {
-                if(authenticator) {
-                    authenticator._endpoint = self.endpoint + '/' + authenticator.id;
-
-                    __authenticator = authenticator;
-                    defer.resolve(__authenticator);
-                }
-                else {
-                    defer.resolve(null);
-                }
-            })
-            .catch(function(error) {
-                defer.resolve(null);
-            });
-    }
-
-    return defer.promise;
-};
-
-FireModelUser.prototype.getMe = function() {
-	var defer = this.$q.defer();
-
-	if(__authenticator) {
-		defer.resolve(__authenticator);
-	}
-	else {
-		var self = this;
-		this._get(this.endpoint + '/me')
-			.then(function(authenticator) {
-				if(authenticator) {
-					authenticator._endpoint = self.endpoint + '/' + authenticator.id;
-
-					__authenticator = authenticator;
-					defer.resolve(__authenticator);
-				}
-				else {
-					defer.reject(new Error('Unauthorized'));
-				}
-			})
-			.catch(function(error) {
-				defer.reject(error);
-			});
-	}
-
-	return defer.promise;
-};
-
-
-app.factory('UserModel', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
-	return new FireModelUser($http, $q, FireModels);
-}]);
-
-function FireModelInstanceModelInApp1(setMap, model, path) {
-	var self = this;
-
-	
-
-	Object.defineProperty(this, 'id', {
-		get: function() {
-			if(typeof self._changes['id'] != 'undefined') {
-				return self._changes['id'];
-			}
-
-			return self._map['id'];
-		},
-
-		set: function(value) {
-			self._changes['id'] = value;
-		}
-	});
-
-	
-
-	Object.defineProperty(this, 'value', {
-		get: function() {
-			if(typeof self._changes['value'] != 'undefined') {
-				return self._changes['value'];
-			}
-
-			return self._map['value'];
-		},
-
-		set: function(value) {
-			self._changes['value'] = value;
-		}
-	});
-
-
-	FireModelInstance.call(this, setMap, model, path);
-}
-FireModelInstanceModelInApp1.prototype = new FireModelInstance();
-
-
-
-function FireModelModelInApp1($http, $q, models) {
-	FireModel.call(this, $http, $q, models);
-
-	this.endpoint = '/api/model-in-app1s';
-}
-FireModelModelInApp1.prototype = new FireModel();
-
-FireModelModelInApp1.prototype.parseResult = function(setMapOrList, path) {
-	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-		var self = this;
-		return setMapOrList.map(function(setMap) {
-			return new FireModelInstanceModelInApp1(setMap, self, path);
-		});
-	}
-	else {
-		return new FireModelInstanceModelInApp1(setMapOrList, this, path);
-	}
-};
-
-
-
-app.factory('ModelInApp1Model', ['$http', '$q', 'FireModels', function($http, $q, FireModels) {
-	return new FireModelModelInApp1($http, $q, FireModels);
-}]);
-
 function FireModelInstanceTest(setMap, model, path) {
 	var self = this;
 
@@ -816,7 +379,7 @@ function FireModelInstanceTest(setMap, model, path) {
 
 	FireModelInstance.call(this, setMap, model, path);
 }
-FireModelInstanceTest.prototype = new FireModelInstance();
+FireModelInstanceTest.prototype = Object.create(FireModelInstance.prototype);
 
 
 
@@ -947,7 +510,7 @@ function FireModelTest($http, $q, models) {
 
 	this.endpoint = '/api/tests';
 }
-FireModelTest.prototype = new FireModel();
+FireModelTest.prototype = Object.create(FireModel.prototype);
 
 FireModelTest.prototype.parseResult = function(setMapOrList, path) {
 	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
@@ -1013,37 +576,10 @@ function FireModelInstanceTestParticipant(setMap, model, path) {
 		}
 	});
 
-	
-	if(typeof setMap.authenticator != 'undefined' && setMap.authenticator !== null) {
-		if(Array.isArray(setMap.authenticator)) {
-			setMap.authenticator = setMap.authenticator.map(function(object) {
-                return new FireModelInstanceUser(object, model.models.User, path + '/' + 'authenticators');
-			});
-		}
-		else {
-			setMap.authenticator = new FireModelInstanceUser(setMap.authenticator, model.models.User, path + '/' + 'authenticators');
-		}
-	}
-	
-
-	Object.defineProperty(this, 'authenticator', {
-		get: function() {
-			if(typeof self._changes['authenticator'] != 'undefined') {
-				return self._changes['authenticator'];
-			}
-
-			return self._map['authenticator'];
-		},
-
-		set: function(value) {
-			self._changes['authenticator'] = value;
-		}
-	});
-
 
 	FireModelInstance.call(this, setMap, model, path);
 }
-FireModelInstanceTestParticipant.prototype = new FireModelInstance();
+FireModelInstanceTestParticipant.prototype = Object.create(FireModelInstance.prototype);
 
 
 
@@ -1108,48 +644,12 @@ FireModelInstanceTestParticipant.prototype.removeSessions = function(map) {
 
 
 
-FireModelInstanceTestParticipant.prototype.getAuthenticator = function(queryMap, optionsMap) {
-    var self = this;
-    return this._model.models.User._find(this._model.endpoint + '/' + this.id + '/authenticator', queryMap, optionsMap)
-        .then(function(modelInstances) {
-            if(modelInstances && modelInstances.length) {
-                self.authenticator = modelInstances[0];
-                return modelInstances[0];
-            }
-            else {
-                return null;
-            }
-        });
-};
-
-FireModelInstanceTestParticipant.prototype.createAuthenticator = function(queryMap) {
-    var self = this;
-    return this._model.models.User._create(this._model.endpoint + '/' + this.id + '/authenticator', queryMap)
-        .then(function(modelInstance) {
-            self.authenticator = modelInstance;
-            return modelInstance;
-        });
-};
-
-FireModelInstanceTestParticipant.prototype.removeAuthenticator = function() {
-    var self = this;
-    return this._model.models.User._action('delete', this._model.endpoint + '/' + this.id + '/authenticator')
-        .then(function(removeModelInstance) {
-            self.authenticator = null;
-            return removeModelInstance;
-        });
-};
-
-
-
-
-
 function FireModelTestParticipant($http, $q, models) {
 	FireModel.call(this, $http, $q, models);
 
 	this.endpoint = '/api/test-participants';
 }
-FireModelTestParticipant.prototype = new FireModel();
+FireModelTestParticipant.prototype = Object.create(FireModel.prototype);
 
 FireModelTestParticipant.prototype.parseResult = function(setMapOrList, path) {
 	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
@@ -1277,7 +777,7 @@ function FireModelInstanceTestSession(setMap, model, path) {
 
 	FireModelInstance.call(this, setMap, model, path);
 }
-FireModelInstanceTestSession.prototype = new FireModelInstance();
+FireModelInstanceTestSession.prototype = Object.create(FireModelInstance.prototype);
 
 
 
@@ -1358,7 +858,7 @@ function FireModelTestSession($http, $q, models) {
 
 	this.endpoint = '/api/test-sessions';
 }
-FireModelTestSession.prototype = new FireModel();
+FireModelTestSession.prototype = Object.create(FireModel.prototype);
 
 FireModelTestSession.prototype.parseResult = function(setMapOrList, path) {
 	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
@@ -1459,7 +959,7 @@ function FireModelInstanceTestVariant(setMap, model, path) {
 
 	FireModelInstance.call(this, setMap, model, path);
 }
-FireModelInstanceTestVariant.prototype = new FireModelInstance();
+FireModelInstanceTestVariant.prototype = Object.create(FireModelInstance.prototype);
 
 
 
@@ -1504,7 +1004,7 @@ function FireModelTestVariant($http, $q, models) {
 
 	this.endpoint = '/api/test-variants';
 }
-FireModelTestVariant.prototype = new FireModel();
+FireModelTestVariant.prototype = Object.create(FireModel.prototype);
 
 FireModelTestVariant.prototype.parseResult = function(setMapOrList, path) {
 	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
@@ -1526,14 +1026,6 @@ app.factory('TestVariantModel', ['$http', '$q', 'FireModels', function($http, $q
 
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
-	
-	this.User1 = new FireModelUser1($http, $q, this);
-	
-	this.Shared = new FireModelShared($http, $q, this);
-	
-	this.User = new FireModelUser($http, $q, this);
-	
-	this.ModelInApp1 = new FireModelModelInApp1($http, $q, this);
 	
 	this.Test = new FireModelTest($http, $q, this);
 	
@@ -1574,17 +1066,19 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         requireBase: false
     });
 
-    $routeProvider.when('/test1', {
-        templateUrl: '/templates/test.html',
-        controller: 'TestController',
+
+    $routeProvider.when('/', {
+        templateUrl: '/templates/start.html',
+        controller: 'StartController',
         resolve: {
         
-            ColorTest: ['ColorTest', function(ColorTest) {
-                return ColorTest.participate();
+            TextOfButtonTest: ['TextOfButtonTest', function(TextOfButtonTest) {
+                return TextOfButtonTest.participate();
             }],
         
         }
     });
+
 
 }]);
 app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSocketService, $rootScope) {
@@ -1752,24 +1246,24 @@ app.service('TestsService', [function() {
 }]);
 
 
-app.service('ColorTest', ['$q', '$http', '_StorageService', 'TestsService', function ColorTest($q, $http, _StorageService, TestsService) {
+app.service('TextOfButtonTest', ['$q', '$http', '_StorageService', 'TestsService', function TextOfButtonTest($q, $http, _StorageService, TestsService) {
 	var self = this;
 
 	this.participate = function() {
-		var variant = _StorageService.get('ColorTest');
+		var variant = _StorageService.get('TextOfButtonTest');
 
 		if(variant) {
-			TestsService.participate('ColorTest', variant);
+			TestsService.participate('TextOfButtonTest', variant);
 			return self;
 		}
 		else {
 			var defer = $q.defer();
 
-			$http.post('/tests/color-test')
+			$http.post('/tests/text-of-button-test')
 				.success(function(data) {
-					_StorageService.set('ColorTest', data.variant);
+					_StorageService.set('TextOfButtonTest', data.variant);
 
-					TestsService.participate('ColorTest', data.variant);
+					TestsService.participate('TextOfButtonTest', data.variant);
 
 					defer.resolve(self);
 				})
@@ -1782,7 +1276,7 @@ app.service('ColorTest', ['$q', '$http', '_StorageService', 'TestsService', func
 	};
 
 	this.getVariant = function() {
-		var variant = _StorageService.get('ColorTest');
+		var variant = _StorageService.get('TextOfButtonTest');
 
 		if(variant) {
 			return variant;
