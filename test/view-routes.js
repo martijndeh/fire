@@ -20,6 +20,14 @@ describe('view routes', function() {
         function TestController() {}
         app.controller(TestController);
 
+        app.template('view', DEFAULT_HTML);
+
+        TestController.prototype.page = function() {
+            return {
+                template: 'view'
+            };
+        };
+
         app.template('/templates/test1', 'test1');
         app.template('/templates/test2', 'test2');
         app.template('/templates/test3', 'test3');

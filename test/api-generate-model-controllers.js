@@ -8,7 +8,7 @@ var fire = require('./..');
 var path = require('path');
 var fs = require('fs');
 
-var write = false;
+var write = true;
 
 describe('api generate model controllers', function() {
 	var app = null;

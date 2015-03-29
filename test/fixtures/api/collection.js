@@ -294,6 +294,8 @@ app.delete('/api/collections/:id', function(request, response, app,  CollectionM
 
 
 
+
+
 app.get('/api/collections/:id/apps', function(app, request, response,  CollectionModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -310,6 +312,8 @@ app.get('/api/collections/:id/apps', function(app, request, response,  Collectio
 				});
 		});
 });
+
+
 
 
 

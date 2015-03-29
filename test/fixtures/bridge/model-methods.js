@@ -111,10 +111,8 @@ FireModelInstance.prototype.remove = function() {
 };
 
 FireModelInstance.prototype.save = function() {
-	// TODO: Check validation locally.
-
     var self = this;
-    return this.$q.when(Object.keys(this._changes).length)
+    return this._model.$q.when(Object.keys(this._changes).length)
         .then(function(numberOfChanges) {
             if(numberOfChanges) {
                 var queryMap = transformQueryMap(self._changes);
@@ -353,7 +351,7 @@ function FireModelInstancePet(setMap, model, path) {
 
 	FireModelInstance.call(this, setMap, model, path);
 }
-FireModelInstancePet.prototype = new FireModelInstance();
+FireModelInstancePet.prototype = Object.create(FireModelInstance.prototype);
 
 
 
@@ -362,7 +360,7 @@ function FireModelPet($http, $q, models) {
 
 	this.endpoint = '/api/pets';
 }
-FireModelPet.prototype = new FireModel();
+FireModelPet.prototype = Object.create(FireModel.prototype);
 
 FireModelPet.prototype.parseResult = function(setMapOrList, path) {
 	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
@@ -420,7 +418,7 @@ function FireModelInstanceUser(setMap, model, path) {
 
 	FireModelInstance.call(this, setMap, model, path);
 }
-FireModelInstanceUser.prototype = new FireModelInstance();
+FireModelInstanceUser.prototype = Object.create(FireModelInstance.prototype);
 
 
 
@@ -429,7 +427,7 @@ function FireModelUser($http, $q, models) {
 
 	this.endpoint = '/api/users';
 }
-FireModelUser.prototype = new FireModel();
+FireModelUser.prototype = Object.create(FireModel.prototype);
 
 FireModelUser.prototype.parseResult = function(setMapOrList, path) {
 	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
@@ -487,7 +485,7 @@ function FireModelInstanceArticle(setMap, model, path) {
 
 	FireModelInstance.call(this, setMap, model, path);
 }
-FireModelInstanceArticle.prototype = new FireModelInstance();
+FireModelInstanceArticle.prototype = Object.create(FireModelInstance.prototype);
 
 
 
@@ -496,7 +494,7 @@ function FireModelArticle($http, $q, models) {
 
 	this.endpoint = '/api/articles';
 }
-FireModelArticle.prototype = new FireModel();
+FireModelArticle.prototype = Object.create(FireModel.prototype);
 
 FireModelArticle.prototype.parseResult = function(setMapOrList, path) {
 	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
@@ -556,77 +554,23 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         requireBase: false
     });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/test.html',
-        controller: 'TestController',
-        resolve: {
-        
-        }
-    });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/fn7.html',
-        controller: 'fn7',
-        resolve: {
-        
-        }
-    });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/fn6.html',
-        controller: 'fn6',
-        resolve: {
-        
-        }
-    });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/fn5.html',
-        controller: 'fn5',
-        resolve: {
-        
-        }
-    });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/fn4.html',
-        controller: 'fn4',
-        resolve: {
-        
-        }
-    });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/fn3.html',
-        controller: 'fn3',
-        resolve: {
-        
-        }
-    });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/fn2.html',
-        controller: 'fn2',
-        resolve: {
-        
-        }
-    });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/fn1.html',
-        controller: 'fn1',
-        resolve: {
-        
-        }
-    });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/fn0.html',
-        controller: 'fn0',
-        resolve: {
-        
-        }
-    });
+
+
+
+
+
+
+
+
+
 
 }]);
 app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSocketService, $rootScope) {

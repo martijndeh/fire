@@ -54,4 +54,27 @@ describe('model authorize', function() {
 					.expect(401, done);
 			});
 	});
+
+	it('can sign out and sign back in', function(done) {
+		return agent
+			.post('/api/users/sign-out')
+			.send()
+			.expect(200, function(error) {
+				assert.equal(null, error);
+				agent
+					.get('/api/users/me')
+					.send()
+					.expect(401, function() {
+						agent
+							.post('/api/users/authorize')
+							.send({name: 'Martijn', password: 'test'})
+							.expect(200, function() {
+								agent
+									.get('/api/users/me')
+									.send()
+									.expect(200, done);
+							});
+					});
+			});
+	});
 });

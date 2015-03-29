@@ -6,11 +6,11 @@
 var app = angular.module('default', ['ngRoute']);
 
 
-app.directive('myCustomer',function () {
+app.directive('myCustomer', [function() {
     		return {
       			template: 'Name: {{customer.name}} Address: {{customer.address}}'
     		};
-  		});
+  		}]);
 
 app.config(['$scope','fire',function ($scope, fire) { //jshint ignore:line
 
@@ -75,10 +75,8 @@ FireModelInstance.prototype.remove = function() {
 };
 
 FireModelInstance.prototype.save = function() {
-	// TODO: Check validation locally.
-
     var self = this;
-    return this.$q.when(Object.keys(this._changes).length)
+    return this._model.$q.when(Object.keys(this._changes).length)
         .then(function(numberOfChanges) {
             if(numberOfChanges) {
                 var queryMap = transformQueryMap(self._changes);

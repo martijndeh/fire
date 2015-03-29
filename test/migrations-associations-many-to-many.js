@@ -15,7 +15,7 @@ describe('migrations-associations-many-to-many', function() {
     afterEach(function() {
         return migrations.destroyAllModels()
             .then(function() {
-                return app.stop();
+                return fire.stop();
             })
             .then(function() {
                 var defer = Q.defer();
@@ -57,32 +57,35 @@ describe('migrations-associations-many-to-many', function() {
         }
 
         Migration.prototype.up = function() {
-            this.models.createModel('ArticleVoterUserVote', {
+            this.models.createModel('SomeThrough', {
                 id: [this.UUID],
-                //
+                randomPropertyName1: [this.BelongsTo(this.models.User)],
+                randomPropertyName2: [this.BelongsTo(this.models.Article)]
             });
 
-            this.models.createModel('User', {
-                id: [this.UUID],
-                name: [this.String, this.Required],
-                articles: [this.HasMany(this.models.Article, {linkedPropertyName: "submitter", through: this.models.ArticleVoterUserVote})],
-                votes: [this.HasMany(this.models.Article, {linkedPropertyName: "voters"})],
-                comments: [this.HasMany(this.models.Comment)]
-            });
             this.models.createModel('Article', {
                 id: [this.UUID],
                 title: [this.String, this.Required],
                 url: [this.String, this.Required],
                 createdAt: [this.DateTime, this.Default("CURRENT_DATE")],
-                submitter: [this.BelongsTo(this.models.User, {linkedPropertyName: "articles", through: this.models.ArticleVoterUserVote}), this.Required, this.AutoFetch],
-                voters: [this.HasMany(this.models.User, {linkedPropertyName: "votes", through: this.models.ArticleVoterUserVote}), this.AutoFetch],
+                submitter: [this.BelongsTo(this.models.User, {linkedPropertyName: "articles"}), this.Required, this.AutoFetch],
+                voters: [this.HasMany(this.models.User, {linkedPropertyName: "votes", through: this.models.SomeThrough}), this.AutoFetch],
                 comments: [this.HasMany(this.models.Comment), this.AutoFetch]
             });
+
             this.models.createModel('Comment', {
                 id: [this.UUID],
                 article: [this.BelongsTo(this.models.Article)],
                 author: [this.BelongsTo(this.models.User), this.AutoFetch],
                 text: [this.String, this.Required]
+            });
+
+            this.models.createModel('User', {
+                id: [this.UUID],
+                name: [this.String, this.Required],
+                articles: [this.HasMany(this.models.Article, "submitter")],
+                votes: [this.HasMany(this.models.Article, {linkedPropertyName: "voters", through: this.models.SomeThrough})],
+                comments: [this.HasMany(this.models.Comment)]
             });
         };
 
@@ -95,11 +98,14 @@ describe('migrations-associations-many-to-many', function() {
         migrations.addMigration(Migration, 1);
             return migrations.migrate(0, 1)
                 .then(function() {
-                    assert.notEqual(models.ArticleVoterUserVote, null);
-                    return models.ArticleVoterUserVote.exists();
+                    assert.notEqual(models.SomeThrough, null);
+                    return models.SomeThrough.exists();
                 })
                 .then(function(exists) {
                     assert.equal(exists, true);
+                    assert.equal(models.SomeThrough.options.isThroughModel, true);
+
+                    models.postInstallModel(models.SomeThrough);
 
                     return Q.all([
                         models.User.create({name: 'Test 1'}),
@@ -138,21 +144,27 @@ describe('migrations-associations-many-to-many', function() {
     it('can create model with M:N association', function(done) {
     	function Migration() {}
         Migration.prototype.up = function() {
+            this.models.createModel('ABBA', {
+                a: [this.BelongsTo(this.models.A)],
+                b: [this.BelongsTo(this.models.B)]
+            });
+
             this.models.createModel('A', {
                 id: [this.UUID],
                 name: [this.String],
-                bs: [this.HasMany(this.models.B)]
+                bs: [this.HasMany(this.models.B, {through: this.models.ABBA})]
             });
 
             this.models.createModel('B', {
                 id: [this.UUID],
                 name: [this.String],
-                as: [this.HasMany(this.models.A)]
+                as: [this.HasMany(this.models.A, {through: this.models.ABBA})]
             });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
             this.models.destroyModel('B');
+            this.models.destroyModel('ABBA');
         };
 
         migrations.addMigration(Migration, 1);
@@ -168,26 +180,34 @@ describe('migrations-associations-many-to-many', function() {
     it('can create instances with M:N association', function(done) {
         function Migration() {}
         Migration.prototype.up = function() {
+            this.models.createModel('Through', {
+                a: [this.BelongsTo(this.models.A)],
+                b: [this.BelongsTo(this.models.B)]
+            });
+
             this.models.createModel('A', {
                 id: [this.UUID],
                 name: [this.String],
-                bs: [this.HasMany(this.models.B)]
+                bs: [this.HasMany(this.models.B, {through: this.models.Through})]
             });
 
             this.models.createModel('B', {
                 id: [this.UUID],
                 name: [this.String],
-                as: [this.HasMany(this.models.A)]
+                as: [this.HasMany(this.models.A, {through: this.models.Through})]
             });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
             this.models.destroyModel('B');
+            this.models.destroyModel('Through');
         };
 
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
+                models.postInstallModel(models.Through);
+                
                 return models.A.create({
                     name: 'Aart'
                 });
@@ -255,26 +275,34 @@ describe('migrations-associations-many-to-many', function() {
     it('can create M:N relationships with unrelated names', function(done) {
         function Migration() {}
         Migration.prototype.up = function() {
+            this.models.createModel('Through', {
+                a: [this.BelongsTo(this.models.A)],
+                b: [this.BelongsTo(this.models.B)]
+            });
+
             this.models.createModel('A', {
                 id: [this.UUID],
                 name: [this.String],
-                manyKey1: [this.HasMany(this.models.B)]
+                manyKey1: [this.HasMany(this.models.B, {through: this.models.Through})]
             });
 
             this.models.createModel('B', {
                 id: [this.UUID],
                 name: [this.String],
-                manyKey2: [this.HasMany(this.models.A)]
+                manyKey2: [this.HasMany(this.models.A, {through: this.models.Through})]
             });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
             this.models.destroyModel('B');
+            this.models.destroyModel('Through');
         };
 
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
+                models.postInstallModel(models.Through);
+
                 return models.A.create({
                     name: 'Aart'
                 });
@@ -312,7 +340,7 @@ describe('migrations-associations-many-to-many', function() {
 
                                 return b.removeManyKey2(a);
                             })
-                            .then(function(association) {
+                            .then(function() {
                                 return b.getManyKey2s();
                             })
                             .then(function(as) {
@@ -345,26 +373,34 @@ describe('migrations-associations-many-to-many', function() {
     it('cannot add invalid associations', function(done) {
         function Migration() {}
         Migration.prototype.up = function() {
+            this.models.createModel('Through', {
+                a: [this.BelongsTo(this.models.A)],
+                b: [this.BelongsTo(this.models.B)]
+            });
+
             this.models.createModel('A', {
                 id: [this.UUID],
                 name: [this.String],
-                bs: [this.HasMany(this.models.B)]
+                bs: [this.HasMany(this.models.B, {through: this.models.Through})]
             });
 
             this.models.createModel('B', {
                 id: [this.UUID],
                 name: [this.String],
-                as: [this.HasMany(this.models.A)]
+                as: [this.HasMany(this.models.A, {through: this.models.Through})]
             });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
             this.models.destroyModel('B');
+            this.models.destroyModel('Through');
         };
 
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
+                models.postInstallModel(models.Through);
+
                 return models.A.create({
                     name: 'Aart'
                 });
@@ -384,12 +420,12 @@ describe('migrations-associations-many-to-many', function() {
                                 assert.notEqual(error, null);
                             })
                             .then(function() {
-                                return b.getAs()
+                                return b.getAs();
                             })
                             .then(function(as) {
                                 assert.equal(as.length, 0);
                                 return true;
-                            })
+                            });
                     });
             })
             .then(function() {
@@ -404,21 +440,27 @@ describe('migrations-associations-many-to-many', function() {
     it('can query relationships with find', function(done) {
         function Migration() {}
         Migration.prototype.up = function() {
+            this.models.createModel('Through', {
+                a: [this.BelongsTo(this.models.A)],
+                b: [this.BelongsTo(this.models.B)]
+            });
+
             this.models.createModel('A', {
                 id: [this.UUID],
                 name: [this.String],
-                bs: [this.HasMany(this.models.B)]
+                bs: [this.HasMany(this.models.B, {through: this.models.Through})]
             });
 
             this.models.createModel('B', {
                 id: [this.UUID],
                 name: [this.String],
-                as: [this.HasMany(this.models.A)]
+                as: [this.HasMany(this.models.A, {through: this.models.Through})]
             });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('A');
             this.models.destroyModel('B');
+            this.models.destroyModel('Through');
         };
 
         var names = [
@@ -437,6 +479,8 @@ describe('migrations-associations-many-to-many', function() {
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
+                models.postInstallModel(models.Through);
+
                 var result = Q.when(true);
 
                 names.forEach(function(name) {
@@ -484,26 +528,34 @@ describe('migrations-associations-many-to-many', function() {
     it('can create model with M:N association using different names', function(done) {
         function Migration() {}
         Migration.prototype.up = function() {
+            this.models.createModel('Through', {
+                d: [this.BelongsTo(this.models.D)],
+                c: [this.BelongsTo(this.models.C)]
+            });
+
             this.models.createModel('C', {
                 id: [this.UUID],
                 name: [this.String],
-                ds: [this.HasMany(this.models.D)]
+                ds: [this.HasMany(this.models.D, {through: this.models.Through})]
             });
 
             this.models.createModel('D', {
                 id: [this.UUID],
                 name: [this.String],
-                cs: [this.HasMany(this.models.C)]
+                cs: [this.HasMany(this.models.C, {through: this.models.Through})]
             });
         };
         Migration.prototype.down = function() {
             this.models.destroyModel('C');
             this.models.destroyModel('D');
+            this.models.destroyModel('Through');
         };
 
         migrations.addMigration(Migration, 1);
         migrations.migrate(0, 1)
             .then(function() {
+                models.postInstallModel(models.Through);
+
                 return models.C.create({
                     name: 'Cees'
                 });

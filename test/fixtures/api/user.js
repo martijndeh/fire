@@ -129,6 +129,8 @@ app.post('/api/users/authorize', function(request, UserModel) {
 			}
 		})
 		.then(function(modelInstance) {
+			// TODO: If access token is null, create something.
+
 			request.session.at = modelInstance.accessToken;
 			return modelInstance;
 		})
@@ -418,6 +420,226 @@ app.delete('/api/users/:id', function(request, response, app,  UserModel) {
 
 
 
+
+app.post('/api/users/:id/password-reset', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var property = UserModel.getProperty('passwordReset');
+			return Q.all([
+				typeof property.options.canCreate != 'undefined' ? app.injector.call(property.options.canCreate, {request: request, response: response, authenticator: authenticator}) : true,
+				authenticator
+			]);
+		})
+		.spread(function(canCreate, authenticator) {
+			if(typeof canCreate == 'object') {
+				throw new Error('PropertyTypes#CanCreate does not support returning an object. Either return true or false. AccessControl#CanCreate supports returning objects.');
+			}
+
+			if(canCreate !== true) {
+				throw unauthenticatedError(authenticator);
+			}
+			else {
+				return authenticator;
+			}
+		})
+		.then(function(authenticator) {
+			var property = UserModel.getProperty('passwordReset');
+			var associatedModel = property.getAssociatedModel();
+
+			var accessControl = associatedModel.getAccessControl();
+			return Q.when(accessControl.canCreate({authenticator: authenticator, request: request, response: response}))
+				.then(function(canCreate) {
+					if(canCreate) {
+						var createMap = request.body || {};
+
+						if(typeof canCreate == 'object') {
+							createMap = merge(createMap, canCreate);
+						}
+
+						createMap[property.options.hasOne || property.options.belongsTo] = request.param('id');
+
+						if(associatedModel.options.automaticPropertyName) {
+							// This is definitely a bad request if the user tries to set the automatic property manually.
+							if(createMap[associatedModel.options.automaticPropertyName]) {
+								var error = new Error('Cannot set automatic property manually.');
+								error.status = 400;
+								throw error;
+							}
+
+							createMap[associatedModel.options.automaticPropertyName] = authenticator;
+						}
+
+						if(_canSetProperties(Object.keys(createMap), associatedModel)) {
+							return associatedModel.create(createMap);
+						}
+						else {
+							var error = new Error('Bad Request');
+							error.status = 400;
+							throw error;
+						}
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.get('/api/users/:id/password-reset', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var association = UserModel.getProperty('passwordReset');
+			var associatedModel = association.options.relationshipVia.model;
+
+			var accessControl = associatedModel.getAccessControl();
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response}))
+				.then(function(canRead) {
+					if(canRead) {
+						var queryMap = request.query || {};
+						var optionsMap = {};
+
+						if(queryMap.$options) {
+							optionsMap = queryMap.$options;
+							delete queryMap.$options;
+						}
+
+						if(typeof canRead == 'object') {
+							queryMap = merge(queryMap, canRead);
+						}
+
+						queryMap[association.options.relationshipVia.name] = request.param('id');
+
+						if(associatedModel.options.automaticPropertyName) {
+							if(queryMap[associatedModel.options.automaticPropertyName]) {
+								var error = new Error('Cannot set automatic property manually.');
+								error.status = 400;
+								throw error;
+							}
+
+							queryMap[associatedModel.options.automaticPropertyName] = authenticator;
+						}
+
+						return associatedModel.findOne(queryMap, optionsMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.delete('/api/users/:id/password-reset', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var association = UserModel.getProperty('passwordReset');
+			var associatedModel = association.getAssociatedModel();
+
+			var accessControl = associatedModel.getAccessControl();
+			return Q.all([accessControl.canDelete({authenticator: authenticator, request: request, response: response}), authenticator]);
+		})
+		.spread(function(canDelete, authenticator) {
+			if(canDelete) {
+				var removeMap = request.query || {};
+
+				if(typeof canDelete == 'object') {
+					removeMap = merge(removeMap, canDelete);
+				}
+
+				var association = UserModel.getProperty('passwordReset');
+				var associatedModel = association.getAssociatedModel();
+
+				removeMap[association.options.hasOne || association.options.belongsTo] = request.param('id');
+
+				if(associatedModel.options.automaticPropertyName) {
+					// This is definitely a bad request if the user tries to set the automatic property manually.
+					if(removeMap[associatedModel.options.automaticPropertyName]) {
+						var error = new Error('Cannot set automatic property manually.');
+						error.status = 400;
+						throw error;
+					}
+
+					removeMap[associatedModel.options.automaticPropertyName] = authenticator;
+				}
+
+				var optionsMap = {};
+
+				if(removeMap.$options) {
+					optionsMap = removeMap.$options;
+					delete removeMap.$options;
+				}
+
+				return associatedModel.removeOne(removeMap, optionsMap);
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
+		});
+});
+
+app.put('/api/users/:id/password-reset', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var association = UserModel.getProperty('passwordReset');
+			var associatedModel = association.getAssociatedModel();
+
+			var accessControl = associatedModel.getAccessControl();
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response}))
+				.then(function(canUpdate) {
+					if(canUpdate) {
+						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), association.options.relationshipVia.model))
+							.then(function(canUpdateProperties) {
+								var error;
+								if(canUpdateProperties) {
+									var whereMap = request.query || {};
+
+									if(typeof canUpdate == 'object') {
+										whereMap = merge(whereMap, canUpdate);
+									}
+
+									whereMap[association.options.hasOne || association.options.belongsTo] = request.param('id');
+
+									if(associatedModel.options.automaticPropertyName) {
+										if(whereMap[associatedModel.options.automaticPropertyName]) {
+											error = new Error('Cannot set automatic property manually.');
+											error.status = 400;
+											throw error;
+										}
+
+										whereMap[associatedModel.options.automaticPropertyName] = authenticator;
+									}
+
+									return associatedModel.updateOne(whereMap, request.body || {});
+								}
+								else {
+									error = new Error();
+									error.status = 400;
+									error.message = 'Bad Request';
+									throw error;
+								}
+							});
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.post('/api/users/:id/container', function(request, response, app,  UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -621,5 +843,7 @@ app.put('/api/users/:id/container', function(request, response, app,  UserModel)
 				});
 		});
 });
+
+
 
 

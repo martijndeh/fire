@@ -62,10 +62,8 @@ FireModelInstance.prototype.remove = function() {
 };
 
 FireModelInstance.prototype.save = function() {
-	// TODO: Check validation locally.
-
     var self = this;
-    return this.$q.when(Object.keys(this._changes).length)
+    return this._model.$q.when(Object.keys(this._changes).length)
         .then(function(numberOfChanges) {
             if(numberOfChanges) {
                 var queryMap = transformQueryMap(self._changes);
@@ -300,13 +298,7 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         requireBase: false
     });
 
-    $routeProvider.when('', {
-        templateUrl: '/templates/test.html',
-        controller: 'TestController',
-        resolve: {
-        
-        }
-    });
+
 
 }]);
 app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSocketService, $rootScope) {

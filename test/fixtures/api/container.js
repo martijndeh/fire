@@ -299,6 +299,10 @@ app.delete('/api/containers/:id', function(request, response, app,  ContainerMod
 
 
 
+
+
+
+
 app.post('/api/containers/:id/users', function(request, response, app,  ContainerModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -472,7 +476,7 @@ app.delete('/api/containers/:id/users', function(request, response, app,  Contai
 
 				var association = ContainerModel.getProperty('users');
 				var associatedModel = association.getAssociatedModel();
-				
+
 				removeMap[association.options.hasMany] = request.param('id');
 
 				if(associatedModel.options.automaticPropertyName) {
@@ -551,4 +555,6 @@ app.put('/api/containers/:id/users/:associationID', function(request, response, 
 				});
 		});
 });
+
+
 

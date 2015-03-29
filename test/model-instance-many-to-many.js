@@ -11,8 +11,8 @@ describe('model instance many to many', function() {
 	before(function() {
 		helper.setup = function(app) {
 			function ProjectUserUserProject(UserModel, ProjectModel) {
-				this.userProject = [this.BelongsTo(UserModel)];
-				this.projectUser = [this.BelongsTo(ProjectModel)];
+				this.user = [this.BelongsTo(UserModel), this.Required];
+				this.project = [this.BelongsTo(ProjectModel), this.Required];
 			}
 			app.model(ProjectUserUserProject);
 

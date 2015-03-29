@@ -38,11 +38,13 @@ Helper.prototype.beforeEach = function(options) {
 
                 if(self.modelNames) {
                     self.modelNames.forEach(function(modelName) {
-                        var model = self.app.models[modelName];
+                        var model = self.app.models.internals[modelName];
+
                         result = result.then(function() {
                             return model.setup();
                         });
                     });
+                    self.modelNames = null;
                 }
                 else {
                     self.app.models.forEach(function(model) {
