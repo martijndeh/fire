@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.29.1
+
+### Bug fixes
+
+- Fixes unknown schemas table issue in grunt release.
+- Fixes unknown view.jade issue in single-app project.
+- Fixes issue where shared models would sometimes not get created in single-app projects.
+
 ## 0.29.0
 
 ### Improvements
