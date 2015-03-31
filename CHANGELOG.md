@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.29.2
+
+### Improvements
+
+- Changes tests service to provider.
+
 ## 0.29.1
 
 ### Bug fixes
