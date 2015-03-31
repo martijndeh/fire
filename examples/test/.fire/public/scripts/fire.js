@@ -6,16 +6,14 @@
 var app = angular.module('default', ['ngRoute']);
 
 
-app.run(['TestsService', function(TestsService) {
-	TestsService.delegate = {
-		participate: function(test, variant) {
-			console.log('Join test ' + test + ' with variant ' + variant);
+app.config(['TestsServiceProvider', function(TestsServiceProvider) {
+	TestsServiceProvider.delegate(function(test, variant) {
+		console.log('Join test ' + test + ' with variant ' + variant);
 
-			var properties = {};
-			properties[test] = variant;
-			mixpanel.register(properties);
-		}
-	};
+		var properties = {};
+		properties[test] = variant;
+		mixpanel.register(properties);
+	});
 }]);
 
 
@@ -1060,15 +1058,29 @@ app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q
     this.models = FireModels;
 }]);
 
-app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+app.provider('_Template', ['$injector', function($injector) {
+    this.getTemplateUrl = function(testName) {
+        console.log('this#getTemplateUrl');
+
+        return $injector.get(testName);
+    };
+
+    this.$get = function() {
+        return {
+
+        };
+    };
+}]);
+
+app.config(['$routeProvider', '$locationProvider', '_TemplateProvider', function($routeProvider, $locationProvider, _TemplateProvider) {
     $locationProvider.html5Mode({
         enabled: true,
         requireBase: false
     });
 
 
+
     $routeProvider.when('/', {
-        templateUrl: '/templates/start.html',
         controller: 'StartController',
         resolve: {
         
@@ -1233,16 +1245,27 @@ app.service('_StorageService', [function _StorageService() {
 	};
 }]);
 
-app.service('TestsService', [function() {
-	this.delegate = null;
-	this.participate = function(test, variant) {
-		if(this.delegate === null) {
-			throw new Error('Please set the TestsService.delegate');
-		}
-		else {
-			this.delegate.participate(test, variant);
-		}
+app.provider('TestsService', [function() {
+	var _delegate = null;
+	this.delegate = function(delegate) {
+		_delegate = delegate;
 	};
+
+	this.$get = function() {
+		return {
+			participate: function(test, variant) {
+				if(_delegate === null) {
+					throw new Error('Please set the TestsService.delegate');
+				}
+				else if(typeof _delegate != 'function') {
+					throw new Error('TestsService#delegate must be a function.');
+				}
+				else {
+					_delegate(test, variant);
+				}
+			}
+		};
+	}
 }]);
 
 

@@ -8,16 +8,14 @@ var app = fire.app('nodeonfire.org', {
 	MIXPANEL_API_KEY: process.env.MIXPANEL_API_KEY
 });
 
-app.run(function(TestsService) {
-	TestsService.delegate = {
-		participate: function(test, variant) {
-			console.log('Join test ' + test + ' with variant ' + variant);
+app.config(function(TestsServiceProvider) {
+	TestsServiceProvider.delegate(function(test, variant) {
+		console.log('Join test ' + test + ' with variant ' + variant);
 
-			var properties = {};
-			properties[test] = variant;
-			mixpanel.register(properties);
-		}
-	};
+		var properties = {};
+		properties[test] = variant;
+		mixpanel.register(properties);
+	});
 });
 
 app.test(function TextOfButtonTest() {
