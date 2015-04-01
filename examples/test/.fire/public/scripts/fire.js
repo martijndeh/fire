@@ -1058,21 +1058,7 @@ app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q
     this.models = FireModels;
 }]);
 
-app.provider('_Template', ['$injector', function($injector) {
-    this.getTemplateUrl = function(testName) {
-        console.log('this#getTemplateUrl');
-
-        return $injector.get(testName);
-    };
-
-    this.$get = function() {
-        return {
-
-        };
-    };
-}]);
-
-app.config(['$routeProvider', '$locationProvider', '_TemplateProvider', function($routeProvider, $locationProvider, _TemplateProvider) {
+app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode({
         enabled: true,
         requireBase: false
@@ -1081,6 +1067,7 @@ app.config(['$routeProvider', '$locationProvider', '_TemplateProvider', function
 
 
     $routeProvider.when('/', {
+        templateUrl: '/templates/start.html',
         controller: 'StartController',
         resolve: {
         
