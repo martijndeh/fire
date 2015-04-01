@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.30.0
+
+### New features
+
+- Implements a COOKIE_DOMAIN environment variable which allows you to set the session cookie's domain.
+
 ## 0.29.2
 
 ### Improvements
