@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.30.2
+
+### Bug fixes
+
+- Disables caching in models API to fix caching issues in IE9.
+
 ## 0.30.1
 
 ### Bug fixes
