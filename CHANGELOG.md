@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.30.1
+
+### Bug fixes
+
+- Fixes issue with properties in ReadOnly property type.
+
 ## 0.30.0
 
 ### New features
