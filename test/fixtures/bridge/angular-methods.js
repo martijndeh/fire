@@ -464,16 +464,27 @@ app.service('_StorageService', [function _StorageService() {
 	};
 }]);
 
-app.service('TestsService', [function() {
-	this.delegate = null;
-	this.participate = function(test, variant) {
-		if(this.delegate === null) {
-			throw new Error('Please set the TestsService.delegate');
-		}
-		else {
-			this.delegate.participate(test, variant);
-		}
+app.provider('TestsService', [function() {
+	var _delegate = null;
+	this.delegate = function(delegate) {
+		_delegate = delegate;
 	};
+
+	this.$get = function() {
+		return {
+			participate: function(test, variant) {
+				if(_delegate === null) {
+					throw new Error('Please set the TestsService.delegate');
+				}
+				else if(typeof _delegate != 'function') {
+					throw new Error('TestsService#delegate must be a function.');
+				}
+				else {
+					_delegate(test, variant);
+				}
+			}
+		};
+	}
 }]);
 
 
