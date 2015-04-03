@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.30.3
+
+### Bug fixes
+
+- Enables many-to-many api again.
+
 ## 0.30.2
 
 ### Bug fixes
