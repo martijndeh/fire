@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.30.4
+
+### Bug fixes
+
+- Fixes validate hash method.
+
 ## 0.30.3
 
 ### Bug fixes
