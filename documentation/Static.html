@@ -17,8 +17,6 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
 				</ul>
 			</div>
 		</div>
@@ -62,9 +60,7 @@
     
     <div class="description">
         <p>Convenience module to route requests to static folders.</p>
-<pre class="prettyprint source"><code>- Creates a less middleware on source /styles and destination /public/styles.
-- Makes the public folder .. public. All files in public will be accessible.
-- Makes _assets available as scripts. The client-side fire.js is generated in _assets.
+<pre class="prettyprint source"><code>- Makes the public folder .. public. All files in public will be accessible.
 - Makes bower_components available publicly under the equally named /bower_components path.</code></pre><p>In production, you should not use this module. But rather, let something like nginx or a CDN handle your static assets. Compiling scripts at runtime in production is also something you should avoid.</p>
     </div>
     

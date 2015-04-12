@@ -17,8 +17,6 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
 				</ul>
 			</div>
 		</div>
@@ -711,7 +709,7 @@ app.model(Project);</code></pre>
 
             
 
-            <td class="description last"><p>The name of the property belonging to a one-to-many or many-to-many association.</p></td>
+            <td class="description last"><p>The name of the property belonging to a one-to-many association.</p></td>
         </tr>
 
 	
@@ -1029,7 +1027,7 @@ app.model(Project);</code></pre>
         
             
 <dt>
-    <h4 class="name" id="Default"><span class="type-signature"></span>Default<span class="signature">(defaultValue)</span></h4>
+    <h4 class="name" id="Default"><span class="type-signature"></span>Default<span class="signature">(defaultValue, changePropertyName)</span></h4>
     
     
 </dt>
@@ -1102,6 +1100,30 @@ app.model(Project);</code></pre>
             
 
             <td class="description last"><p>The default value, either an SQL string or a function returning a value.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>changePropertyName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Re-set the default value when this property name gets updated.</p></td>
         </tr>
 
 	
@@ -1708,7 +1730,7 @@ app.model(User);</code></pre><p>This also hashes any values in the where map, fo
 <pre class="prettyprint source"><code>function Book() {
     this.title = [this.String];
     this.titleLength = [this.ReadOnly('LENGTH($title) * 2')];
-}</code></pre><p>This creates a book model with a <code>title</code> property and a <code>titleLength</code> property which returns the length of the title times two.</p>
+}</code></pre><p>This creates a book model with a <code>title</code> property and a <code>titleLength</code> property which returns the length of the title times two. This creates a query similar to <code>SELECT title, (LENGTH(title) * 2) as title_length FROM books</code> when querying for books.</p>
 <p>A more advanced example:</p>
 <pre class="prettyprint source"><code>function Article() {
     this.title             = [this.String, this.Required];
@@ -1718,7 +1740,7 @@ app.model(User);</code></pre><p>This also hashes any values in the where map, fo
  this.voters         = [this.HasMany(this.models.User, 'votes'), this.AutoFetch];
  this.position         = [this.ReadOnly('($count(&quot;voters&quot;) - 1) / ((EXTRACT(EPOCH FROM current_timestamp - $createdAt) / 3600) + 2)^1.8')];
 }
-app.model(Article);</code></pre><p>In the future this method will be extended so you can also provide a function to return a read-only value.</p>
+app.model(Article);</code></pre>
     </div>
     
 
@@ -2369,27 +2391,27 @@ models.Article.find({popular: true})
     
     <div class="description">
         <p>Creates a transform property. A transform property is one or more virtual properties and combined into one property.</p>
-<pre class="prettyprint source"><code>function Test() {
+<pre class="prettyprint source"><code>function Shoe() {
     this.three = [this.Transform(one, two) {
         return (one * two);
     }];
 }
-app.model(Test);
+app.model(Shoe);
 
 //
 
-models.Test.create({
+models.Shoe.create({
         one: 3,
         two: 6
  })
-    .then(function(test) {
-        // test.three is 18
+    .then(function(shoe) {
+        // shoe.three is 18
  });</code></pre><p>The transform method is not invoked if any of the transform parameters is undefined. For example, the below example doesn't set <code>three</code>.</p>
-<pre class="prettyprint source"><code>models.Test.create({
+<pre class="prettyprint source"><code>models.Shoe.create({
     one: 3
 })
-.then(function(test) {
-    // test.three is not set via the transform method (thus it's the default value)
+.then(function(shoe) {
+    // shoe.three is not set via the transform method (thus it's the default value)
 })</code></pre>
     </div>
     

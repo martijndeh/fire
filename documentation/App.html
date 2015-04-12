@@ -17,8 +17,6 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
 				</ul>
 			</div>
 		</div>
@@ -53,7 +51,7 @@
     
         
 <dt>
-    <h4 class="name" id="App"><span class="type-signature"></span>new App<span class="signature">(name, options)</span></h4>
+    <h4 class="name" id="App"><span class="type-signature"></span>new App<span class="signature">(name, settings)</span></h4>
     
     
 </dt>
@@ -62,7 +60,7 @@
     
     <div class="description">
         <p>Initialize a new <code>App</code> for both the client- and server-context. A new app is usually created via <a href="Firestarter.html#app">Firestarter#app</a>.</p>
-<p>In the client-context, this creates an <code>angular.Module</code> with <code>name</code> and requires from <code>options.modules</code>. This instance also acts as a proxy to the <code>angular.Module</code>. This means that you can invoke <code>directive</code>, <code>controller</code> or any of the <code>angular.Module</code> methods.</p>
+<p>In the client-context, this creates an <code>angular.Module</code> with <code>name</code> and requires from <code>settings.modules</code>. This instance also acts as a proxy to the <code>angular.Module</code>. This means that you can invoke <code>directive</code>, <code>controller</code> or any of the <code>angular.Module</code> methods.</p>
 <p>For a complete list, angular's Module documentation at <a href="https://docs.angularjs.org/api/ng/type/angular.Module">https://docs.angularjs.org/api/ng/type/angular.Module</a>.</p>
     </div>
     
@@ -121,7 +119,7 @@
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>settings</code></td>
             
 
             <td class="type">
@@ -164,6 +162,30 @@
 
         <tr>
             
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The type of the app, either angular or ractive.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
                 <td class="name"><code>modules</code></td>
             
 
@@ -182,6 +204,30 @@
             
 
             <td class="description last"><p>List of requires passed to angular.Module.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>isMaster</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Whether this app is the master. A master app is responsible for any shared models and other dependencies.</p></td>
         </tr>
 
 	
@@ -261,6 +307,93 @@
         <h3 class="subsection-title">Methods</h3>
 
         <dl>
+            
+<dt>
+    <h4 class="name" id="_start"><span class="type-signature"></span>_start<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Starts the app by setting up all modules, invoking all configure functions, starting the HTTP server and binding to the value of PORT defined in the environmental table.</p>
+<p>This method should not be be invoked multiple times (even after calling App#stop).</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Promise</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
             
 <dt>
     <h4 class="name" id="addModule"><span class="type-signature"></span>addModule<span class="signature">(moduleConstructor)</span></h4>
@@ -519,7 +652,7 @@
         
             
 <dt>
-    <h4 class="name" id="configure"><span class="type-signature"></span>configure<span class="signature">(configureFunction)</span></h4>
+    <h4 class="name" id="removeModule"><span class="type-signature"></span>removeModule<span class="signature">()</span></h4>
     
     
 </dt>
@@ -527,7 +660,8 @@
     
     
     <div class="description">
-        <p>Configures.</p>
+        <p>Removes a module.</p>
+<pre class="prettyprint source"><code>app.removeModule(app.webSockets);</code></pre>
     </div>
     
 
@@ -535,56 +669,6 @@
     
     
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>configureFunction</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">function</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The function to call during run phase.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
     
     
     
@@ -643,8 +727,8 @@
     
     
     <div class="description">
-        <p>Starts the app by setting up all modules, invoking all configure functions, starting the HTTP server and binding to the value of PORT defined in the environmental table.</p>
-<p>This method should not be be invoked multiple times (even after calling App#stop).</p>
+        <p>Starts the app.</p>
+<p>This method is deprecated. Please use <code>fire#start()</code> instead.</p>
     </div>
     
 
@@ -665,56 +749,45 @@
 	
 
 	
-
+	<dt class="important tag-deprecated">Deprecated:</dt>
 	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
+	<dd class="yes-def tag-deprecated">
+		<ul class="dummy">
+			<li>Yes</li>
+		</ul>
 	</dd>
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
 </dl>
 
+    
+    
 
-        
+    
+
+    
+    
+    
+    
+    
     
     
 </dd>
@@ -730,7 +803,7 @@
     
     
     <div class="description">
-        <p>Stops the app and closes the HTTP server.</p>
+        <p>Stops the app. This also invokes the <code>stop</code> method on all modules.</p>
     </div>
     
 

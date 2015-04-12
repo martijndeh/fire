@@ -17,8 +17,6 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<!--li><a href="/tutorials">Tutorials</a></li-->
 				</ul>
 			</div>
 		</div>
@@ -59,6 +57,20 @@
 </dt>
 <dd>
     
+    
+    <div class="description">
+        <p>The Bridge module compiles Mustache templates to client-side JavaScript libraries in the build phase. All JavaScript is concatenated in a single fire.js file.</p>
+<p>Modules can extend Bridge's functionality by including a generator method which returns a Generator instance. For example:</p>
+<pre class="prettyprint source"><code>function MyModule(app) {
+    this.app = app;
+}
+
+MyModule.prototype.generator = function() {
+    return new this.app.bridge.Generator(path.join(__dirname, 'templates', this.app.settings('type'), 'my-module.js'), {
+        // Module data here.
+    });
+};</code></pre>
+    </div>
     
 
     
@@ -180,16 +192,15 @@
 
         <dl>
             
-<dt class="name" id="methodNames">
-    <h4><span class="type-signature">&lt;constant> </span>methodNames<span class="type-signature"></span></h4>
+<dt class="name" id="Generator">
+    <h4><span class="type-signature"></span>Generator<span class="type-signature"></span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        <p>A list of method names which get proxied to the angular module.</p>
-<p>The controller method is missing, because that one is added by the Controllers module.</p>
+        <p>Exposes the Generator constructor. This is useful for modules implementing the <code>generator</code> method.</p>
     </div>
     
 
@@ -489,6 +500,7 @@ app.controller(TestController);</code></pre><p>Roughly generates:</p>
     
     <div class="description">
         <p>Generates the client-side fire.js by executing all generators local in ./generators.</p>
+<p>In addition, every module may provide a generator if it implements a <code>generator</code> method. Bridge loops over every module and executes it's <code>generator</code> method (if it exists). The <code>generator</code> method should return an instance of Generator.</p>
 <p>Please note: this method will close the write stream by calling fs.WriteStream#end once it succeeds.</p>
     </div>
     

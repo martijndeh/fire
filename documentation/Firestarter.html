@@ -17,8 +17,6 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
 				</ul>
 			</div>
 		</div>
@@ -61,7 +59,17 @@
     
     
     <div class="description">
-        <p>The singleton-ish module orchastrating the modules and apps. Do not construct an instance of this manually. When <code>require</code>ing fire, an instance of <code>Firestarter</code> is exported.</p>
+        <p>The isomorphic fire service. This service is available in both the front- and the back-end.</p>
+<p>The service contains two methods to check at runtime whether your code is running on the client- or the server-side, respectively, <a href="Firestarter.html#isClient">Firestarter#isClient</a> and <a href="Firestarter.html#isServer">Firestarter#isServer</a>.</p>
+<p>The below example illustrates the usage of the service: *</p>
+<pre class="prettyprint source"><code>app.run(function(fire) {
+    if(fire.isServer()) {
+        // The server.
+    }
+    else {
+        // The client.
+    }
+});</code></pre><p>On the back-end, the service is also responsible for orchastrating the modules and apps. You do not need to construct an instance of fire yourself.</p>
     </div>
     
 
@@ -137,7 +145,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="app"><span class="type-signature"></span>app<span class="signature">(name, opts)</span></h4>
+    <h4 class="name" id="app"><span class="type-signature"></span>app<span class="signature">(id, name, settings)</span></h4>
     
     
 </dt>
@@ -146,14 +154,19 @@
     
     <div class="description">
         <p>Creates a new or returns an existing <code>App</code>.</p>
-<p>It is possible to create multiple apps with different names. Fire will store them in a map internally.</p>
-<p>If a <code>options</code> is specified, a new app will be created. If an app with the same name already exists, an exception is thrown.</p>
-<p>If <code>options</code> is not specified, an existing app will be retrieved. If no app with <code>name</code> exists, an exception is thrown.</p>
+<p>If a <code>options</code> is specified, a new app will be created. If an app with the same <code>id</code> already exists, an exception is thrown.</p>
+<p>If <code>options</code> is not specified, an existing app will be retrieved. If no app with <code>id</code> exists, an exception is thrown.</p>
 <p>For example, to create a new app:</p>
 <pre class="prettyprint source"><code>var fire = require('fire');
-var app = fire.app('test', {});
+var app = fire.app('nodeonfire.org', {type: 'angular'});
 
-//</code></pre>
+//</code></pre><p>It's possible to create multiple apps which share models and other modules, but serve a different purpose. For example, you can create an admin section and the user-facing app all in the same codebase.</p>
+<pre class="prettyprint source lang-js"><code>// Create the user-facing app
+var app = fire.app('nodeonfire.org', 'web', {type: 'angular'});
+
+// Create an admin app
+var adminApp = fire.app('nodeonfire.org', 'admin', {type: 'angular'});</code></pre><p>In the build and run phase you set the <code>NODE_APP</code> environment variable to specify which app to return.</p>
+<p>If you retrieve an app without a name and the <code>NODE_APP</code> is set, that app is returned. If <code>NODE_APP</code> is not set, an app named <code>default</code> is returned.</p>
     </div>
     
 
@@ -187,6 +200,30 @@ var app = fire.app('test', {});
 
         <tr>
             
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The identifier of the app passed to the App constructor. This is usually the app's domain e.g. nodeonfire.org.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
                 <td class="name"><code>name</code></td>
             
 
@@ -204,14 +241,14 @@ var app = fire.app('test', {});
 
             
 
-            <td class="description last"><p>The name of the app passed to the App constructor.</p></td>
+            <td class="description last"><p>The name of the app, defaults to 'default'.</p></td>
         </tr>
 
 	
 
         <tr>
             
-                <td class="name"><code>opts</code></td>
+                <td class="name"><code>settings</code></td>
             
 
             <td class="type">
@@ -302,6 +339,138 @@ var app = fire.app('test', {});
 
 
         
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="isClient"><span class="type-signature"></span>isClient<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Returns true if the code is running on the client-side.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="isServer"><span class="type-signature"></span>isServer<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Returns true if the code is running on the server-side.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
     
     
 </dd>

@@ -2,14 +2,11 @@
 <html>
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="A JavaScript-everywhere, model-driven, web framework built on top of AngularJS, express and PostgreSQL."/>
-	<title>Getting Started - Node on Fire</title>
+	<meta name="description" content="A full-stack isomorphic web framework built on top of Node.js, AngularJS, Express and PostgreSQL."/>
+	<title>Getting Started with Node on Fire</title>
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
-	<link rel="stylesheet" href="/bower_components/google-code-prettify/bin/prettify.min.css"/>
 	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
-	<script src="/bower_components/google-code-prettify/bin/prettify.min.js"></script>
-	<script>!function ($) {$(function(){window.prettyPrint && prettyPrint()})}(window.jQuery)</script>
 </head>
 <body>
 	<nav class="navbar navbar-default navbar-fixed-top">
@@ -19,8 +16,6 @@
 					<li><a href="/">Home</a></li>
 					<li class="active"><a href="/getting-started">Getting Started</a></li>
 					<li><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<!--li><a href="/tutorials">Tutorials</a></li-->
 				</ul>
 			</div>
 		</div>
@@ -30,26 +25,24 @@
 		<div class="row header getting-started">
 			<div class="col-md-8 col-md-offset-2">
 				<h1>Getting Started</h1>
-				<p>Setting up all the depencies and a basic project in five easy steps.</p>
+				<p>Setting up all the depencies and a basic project in 4 easy steps.</p>
 			</div>
 		</div>
 
 		<div class="row desc">
 			<div class="col-md-8 col-md-offset-2">
-				<h3>1/5. Dependencies</h3>
-				<p>Node on Fire has a few dependencies. Before you continue, make sure you have <a href="http://nodejs.org/">Node.js</a> installed and have a <a href="http://postgresql.org/">Postgres</a> development instance running. If you are on a Mac, you can use the <a href="http://postgresapp.com/">Postgres app</a>.</p>
+				<h3>1/4. Dependencies</h3>
+				<p>Node on Fire has a few dependencies. Before you continue, make sure you have <a href="http://nodejs.org/">Node.js</a> installed and have a <a href="http://postgresql.org/">Postgres</a> development instance running. If you are on a Mac, you can use the <a href="http://postgresapp.com/">Postgres app</a>. Alternatively, you can use a free database from <a href="https://heroku.com/">Heroku</a>.</p>
 
 				<p>Now install <a href="http://yeoman.io/">Yeoman</a>, <a href="http://gruntjs.com/">Grunt</a>, <a href="http://bower.io/">Bower</a> and <a href="https://github.com/martijndeh/generator-fire">Node on Fire's Yeoman generator</a> globally:</p>
 				<p><kbd>$ npm install -g yo grunt-cli bower generator-fire</kbd></p>
-
-				<p>There. That's it. Next step.</p>
 			</div>
 
 			<div class="col-md-8 col-md-offset-2">
 				<hr/>
-				<h3>2/5. Database</h3>
+				<h3>2/4. Database</h3>
 
-				<p>Create a new development database locally and install the extension:</p>
+				<p>Create a new development database, if you don't have one yet, and install the "uuid-ossp" extension:</p>
 
 				<p><kbd>$ yo fire:datastore</kbd></p>
 
@@ -64,14 +57,14 @@
 
 			<div class="col-md-8 col-md-offset-2">
 				<hr/>
-				<h3>3/5. Creating the App</h3>
+				<h3>3/4. Creating the App</h3>
 
 				<p>Scaffold the initial files and folders of the app:</p>
 
 				<p><kbd>$ yo fire:app</kbd></p>
 
 				<ul>
-					<li>Type the name of the app e.g. <code>hello-world</code></li>
+					<li>Type the name of the app e.g. <code>helloworld</code></li>
 					<li>Paste the database URL from the previous step: <code>postgres://fire:password@127.0.0.1/helloworld</code></li>
 				</ul>
 
@@ -81,36 +74,14 @@
 			<div class="col-md-8 col-md-offset-2">
 				<hr/>
 
-				<h3>4/5. Creating the Controller</h3>
+				<h3>4/4. Ready to go!</h3>
 
-				<p>Now that we have an empty app, let's create a controller with a view which presents us the fabulous <em>Hello, world!</em>.</p>
+				<p>You can now run the app:</p>
 
-				<p>In <code>index.js</code> insert the following annotated piece of code before the <code>app.start();</code> line:</p>
-
-				<pre class="prettyprint">app.template('index', '&lt;div ng-controller="TestController"&gt;&lt;h1&gt;Hello, world!&lt;/h1&gt;&lt;/div&gt;');
-
-function TestController($scope, fire) {
-	//
-}
-app.controller(TestController);
-
-TestController.prototype.view = function() {
-	return this.template('index');
-};
-</pre>
-			</div>
-
-			<div class="col-md-8 col-md-offset-2">
-				<hr/>
-
-				<h3>5/5. Build, Release and Run</h3>
-
-				<p>Build and release the project. This generates <code>_assets</code>, <code>_api</code> and <code>_migrations</code> in the build phase and migrates the database in the release phase:</p>
-
-				<p><kbd>$ grunt build:api &amp;&amp; grunt build:scripts &amp;&amp; grunt build:migrations</kbd></p>
+				<p><kbd>$ cd helloworld/</kbd> (or whichever directory the project is in)</p>
 				<p><kbd>$ node index.js</kbd></p>
 
-				<p>To view the app, head over to <a href="http://127.0.0.1:3000/">Hello, World!</a>.</p>
+				<p>To view the app, head over to <a href="http://127.0.0.1:3000/">http://127.0.0.1:3000/</a>. When you make changes, run <code>grunt build && grunt release</code> again.</p>
 			</div>
 		</div>
 
@@ -118,7 +89,7 @@ TestController.prototype.view = function() {
 			<div class="col-md-8 col-md-offset-2">
 				<h1>What's next?</h1>
 
-				<p>Now you know the basics of Node on Fire, move ahead to our <a href="/examples">examples</a> section to view some more advanced code samples.</p>
+				<p>Have a look at the <a href="https://github.com/martijndeh/fire/tree/master/examples">example projects</a> or browse through <a href="/documentation">the documentation</a>. If you have any questions, please reach out <a href="https://twitter.com/nodeonfire">on Twitter</a>. Enjoy!</p>
 			</div>
 		</div>
 

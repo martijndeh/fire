@@ -2,17 +2,14 @@
 <html>
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
-	<meta name="description" content="A JavaScript-everywhere, model-driven, web framework built on top of AngularJS, express and PostgreSQL."/>
+	<meta name="description" content="A full-stack isomorphic web framework built on top of Node.js, AngularJS, Express and PostgreSQL."/>
 	<title>Node on Fire</title>
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="/styles/default.css"/>
-	<link rel="stylesheet" href="/bower_components/google-code-prettify/bin/prettify.min.css"/>
 	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
-	<script src="/bower_components/google-code-prettify/bin/prettify.min.js"></script>
-	<script>!function ($) {$(function(){window.prettyPrint && prettyPrint()})}(window.jQuery)</script>
 </head>
 <body>
-	<a class="hidden-sm hidden-xs" href="https://github.com/martijndeh/fire"><img style="position: absolute; top: 0; left: 0; border: 0;z-index:1031;" src="https://camo.githubusercontent.com/82b228a3648bf44fc1163ef44c62fcc60081495e/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png"></a>
+	<a class="hidden-sm hidden-xs" href="https://github.com/martijndeh/fire"><img style="position: fixed; top: 0; left: 0; border: 0;z-index:1031;" src="https://camo.githubusercontent.com/82b228a3648bf44fc1163ef44c62fcc60081495e/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png"></a>
 	<nav class="navbar navbar-default navbar-fixed-top">
 		<div class="container-fluid">
 			<div class="col-md-8 col-md-offset-2">
@@ -20,8 +17,6 @@
 					<li class="active"><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<!--li><a href="/tutorials">Tutorials</a></li-->
 				</ul>
 			</div>
 		</div>
@@ -33,7 +28,7 @@
 				<span class="h1">Node on Fire</span>
 			</div>
 
-			<p class="col-md-6 col-md-offset-3">A JavaScript-everywhere, model-driven, real-time web framework built on top of AngularJS, express,  PostgreSQL and RabbitMQ.</p>
+			<p class="col-md-6 col-md-offset-3">A full-stack isomorphic web framework built on top of Node.js, AngularJS, Express and PostgreSQL.</p>
 		</div>
 
 		<div class="row">
@@ -42,140 +37,63 @@
 href="https://twitter.com/nodeonfire"
 data-show-count="false"
 data-lang="en">
-Follow @twitterdev
+Follow @nodeonfire
 </a>
-<script type="text/javascript">
-window.twttr = (function (d, s, id) {
-var t, js, fjs = d.getElementsByTagName(s)[0];
-if (d.getElementById(id)) return;
-js = d.createElement(s); js.id = id;
-js.src= "https://platform.twitter.com/widgets.js";
-fjs.parentNode.insertBefore(js, fjs);
-return window.twttr || (t = { _e: [], ready: function (f) { t._e.push(f) } });
-}(document, "script", "twitter-wjs"));
-</script> <iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
+ <iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
   allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
 			</div>
 		</div>
 
-		<div class="row pitch">
-			<div class="col-md-8 col-md-offset-2">
-				<h1>What is Node on Fire?</h1>
+		<div class="row desc">
+			<div class="col-md-5 col-md-offset-1">
+				<h2>Embracing isomorphism</h2>
+				<p>It's easy to create services which you can execute in both the client- and the server-side. Have a look at the <a href="https://github.com/martijndeh/fire/tree/master/examples/isomorphic">isomorphic example project</a>.</p>
 
-				<p>Node on Fire is collection of JavaScript modules to rapidly create advanced web-worker applications following the <a href="http://12factor.net">12factor methodology</a>. Go to our <a href="/getting-started">getting started</a> section to learn how to set up a working Hello World project.</p>
+				<script src="https://gist.github.com/martijndeh/3b74f45dcdab6643c591.js"></script>
+			</div>
+
+			<div class="col-md-5">
+				<h2>Express with dependency injection</h2>
+				<p>Dependency injection is now also available on the back-end side, which makes creating Express routes super easy.</p>
+
+				<script src="https://gist.github.com/martijndeh/0791a6ec06854e363433.js"></script>
 			</div>
 		</div>
 
 		<div class="row desc">
-			<div class="col-md-offset-1 col-md-5">
-				<h2>Real-Time (Web Sockets)</h2>
+			<div class="col-md-5 col-md-offset-1">
+				<h2>Integrated A/B testing</h2>
+				<p>It's trivial to create A/B tests. You can A/B test every feature with ease. See <a href="https://github.com/martijndeh/fire/tree/master/examples/test">A/B test example project</a>.</p>
 
-				<p>Node on Fire supports web sockets and channels to push messages to and from clients.</p>
-
-				<pre class="prettyprint">function MyController(MyChannel, $scope) {
-	var channel = MyChannel.get('test');
-	channel.getMessage(function(message) {
-		$scope.messages.push(messages);
-	});
-
-	channel.sendMessage({text: 'Hello, world!'});
-}
-app.controller(MyController);</pre>
+				<script src="https://gist.github.com/martijndeh/203e8f507d4d3783fa6d.js"></script>
 			</div>
 
 			<div class="col-md-5">
-				<h2>Model-Driven</h2>
-
-				<p>Configure your models in a non-awkward style:</p>
-
-				<pre class="prettyprint">function Article() {
-	this.title	= [this.String, this.Required];
-	this.url	= [this.String, this.Unique];
-	this.createdAt 	= [this.DateTime];
-}
-app.model(Article);</pre>
-				<p>Node on Fire automatically generates migrations, the database schema, a RESTful CRUD API and a client&mdash;server equal models API .</p>
+				<h2>Built on top of AngularJS, PostgreSQL, and more.</h2>
+				<p>Node on Fire is built on top of existing technologies, like AngularJS, PostgreSQL, Grunt, Yeoman, RabbitMQ, and uses a collection of libraries, like Express and Knex.</p>
 			</div>
 		</div>
 
 		<div class="row desc">
-			<div class="col-md-offset-1 col-md-5">
-				<h2>AngularJS</h2>
-
-				<p>Node on Fire completely embraces the <a href="https://angularjs.org/">superheoric AngularJS framework</a> for all things client-side.</p>
-				<pre class="prettyprint">function NewsController(ArticleModel, UserModel, $scope) {
-	ArticleModel.find({}, {orderBy:{position:1}})
-		.then(function(articles) {
-			$scope.articles = articles;
-		})
-
-	$scope.voteArticle = function(article) {
-		return article.createVoter({user: UserModel.getMe()});
-	};
-}
-app.controller(NewsController);</pre>
-			</div>
-
-			<div class="col-md-5">
-				<h2>Routing</h2>
-
-				<p>Your controller methods are automatically routable and all views are automatically added to your $locationProvider. You don't have to keep track of separate routing tables for express and angular.</p>
-
-				<pre class="prettyprint">function TestController($scope) {
-	$scope.test = 'Hello, world!';
-}
-app.controller(TestController);
-
-TestController.prototype.view = function() {
-	return this.template('index.jade');
-};
-			</div>
-		</div>
-
-		<div class="row desc">
-			<div class="col-md-offset-1 col-md-5">
-				<h2>The Process Model</h2>
-
-				<p>In Node on Fire it's trivial to pass a message to a worker process. The below example sends an email in a worker process whenever a new user registers:</p>
-				<pre class="prettyprint">function User() {
-	this.email = [this.String, this.Authenticate];
-}
-app.model(User);
-
-User.prototype.afterCreate = function() {
-	return this.workers.MailWorker.sendWelcomeMail(this);
-}
-
-function MailWorker() {
-
-}
-app.worker(MailWorker);
-
-MailWorker.prototype.sendWelcomeMail = function(user) {
-	// and send the mail
-};</pre>
-			</div>
-
-			<div class="col-md-5">
-				<h2>One-Off Tasks</h2>
-
-				<p>You can create tasks which you can configure to run as scheduled task:</p>
-				<pre class="prettyprint">function DeactivateTask() {
-	//
-}
-app.task(DeactivateTask);
-
-DeactiveTask.prototype.run = function() {
-	return this.models.User.update({active: true}, {active: false});
-}</pre>
-
-				<p>This works perfectly with Heroku's scheduler or any task scheduler as you can run them via the command line: <kbd>$ node index.js --task DeactivateTask</kbd>.</p>
+			<div class="col-md-6 col-md-offset-3">
+				<p>The below list contains some more points you will like about Node on Fire.</p>
+				<ul>
+					<li>An object-relational mapper to quickly build your data model and manage your database.</li>
+					<li>Migration-based data model changes which makes collaboration easy.</li>
+					<li>Flexible triggers module to create tasks to run after certain conditions e.g. send a user an email after 5 days of inactivity.</li>
+					<li>Easy workers module to invoke methods in the non-web process e.g. send a mail in a worker process whenver a new user signs up.</li>
+					<li>All of Node on Fire is Promise-aware. No more callback hell.</li>
+					<li>A framework following the <a href="http://12factor.net">12factor methodology</a>.</li>
+					<li>Easily deploy your app on <a href="https://www.heroku.com">Heroku</a> or <a href="https://github.com/progrium/dokku">similar platforms</a>.</li>
+					<li>Add multiple apps to one project e.g. your web app and the admin panel. See the <a href="https://github.com/martijndeh/fire/tree/master/examples/multiple-apps">multiple apps sample project</a>.</li>
+					<li>Open-source. Everything is available on <a href="https://github.com/martijndeh/fire">our repo</a>.</li>
+				</ul>
 			</div>
 		</div>
 
 		<div class="row footer">
 			<div class="col-md-offset-2 col-md-8">
-				<p>If this seems interesting, sign up for the newsletter below, have a look at <a href="/examples">our examples</a>, or view <a href="/tutorials">the tutorials</a>. Of course, everything we are doing is <a href="https://github.com/martijndeh/fire">open-source</a>.</p>
+				<p>Continue to our <a href="/getting-started">getting started</a> section to set-up your first project or browse the <a href="/documentation">documentation</a>. If you have any questions, please reach out <a href="https://twitter.com/nodeonfire">on Twitter</a>.</p>
 			</div>
 		</div>
 
@@ -185,7 +103,7 @@ DeactiveTask.prototype.run = function() {
 href="https://twitter.com/nodeonfire"
 data-show-count="false"
 data-lang="en">
-Follow @twitterdev
+Follow @nodeonfire
 </a>
 <script type="text/javascript">
 window.twttr = (function (d, s, id) {
@@ -201,6 +119,7 @@ allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"><
 			</div>
 		</div>
 	</div>
+
 </body>
 <script>
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

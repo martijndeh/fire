@@ -17,8 +17,6 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
 				</ul>
 			</div>
 		</div>
@@ -53,7 +51,7 @@
     
         
 <dt>
-    <h4 class="name" id="ModelInstance"><span class="type-signature"></span>new ModelInstance<span class="signature">(model, row, changes, id)</span></h4>
+    <h4 class="name" id="ModelInstance"><span class="type-signature"></span>new ModelInstance<span class="signature">(model, row, changes, id, hookname, isPartial)</span></h4>
     
     
 </dt>
@@ -196,6 +194,54 @@ User.prototype.afterCreate = function() {
             
 
             <td class="description last"><p>The instance primary key's value, if known.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>hookname</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the hook to execute after the model instance is created.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>isPartial</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p><code>true</code> if the model instance is partial. A partial model instance is returned from a create, update, delete or execute action.</p></td>
         </tr>
 
 	
@@ -1547,6 +1593,155 @@ This method is invoked before saving the model in ModelInstance#save.</li>
 
 
         
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="validateHash"><span class="type-signature"></span>validateHash<span class="signature">(hashedPropertyName, password)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Validates a hashed property, see <a href="PropertyTypes.html#Hash">PropertyTypes#Hash</a>.</p>
+<pre class="prettyprint source"><code>return UserModel.getOne({email: 'martijn@ff00ff.nl'})
+    .then(function(instance) {
+        if(instance.validateHash('password', 'my password')) {
+         // Correct!
+       }
+        else {
+        throw new Error('Incorrect password provided.');
+     }
+ });</code></pre><p>This methods returns a promise which resolved to <code>true</code> if the password is correct. <code>false</code> if the password is incorrect.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>hashedPropertyName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the property with a hash method.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>password</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The plaintext password.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
     
     
 </dd>

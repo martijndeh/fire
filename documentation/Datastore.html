@@ -17,8 +17,6 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
 				</ul>
 			</div>
 		</div>
@@ -328,7 +326,7 @@
         
             
 <dt>
-    <h4 class="name" id="connect"><span class="type-signature"></span>connect<span class="signature">()</span></h4>
+    <h4 class="name" id="beginTransaction"><span class="type-signature"></span>beginTransaction<span class="signature">()</span></h4>
     
     
 </dt>
@@ -336,7 +334,7 @@
     
     
     <div class="description">
-        <p>Connects to the database and resolves with Client. It's generally easier to call Datastore#query.</p>
+        <p>Starts a database transaction. This should not be used in the run phase. Only in the build or release phase.</p>
     </div>
     
 
@@ -387,30 +385,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>Resolves with a Client.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>
@@ -418,7 +392,7 @@
         
             
 <dt>
-    <h4 class="name" id="query"><span class="type-signature"></span>query<span class="signature">(query, parameters)</span></h4>
+    <h4 class="name" id="commitTransaction"><span class="type-signature"></span>commitTransaction<span class="signature">()</span></h4>
     
     
 </dt>
@@ -426,7 +400,7 @@
     
     
     <div class="description">
-        <p>Connects the database and executes query. See Client#query.</p>
+        <p>Rolls back the transaction.</p>
     </div>
     
 
@@ -434,80 +408,6 @@
     
     
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>query</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The SQL statement.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>parameters</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Array</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The parameters to pass to the statement.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
     
     
     
@@ -551,30 +451,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    <p>Result set.</p>
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Object</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>
@@ -582,7 +458,7 @@
         
             
 <dt>
-    <h4 class="name" id="setup"><span class="type-signature"></span>setup<span class="signature">()</span></h4>
+    <h4 class="name" id="installExtensions"><span class="type-signature"></span>installExtensions<span class="signature">()</span></h4>
     
     
 </dt>
@@ -664,6 +540,212 @@
 
 
         
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="query"><span class="type-signature"></span>query<span class="signature">(query)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Connects the database and executes query. See Client#query.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">knex</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A knex-constructed query.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>Result set.</p>
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="label label-primary param-type">Object</span>
+
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="rollbackTransaction"><span class="type-signature"></span>rollbackTransaction<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Commits the transaction.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
     
     
 </dd>

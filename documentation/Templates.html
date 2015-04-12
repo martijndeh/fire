@@ -17,8 +17,6 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
 				</ul>
 			</div>
 		</div>
@@ -65,6 +63,7 @@
 <p>To create a template, store a file in the <code>templates</code> directory in your app's root directory. You can also create inline templates on an <a href="App.html">App</a> instance:</p>
 <pre class="prettyprint source"><code>app.template('hello-world', '&lt;h1>Hello, world&lt;/h1>');</code></pre><p>In a view route you can simply use the <code>hello-world</code> template, see <a href="Controller.html#template">Controller#template</a> for more on view routes.</p>
 <p>This module also creates App#template, see {@link Templates#template}.</p>
+<p>Please note: templates are public.</p>
     </div>
     
 
@@ -190,7 +189,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="template"><span class="type-signature"></span>template<span class="signature">(name, html)</span></h4>
+    <h4 class="name" id="template"><span class="type-signature"></span>template<span class="signature">(path, html)</span></h4>
     
     
 </dt>
@@ -199,7 +198,7 @@
     
     <div class="description">
         <p>Either gets the html of template, or sets the template's html with <code>html</code>.</p>
-<p>This method allows you to create inline templates instead of creating a new file in the templates/ directory.</p>
+<p>This method allows you to create inline templates instead of creating a new file in the <code>templates/</code> directory.</p>
 <p>Please note that a template should always be considered public. A route is automatically created to the template and there is no access restriction.</p>
     </div>
     
@@ -234,7 +233,7 @@
 
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>path</code></td>
             
 
             <td class="type">
@@ -251,7 +250,7 @@
 
             
 
-            <td class="description last"><p>The name of the template.</p></td>
+            <td class="description last"><p>The path of the template.</p></td>
         </tr>
 
 	

@@ -17,8 +17,6 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/getting-started">Getting Started</a></li>
 					<li class="active"><a href="/documentation">Documentation</a></li>
-					<li><a href="/examples">Examples</a></li>
-					<li><a href="/tutorials">Tutorials</a></li>
 				</ul>
 			</div>
 		</div>
@@ -165,7 +163,6 @@ app.model(User);</code></pre><p>In your controller, you can sign in the user via
     };
 }
 app.controller(SignInController);</code></pre><p>To sign out a user you can use <a href="Model.html#signOut">Model#signOut</a>. To return the currently signed in user, have a look at <a href="Model.html#getMe">Model#getMe</a>.</p>
-<p>This method is only available on the front-end. This method is not available on the back-end.</p>
     </div>
     
 
@@ -886,6 +883,30 @@ The value should be a dictionary with property name and value pairs. The value o
         </tr>
 
 	
+
+        <tr>
+            
+                <td class="name"><code>autoFetchDepth</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The depth of associations of associations to fetch (if set to auto fetch). By default this is set to 5.</p></td>
+        </tr>
+
+	
 	</tbody>
 </table>
 
@@ -963,6 +984,133 @@ The value should be a dictionary with property name and value pairs. The value o
 
 
         
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="findMe"><span class="type-signature"></span>findMe<span class="signature">(request)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Returns the currently authenticated model instance, or null if not authenticated. Only returns a model instance if <a href="Model.html#authorize">Model#authorize</a> is previously called, otherwise this method returns null.</p>
+<p>For example, on the client-side:</p>
+<pre class="prettyprint source"><code>function UserController(UserModel) {
+    UserModel.getMe()
+        .then(funcion(user) {
+            //
+        });
+}
+app.controller(UserModel);</code></pre><p>On the back-end side:</p>
+<pre class="prettyprint source"><code>app.get('/users/me', function(UserModel, request) {
+    return UserModel.getMe(request);
+});</code></pre><p>Only available on an authenticator model. To define an authenticator model, have a look at <a href="PropertyTypes.html#Authenticate">PropertyTypes#Authenticate</a>.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>request</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">express.request</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Required in the back-end. The current request.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
     
     
 </dd>
@@ -1334,7 +1482,7 @@ The value should be a dictionary with property name and value pairs. The value o
         
             
 <dt>
-    <h4 class="name" id="getMe"><span class="type-signature"></span>getMe<span class="signature">()</span></h4>
+    <h4 class="name" id="getMe"><span class="type-signature"></span>getMe<span class="signature">(request)</span></h4>
     
     
 </dt>
@@ -1342,14 +1490,7 @@ The value should be a dictionary with property name and value pairs. The value o
     
     
     <div class="description">
-        <p>Returns the currently authenticated model instance, or null if not authenticated. Only returns a model instance if <a href="Model.html#authorize">Model#authorize</a> is previously called, otherwise this method returns null.</p>
-<pre class="prettyprint source"><code>function UserController(UserModel) {
-    UserModel.getMe()
-        .then(funcion(user) {
-            //
-        });
-}
-app.controller(UserModel);</code></pre><p>Only available on an authenticator model. To define an authenticator model, have a look at <a href="PropertyTypes.html#Authenticate">PropertyTypes#Authenticate</a>.</p>
+        <p>Returns the currently authenticated model instance or throws an error. See <a href="Model.html#findMe">Model#findMe</a> as well.</p>
     </div>
     
 
@@ -1357,6 +1498,56 @@ app.controller(UserModel);</code></pre><p>Only available on an authenticator mod
     
     
     
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>request</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">express.HTTPRequest</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     
@@ -1487,6 +1678,73 @@ app.controller(UserModel);</code></pre><p>Only available on an authenticator mod
 
 
         
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="isShared"><span class="type-signature"></span>isShared<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Returns if this model is shared.</p>
+<p>A shared model is available in every app. A shared model's migrations are created in the master app.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
     
     
 </dd>
