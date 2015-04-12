@@ -14,12 +14,10 @@ describe('app', function() {
 		before(function() {
 			helper.setup = function() {
 				helper.app.configure(function() {
-					assert.notEqual(this, null);
-					assert.equal(this, helper.app);
-					
 					called = true;
 				});
 			};
+			helper.createModels = null;
 		});
 
 		it('can configure app', function(done) {
