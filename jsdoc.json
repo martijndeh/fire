@@ -17,6 +17,7 @@
 			"../fire/lib/modules/controllers",
 			"../fire/lib/modules/http-server",
 			"../fire/lib/modules/injector",
+			"../fire/lib/modules/isomorphic",
 			"../fire/lib/modules/message-queue",
 			"../fire/lib/modules/middleware",
 			"../fire/lib/modules/migrations",
