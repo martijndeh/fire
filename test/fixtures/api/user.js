@@ -121,12 +121,15 @@ app.post('/api/users/sign-out', function(request, UserModel) {
 app.post('/api/users/authorize', function(request, UserModel) {
 	return UserModel.getOne({'email': request.body.email })
 		.then(function(modelInstance) {
-			if(modelInstance.validateHash('password', request.body.password)) {
-				return modelInstance;
-			}
-			else {
-				throw new Error('Incorrect password provided.');
-			}
+			return modelInstance.validateHash('password', request.body.password)
+				.then(function(correct) {
+					if(correct) {
+						return modelInstance;
+					}
+					else {
+						throw new Error('Incorrect password provided.');
+					}
+				});
 		})
 		.then(function(modelInstance) {
 			// TODO: If access token is null, create something.

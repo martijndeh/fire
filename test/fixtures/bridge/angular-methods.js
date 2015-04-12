@@ -303,6 +303,14 @@ app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q
     };
     this.unwrap = unwrap;
     this.models = FireModels;
+    
+    this.isServer = function() {
+        return false;
+    };
+
+    this.isClient = function() {
+        return true;
+    };
 }]);
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
