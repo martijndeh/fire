@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.31.0
+
+### Bug fixes
+
+- Fixes invalid typecast in cookie's maxAge.
+
+### Improvements
+
+- Implements dependency injection in App#configure.
+
+### New features
+
+- Adds isomorphic module. Services and factories can now be included in the back-end side, too.
+
 ## 0.30.4
 
 ### Bug fixes
