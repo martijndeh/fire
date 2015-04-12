@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.32.0
+
+### Bug fixes
+
+- Fixes issue where date properties wouldn't get parsed properly.
+- Fixes issue where invalid model instance would get removed when removing client associations.
+
+### New features
+
+- Implements Controller#resolve to resolve specific dependencies in $routeProvider.
+- Adds ModelInstance#cancel method to clear any unsaved changes.
+- Implements updating multiple associations at once.
+
 ## 0.31.0
 
 ### Bug fixes
