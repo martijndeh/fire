@@ -48,6 +48,10 @@ function FireModelInstance(setMap, model, path) {
 	}
 }
 
+FireModelInstance.prototype.cancel = function() {
+    this._changes = {};
+};
+
 FireModelInstance.prototype.refresh = function(otherInstance) {
 	this._map = otherInstance._map;
 	return this;
@@ -125,8 +129,8 @@ FireModel.prototype._get = function(path, params) {
 	return this._action('get', path, this._prepare(params));
 };
 
-FireModel.prototype._put = function(path, fields) {
-	return this._action('put', path, null, this._prepare(fields));
+FireModel.prototype._put = function(path, fields, query) {
+	return this._action('put', path, this._prepare(query), this._prepare(fields));
 };
 
 FireModel.prototype.update = function(id, model) {
@@ -290,7 +294,7 @@ app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q
     };
     this.unwrap = unwrap;
     this.models = FireModels;
-    
+
     this.isServer = function() {
         return false;
     };

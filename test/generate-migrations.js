@@ -6,7 +6,7 @@ var assert = require('assert');
 var path = require('path');
 var Generate = null;
 var fs = require('fs');
-var write = true;
+var write = false;
 
 describe('generate migrations', function() {
 	/*

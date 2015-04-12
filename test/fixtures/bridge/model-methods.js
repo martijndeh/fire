@@ -8,7 +8,7 @@ var app = angular.module('default', ['ngRoute']);
 
 
 
-app.controller('TestController', ['$scope', 'FireTestController', function($scope, fire) {/* jshint ignore:start */$scope.user = null; //jshint ignore:line
+app.controller('TestController', ['$scope', 'fire', function($scope, fire) {/* jshint ignore:start */$scope.user = null; //jshint ignore:line
 			// Test comment.
 
 			$scope.submit = function() {
@@ -97,6 +97,10 @@ function FireModelInstance(setMap, model, path) {
 	}
 }
 
+FireModelInstance.prototype.cancel = function() {
+    this._changes = {};
+};
+
 FireModelInstance.prototype.refresh = function(otherInstance) {
 	this._map = otherInstance._map;
 	return this;
@@ -174,8 +178,8 @@ FireModel.prototype._get = function(path, params) {
 	return this._action('get', path, this._prepare(params));
 };
 
-FireModel.prototype._put = function(path, fields) {
-	return this._action('put', path, null, this._prepare(fields));
+FireModel.prototype._put = function(path, fields, query) {
+	return this._action('put', path, this._prepare(query), this._prepare(fields));
 };
 
 FireModel.prototype.update = function(id, model) {
@@ -350,6 +354,12 @@ function FireModelInstancePet(setMap, model, path) {
 
 
 	FireModelInstance.call(this, setMap, model, path);
+
+
+    
+
+    
+
 }
 FireModelInstancePet.prototype = Object.create(FireModelInstance.prototype);
 
@@ -417,6 +427,12 @@ function FireModelInstanceUser(setMap, model, path) {
 
 
 	FireModelInstance.call(this, setMap, model, path);
+
+
+    
+
+    
+
 }
 FireModelInstanceUser.prototype = Object.create(FireModelInstance.prototype);
 
@@ -484,6 +500,12 @@ function FireModelInstanceArticle(setMap, model, path) {
 
 
 	FireModelInstance.call(this, setMap, model, path);
+
+
+    
+
+    
+
 }
 FireModelInstanceArticle.prototype = Object.create(FireModelInstance.prototype);
 
@@ -546,7 +568,7 @@ app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q
     };
     this.unwrap = unwrap;
     this.models = FireModels;
-    
+
     this.isServer = function() {
         return false;
     };
