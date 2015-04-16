@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.33.0
+
+### Improvements
+
+- Moves generated files to `.fire/.build`. This file should be added to your .gitignore.
+
+### Bug fixes
+
+- Fixes issue in App#service and App#factory where files would not get generated properly.
+
 ## 0.32.0
 
 ### Bug fixes
