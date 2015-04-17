@@ -2315,6 +2315,77 @@ app.controller(AccountController);</code></pre><p>This method is only available 
         
             
 <dt>
+    <h4 class="name" id="updateFunction"><span class="type-signature"></span>updateFunction<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Finds one or more model instances and updates them by invoking <code>updateFunction</code> for every instance. <code>updateFunction</code> uses dependency injection.</p>
+<p>This should be considered a slow approach to updating model instances, but is a convenient method to update many model instances with a dependency injection-aware method. Especially when implemented in a migration during the release stage.</p>
+<p>Consider a <code>User</code> model with slug properties which we want to update:</p>
+<pre class="prettyprint source"><code>UserModel.updateFunction({slug:''}, function(user, SlugService) {
+    user.slug = SlugService.slugify(user.name);
+});</code></pre><p>See <a href="Model.html#find">Model#find</a> for additional information. This method is not isomorphic and is only available on the back-end.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="updateOne"><span class="type-signature"></span>updateOne<span class="signature">(whereMapOrId, setMap)</span></h4>
     
     

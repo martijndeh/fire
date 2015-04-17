@@ -467,7 +467,9 @@ User.prototype.afterCreate = function() {
         <p>Warning: in the future the effects of these hooks might change. Currently the hooks are invoked on the same process, in the future, the hooks will be invoked in a worker process.</p>
 <p>Internally calls the hooks.</p>
 <p>The following hooks are supported:</p>
-<h5>afterLoad</h5><p>After a model instance is loaded this hook is called.</p>
+<h5>beforeLoad</h5><p>Before the model instance gets loaded. Please note: you cannot return a promise here to block the loading of the model.</p>
+<h5>afterLoad</h5><p>After a model instance is loaded this hook is called. Please note: you cannot return a promise here to block the loading of the model.</p>
+<h5>beforeSave</h5><p>Before the model is saved: either newly created or updated.</p>
 <h5>afterSave</h5><p>invoked after the model instance successfully saved (either a new instance or updated instance).</p>
 <h5>afterCreate</h5><p>invoked after a new instance is created.</p>
 <h5>afterUpdate</h5><p>Invoked after a model instance is updated, either after ModelInstance#save or Model#update.</p>
@@ -528,6 +530,72 @@ User.prototype.afterCreate = function() {
 	</tbody>
 </table>
 
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="cancel"><span class="type-signature"></span>cancel<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Clears all changes from the model. This erases any unsaved changed.</p>
+    </div>
+    
+
+    
+    
+    
+    
     
     
     

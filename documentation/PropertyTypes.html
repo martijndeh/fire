@@ -1715,139 +1715,6 @@ app.model(User);</code></pre><p>This also hashes any values in the where map, fo
         
             
 <dt>
-    <h4 class="name" id="ReadOnly"><span class="type-signature"></span>ReadOnly<span class="signature">(readOnly)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Creates a virtual read-only property.</p>
-<p>This allows you to create a static value, or calculated value based on other properties, without actually storing it.</p>
-<p><code>readOnly</code> should be an SQLish string, see Table#parseSQLishStatement for more information on SQLish.</p>
-<p>For example:</p>
-<pre class="prettyprint source"><code>function Book() {
-    this.title = [this.String];
-    this.titleLength = [this.ReadOnly('LENGTH($title) * 2')];
-}</code></pre><p>This creates a book model with a <code>title</code> property and a <code>titleLength</code> property which returns the length of the title times two. This creates a query similar to <code>SELECT title, (LENGTH(title) * 2) as title_length FROM books</code> when querying for books.</p>
-<p>A more advanced example:</p>
-<pre class="prettyprint source"><code>function Article() {
-    this.title             = [this.String, this.Required];
- this.url             = [this.String, this.Required, this.CanUpdate(false), this.Unique];
- this.createdAt         = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
- this.author         = [this.BelongsTo(this.models.User, 'articles'), this.Automatic, this.Required, this.AutoFetch];
- this.voters         = [this.HasMany(this.models.User, 'votes'), this.AutoFetch];
- this.position         = [this.ReadOnly('($count(&quot;voters&quot;) - 1) / ((EXTRACT(EPOCH FROM current_timestamp - $createdAt) / 3600) + 2)^1.8')];
-}
-app.model(Article);</code></pre>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>readOnly</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>SQLish statement.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
     <h4 class="name" id="Required"><span class="type-signature"></span>Required<span class="signature">()</span></h4>
     
     
@@ -2068,6 +1935,139 @@ models.Article.find({popular: true})
     
     
     
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="SQL"><span class="type-signature"></span>SQL<span class="signature">(sqlish)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates a virtual SQL-ish property.</p>
+<p>This allows you to create a static value, or calculated value based on other properties, without actually storing it.</p>
+<p><code>sqlish</code> should be an SQLish string, see Table#parseSQLishStatement for more information on SQLish.</p>
+<p>For example:</p>
+<pre class="prettyprint source"><code>function Book() {
+    this.title = [this.String];
+    this.titleLength = [this.SQL('LENGTH($title) * 2')];
+}</code></pre><p>This creates a book model with a <code>title</code> property and a <code>titleLength</code> property which returns the length of the title times two. This creates a query similar to <code>SELECT title, (LENGTH(title) * 2) as title_length FROM books</code> when querying for books.</p>
+<p>A more advanced example:</p>
+<pre class="prettyprint source"><code>function Article() {
+    this.title             = [this.String, this.Required];
+ this.url             = [this.String, this.Required, this.CanUpdate(false), this.Unique];
+ this.createdAt         = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
+ this.author         = [this.BelongsTo(this.models.User, 'articles'), this.Automatic, this.Required, this.AutoFetch];
+ this.voters         = [this.HasMany(this.models.User, 'votes'), this.AutoFetch];
+ this.position         = [this.SQL('($count(&quot;voters&quot;) - 1) / ((EXTRACT(EPOCH FROM current_timestamp - $createdAt) / 3600) + 2)^1.8')];
+}
+app.model(Article);</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>sqlish</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>SQLish statement.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     

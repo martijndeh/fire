@@ -963,6 +963,88 @@ MyController.prototype.getTests = function() {
         
             
 <dt>
+    <h4 class="name" id="resolve"><span class="type-signature"></span>resolve<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>You may overwrite this method.</p>
+<p>This allows you to set the <code>resolve</code> in <code>$routeProvider</code> of the controller. For example:</p>
+<pre class="prettyprint source"><code>TodoController.prototype.resolve = function() {
+    return {
+        list: function(TodoListModel, _StorageService) {
+            if(_StorageService.get('list')) {
+                return TodoListModel.findOne({id: _StorageService.get('list')});
+            }
+            else {
+                return TodoListModel.create({}).then(function(list) {
+                    _StorageService.set('list', list.id);
+                    return list;
+                });
+            }
+        }
+    };
+};</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="template"><span class="type-signature"></span>template<span class="signature">(templateName, templateOptions)</span></h4>
     
     
