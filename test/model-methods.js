@@ -1264,10 +1264,10 @@ describe('model methods', function() {
         });
     });
 
-    it('can create read-only property', function(done) {
+    it('can create sqlish property', function(done) {
         function Shoe() {
             this.testValue = [this.Integer, this.Required];
-            this.position = [this.ReadOnly('$testValue * 3')];
+            this.position = [this.SQL('$testValue * 3')];
         }
         app.model(Shoe);
 
@@ -1296,7 +1296,7 @@ describe('model methods', function() {
         });
     });
 
-    it('can use read-only property in associations', function(done) {
+    it('can use sqlish property in associations', function(done) {
         models.Test1 = 'Test1';
         models.Test2 = 'Test2';
 
@@ -1307,7 +1307,7 @@ describe('model methods', function() {
 
         function Test2() {
             this.testValue = [this.Integer];
-            this.position = [this.ReadOnly('$testValue * 3')];
+            this.position = [this.SQL('$testValue * 3')];
             this.test = [this.BelongsTo(this.models.Test1)];
         }
         app.model(Test2);
