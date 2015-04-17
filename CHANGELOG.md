@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.34.0
+
+### New features
+
+- Implements Model#updateFunction which updates model instances with a function.
+
+### Breaking changes
+
+- Renames PropertyTypes#ReadOnly to PropertyTypes#SQL.
+
 ## 0.33.0
 
 ### Improvements
