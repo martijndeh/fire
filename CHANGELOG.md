@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.1
+
+### Bug fixes
+
+- Fixes issue querying many-to-many relations in migrations.
+
 ## 0.34.0
 
 ### New features
