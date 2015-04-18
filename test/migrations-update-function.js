@@ -85,4 +85,38 @@ describe('migrations update function', function() {
 				assert.equal(shoe.value, 10);
 			});
 	});
+
+	it('can update and add property', function() {
+		function Migration1() {}
+		Migration1.prototype.up = function() {
+			this.models.Shoe.addProperties({
+				name: [this.String, this.Required, this.Default('\'\'')]
+			});
+
+			this.models.Shoe.updateFunction({name: ''}, function(shoe) {
+				shoe.name = 'Martijn';
+			});
+		};
+
+		Migration1.prototype.down = function() {
+			this.models.Shoe.removeProperties(['name']);
+		};
+
+		migrations.addMigration(Migration1, 1);
+
+		return migrations.migrate(0, 1)
+			.then(function() {
+				return migrations.currentVersion();
+			})
+			.then(function(currentVersion) {
+				return assert.equal(currentVersion, 1);
+			})
+			.then(function() {
+				return helper.app.models.Shoe.findOne({name: 'Martijn'});
+			})
+			.then(function(shoe) {
+				assert.notEqual(shoe, null);
+				assert.equal(shoe.name, 'Martijn');
+			});
+	});
 });
