@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.35.0
+
+### Bugfixes
+
+- Fixes an issue when querying on the API on automatic properties.
+- Fixes an issue where removing models no options would get passed in the client-side.
+- Fixes an issue where querying a one-to-one relation would sometimes fail.
+- Fixes an issue where colors in terminal would disappear when running some grunt tasks.
+
+### New features
+
+- Implements a `fire` command.
+
+### Improvements
+
+- Removes foreman dependency by switching to node-foreman.
+- Removes DATABASE_URL fallback url.
+
 ## 0.34.1
 
 ### Bug fixes
