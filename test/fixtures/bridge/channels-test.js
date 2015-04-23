@@ -137,7 +137,7 @@ FireModel.prototype.update = function(id, model) {
 	return this._put(this.endpoint + '/' + id, queryMap);
 };
 
-FireModel.prototype.remove = function(modelInstanceMapOrUUID) {
+FireModel.prototype.remove = function(modelInstanceMapOrUUID, options) {
     var UUID = null;
 
     if(typeof modelInstanceMapOrUUID.toQueryValue != 'undefined') {
@@ -151,7 +151,7 @@ FireModel.prototype.remove = function(modelInstanceMapOrUUID) {
         return this._action('delete', this.endpoint + '/' + UUID);
     }
     else {
-        return this._action('delete', this.endpoint, this._prepare(transformQueryMap(modelInstanceMapOrUUID)));
+        return this._action('delete', this.endpoint, this._prepare(transformQueryMap(modelInstanceMapOrUUID, options)));
     }
 };
 

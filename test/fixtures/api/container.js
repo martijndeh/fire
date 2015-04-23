@@ -337,7 +337,7 @@ app.post('/api/containers/:id/users', function(request, response, app,  Containe
 						}
 
 						if(associatedModel.options.automaticPropertyName) {
-							if(createMap[associatedModel.options.automaticPropertyName]) {
+							if(createMap[associatedModel.options.automaticPropertyName] && createMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 								var error = new Error('Cannot set automatic property manually.');
 								error.status = 400;
 								throw error;
@@ -390,7 +390,7 @@ app.get('/api/containers/:id/users', function(request, response, app,  Container
 						queryMap[association.options.relationshipVia.name] = request.param('id');
 
 						if(associatedModel.options.automaticPropertyName) {
-							if(queryMap[associatedModel.options.automaticPropertyName]) {
+							if(queryMap[associatedModel.options.automaticPropertyName] && queryMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 								var error = new Error('Cannot set automatic property manually.');
 								error.status = 400;
 								throw error;
@@ -440,7 +440,7 @@ app.delete('/api/containers/:id/users/:associationID', function(request, respons
 
 				if(associatedModel.options.automaticPropertyName) {
 					// This is definitely a bad request if the user tries to set the automatic property manually.
-					if(removeMap[associatedModel.options.automaticPropertyName]) {
+					if(removeMap[associatedModel.options.automaticPropertyName] && removeMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 						var error = new Error('Cannot set automatic property manually.');
 						error.status = 400;
 						throw error;
@@ -481,7 +481,7 @@ app.delete('/api/containers/:id/users', function(request, response, app,  Contai
 
 				if(associatedModel.options.automaticPropertyName) {
 					// This is definitely a bad request if the user tries to set the automatic property manually.
-					if(removeMap[associatedModel.options.automaticPropertyName]) {
+					if(removeMap[associatedModel.options.automaticPropertyName] && removeMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 						var error = new Error('Cannot set automatic property manually.');
 						error.status = 400;
 						throw error;
@@ -530,7 +530,7 @@ app.put('/api/containers/:id/users/:associationID', function(request, response, 
 
 									if(associatedModel.options.automaticPropertyName) {
 										// This is definitely a bad request if the user tries to set the automatic property manually.
-										if(whereMap[associatedModel.options.automaticPropertyName]) {
+										if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 											error = new Error('Cannot set automatic property manually.');
 											error.status = 400;
 											throw error;
@@ -579,7 +579,7 @@ app.put('/api/containers/:id/users', function(request, response, app,  Container
 
 									if(associatedModel.options.automaticPropertyName) {
 										// This is definitely a bad request if the user tries to set the automatic property manually.
-										if(whereMap[associatedModel.options.automaticPropertyName]) {
+										if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 											error = new Error('Cannot set automatic property manually.');
 											error.status = 400;
 											throw error;
