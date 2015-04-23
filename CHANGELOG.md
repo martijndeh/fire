@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.35.1
+
+### Improvements
+
+- Adds explanation to fire apps:create command.
+
 ## 0.35.0
 
 ### Bugfixes
