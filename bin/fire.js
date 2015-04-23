@@ -105,6 +105,11 @@ function createApp(name) {
 		.then(function() {
 			return runCommand('npm', ['install'], path.join(process.cwd(), name));
 		})
+		.then(function() {
+			console.log(' ');
+			console.log('	Created app `' + name + '`. You can now run `fire run` and visit your app at `http://127.0.0.1:3000/`.');
+			console.log(' ');
+		})
 		.catch(function(error) {
 			console.log(error);
 		})
