@@ -22,9 +22,12 @@ h3 {
 	font-weight:100;
 	margin-top:50px;
 }
+.header .commands {
+	margin-bottom:150px;
+}
 .header .logo {
 	margin-top:150px;
-	margin-bottom:150px;
+	margin-bottom:20px;
 	text-align:center;
 }
 .header .logo span {

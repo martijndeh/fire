@@ -25,63 +25,33 @@
 		<div class="row header getting-started">
 			<div class="col-md-8 col-md-offset-2">
 				<h1>Getting Started</h1>
-				<p>Setting up all the depencies and a basic project in 4 easy steps.</p>
+				<p>Setting up your first project.</p>
 			</div>
 		</div>
 
 		<div class="row desc">
 			<div class="col-md-8 col-md-offset-2">
-				<h3>1/4. Dependencies</h3>
-				<p>Node on Fire has a few dependencies. Before you continue, make sure you have <a href="http://nodejs.org/">Node.js</a> installed and have a <a href="http://postgresql.org/">Postgres</a> development instance running. If you are on a Mac, you can use the <a href="http://postgresapp.com/">Postgres app</a>. Alternatively, you can use a free database from <a href="https://heroku.com/">Heroku</a>.</p>
+				<h3>1. Install Node on Fire</h3>
+				<p>Install Node on Fire (globally):</p>
 
-				<p>Now install <a href="http://yeoman.io/">Yeoman</a>, <a href="http://gruntjs.com/">Grunt</a>, <a href="http://bower.io/">Bower</a> and <a href="https://github.com/martijndeh/generator-fire">Node on Fire's Yeoman generator</a> globally:</p>
-				<p><kbd>$ npm install -g yo grunt-cli bower generator-fire</kbd></p>
-			</div>
+				<p><kbd>$ npm install -g fire</kbd></p>
 
-			<div class="col-md-8 col-md-offset-2">
-				<hr/>
-				<h3>2/4. Database</h3>
+				<p>Set up the initial files and folders of the app:</p>
 
-				<p>Create a new development database, if you don't have one yet, and install the "uuid-ossp" extension:</p>
-
-				<p><kbd>$ yo fire:datastore</kbd></p>
-
-				<ul>
-					<li>Type the name of the database e.g. <code>helloworld</code></li>
-					<li>Take note of the database url.</li>
-				</ul>
-
-				<p><small>Feel free to change the names to whatever you want, just make sure to construct the correct database URL.</small></p>
-			</div>
-
-
-			<div class="col-md-8 col-md-offset-2">
-				<hr/>
-				<h3>3/4. Creating the App</h3>
-
-				<p>Scaffold the initial files and folders of the app:</p>
-
-				<p><kbd>$ yo fire:app</kbd></p>
-
-				<ul>
-					<li>Type the name of the app e.g. <code>helloworld</code></li>
-					<li>Paste the database URL from the previous step: <code>postgres://fire:password@127.0.0.1/helloworld</code></li>
-				</ul>
-
-				<p>The generator writes some files and installs the initial dependencies.</p>
-			</div>
-
-			<div class="col-md-8 col-md-offset-2">
-				<hr/>
-
-				<h3>4/4. Ready to go!</h3>
+				<p><kbd>$ fire apps:create helloworld</kbd></p>
 
 				<p>You can now run the app:</p>
 
-				<p><kbd>$ cd helloworld/</kbd> (or whichever directory the project is in)</p>
-				<p><kbd>$ node index.js</kbd></p>
+				<p><kbd>$ cd helloworld/</kbd></p>
+				<p><kbd>$ fire run</kbd></p>
 
-				<p>To view the app, head over to <a href="http://127.0.0.1:3000/">http://127.0.0.1:3000/</a>. When you make changes, run <code>grunt build && grunt release</code> again.</p>
+				<p>To view the app, head over to <a href="http://127.0.0.1:5000/">http://127.0.0.1:5000/</a>. When you make changes, run <code>fire build && fire release</code> and then <code>fire run</code>.</p>
+			</div>
+
+			<div class="col-md-8 col-md-offset-2">
+				<h3>Configure the database</h3>
+				<p>If you have Postgres running locally, you can quickly create a new database and update your environment variable:</p>
+				<p><kbd>$ fire datastore:create helloworld</kdb></p>
 			</div>
 		</div>
 
@@ -95,22 +65,7 @@
 
 		<div class="row">
 			<div class="buttons col-md-8 col-md-offset-2 text-center">
-				<a class="twitter-follow-button"
-href="https://twitter.com/nodeonfire"
-data-show-count="false"
-data-lang="en">
-Follow @twitterdev
-</a>
-<script type="text/javascript">
-window.twttr = (function (d, s, id) {
-var t, js, fjs = d.getElementsByTagName(s)[0];
-if (d.getElementById(id)) return;
-js = d.createElement(s); js.id = id;
-js.src= "https://platform.twitter.com/widgets.js";
-fjs.parentNode.insertBefore(js, fjs);
-return window.twttr || (t = { _e: [], ready: function (f) { t._e.push(f) } });
-}(document, "script", "twitter-wjs"));
-</script> <iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
+				<iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
 allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
 			</div>
 		</div>
