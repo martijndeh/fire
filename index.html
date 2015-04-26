@@ -2,24 +2,21 @@
 <html>
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
-	<meta name="description" content="A full-stack isomorphic web framework built on top of Node.js, AngularJS, Express and PostgreSQL."/>
-	<title>Node on Fire</title>
-	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css"/>
-	<link rel="stylesheet" href="/styles/default.css"/>
+	<meta name="description" content="A full-stack isomorphic web framework built on top of Node.js, AngularJS, PostgreSQL."/>
+	<title>Node on Fire -- a full-stack isomorphic web framework built on top of Node.js, AngularJS and PostgreSQL</title>
+	<link rel="stylesheet" href="/styles/default.min.css"/>
 	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/scripts/highlight.min.js"></script>
 </head>
 <body>
 	<a class="hidden-sm hidden-xs" href="https://github.com/martijndeh/fire"><img style="position: fixed; top: 0; left: 0; border: 0;z-index:1031;" src="https://camo.githubusercontent.com/82b228a3648bf44fc1163ef44c62fcc60081495e/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png"></a>
-	<nav class="navbar navbar-default navbar-fixed-top">
-		<div class="container-fluid">
-			<div class="col-md-8 col-md-offset-2">
-				<ul class="nav navbar-nav">
-					<li class="active"><a href="/">Home</a></li>
-					<li><a href="/getting-started">Getting Started</a></li>
-					<li><a href="/documentation">Documentation</a></li>
-				</ul>
-			</div>
-		</div>
+
+	<nav>
+		<ul>
+			<li class="active"><a href="/">Home</a></li>
+			<li><a href="/getting-started">Getting Started</a></li>
+			<li><a href="/documentation">Documentation</a></li>
+		</ul>
 	</nav>
 
 	<div class="container-fluid">
@@ -36,26 +33,45 @@
 			<p class="col-md-6 col-md-offset-3">A full-stack isomorphic web framework built on top of Node.js, AngularJS, Express and PostgreSQL.</p>
 		</div>
 
-		<div class="row">
-			<div class="buttons col-md-8 col-md-offset-2 text-center">
-				<iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
-  allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
-			</div>
-		</div>
-
 		<div class="row desc">
 			<div class="col-md-5 col-md-offset-1">
 				<h2>Embracing isomorphism</h2>
-				<p>It's easy to create services which you can execute in both the client- and the server-side. Have a look at the <a href="https://github.com/martijndeh/fire/tree/master/examples/isomorphic">isomorphic example project</a>.</p>
+				<p>All your services are available on both the front- and back-end. This makes it easy to create isomorphic services. The below `TextService` is available on the front- and back-end.</p>
 
-				<script src="https://gist.github.com/martijndeh/3b74f45dcdab6643c591.js"></script>
+				<pre><code class="javascript">app.service(function TextService() {
+    this.slugify = function(text) {
+        return text.toString().toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[àáâãäå]+/g, 'a')
+        .replace(/[èéêë]+/g, 'e')
+        .replace(/[ìíîï]+/g, 'i')
+        .replace(/[òóôõö]+/g, 'o')
+        .replace(/[ùúûü]+/g, 'u')
+        .replace(/\\s+/g, "")
+        .replace(/æ+/g, "ae")
+        .replace(/ç+/g, "c")
+        .replace(/ñ"+/g, 'n')
+        .replace(/œ+/g, "oe")
+        .replace(/[ýÿ]+/g, 'y')
+        .replace(/\\W+/g, '')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+    };
+});</code></pre>
 			</div>
 
 			<div class="col-md-5">
 				<h2>Express with dependency injection</h2>
 				<p>Dependency injection is now also available on the back-end side, which makes creating Express routes super easy.</p>
 
-				<script src="https://gist.github.com/martijndeh/0791a6ec06854e363433.js"></script>
+				<pre><code class="javascript">app.post('/api/users', function(UserModel, request) {
+    return UserModel.create(request.body)
+        .then(function(user) {
+            return user;
+        });
+});</code></pre>
 			</div>
 		</div>
 
@@ -64,10 +80,106 @@
 				<h2>Integrated A/B testing</h2>
 				<p>It's trivial to create A/B tests. You can A/B test every feature with ease. See <a href="https://github.com/martijndeh/fire/tree/master/examples/test">A/B test example project</a>.</p>
 
-				<script src="https://gist.github.com/martijndeh/203e8f507d4d3783fa6d.js"></script>
+				<pre><code class="javascript">app.controller('/', function StartController(TextOfButtonTest, $scope) {
+    if(TextOfButtonTest.getVariant() == 'A') {
+        $scope.buttonText = 'Register for FREE';
+    }
+    else {
+        $scope.buttonText = 'Register now';
+    };
+});</code></pre>
 			</div>
 
-			<div class="col-md-5">
+			<div class="col-md-5 col-md-offset-1">
+				<h2>Data model creation</h2>
+				<p>It's easy to declare your data model and all associations (one-to-one, one-to-many and many-to-many).</p>
+
+				<pre><code class="javascript">var fire = require('fire');
+var app = fire.app('todomvc');
+
+app.model(function TodoItem(TodoListModel) {
+    this.list = [this.BelongsTo(TodoListModel), this.Required];
+    this.name = [this.String, this.Required];
+    this.completed = [this.Boolean, this.Required, this.Default(false)];
+    this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
+});
+
+app.model(function TodoList(TodoItemModel) {
+    this.items = [this.HasMany(TodoItemModel), this.AutoFetch];
+    this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
+});</code></pre>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<div class="col-md-5 col-md-offset-1">
+				<h2>Migration-based schema changes</h2>
+				<p>All changes to your data model are applied in migrations. Migrations are automatically generated based on the changes of your models.</p>
+
+				<pre><code class="javascript">exports = module.exports = Migration;
+
+function Migration() {
+    //
+}
+
+Migration.prototype.up = function() {
+    this.models.createModel('TodoItem', {
+        id: [this.UUID, this.CanUpdate(false)],
+        list: [this.BelongsTo(this.models.TodoList), this.Required],
+        name: [this.String, this.Required],
+        createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
+    });
+
+    this.models.createModel('TodoList', {
+        id: [this.UUID, this.CanUpdate(false)],
+        items: [this.HasMany(this.models.TodoItem)],
+        createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
+    });
+};
+
+Migration.prototype.down = function() {
+    this.models.destroyModel('TodoItem');
+    this.models.destroyModel('TodoList');
+};</code></pre>
+			</div>
+
+			<div class="col-md-5 col-md-offset-1">
+				<h2>Create workers</h2>
+				<p>Easily create workers which execute background tasks.</p>
+
+				<pre><code class="javascript">function MailWorker() {
+    //
+}
+app.worker(MailWorker);
+
+MailWorker.prototype.sendResetPasswordMail = function(user, resetPassword) {
+    var defer = Q.defer();
+
+    mandrill('/messages/send', {
+        message: {
+            to: [{
+                email: user.email,
+                name: user.name
+            }],
+            ...
+        }
+    }, defer.makeNodeResolver());
+
+    return defer.promise;
+};</code></pre>
+
+				<p>It's easy to queue a background task which the worker executes in a worker process.</p>
+
+				<pre><code class="javascript">app.post('/api/forgot-password', function(request, MailWorker, UserModel) {
+    return UserModel.getMe(request).then(function(user) {
+        return MailWorker.sendResetPassword(user, user.resetPassword);
+    });
+});</code></pre>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<div class="col-md-offset-1 col-md-5">
 				<h2>Built on top of AngularJS, PostgreSQL and more</h2>
 				<p>Node on Fire is built on top of existing technologies, like AngularJS, PostgreSQL, Grunt, Yeoman, RabbitMQ, and uses a collection of libraries, like Express and Knex.</p>
 			</div>
@@ -95,16 +207,10 @@
 				<p>Continue to our <a href="/getting-started">getting started</a> section to set-up your first project or browse the <a href="/documentation">documentation</a>. If you have any questions, please reach out <a href="https://twitter.com/nodeonfire">on Twitter</a>.</p>
 			</div>
 		</div>
-
-		<div class="row">
-			<div class="buttons col-md-8 col-md-offset-2 text-center">
-				<iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
-allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe><br/><br/><br/><br/><br/>
-			</div>
-		</div>
 	</div>
 
 </body>
+<script>hljs.initHighlightingOnLoad();</script>
 <script>
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

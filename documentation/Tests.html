@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Documentation Class: Tests - Node on Fire</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="A full-stack isomorphic web framework built on top of Node.js, AngularJS, PostgreSQL."/>
+	<link rel="stylesheet" href="/styles/default.min.css"/>
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/scripts/highlight.min.js"></script>
+</head>
+
+<body>
+	<nav>
+		<ul>
+			<li><a href="/">Home</a></li>
+			<li><a href="/getting-started">Getting Started</a></li>
+			<li class="active"><a href="/documentation">Documentation</a></li>
+		</ul>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-offset-1 col-md-3">
+				
+				<div id="toc"></div>
+				
+			</div>
+
+			<div id="main" class="col-md-7">
+				
+
+
+	<h1 class="page-title">Class: Tests</h1>
+<section>
+
+<header>
+    <h2>
+    Tests
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+<dt>
+    <h4 class="name" id="Tests"><span class="type-signature"></span>new Tests<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>A/B split testing module.</p>
+<p>This modules allows you to easily creates A/B tests. Tests optionally belong to one or multiple controllers.</p>
+<p>The below creates a test with two variants: A and B.</p>
+<pre class="prettyprint source"><code>app.test(function ColorOfHeaderTest() {
+    return {
+        controller: 'TestController',
+        variants: ['A', 'B']
+    };
+});</code></pre><p>This creates a test named ColorOfHeaderTest which is a client-side service available through dependecy injection. The test exposes two public methods:</p>
+<ol>
+<li><code>ColorOfHeaderTest#participate</code> makes the current user, either signed-in or not, participate to the test. The user automatically gets assigned to the variant with the least amount of participants. Users get distributed equally among all the different variants.</li>
+<li><code>ColorOfHeaderTest#getVariant</code> returns the variant the user belongs to. If a user is not participating the test and this method is called, an error is thrown.</li>
+</ol>
+<p>If you assign a test to one or more controllers, a user automatically participates the test when the controller is loaded. This is because Node on Fire in the <code>$routeProvider</code> resolves the test dependency only after having called the participate method.</p>
+<pre class="prettyprint source"><code>app.controller(function TestController(ColorOfHeaderTest) {
+    if(ColorOfHeaderTest.getVariant() == 'A') {
+        // Show something in green
+    }
+    else {
+        // Show something in blue.
+    }
+});</code></pre><p>Because you generally want to know which test a user participates to, you can set a delegate to the <code>TestsService</code> to subscribe to participation events. The below registers a super property to Mixpanel whenever a user participates an event. This allows you to easily track conversion, retention and whatnot per test variant in Mixpanel.</p>
+<pre class="prettyprint source"><code>app.run(['TestsService', function(TestsService) {
+    TestsService.delegate = {
+        participate: function(test, variant) {
+            console.log('Join test ' + test + ' with variant ' + variant);
+
+            var properties = {};
+            properties[test] = variant;
+            mixpanel.register(properties);
+        }
+    };
+}]);</code></pre>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				<p class="expl disqus-expl">Do you have any questions or comments on this page? Start a discussion below.</p>
+
+			    <div id="disqus_thread"></div>
+				<script type="text/javascript">
+    			var disqus_shortname = 'nodeonfire';
+    			(function() {
+        			var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    			})();
+				</script>
+				<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				This is the footer.
+			</div>
+		</div>
+	</div>
+
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="scripts/toc.js"></script>
+	<script>
+		$( function () {
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+		} );
+	 </script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-52717773-3', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>
