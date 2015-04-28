@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.35.2
+
+### Breaking changes
+
+- Fixes issue where Heroku couldn't find Procfile.
+
 ## 0.35.1
 
 ### Improvements
