@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.35.3
+
+### Breaking changes
+
+- Fixes issue running `grunt run` locally.
+
 ## 0.35.2
 
 ### Breaking changes
