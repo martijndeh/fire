@@ -27,6 +27,13 @@ function unauthenticatedError(authenticator) {
 	return error;
 }
 
+function badRequestError() {
+	var error = new Error();
+	error.status = 400;
+	error.message = 'Bad Request';
+	return error;
+}
+
 function _canUpdateProperties(propertyNames, model) {
 	for(var i = 0, il = propertyNames.length; i < il; i++) {
 		var propertyName = propertyNames[i];
@@ -94,29 +101,35 @@ app.post('/api/collections', function(app, response, request, CollectionModel, U
 			return Q.when(accessControl.canCreate({authenticator: authenticator, request: request, response: response}))
 				.then(function(canCreate) {
 					if(canCreate) {
-						var createMap = request.body || {};
-
-						if(typeof canCreate == 'object') {
-							createMap = merge(createMap, canCreate);
-						}
-
-						if(CollectionModel.options.automaticPropertyName) {
-							if(createMap[CollectionModel.options.automaticPropertyName]) {
-								var error = new Error('Cannot set automatic property manually.');
-								error.status = 400;
-								throw error;
+						var checkCreateMap = function(createMap) {
+							if(typeof canCreate == 'object') {
+								createMap = merge(createMap, canCreate);
 							}
 
-							createMap[CollectionModel.options.automaticPropertyName] = authenticator;
-						}
+							if(CollectionModel.options.automaticPropertyName) {
+								createMap[CollectionModel.options.automaticPropertyName] = authenticator;
+							}
 
-						if(_canSetProperties(Object.keys(createMap), CollectionModel)) {
-							return CollectionModel.create(createMap);
+							if(_canSetProperties(Object.keys(createMap), CollectionModel)) {
+								return createMap;
+							}
+							else {
+								throw badRequestError();
+							}
+						};
+
+						if(Array.isArray(request.body)) {
+							
+
+							var createMaps = request.body.map(function(createMap) {
+								return checkCreateMap(createMap);
+							});
+
+							return CollectionModel.create(createMaps);
+							
 						}
 						else {
-							var error = new Error('Bad Request');
-							error.status = 400;
-							throw error;
+							return CollectionModel.create(checkCreateMap(request.body || {}));
 						}
 					}
 					else {
@@ -216,10 +229,7 @@ app.put('/api/collections/:id', function(request, response, app,  CollectionMode
 				return Q.all([CollectionModel.updateOne(whereMap, request.body), authenticator]);
 			}
 			else {
-				var error = new Error();
-				error.status = 400;
-				error.message = 'Bad Request';
-				throw error;
+				throw badRequestError();
 			}
 		})
 		.spread(function(modelInstance, authenticator) {
@@ -232,6 +242,40 @@ app.put('/api/collections/:id', function(request, response, app,  CollectionMode
 		})
 		.catch(function(error) {
 			throw error;
+		});
+});
+
+app.put('/api/collections', function(request, response, app,  CollectionModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var accessControl = CollectionModel.getAccessControl();
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response}))
+				.then(function(canUpdate) {
+					if(canUpdate) {
+						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), CollectionModel))
+							.then(function(canUpdateProperties) {
+								if(canUpdateProperties) {
+									var whereMap = request.query || {};
+
+									if(typeof canUpdate == 'object') {
+										whereMap = merge(whereMap, canUpdate);
+									}
+
+									if(CollectionModel.options.automaticPropertyName) {
+										whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
+									}
+
+									return CollectionModel.update(whereMap, request.body || {});
+								}
+								else {
+									throw badRequestError();
+								}
+							});
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
 		});
 });
 

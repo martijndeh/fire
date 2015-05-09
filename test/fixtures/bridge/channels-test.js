@@ -55,12 +55,21 @@ FireError.prototype = new Error();
 
 app.factory('FireModel', ['$http', '$q', function($http, $q) {
     return function() {
-        this._prepare = function(params) {
-        	var map = {};
-        	Object.keys(params || {}).forEach(function(key) {
-        		map[key] = JSON.stringify(params[key]);
-        	});
-        	return map;
+        this._prepare = function(paramsOrList) {
+            var prepare = function(params) {
+                var map = {};
+            	Object.keys(params || {}).forEach(function(key) {
+            		map[key] = JSON.stringify(params[key]);
+            	});
+            	return map;
+            };
+
+            if(Array.isArray(paramsOrList)) {
+                return paramsOrList.map(prepare);
+            }
+            else {
+                return prepare(paramsOrList);
+            }
         };
 
         this._action = function(verb, path, params, data) {
@@ -92,10 +101,13 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         	return this._action('put', path, this._prepare(query), this._prepare(fields));
         };
 
-        this.update = function(id, model) {
-            var queryMap = transformQueryMap(model);
-
-        	return this._put(this.endpoint + '/' + id, queryMap);
+        this.update = function(whereMap, setMap) {
+            if(typeof whereMap == 'object') {
+                return this._put(this.endpoint, transformQueryMap(setMap), transformQueryMap(whereMap));
+            }
+            else {
+                return this._put(this.endpoint + '/' + whereMap, transformQueryMap(setMap));
+            }
         };
 
         this.remove = function(modelInstanceMapOrUUID, options) {
@@ -117,7 +129,24 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         };
 
         this.updateOrCreate = function(where, set) {
-            throw new Error('Model#updateOrCreate is not yet available.');
+            var self = this;
+            return this.update(where, set).then(function(modelInstances) {
+                if(modelInstances.length) {
+                    return modelInstances[0];
+                }
+                else {
+                    var createMap = {};
+                    Object.keys(where || {}).forEach(function(key) {
+                        createMap[key] = where[key];
+                    });
+
+                    Object.keys(set || {}).forEach(function(key) {
+                        createMap[key] = set[key];
+                    });
+
+                    return self.create(createMap);
+                }
+            });
         };
 
         this.findOrCreate = function(where, set) {
@@ -143,9 +172,15 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         };
 
         this._create = function(path, fields) {
-            var queryMap = transformQueryMap(fields);
+            if(Array.isArray(fields)) {
+                return this._post(path, fields.map(function(map) {
+                    return transformQueryMap(map);
+                }));
+            }
+            else {
+            	return this._post(path, transformQueryMap(fields));
+            }
 
-        	return this._post(path, queryMap);
         };
 
         this.create = function(fields) {

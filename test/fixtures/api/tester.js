@@ -27,6 +27,13 @@ function unauthenticatedError(authenticator) {
 	return error;
 }
 
+function badRequestError() {
+	var error = new Error();
+	error.status = 400;
+	error.message = 'Bad Request';
+	return error;
+}
+
 function _canUpdateProperties(propertyNames, model) {
 	for(var i = 0, il = propertyNames.length; i < il; i++) {
 		var propertyName = propertyNames[i];
@@ -94,29 +101,35 @@ app.post('/api/testers', function(app, response, request, TesterModel, UserModel
 			return Q.when(accessControl.canCreate({authenticator: authenticator, request: request, response: response}))
 				.then(function(canCreate) {
 					if(canCreate) {
-						var createMap = request.body || {};
-
-						if(typeof canCreate == 'object') {
-							createMap = merge(createMap, canCreate);
-						}
-
-						if(TesterModel.options.automaticPropertyName) {
-							if(createMap[TesterModel.options.automaticPropertyName]) {
-								var error = new Error('Cannot set automatic property manually.');
-								error.status = 400;
-								throw error;
+						var checkCreateMap = function(createMap) {
+							if(typeof canCreate == 'object') {
+								createMap = merge(createMap, canCreate);
 							}
 
-							createMap[TesterModel.options.automaticPropertyName] = authenticator;
-						}
+							if(TesterModel.options.automaticPropertyName) {
+								createMap[TesterModel.options.automaticPropertyName] = authenticator;
+							}
 
-						if(_canSetProperties(Object.keys(createMap), TesterModel)) {
-							return TesterModel.create(createMap);
+							if(_canSetProperties(Object.keys(createMap), TesterModel)) {
+								return createMap;
+							}
+							else {
+								throw badRequestError();
+							}
+						};
+
+						if(Array.isArray(request.body)) {
+							
+
+							var createMaps = request.body.map(function(createMap) {
+								return checkCreateMap(createMap);
+							});
+
+							return TesterModel.create(createMaps);
+							
 						}
 						else {
-							var error = new Error('Bad Request');
-							error.status = 400;
-							throw error;
+							return TesterModel.create(checkCreateMap(request.body || {}));
 						}
 					}
 					else {
@@ -216,10 +229,7 @@ app.put('/api/testers/:id', function(request, response, app,  TesterModel, UserM
 				return Q.all([TesterModel.updateOne(whereMap, request.body), authenticator]);
 			}
 			else {
-				var error = new Error();
-				error.status = 400;
-				error.message = 'Bad Request';
-				throw error;
+				throw badRequestError();
 			}
 		})
 		.spread(function(modelInstance, authenticator) {
@@ -232,6 +242,40 @@ app.put('/api/testers/:id', function(request, response, app,  TesterModel, UserM
 		})
 		.catch(function(error) {
 			throw error;
+		});
+});
+
+app.put('/api/testers', function(request, response, app,  TesterModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var accessControl = TesterModel.getAccessControl();
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response}))
+				.then(function(canUpdate) {
+					if(canUpdate) {
+						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), TesterModel))
+							.then(function(canUpdateProperties) {
+								if(canUpdateProperties) {
+									var whereMap = request.query || {};
+
+									if(typeof canUpdate == 'object') {
+										whereMap = merge(whereMap, canUpdate);
+									}
+
+									if(TesterModel.options.automaticPropertyName) {
+										whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+									}
+
+									return TesterModel.update(whereMap, request.body || {});
+								}
+								else {
+									throw badRequestError();
+								}
+							});
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
 		});
 });
 

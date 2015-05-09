@@ -168,6 +168,24 @@ describe('model routes', function() {
 				});
 		});
 
+		it('can create multiple models', function(done) {
+			request(helper.app.HTTPServer.express)
+				.post('/api/events')
+				.send([{
+					name: 'Martijn 1'
+				}, {
+					name: 'Martijn 2'
+				}])
+				.expect(200, function(error, response) {
+					assert.equal(error, null);
+					assert.equal(response.body.length, 2);
+					assert.equal(response.body[0].name, 'Martijn 1');
+					assert.equal(response.body[1].name, 'Martijn 2');
+
+					done();
+				});
+		});
+
 		describe('create multiple models', function() {
 			var model1ID = uuid.v4();
 			var model2ID = uuid.v4();
@@ -276,13 +294,28 @@ describe('model routes', function() {
 					});
 			});
 
-			it('cannot update all models', function(done) {
+			it('can update all models', function(done) {
 				request(helper.app.HTTPServer.express)
 					.put('/api/events')
 					.send(helper.jsonify({
-						name: 'Oopsie'
+						name: 'Test'
 					}))
-					.expect(404, function(error) {
+					.expect(200, function(error, response) {
+						assert.equal(error, null);
+						assert.equal(response.body.length, 3);
+						done(error);
+					});
+			});
+
+			it('can update a few models', function(done) {
+				request(helper.app.HTTPServer.express)
+					.put('/api/events?value=2')
+					.send(helper.jsonify({
+						name: 'Martijn'
+					}))
+					.expect(200, function(error, response) {
+						assert.equal(error, null);
+						assert.equal(response.body.length, 2);
 						done(error);
 					});
 			});
