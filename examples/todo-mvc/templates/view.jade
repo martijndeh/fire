@@ -11,4 +11,7 @@ html(ng-app="default")
         div(ng-view)
     script(src="/bower_components/angular/angular.min.js")
     script(src="/bower_components/angular-route/angular-route.min.js")
-    script(src="/scripts/fire.min.js")
+    if NODE_ENV == 'development'
+        script(src="/scripts/fire.js")
+    else
+        script(src="/scripts/fire.min.js")

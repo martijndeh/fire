@@ -11,16 +11,15 @@ Migration.prototype.up = function() {
 		name: [this.String, this.Required],
 		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
 	});
+
 	this.models.createModel('TodoList', {
 		id: [this.UUID, this.CanUpdate(false)],
 		items: [this.HasMany(this.models.TodoItem)],
 		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
 	});
-
 };
 
 Migration.prototype.down = function() {
 	this.models.destroyModel('TodoItem');
 	this.models.destroyModel('TodoList');
-
 };

@@ -1494,4 +1494,30 @@ describe('model methods', function() {
                 .done();
         });
     });
+
+    it('can call model methods', function(done) {
+        function User() {
+            this.name = [this.String];
+
+            this.getTest = function(value) {
+                return value * 2;
+            };
+
+            this.getUpperCaseName = function() {
+                return this.name.toUpperCase();
+            };
+        }
+        app.model(User);
+
+        setImmediate(function() {
+            models.User.setup().then(function() {
+                assert.equal(models.User.getTest(123), 123 * 2);
+                return models.User.create({name: 'Martijn'});
+            }).then(function(user) {
+                assert.equal(user.name, 'Martijn');
+                assert.equal(user.getUpperCaseName(), 'MARTIJN');
+                done();
+            }).done();
+        });
+    });
 });
