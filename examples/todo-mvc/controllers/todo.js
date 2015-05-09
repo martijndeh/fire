@@ -75,16 +75,8 @@ app.controller('/:status', TodoController);
 
 TodoController.prototype.resolve = function() {
 	return {
-		list: function(TodoListModel, _StorageService) {
-			if(_StorageService.get('list')) {
-				return TodoListModel.findOne({id: _StorageService.get('list')});
-			}
-			else {
-				return TodoListModel.create({}).then(function(list) {
-					_StorageService.set('list', list.id);
-					return list;
-				});
-			}
+		list: function(TodoListModel) {
+			return TodoListModel.getCurrentList(123);
 		}
 	};
 };
