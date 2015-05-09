@@ -28,167 +28,6 @@ function _getUUID(modelInstanceOrUUID) {
     return UUID;
 }
 
-function FireError(message) {
-    this.name = 'FireError';
-    this.message = message || '';
-	this.number = -1;
-}
-FireError.prototype = new Error();
-
-function FireModelInstance(setMap, model, path) {
-	this._map = setMap || {};
-	this._changes = {};
-	this._model = model;
-
-	if(this._map.id) {
-		this._endpoint = path + '/' + this._map.id;
-	}
-	else {
-		this._endpoint = null;
-	}
-}
-
-FireModelInstance.prototype.cancel = function() {
-    this._changes = {};
-};
-
-FireModelInstance.prototype.refresh = function(otherInstance) {
-	this._map = otherInstance._map;
-	return this;
-};
-
-FireModelInstance.prototype.toQueryValue = function() {
-	return this._map.id;
-};
-
-FireModelInstance.prototype.remove = function() {
-	return this._model.remove(this._map.id);
-};
-
-FireModelInstance.prototype.save = function() {
-    var self = this;
-    return this._model.$q.when(Object.keys(this._changes).length)
-        .then(function(numberOfChanges) {
-            if(numberOfChanges) {
-                var queryMap = transformQueryMap(self._changes);
-
-                return self._model._put(self._endpoint, queryMap)
-                    .then(function(instance) {
-                        self._changes = {};
-
-                        Object.keys(instance._map).forEach(function(key) {
-                            if(instance._map[key] !== null) {
-                                self._map[key] = instance._map[key];
-                            }
-                        });
-                        return self;
-                    });
-            }
-            else {
-                return self;
-            }
-        });
-};
-
-function FireModel($http, $q, models) {
-	this.$http = $http;
-	this.$q = $q;
-	this.models = models;
-}
-
-FireModel.prototype._prepare = function(params) {
-	var map = {};
-	Object.keys(params || {}).forEach(function(key) {
-		map[key] = JSON.stringify(params[key]);
-	});
-	return map;
-};
-
-FireModel.prototype._action = function(verb, path, params, data) {
-	var defer = this.$q.defer();
-
-	var self = this;
-	this.$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true}})
-		.success(function(result) {
-			defer.resolve(self.parseResult(result, path));
-		})
-		.error(function(data, statusCode) {
-            var error = new FireError(data);
-            error.number = statusCode;
-			defer.reject(error);
-		});
-
-	return defer.promise;
-};
-
-FireModel.prototype._post = function(path, fields) {
-	return this._action('post', path, null, this._prepare(fields));
-};
-
-FireModel.prototype._get = function(path, params) {
-	return this._action('get', path, this._prepare(params));
-};
-
-FireModel.prototype._put = function(path, fields, query) {
-	return this._action('put', path, this._prepare(query), this._prepare(fields));
-};
-
-FireModel.prototype.update = function(id, model) {
-    var queryMap = transformQueryMap(model);
-
-	return this._put(this.endpoint + '/' + id, queryMap);
-};
-
-FireModel.prototype.remove = function(modelInstanceMapOrUUID, options) {
-    var UUID = null;
-
-    if(typeof modelInstanceMapOrUUID.toQueryValue != 'undefined') {
-        UUID = modelInstanceMapOrUUID.toQueryValue();
-    }
-    else if(typeof modelInstanceMapOrUUID == 'string') {
-        UUID = modelInstanceMapOrUUID;
-    }
-
-    if(UUID) {
-        return this._action('delete', this.endpoint + '/' + UUID);
-    }
-    else {
-        return this._action('delete', this.endpoint, this._prepare(transformQueryMap(modelInstanceMapOrUUID, options)));
-    }
-};
-
-FireModel.prototype.findOrCreate = function(where, set) {
-	var self = this;
-	return this.findOne(where)
-		.then(function(modelInstance) {
-			if(modelInstance) {
-				return modelInstance;
-			}
-			else {
-				var createMap = {};
-				Object.keys(where || {}).forEach(function(key) {
-					createMap[key] = where[key];
-				});
-
-				Object.keys(set || {}).forEach(function(key) {
-					createMap[key] = set[key];
-				});
-
-				return self.create(createMap);
-			}
-		});
-};
-
-FireModel.prototype._create = function(path, fields) {
-    var queryMap = transformQueryMap(fields);
-
-	return this._post(path, queryMap);
-};
-
-FireModel.prototype.create = function(fields) {
-	return this._create(this.endpoint, fields);
-};
-
 function transformQueryMap(fields, options) {
     var queryMap = {};
 
@@ -209,68 +48,176 @@ function transformQueryMap(fields, options) {
     return queryMap;
 }
 
-FireModel.prototype._find = function(path, fields, options) {
-	var queryMap = transformQueryMap(fields, options);
-	return this._get(path, queryMap);
-};
+function FireError(message) {
+    this.name = 'FireError';
+    this.message = message || '';
+	this.number = -1;
+}
+FireError.prototype = new Error();
 
-FireModel.prototype.find = function(fields, options) {
-	return this._find(this.endpoint, fields, options);
-};
+app.factory('FireModel', ['$http', '$q', function($http, $q) {
+    return function() {
+        this._prepare = function(params) {
+        	var map = {};
+        	Object.keys(params || {}).forEach(function(key) {
+        		map[key] = JSON.stringify(params[key]);
+        	});
+        	return map;
+        };
 
-FireModel.prototype.findOne = function(fields, options) {
-	var fieldsMap = fields || {};
-	if(fieldsMap.id) {
-		var modelID = fieldsMap.id;
-		delete fieldsMap.id;
+        this._action = function(verb, path, params, data) {
+        	var defer = $q.defer();
 
-		var self = this;
-		return this._get(this.endpoint + '/' + modelID, transformQueryMap(fieldsMap))
-			.then(function(modelInstance) {
-				if(modelInstance) {
-					modelInstance._endpoint = self.endpoint + '/' + modelID;
-				}
+        	var self = this;
+        	$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true}})
+        		.success(function(result) {
+        			defer.resolve(self.parseResult(result, path));
+        		})
+        		.error(function(data, statusCode) {
+                    var error = new FireError(data);
+                    error.number = statusCode;
+        			defer.reject(error);
+        		});
 
-				return modelInstance;
-			});
-	}
-	else {
-		var optionsMap = options || {};
-		optionsMap.limit = 1;
+        	return defer.promise;
+        };
 
-		return this.find(fieldsMap, optionsMap)
-			.then(function(list) {
-				if(list && list.length) {
-					return list[0];
-				}
-				else {
-					return null;
-				}
-			});
-	}
+        this._post = function(path, fields) {
+        	return this._action('post', path, null, this._prepare(fields));
+        };
 
-};
+        this._get = function(path, params) {
+        	return this._action('get', path, this._prepare(params));
+        };
 
-FireModel.prototype.getOne = function(fields) {
-	var defer = this.$q.defer();
-	this.findOne(fields)
-		.then(function(model) {
-			if(model) {
-				defer.resolve(model);
-			}
-			else {
-				var error = new FireError('Not Found');
-				error.number = 404;
-				defer.reject(error);
-			}
-		});
-	return defer.promise;
-};
+        this._put = function(path, fields, query) {
+        	return this._action('put', path, this._prepare(query), this._prepare(fields));
+        };
+
+        this.update = function(id, model) {
+            var queryMap = transformQueryMap(model);
+
+        	return this._put(this.endpoint + '/' + id, queryMap);
+        };
+
+        this.remove = function(modelInstanceMapOrUUID, options) {
+            var UUID = null;
+
+            if(typeof modelInstanceMapOrUUID.toQueryValue != 'undefined') {
+                UUID = modelInstanceMapOrUUID.toQueryValue();
+            }
+            else if(typeof modelInstanceMapOrUUID == 'string') {
+                UUID = modelInstanceMapOrUUID;
+            }
+
+            if(UUID) {
+                return this._action('delete', this.endpoint + '/' + UUID);
+            }
+            else {
+                return this._action('delete', this.endpoint, this._prepare(transformQueryMap(modelInstanceMapOrUUID, options)));
+            }
+        };
+
+        this.updateOrCreate = function(where, set) {
+            throw new Error('Model#updateOrCreate is not yet available.');
+        };
+
+        this.findOrCreate = function(where, set) {
+        	var self = this;
+        	return this.findOne(where)
+        		.then(function(modelInstance) {
+        			if(modelInstance) {
+        				return modelInstance;
+        			}
+        			else {
+        				var createMap = {};
+        				Object.keys(where || {}).forEach(function(key) {
+        					createMap[key] = where[key];
+        				});
+
+        				Object.keys(set || {}).forEach(function(key) {
+        					createMap[key] = set[key];
+        				});
+
+        				return self.create(createMap);
+        			}
+        		});
+        };
+
+        this._create = function(path, fields) {
+            var queryMap = transformQueryMap(fields);
+
+        	return this._post(path, queryMap);
+        };
+
+        this.create = function(fields) {
+        	return this._create(this.endpoint, fields);
+        };
+
+        this._find = function(path, fields, options) {
+        	var queryMap = transformQueryMap(fields, options);
+        	return this._get(path, queryMap);
+        };
+
+        this.find = function(fields, options) {
+        	return this._find(this.endpoint, fields, options);
+        };
+
+        this.findOne = function(fields, options) {
+        	var fieldsMap = fields || {};
+        	if(fieldsMap.id) {
+        		var modelID = fieldsMap.id;
+        		delete fieldsMap.id;
+
+        		var self = this;
+        		return this._get(this.endpoint + '/' + modelID, transformQueryMap(fieldsMap))
+        			.then(function(modelInstance) {
+        				if(modelInstance) {
+        					modelInstance._endpoint = self.endpoint + '/' + modelID;
+        				}
+
+        				return modelInstance;
+        			});
+        	}
+        	else {
+        		var optionsMap = options || {};
+        		optionsMap.limit = 1;
+
+        		return this.find(fieldsMap, optionsMap)
+        			.then(function(list) {
+        				if(list && list.length) {
+        					return list[0];
+        				}
+        				else {
+        					return null;
+        				}
+        			});
+        	}
+
+        };
+
+        this.getOne = function(fields) {
+        	var defer = $q.defer();
+        	this.findOne(fields)
+        		.then(function(model) {
+        			if(model) {
+        				defer.resolve(model);
+        			}
+        			else {
+        				var error = new FireError('Not Found');
+        				error.number = 404;
+        				defer.reject(error);
+        			}
+        		});
+        	return defer.promise;
+        };
+    };
+}]);
 
 
 
-app.service('FireModels', ['$http', '$q', function($http, $q) {
-	
+app.service('FireModels', [function() {
+    throw new Error('FireModels service is deprecated.');
 }]);
 function unwrap(promise, initialValue) {
     var value = initialValue;
