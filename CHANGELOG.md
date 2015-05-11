@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.36.0
+
+### Breaking changes
+
+- Changes authorize, forgot password and reset password endpoints.
+
+### Improvements
+
+- Adds dependency injection to onResetPassword and onForgotPassword.
+
+### New features
+
+- Implements custom isomorphic model methods.
+- Implements API call to update an array of model instances.
+- Implements Model#updateOrCreate.
+- Implements Model#changePassword.
+
 ## 0.35.3
 
 ### Breaking changes
