@@ -93,6 +93,10 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         	return defer.promise;
         };
 
+        this._delete = function(path, fields) {
+        	return this._action('delete', path, null, this._prepare(fields));
+        };
+
         this._post = function(path, fields) {
         	return this._action('post', path, null, this._prepare(fields));
         };

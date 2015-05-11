@@ -28,26 +28,11 @@ describe('model routes', function() {
 					};
 				};
 
-				User.prototype.toJSON = function() {
-					return {
-						id: this.id,
-						name: this.name,
-						actions: this.actions
-					};
-				};
-
 				function Action() {
 					this.type = [this.String];
 					this.user = [this.BelongsTo(this.models.User), this.Required];
 				}
 				app.model(Action);
-
-				Action.prototype.toJSON = function() {
-					return {
-						id: this.id,
-						type: this.type
-					};
-				};
 			};
 			helper.createModels = null;
 		});
@@ -82,7 +67,7 @@ describe('model routes', function() {
 				.expect(200, function(error) {
 					assert.equal(error, null);
 
-					agent.post('/api/users/authorize')
+					agent.post('/api/users/access-token')
 						.send({
 							name: 'Martijn',
 							password: 'test'
@@ -142,14 +127,6 @@ describe('model routes', function() {
 						canRead: true
 					};
 				};
-
-				Event.prototype.toJSON = function() {
-					return {
-						id: this.id,
-						name: this.name,
-						value: this.value
-					};
-				};
 			};
 		});
 
@@ -162,7 +139,7 @@ describe('model routes', function() {
 				.expect(200, function(error, response) {
 					assert.equal(error, null);
 					assert.equal(response.body.name, 'Martijn');
-					assert.equal(Object.keys(response.body).length, 3);
+					assert.equal(Object.keys(response.body).length, 4);
 
 					done();
 				});
@@ -261,7 +238,8 @@ describe('model routes', function() {
 
 			it('can get an array of multiple models', function(done) {
 				request(helper.app.HTTPServer.express)
-					.get('/api/events?value=2')
+					.get('/api/events?value=2&$options={"orderBy":{"name":1}}')
+					.set('X-JSON-Params', true)
 					.expect(200, function(error, response) {
 						assert.equal(error, null);
 

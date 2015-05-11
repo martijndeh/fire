@@ -28,7 +28,7 @@ describe('models api associations', function() {
 				this.childs = [this.HasMany(this.models.Child)];
 				this.privates = [this.HasMany(this.models.Private), this.Private];
 				this.list = [this.Has(function(ChildModel, request) {
-					return ChildModel.find({parent: request.param('id')});
+					return ChildModel.find({parent: request.params.id});
 				})];
 			}
 			app.model(Parent);

@@ -158,6 +158,8 @@ app.get('/api/testers', function(request, response, app,  TesterModel, UserModel
 							delete queryMap.$options;
 						}
 
+						optionsMap.isShallow = true;
+
 						if(TesterModel.options.automaticPropertyName) {
 							queryMap[TesterModel.options.automaticPropertyName] = authenticator;
 						}
@@ -180,7 +182,7 @@ app.get('/api/testers/:id', function(request, response, app,  TesterModel, UserM
 		.spread(function(canRead, authenticator) {
 			if(canRead) {
 				var whereMap = request.query || {};
-				whereMap.id = request.param('id');
+				whereMap.id = request.params.id;
 
 				if(typeof canRead == 'object') {
 					whereMap = merge(whereMap, canRead);
@@ -190,7 +192,16 @@ app.get('/api/testers/:id', function(request, response, app,  TesterModel, UserM
 					whereMap[TesterModel.options.automaticPropertyName] = authenticator;
 				}
 
-				return TesterModel.getOne(whereMap);
+				var optionsMap = {};
+
+				if(whereMap.$options) {
+					optionsMap = whereMap.$options;
+					delete whereMap.$options;
+				}
+
+				optionsMap.isShallow = true;
+
+				return TesterModel.getOne(whereMap, optionsMap);
 			}
 			else {
 				throw unauthenticatedError(authenticator);
@@ -216,7 +227,7 @@ app.put('/api/testers/:id', function(request, response, app,  TesterModel, UserM
 					whereMap[TesterModel.options.automaticPropertyName] = authenticator;
 				}
 
-				whereMap.id = request.param('id');
+				whereMap.id = request.params.id;
 				return [_canUpdateProperties(Object.keys(request.body), TesterModel), whereMap, authenticator];
 			}
 			else {
@@ -318,7 +329,7 @@ app.delete('/api/testers/:id', function(request, response, app,  TesterModel, Us
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					whereMap.id = request.param('id');
+					whereMap.id = request.params.id;
 
 					if(TesterModel.options.automaticPropertyName) {
 						whereMap[TesterModel.options.automaticPropertyName] = authenticator;

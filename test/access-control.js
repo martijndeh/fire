@@ -190,7 +190,7 @@ describe('access control', function() {
 					agent = request.agent(app.HTTPServer.express);
 
 					// We authorize. This should set a session variable.
-					agent.post('/api/users/authorize')
+					agent.post('/api/users/access-token')
 						.set('X-JSON-Params', true)
 						.send(helper.jsonify({name: 'Martijn', password: 'test'}))
 						.expect(200, function(error, response) {
@@ -239,7 +239,7 @@ describe('access control', function() {
 
 			app.models.User.create({name: 'Agent Smith', password: 'test'})
 				.then(function() {
-					smith.post('/api/users/authorize')
+					smith.post('/api/users/access-token')
 						.set('X-JSON-Params', false)
 						.send({name: 'Agent Smith', password: 'test'})
 						.expect(200, function() {
@@ -312,7 +312,7 @@ describe('access control', function() {
 
 				app.models.User.create({name: 'Agent Smith', password: 'test'})
 					.then(function() {
-						smith.post('/api/users/authorize')
+						smith.post('/api/users/access-token')
 							.send({name: 'Agent Smith', password: 'test'})
 							.expect(200, function(error1) {
 								assert.equal(error1, null);

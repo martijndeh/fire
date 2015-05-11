@@ -27,6 +27,13 @@ function unauthenticatedError(authenticator) {
 	return error;
 }
 
+function badRequestError() {
+	var error = new Error();
+	error.status = 400;
+	error.message = 'Bad Request';
+	return error;
+}
+
 function _canUpdateProperties(propertyNames, model) {
 	for(var i = 0, il = propertyNames.length; i < il; i++) {
 		var propertyName = propertyNames[i];
@@ -94,29 +101,41 @@ app.post('/api/todo-lists', function(app, response, request, TodoListModel) {
 			return Q.when(accessControl.canCreate({authenticator: authenticator, request: request, response: response}))
 				.then(function(canCreate) {
 					if(canCreate) {
-						var createMap = request.body || {};
-
-						if(typeof canCreate == 'object') {
-							createMap = merge(createMap, canCreate);
-						}
-
-						if(TodoListModel.options.automaticPropertyName) {
-							if(createMap[TodoListModel.options.automaticPropertyName]) {
-								var error = new Error('Cannot set automatic property manually.');
-								error.status = 400;
-								throw error;
+						var checkCreateMap = function(createMap) {
+							if(typeof canCreate == 'object') {
+								createMap = merge(createMap, canCreate);
 							}
 
-							createMap[TodoListModel.options.automaticPropertyName] = authenticator;
-						}
+							if(TodoListModel.options.automaticPropertyName) {
+								createMap[TodoListModel.options.automaticPropertyName] = authenticator;
+							}
 
-						if(_canSetProperties(Object.keys(createMap), TodoListModel)) {
-							return TodoListModel.create(createMap);
+							if(_canSetProperties(Object.keys(createMap), TodoListModel)) {
+								return createMap;
+							}
+							else {
+								throw badRequestError();
+							}
+						};
+
+						console.log('Body:');
+						console.log(request.body);
+
+						if(Array.isArray(request.body)) {
+							
+
+							var createMaps = request.body.map(function(createMap) {
+								return checkCreateMap(createMap);
+							});
+
+							console.log('Create maps:');
+							console.log(createMaps);
+
+							return TodoListModel.create(createMaps);
+							
 						}
 						else {
-							var error = new Error('Bad Request');
-							error.status = 400;
-							throw error;
+							return TodoListModel.create(checkCreateMap(request.body || {}));
 						}
 					}
 					else {
@@ -216,10 +235,7 @@ app.put('/api/todo-lists/:id', function(request, response, app,  TodoListModel) 
 				return Q.all([TodoListModel.updateOne(whereMap, request.body), authenticator]);
 			}
 			else {
-				var error = new Error();
-				error.status = 400;
-				error.message = 'Bad Request';
-				throw error;
+				throw badRequestError();
 			}
 		})
 		.spread(function(modelInstance, authenticator) {
@@ -232,6 +248,40 @@ app.put('/api/todo-lists/:id', function(request, response, app,  TodoListModel) 
 		})
 		.catch(function(error) {
 			throw error;
+		});
+});
+
+app.put('/api/todo-lists', function(request, response, app,  TodoListModel) {
+	return findAuthenticator(null, request)
+		.then(function(authenticator) {
+			var accessControl = TodoListModel.getAccessControl();
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response}))
+				.then(function(canUpdate) {
+					if(canUpdate) {
+						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), TodoListModel))
+							.then(function(canUpdateProperties) {
+								if(canUpdateProperties) {
+									var whereMap = request.query || {};
+
+									if(typeof canUpdate == 'object') {
+										whereMap = merge(whereMap, canUpdate);
+									}
+
+									if(TodoListModel.options.automaticPropertyName) {
+										whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
+									}
+
+									return TodoListModel.update(whereMap, request.body || {});
+								}
+								else {
+									throw badRequestError();
+								}
+							});
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
 		});
 });
 
@@ -332,7 +382,7 @@ app.post('/api/todo-lists/:id/items', function(request, response, app,  TodoList
 						}
 
 						if(associatedModel.options.automaticPropertyName) {
-							if(createMap[associatedModel.options.automaticPropertyName]) {
+							if(createMap[associatedModel.options.automaticPropertyName] && createMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 								var error = new Error('Cannot set automatic property manually.');
 								error.status = 400;
 								throw error;
@@ -345,9 +395,7 @@ app.post('/api/todo-lists/:id/items', function(request, response, app,  TodoList
 							return associatedModel.create(createMap);
 						}
 						else {
-							var error = new Error('Bad Request');
-							error.status = 400;
-							throw error;
+							throw badRequestError();
 						}
 					}
 					else {
@@ -385,7 +433,7 @@ app.get('/api/todo-lists/:id/items', function(request, response, app,  TodoListM
 						queryMap[association.options.relationshipVia.name] = request.param('id');
 
 						if(associatedModel.options.automaticPropertyName) {
-							if(queryMap[associatedModel.options.automaticPropertyName]) {
+							if(queryMap[associatedModel.options.automaticPropertyName] && queryMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 								var error = new Error('Cannot set automatic property manually.');
 								error.status = 400;
 								throw error;
@@ -435,7 +483,7 @@ app.delete('/api/todo-lists/:id/items/:associationID', function(request, respons
 
 				if(associatedModel.options.automaticPropertyName) {
 					// This is definitely a bad request if the user tries to set the automatic property manually.
-					if(removeMap[associatedModel.options.automaticPropertyName]) {
+					if(removeMap[associatedModel.options.automaticPropertyName] && removeMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 						var error = new Error('Cannot set automatic property manually.');
 						error.status = 400;
 						throw error;
@@ -476,7 +524,7 @@ app.delete('/api/todo-lists/:id/items', function(request, response, app,  TodoLi
 
 				if(associatedModel.options.automaticPropertyName) {
 					// This is definitely a bad request if the user tries to set the automatic property manually.
-					if(removeMap[associatedModel.options.automaticPropertyName]) {
+					if(removeMap[associatedModel.options.automaticPropertyName] && removeMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 						var error = new Error('Cannot set automatic property manually.');
 						error.status = 400;
 						throw error;
@@ -525,7 +573,7 @@ app.put('/api/todo-lists/:id/items/:associationID', function(request, response, 
 
 									if(associatedModel.options.automaticPropertyName) {
 										// This is definitely a bad request if the user tries to set the automatic property manually.
-										if(whereMap[associatedModel.options.automaticPropertyName]) {
+										if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 											error = new Error('Cannot set automatic property manually.');
 											error.status = 400;
 											throw error;
@@ -537,10 +585,7 @@ app.put('/api/todo-lists/:id/items/:associationID', function(request, response, 
 									return associatedModel.updateOne(whereMap, request.body);
 								}
 								else {
-									error = new Error();
-									error.status = 400;
-									error.message = 'Bad Request';
-									throw error;
+									throw badRequestError();
 								}
 							});
 					}
@@ -574,7 +619,7 @@ app.put('/api/todo-lists/:id/items', function(request, response, app,  TodoListM
 
 									if(associatedModel.options.automaticPropertyName) {
 										// This is definitely a bad request if the user tries to set the automatic property manually.
-										if(whereMap[associatedModel.options.automaticPropertyName]) {
+										if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
 											error = new Error('Cannot set automatic property manually.');
 											error.status = 400;
 											throw error;
@@ -586,10 +631,7 @@ app.put('/api/todo-lists/:id/items', function(request, response, app,  TodoListM
 									return associatedModel.update(whereMap, request.body);
 								}
 								else {
-									error = new Error();
-									error.status = 400;
-									error.message = 'Bad Request';
-									throw error;
+									throw badRequestError();
 								}
 							});
 					}

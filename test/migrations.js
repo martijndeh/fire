@@ -1,4 +1,4 @@
-/* global Migrations */
+/* global Migrations, it, describe, beforeEach, afterEach */
 'use strict';
 
 var fire = require('..');
@@ -84,20 +84,20 @@ describe('migrations', function() {
                             this.models.ThirdTest.addProperties({
                                 value: [this.Integer]
                             });
-                        }
+                        };
                         FourthMigration.prototype.down = function() {
                             this.models.ThirdTest.removeProperties(['value']);
-                        }
+                        };
 
                         function FifthMigration() {}
                         FifthMigration.prototype.up = function() {
                             this.models.createModel('User', {
                                 name: [this.String]
                             });
-                        }
+                        };
                         FifthMigration.prototype.down = function() {
                             this.models.destroyModel('User');
-                        }
+                        };
 
                         function SixthMigration() {}
                         SixthMigration.prototype.up = function() {
@@ -108,11 +108,11 @@ describe('migrations', function() {
                             this.models.User.addProperties({
                                 thirdTest: [this.BelongsTo(this.models.ThirdTest)]
                             });
-                        }
+                        };
                         SixthMigration.prototype.down = function() {
                             this.models.ThirdTest.removeProperties(['user']);
                             this.models.User.removeProperties(['thirdTest']);
-                        }
+                        };
 
                         function Migration7() {}
                         Migration7.prototype.up = function() {
@@ -130,7 +130,7 @@ describe('migrations', function() {
                         Migration7.prototype.down = function() {
                             this.models.destroyModel('Project');
                             this.models.destroyModel('Client');
-                        }
+                        };
 
                         function Migration8() {}
                         Migration8.prototype.up = function() {
@@ -146,7 +146,7 @@ describe('migrations', function() {
                         Migration8.prototype.down = function() {
                             this.models.Client.removeProperties(['workspace']);
                             this.models.destroyModel('Workspace');
-                        }
+                        };
 
                         function Migration9() {}
                         Migration9.prototype.up = function() {
@@ -157,11 +157,11 @@ describe('migrations', function() {
                             this.models.Client.addProperties({
                                 thirdTest: [this.BelongsTo(this.models.Client)]
                             });
-                        }
+                        };
                         Migration9.prototype.down = function() {
                             this.models.ThirdTest.removeProperties(['clients']);
                             this.models.Client.removeProperties(['thirdTest']);
-                        }
+                        };
 
                         function Migration10() {}
                         Migration10.prototype.up = function() {
@@ -170,10 +170,10 @@ describe('migrations', function() {
                             });
 
                             this.models.ThirdTest.update({}, {type:'Not a Test'});
-                        }
+                        };
                         Migration10.prototype.down = function() {
                             this.models.ThirdTest.removeProperties(['type']);
-                        }
+                        };
 
                         function Migration11() {}
                         Migration11.prototype.up = function() {
@@ -187,25 +187,25 @@ describe('migrations', function() {
                             });
                         };
                         Migration11.prototype.down = function() {
-                            this.models.ThirdTest.removeProperties(['testRelation'])
+                            this.models.ThirdTest.removeProperties(['testRelation']);
                             this.models.destroyModel('TestRelation');
-                        }
+                        };
 
                         function Migration12() {}
                         Migration12.prototype.up = function() {
                             this.models.Project.addProperties({
                                 team: [this.HasOne(this.models.Team)]
-                            })
+                            });
                             this.models.createModel('Team', {
                                 id: [this.UUID],
                                 name: [this.String],
                                 project: [this.BelongsTo(this.models.Project), this.Required]
                             });
-                        }
+                        };
                         Migration12.prototype.down = function() {
                             this.models.Project.removeProperties(['team']);
                             this.models.destroyModel('Team');
-                        }
+                        };
 
                         migrations.addMigration(FirstMigration, 1);
                         migrations.addMigration(SecondMigration, 2);
@@ -239,7 +239,7 @@ describe('migrations', function() {
                 done();
             })
             .done();
-    })
+    });
 
     it('can migrate twice', function(done) {
         migrations.migrate(0, 2)
@@ -251,7 +251,7 @@ describe('migrations', function() {
                 done();
             })
             .done();
-    })
+    });
 
     it('can migrate thrice', function(done) {
         migrations.migrate(0, 3)
@@ -276,9 +276,9 @@ describe('migrations', function() {
             })
             .then(function() {
                 // Let's clear all the models
-                models['FirstTest'] = null;
-                models['SecondTest'] = null;
-                models['ThirdTest'] = null;
+                models.FirstTest = null;
+                models.SecondTest = null;
+                models.ThirdTest = null;
                 return true;
             })
             .then(function() {
@@ -444,7 +444,7 @@ describe('migrations', function() {
                 done();
             })
             .done();
-    })
+    });
 
     it('can create model and add many association', function(done) {
         migrations.migrate(0, 11)
@@ -478,17 +478,17 @@ describe('migrations', function() {
                 name: [this.String]
             });
             this.models.execute('SELCT * FROM test_models FROM 1');
-        }
+        };
         Migration13.prototype.down = function() {
             this.models.Project.removeProperties(['team']);
             this.models.destroyModel('TestModel');
-        }
+        };
 
         migrations.addMigration(Migration13, 13);
 
         migrations.migrate(0, 13)
             .catch(function(error) {
-                assert.equal(error.toString(), 'error: syntax error at or near "SELCT"');
+                assert.equal(error.toString(), 'error: SELCT * FROM test_models FROM 1 - syntax error at or near "SELCT"');
                 return migrations.currentVersion();
             })
             .then(function(currentVersion) {
@@ -498,7 +498,7 @@ describe('migrations', function() {
                 return models.execute('SELECT * FROM test_models');
             })
             .catch(function(error) {
-                assert.equal(error.toString(), 'error: relation "test_models" does not exist');
+                assert.equal(error.toString(), 'error: SELECT * FROM test_models - relation "test_models" does not exist');
                 return done();
             })
             .done();
@@ -518,11 +518,12 @@ describe('migrations', function() {
                 name: [this.String],
                 childs: [this.HasMany(this.models.TestChild)]
             });
-        }
+        };
+
         Migration13.prototype.down = function() {
             this.models.destroyModel('TestParent');
             this.models.destroyModel('TestChild');
-        }
+        };
 
         migrations.addMigration(Migration13, 13);
 
@@ -533,7 +534,7 @@ describe('migrations', function() {
                 });
             })
             .catch(function(error) {
-                assert.equal(error.toString(), 'error: null value in column "parent_id" violates not-null constraint');
+                assert.equal(error.toString(), 'error: insert into "test_children" ("name") values ($1) returning * - null value in column "parent_id" violates not-null constraint');
                 done();
             })
             .done();

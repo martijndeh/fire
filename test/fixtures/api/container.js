@@ -158,6 +158,8 @@ app.get('/api/containers', function(request, response, app,  ContainerModel, Use
 							delete queryMap.$options;
 						}
 
+						optionsMap.isShallow = true;
+
 						if(ContainerModel.options.automaticPropertyName) {
 							queryMap[ContainerModel.options.automaticPropertyName] = authenticator;
 						}
@@ -180,7 +182,7 @@ app.get('/api/containers/:id', function(request, response, app,  ContainerModel,
 		.spread(function(canRead, authenticator) {
 			if(canRead) {
 				var whereMap = request.query || {};
-				whereMap.id = request.param('id');
+				whereMap.id = request.params.id;
 
 				if(typeof canRead == 'object') {
 					whereMap = merge(whereMap, canRead);
@@ -190,7 +192,16 @@ app.get('/api/containers/:id', function(request, response, app,  ContainerModel,
 					whereMap[ContainerModel.options.automaticPropertyName] = authenticator;
 				}
 
-				return ContainerModel.getOne(whereMap);
+				var optionsMap = {};
+
+				if(whereMap.$options) {
+					optionsMap = whereMap.$options;
+					delete whereMap.$options;
+				}
+
+				optionsMap.isShallow = true;
+
+				return ContainerModel.getOne(whereMap, optionsMap);
 			}
 			else {
 				throw unauthenticatedError(authenticator);
@@ -216,7 +227,7 @@ app.put('/api/containers/:id', function(request, response, app,  ContainerModel,
 					whereMap[ContainerModel.options.automaticPropertyName] = authenticator;
 				}
 
-				whereMap.id = request.param('id');
+				whereMap.id = request.params.id;
 				return [_canUpdateProperties(Object.keys(request.body), ContainerModel), whereMap, authenticator];
 			}
 			else {
@@ -318,7 +329,7 @@ app.delete('/api/containers/:id', function(request, response, app,  ContainerMod
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					whereMap.id = request.param('id');
+					whereMap.id = request.params.id;
 
 					if(ContainerModel.options.automaticPropertyName) {
 						whereMap[ContainerModel.options.automaticPropertyName] = authenticator;
@@ -374,7 +385,7 @@ app.post('/api/containers/:id/users', function(request, response, app,  Containe
 				.then(function(canCreate) {
 					if(canCreate) {
 						var createMap = request.body || {};
-						createMap[association.options.hasMany] = request.param('id');
+						createMap[association.options.hasMany] = request.params.id;
 
 						if(typeof canCreate == 'object') {
 							createMap = merge(createMap, canCreate);
@@ -422,6 +433,8 @@ app.get('/api/containers/:id/users', function(request, response, app,  Container
 							delete queryMap.$options;
 						}
 
+						optionsMap.isShallow = true;
+
 						var association = ContainerModel.getProperty('users');
 						var associatedModel = association.options.relationshipVia.model;
 
@@ -429,7 +442,7 @@ app.get('/api/containers/:id/users', function(request, response, app,  Container
 							queryMap = merge(queryMap, canRead);
 						}
 
-						queryMap[association.options.relationshipVia.name] = request.param('id');
+						queryMap[association.options.relationshipVia.name] = request.params.id;
 
 						if(associatedModel.options.automaticPropertyName) {
 							if(queryMap[associatedModel.options.automaticPropertyName] && queryMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
@@ -477,8 +490,8 @@ app.delete('/api/containers/:id/users/:associationID', function(request, respons
 				var association = ContainerModel.getProperty('users');
 				var associatedModel = association.getAssociatedModel();
 
-				removeMap[association.options.hasMany] = request.param('id');
-				removeMap.id = request.param('associationID');
+				removeMap[association.options.hasMany] = request.params.id;
+				removeMap.id = request.params.associationID;
 
 				if(associatedModel.options.automaticPropertyName) {
 					// This is definitely a bad request if the user tries to set the automatic property manually.
@@ -519,7 +532,7 @@ app.delete('/api/containers/:id/users', function(request, response, app,  Contai
 				var association = ContainerModel.getProperty('users');
 				var associatedModel = association.getAssociatedModel();
 
-				removeMap[association.options.hasMany] = request.param('id');
+				removeMap[association.options.hasMany] = request.params.id;
 
 				if(associatedModel.options.automaticPropertyName) {
 					// This is definitely a bad request if the user tries to set the automatic property manually.
@@ -567,8 +580,8 @@ app.put('/api/containers/:id/users/:associationID', function(request, response, 
 										whereMap = merge(whereMap, canUpdate);
 									}
 
-									whereMap[association.options.relationshipVia.name] = request.param('id');
-									whereMap.id = request.param('associationID');
+									whereMap[association.options.relationshipVia.name] = request.params.id;
+									whereMap.id = request.params.associationID;
 
 									if(associatedModel.options.automaticPropertyName) {
 										// This is definitely a bad request if the user tries to set the automatic property manually.
@@ -610,7 +623,7 @@ app.put('/api/containers/:id/users', function(request, response, app,  Container
 								var error;
 								if(canUpdateProperties) {
 									var whereMap = request.query || {};
-									whereMap[association.options.relationshipVia.name] = request.param('id');
+									whereMap[association.options.relationshipVia.name] = request.params.id;
 
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);

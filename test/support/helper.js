@@ -1,3 +1,4 @@
+/* global it */
 'use strict';
 
 var Q = require('q');
@@ -14,6 +15,27 @@ function Helper() {
     this.modules = null;
     this.modelNames = null;
 }
+
+Helper.prototype.test = function(name, callback) {
+    var self = this;
+    it(name, function(done) {
+        var ret = self.app.injector.call(callback, {done: done});
+
+        if(typeof ret != 'undefined') {
+            Q.when(ret)
+                .then(function() {
+                    done();
+                })
+                .catch(function(error) {
+                    done(error);
+                })
+                .done();
+        }
+        else {
+            // `done` is assumed to be called by the test.
+        }
+    });
+};
 
 Helper.prototype.beforeEach = function(options) {
     var self = this;

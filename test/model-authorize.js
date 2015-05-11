@@ -30,7 +30,7 @@ describe('model authorize', function() {
 	beforeEach(function(done) {
 		agent = request.agent(helper.app.HTTPServer.express);
 		agent
-			.post('/api/users/authorize')
+			.post('/api/users/access-token')
 			.send({name: 'Martijn', password: 'test'})
 			.expect(200, done);
 	});
@@ -44,7 +44,7 @@ describe('model authorize', function() {
 
 	it('can sign out', function(done) {
 		return agent
-			.post('/api/users/sign-out')
+			.delete('/api/users/access-token')
 			.send()
 			.expect(200, function(error) {
 				assert.equal(null, error);
@@ -57,7 +57,7 @@ describe('model authorize', function() {
 
 	it('can sign out and sign back in', function(done) {
 		return agent
-			.post('/api/users/sign-out')
+			.delete('/api/users/access-token')
 			.send()
 			.expect(200, function(error) {
 				assert.equal(null, error);
@@ -66,7 +66,7 @@ describe('model authorize', function() {
 					.send()
 					.expect(401, function() {
 						agent
-							.post('/api/users/authorize')
+							.post('/api/users/access-token')
 							.send({name: 'Martijn', password: 'test'})
 							.expect(200, function() {
 								agent

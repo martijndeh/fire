@@ -47,12 +47,9 @@ describe('forgot password', function() {
 		};
 	});
 
-
-
 	it('can call forgot password', function(done) {
-		// We authorize. This should set a session variable.
 		request(helper.app.HTTPServer.express)
-			.post('/api/users/forgot-password')
+			.delete('/api/users/password')
 			.send({email: 'martijn@nodeonfire.org'})
 			.expect(200, function(error) {
 				assert.notEqual(helper.app.models.UserResetPassword, null);
@@ -65,13 +62,13 @@ describe('forgot password', function() {
 		var agent = request.agent(helper.app.HTTPServer.express);
 
 		agent
-			.post('/api/users/authorize')
+			.post('/api/users/access-token')
 			.send({email: 'martijn@nodeonfire.org', password: 'njitram'})
 			.expect(200, function(error) {
 				assert.equal(error, null);
 
 				agent
-					.post('/api/users/forgot-password')
+					.delete('/api/users/password')
 					.send({email: 'martijn@nodeonfire.org'})
 					.expect(403, function(error2) {
 						done(error2);
@@ -81,7 +78,7 @@ describe('forgot password', function() {
 
 	it('can call forgot password on non-existing account and receive valid response', function(done) {
 		request(helper.app.HTTPServer.express)
-			.post('/api/users/forgot-password')
+			.delete('/api/users/password')
 			.send({email: 'this user does not exist'})
 			.expect(200, function(error) {
 				assert.equal(error, null);
@@ -92,7 +89,7 @@ describe('forgot password', function() {
 
 	it('can reset password after forgot password', function(done) {
 		request(helper.app.HTTPServer.express)
-			.post('/api/users/forgot-password')
+			.delete('/api/users/password')
 			.send({email: 'martijn@nodeonfire.org'})
 			.expect(200, function(error) {
 				assert.equal(error, null);
@@ -100,10 +97,11 @@ describe('forgot password', function() {
 				assert.notEqual(resetPasswordInstance, null);
 
 				request(helper.app.HTTPServer.express)
-					.post('/api/users/reset-password')
+					.post('/api/users/password')
 					.send({
 						resetToken: resetPasswordInstance.token,
-						password: 'test'
+						newPassword: 'test',
+						confirmPassword: 'test'
 					})
 					.expect(200, function(error2) {
 						assert.equal(error2, null);
@@ -128,10 +126,11 @@ describe('forgot password', function() {
 
 	it('cannot reset password without forgot password', function(done) {
 		request(helper.app.HTTPServer.express)
-			.post('/api/users/reset-password')
+			.post('/api/users/password')
 			.send({
 				resetToken: '',
-				password: 'test'
+				newPassword: 'test',
+				confirmPassword: 'test'
 			})
 			.expect(404, function(error) {
 				done(error);
@@ -152,7 +151,7 @@ describe('forgot password', function() {
 
 	it('cannot create user reset password instance in user', function(done) {
 		request(helper.app.HTTPServer.express)
-			.post('/api/users/' + userID + '/resetPassword')
+			.post('/api/users/' + userID + '/reset-password')
 			.send({
 				resetToken: 'test',
 				password: 'test'

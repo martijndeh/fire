@@ -158,6 +158,8 @@ app.get('/api/collections', function(request, response, app,  CollectionModel, U
 							delete queryMap.$options;
 						}
 
+						optionsMap.isShallow = true;
+
 						if(CollectionModel.options.automaticPropertyName) {
 							queryMap[CollectionModel.options.automaticPropertyName] = authenticator;
 						}
@@ -180,7 +182,7 @@ app.get('/api/collections/:id', function(request, response, app,  CollectionMode
 		.spread(function(canRead, authenticator) {
 			if(canRead) {
 				var whereMap = request.query || {};
-				whereMap.id = request.param('id');
+				whereMap.id = request.params.id;
 
 				if(typeof canRead == 'object') {
 					whereMap = merge(whereMap, canRead);
@@ -190,7 +192,16 @@ app.get('/api/collections/:id', function(request, response, app,  CollectionMode
 					whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
 				}
 
-				return CollectionModel.getOne(whereMap);
+				var optionsMap = {};
+
+				if(whereMap.$options) {
+					optionsMap = whereMap.$options;
+					delete whereMap.$options;
+				}
+
+				optionsMap.isShallow = true;
+
+				return CollectionModel.getOne(whereMap, optionsMap);
 			}
 			else {
 				throw unauthenticatedError(authenticator);
@@ -216,7 +227,7 @@ app.put('/api/collections/:id', function(request, response, app,  CollectionMode
 					whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
 				}
 
-				whereMap.id = request.param('id');
+				whereMap.id = request.params.id;
 				return [_canUpdateProperties(Object.keys(request.body), CollectionModel), whereMap, authenticator];
 			}
 			else {
@@ -318,7 +329,7 @@ app.delete('/api/collections/:id', function(request, response, app,  CollectionM
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					whereMap.id = request.param('id');
+					whereMap.id = request.params.id;
 
 					if(CollectionModel.options.automaticPropertyName) {
 						whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
