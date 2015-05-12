@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.5
+
+### Bug fixes
+
+- Fixes issue where sometimes migrations would throw an error.
+
 ## 0.36.4
 
 ### Bug fixes
