@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.4
+
+### Bug fixes
+
+- Fixes issue where authorize would sometimes fail.
+
 ## 0.36.3
 
 ### Bug fixes
