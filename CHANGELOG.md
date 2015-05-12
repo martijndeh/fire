@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.3
+
+### Bug fixes
+
+- Fixes issue where release:migrate would sometimes fail.
+
 ## 0.36.2
 
 ### Bug fixes
