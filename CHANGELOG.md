@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.2
+
+### Bug fixes
+
+- Fixes issue where ModelInstance#changePassword would fail.
+
 ## 0.36.1
 
 ### Improvements
