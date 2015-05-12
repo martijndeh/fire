@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.1
+
+### Improvements
+
+- Adds ModelInstance#signOut and ModelInstance#changePassword to model instance in the front-end.
+
 ## 0.36.0
 
 ### Breaking changes
