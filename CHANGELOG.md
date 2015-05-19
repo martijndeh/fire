@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.37.0
+
+### Breaking changes
+
+- PropertyTypes#Transform's transform method is now always invoked. Any argument names may be null if not set.
+- Changes Test#getVariant to always return a promise.
+- Changes Test#getVariant to stop throwing an error if the user is not participating a test. If the user is not participating, null is returned.
+
+### Improvements
+
+- PropertyTypes#Transform is now dependency injection-aware.
+- Schedulers is now dependency injection-aware.
+
+### New features
+
+- Introduces a continuous worker type. A simpler worker which continuously works, instead of waiting for tasks in a work queue.
+
 ## 0.36.5
 
 ### Bug fixes
