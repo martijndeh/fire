@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.37.1
+
+### Bug fixes
+
+- Fixes forgot password.
+
 ## 0.37.0
 
 ### Breaking changes
