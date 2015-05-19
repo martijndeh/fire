@@ -534,7 +534,7 @@ describe('migrations', function() {
                 });
             })
             .catch(function(error) {
-                assert.equal(error.toString(), 'error: insert into "test_children" ("name") values ($1) returning * - null value in column "parent_id" violates not-null constraint');
+                assert.equal(error.toString(), 'error: null value in column "parent_id" violates not-null constraint');
                 done();
             })
             .done();

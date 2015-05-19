@@ -813,7 +813,9 @@ describe('model methods', function() {
         function Object1() {
             this.name = [this.String];
             this.text = [this.String, this.Transform(function(title, subtitle) {
-                return (title ? title : '') + ' ' + (subtitle ? subtitle : '');
+                if(title || subtitle) {
+                    return (title ? title : '') + ' ' + (subtitle ? subtitle : '');
+                }
             })];
         }
         app.model(Object1);

@@ -385,6 +385,8 @@ app.factory('FireModelInstancePet', ['PetModel', '$q', '$http', '$injector', fun
         
     
 
+
+
         this.cancel = function() {
             this._changes = {};
         };
@@ -521,6 +523,8 @@ app.factory('FireModelInstanceUser', ['UserModel', '$q', '$http', '$injector', f
         
     
 
+
+
         this.cancel = function() {
             this._changes = {};
         };
@@ -656,6 +660,8 @@ app.factory('FireModelInstanceArticle', ['ArticleModel', '$q', '$http', '$inject
     
         
     
+
+
 
         this.cancel = function() {
             this._changes = {};
