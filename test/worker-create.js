@@ -9,6 +9,7 @@ var fire = require('./..');
 
 describe('workers', function() {
 	var called = 0;
+	var runCalled = 0;
 
 	beforeEach(helper.beforeEach({isMaster: true}));
 	afterEach(helper.afterEach());
@@ -16,6 +17,7 @@ describe('workers', function() {
 	before(function() {
 		helper.setup = function() {
 			called = 0;
+			runCalled = 0;
 
 			function TestWorker() {
 				//
@@ -36,9 +38,29 @@ describe('workers', function() {
 				called++;
 			};
 
+			helper.app.worker(function ContinuousWorker() {
+				this.run = function() {
+					runCalled++;
+				};
+			});
+
+
 			helper.app.workers.swizzleExternalMethods();
 		};
 		helper.createModels = null;
+	});
+
+	it('can return all worker names', function() {
+		var startingWorkerNames = helper.app.workers.startingWorkerNames({workers:true});
+		assert.equal(startingWorkerNames.length, 2);
+		assert.equal(startingWorkerNames[0], 'TestWorker');
+		assert.equal(startingWorkerNames[1], 'ContinuousWorker');
+	});
+
+	it('can return one starting worker name', function() {
+		var startingWorkerNames = helper.app.workers.startingWorkerNames({worker:'TestWorker'});
+		assert.equal(startingWorkerNames.length, 1);
+		assert.equal(startingWorkerNames[0], 'TestWorker');
 	});
 
 	it('can create worker', function() {
@@ -46,12 +68,20 @@ describe('workers', function() {
 		assert.notEqual(helper.app.workers.TestWorker, null);
 	});
 
+	it('is task based', function() {
+		assert.equal(helper.app.workers.TestWorker.isTaskBased(), true);
+	});
+
+	it('is continuous worker', function() {
+		assert.equal(helper.app.workers.ContinuousWorker.isContinuous(), true);
+	});
+
 	it('can publish message and consume', function() {
 		assert.equal(called, 0);
 
-		return helper.app.workers.startConsumingTasks(['TestWorker'])
+		return helper.app.workers.startWorkers(['TestWorker'])
 			.then(function() {
-				return helper.app.workers.TestWorker.createTask('doSomething', []);
+				return helper.app.workers.TestWorker.createTask(helper.app.workers.getMessageQueue(), 'TestWorker', 'doSomething', []);
 			})
 			.then(function() {
 				return Q.delay(50);
@@ -79,7 +109,7 @@ describe('workers', function() {
 
 		workers2.setup();
 
-		return workers2.startConsumingTasks(['TestWorker'])
+		return workers2.startWorkers(['TestWorker'])
 			.then(function() {
 				helper.app.workers.TestWorker.doSomething();
 
@@ -89,6 +119,13 @@ describe('workers', function() {
 					assert.equal(called, 1);
 					done();
 				}, 50);
+			});
+	});
+
+	it('can start continuous worker', function() {
+		helper.app.workers.startWorkers(['ContinuousWorker'])
+			.then(function() {
+				assert.equal(runCalled, 1);
 			});
 	});
 
