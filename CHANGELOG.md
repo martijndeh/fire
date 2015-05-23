@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.38.0
+
+### New features
+
+- Implements login tokens.
+
 ## 0.37.1
 
 ### Bug fixes
