@@ -4,6 +4,7 @@
 var helper = require('./support/helper');
 var assert = require('assert');
 var request = require('supertest');
+var Q = require('q');
 
 describe('model authorize', function() {
 	var agent = null;
@@ -76,5 +77,93 @@ describe('model authorize', function() {
 							});
 					});
 			});
+	});
+
+	describe('login tokens', function() {
+		var userLoginToken = null;
+
+		beforeEach(function(done) {
+			helper.app.models.User.findOne({name: 'Martijn'})
+				.then(function(user) {
+					return user.getLoginToken();
+				})
+				.then(function(loginToken) {
+					userLoginToken = loginToken;
+					done();
+				})
+				.done();
+		});
+
+		it('can generate login token', function(done) {
+			helper.app.models.User.findOne({name: 'Martijn'})
+				.then(function(user) {
+					return user.getLoginToken();
+				})
+				.then(function(loginToken) {
+					assert.equal(loginToken.token.length, 256);
+
+					done();
+				})
+				.done();
+		});
+
+		it('can use token', function(done) {
+			request.agent(helper.app.HTTPServer.express)
+				.get('/api/users/me?t=' + userLoginToken.token)
+				.send()
+				.expect(200, done);
+		});
+
+		it('cannot use expired token', function(done) {
+			helper.app.models.User.findOne({name: 'Martijn'})
+				.then(function(user) {
+					var expiredDate = new Date();
+					expiredDate.setFullYear(1988);
+
+					return helper.app.models.UserLoginToken.create({authenticator: user, createdAt: expiredDate});
+				})
+				.then(function(expiredLoginToken) {
+					request.agent(helper.app.HTTPServer.express)
+						.get('/api/users/me')
+						.send({t: expiredLoginToken.token})
+						.expect(401, done);
+				})
+				.done();
+		});
+
+		it('will not create multiple tokens', function(done) {
+			helper.app.models.User.findOne({name: 'Martijn'})
+				.then(function(user) {
+					return Q.all([user, user.getLoginToken()]);
+				})
+				.spread(function(user, token) {
+					return Q.all([token, user.getLoginToken()]);
+				})
+				.spread(function(token1, token2) {
+					assert.equal(token1.id, token2.id);
+					done();
+				})
+				.done();
+		});
+
+		it('will create new token if expired', function(done) {
+			helper.app.models.User.findOne({name: 'Martijn'})
+				.then(function(user) {
+					var expiredDate = new Date();
+					expiredDate.setFullYear(1988);
+
+					return helper.app.models.UserLoginToken.create({authenticator: user, createdAt: expiredDate})
+						.then(function(expiredLoginToken) {
+							console.log(expiredLoginToken);
+
+							return user.getLoginToken()
+								.then(function(loginToken) {
+									assert.notEqual(loginToken.id, expiredLoginToken.id);
+									done();
+								});
+						});
+				})
+				.done();
+		});
 	});
 });
