@@ -154,8 +154,6 @@ describe('model authorize', function() {
 
 					return helper.app.models.UserLoginToken.create({authenticator: user, createdAt: expiredDate})
 						.then(function(expiredLoginToken) {
-							console.log(expiredLoginToken);
-
 							return user.getLoginToken()
 								.then(function(loginToken) {
 									assert.notEqual(loginToken.id, expiredLoginToken.id);

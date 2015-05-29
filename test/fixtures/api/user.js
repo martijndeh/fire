@@ -93,7 +93,7 @@ function findAuthenticator(authenticatorModel, request) {
 	return authenticatorModel.findOne({accessToken: request.session.at});
 }
 
-app.get('/api/users/me', function(request, UserModel) {
+app.get('/api/users/me', function(request, UserModel, UserLoginTokenModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
 			if(authenticator) {
@@ -101,9 +101,27 @@ app.get('/api/users/me', function(request, UserModel) {
 				return authenticator;
 			}
 			else {
-				var error = new Error('Unauthorized');
-				error.status = 401;
-				throw error;
+				if(request.query.t) {
+					var expireDate = new Date();
+					expireDate.setDate(expireDate.getDate() - 14);
+
+					return UserLoginTokenModel.findOne({token: request.query.t, createdAt:{$gt: expireDate}})
+						.then(function(loginToken) {
+							if(loginToken) {
+								return UserModel.getOne({id: loginToken.authenticator})
+									.then(function(authenticator) {
+										request.session.at = authenticator.accessToken;
+										return authenticator;
+									});
+							}
+							else {
+								throw unauthenticatedError(null);
+							}
+						});
+				}
+				else {
+					throw unauthenticatedError(null);
+				}
 			}
 		});
 });
@@ -151,7 +169,7 @@ app.put('/api/users/password', function(request, UserModel) {
 app.delete('/api/users/password', function(request, UserModel, UserResetPasswordModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
-			if(authenticator && request.body.email != authenticator[request.body.email]) {
+			if(authenticator && request.body.email != authenticator['email']) {
 				var error = new Error('Forbidden');
 				error.status = 403;
 				throw error;

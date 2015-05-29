@@ -127,7 +127,7 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         	var defer = $q.defer();
 
         	var self = this;
-        	$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true}})
+        	$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true,  'Content-Type': 'application/json;charset=utf-8'}})
         		.success(function(result) {
         			defer.resolve(self.parseResult(result, path));
         		})
@@ -303,7 +303,7 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
 }]);
 
 
-app.factory('PetModel', ['$http', '$q', 'FireModel', '$injector', function($http, $q, FireModel, $injector) {
+app.factory('PetModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
     var model = new FireModel();
     model.endpoint = '/api/pets';
 
@@ -441,7 +441,7 @@ app.factory('FireModelInstancePet', ['PetModel', '$q', '$http', '$injector', fun
     };
 }]);
 
-app.factory('UserModel', ['$http', '$q', 'FireModel', '$injector', function($http, $q, FireModel, $injector) {
+app.factory('UserModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
     var model = new FireModel();
     model.endpoint = '/api/users';
 
@@ -579,7 +579,7 @@ app.factory('FireModelInstanceUser', ['UserModel', '$q', '$http', '$injector', f
     };
 }]);
 
-app.factory('ArticleModel', ['$http', '$q', 'FireModel', '$injector', function($http, $q, FireModel, $injector) {
+app.factory('ArticleModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
     var model = new FireModel();
     model.endpoint = '/api/articles';
 

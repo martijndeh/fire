@@ -76,7 +76,7 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         	var defer = $q.defer();
 
         	var self = this;
-        	$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true}})
+        	$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true,  'Content-Type': 'application/json;charset=utf-8'}})
         		.success(function(result) {
         			defer.resolve(self.parseResult(result, path));
         		})

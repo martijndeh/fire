@@ -488,7 +488,7 @@ describe('migrations', function() {
 
         migrations.migrate(0, 13)
             .catch(function(error) {
-                assert.equal(error.toString(), 'error: SELCT * FROM test_models FROM 1 - syntax error at or near "SELCT"');
+                assert.equal(error.toString(), 'error: syntax error at or near "SELCT"');
                 return migrations.currentVersion();
             })
             .then(function(currentVersion) {
@@ -498,7 +498,7 @@ describe('migrations', function() {
                 return models.execute('SELECT * FROM test_models');
             })
             .catch(function(error) {
-                assert.equal(error.toString(), 'error: SELECT * FROM test_models - relation "test_models" does not exist');
+                assert.equal(error.toString(), 'error: relation "test_models" does not exist');
                 return done();
             })
             .done();

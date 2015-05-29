@@ -58,7 +58,7 @@ describe('forgot password', function() {
 			});
 	});
 
-	it('cannot call forgot password when already authorized', function(done) {
+	it('can call forgot password when already authorized', function(done) {
 		var agent = request.agent(helper.app.HTTPServer.express);
 
 		agent
@@ -70,7 +70,7 @@ describe('forgot password', function() {
 				agent
 					.delete('/api/users/password')
 					.send({email: 'martijn@nodeonfire.org'})
-					.expect(403, function(error2) {
+					.expect(200, function(error2) {
 						done(error2);
 					});
 			});
