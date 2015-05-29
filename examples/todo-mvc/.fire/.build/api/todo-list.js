@@ -118,11 +118,8 @@ app.post('/api/todo-lists', function(app, response, request, TodoListModel) {
 							}
 						};
 
-						console.log('Body:');
-						console.log(request.body);
-
 						if(Array.isArray(request.body)) {
-							
+
 
 							var createMaps = request.body.map(function(createMap) {
 								return checkCreateMap(createMap);
@@ -132,7 +129,7 @@ app.post('/api/todo-lists', function(app, response, request, TodoListModel) {
 							console.log(createMaps);
 
 							return TodoListModel.create(createMaps);
-							
+
 						}
 						else {
 							return TodoListModel.create(checkCreateMap(request.body || {}));
@@ -641,11 +638,3 @@ app.put('/api/todo-lists/:id/items', function(request, response, app,  TodoListM
 				});
 		});
 });
-
-
-
-
-
-
-
-
