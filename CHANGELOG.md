@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.38.1
+
+### Bug fixes
+
+- Fixes issue where nested many-to-many relations would sometimes not return.
+
 ## 0.38.0
 
 ### New features
