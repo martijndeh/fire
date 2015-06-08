@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.39.0
+
+### New features
+
+- Implements password-less authenticate property type.
+- Implements ModelInstance#remove in back-end.
+
+### Improvements
+
+- Adds authenticator, request and response dependencies to model hooks.
+
+### Bug fixes
+
+- Fixes issue where some deep nested many-to-many relations would not show up.
+
 ## 0.38.1
 
 ### Bug fixes
