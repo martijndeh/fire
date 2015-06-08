@@ -5,7 +5,6 @@ var helper = require('./support/helper');
 var assert = require('assert');
 var request = require('supertest');
 var uuid = require('node-uuid');
-var helper = require('./support/helper');
 
 describe('models api delete', function() {
 	var parentID = uuid.v4();
