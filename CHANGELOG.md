@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.40.1
+
+### Bug fixes
+
+- Fixes generating migrations with array in arguments.
+
 ## 0.40.0
 
 ### Breaking changes
