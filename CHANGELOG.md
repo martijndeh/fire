@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.40.0
+
+### Breaking changes
+
+- Deprecates PropertyTypes#Has.
+- Partial models are now correctly resolved to model instances.
+
+### New features
+
+- Implements selecting only a list of properties in auto fetched associations.
+
 ## 0.39.0
 
 ### New features
