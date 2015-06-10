@@ -27,9 +27,6 @@ describe('models api associations', function() {
 				this.name = [this.String];
 				this.childs = [this.HasMany(this.models.Child)];
 				this.privates = [this.HasMany(this.models.Private), this.Private];
-				this.list = [this.Has(function(ChildModel, request) {
-					return ChildModel.find({parent: request.params.id});
-				})];
 			}
 			app.model(Parent);
 
@@ -215,17 +212,6 @@ describe('models api associations', function() {
 			.expect(200, function(error, response) {
 				assert.equal(response.body.id, child1ID);
 				assert.equal(response.body.name, 'Updated Name');
-				done(error);
-			});
-	});
-
-	it('can get has property', function(done) {
-		request(helper.app.HTTPServer.express)
-			.get('/api/parents/' + parentID + '/list')
-			.send()
-			.expect(200, function(error, response) {
-				assert.equal(response.body.length, 3);
-
 				done(error);
 			});
 	});

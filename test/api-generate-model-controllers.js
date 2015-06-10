@@ -33,9 +33,7 @@ describe('api generate model controllers', function() {
 			app.model(User);
 
 			function Collection() {
-				this.apps = [this.Has(function() {
-					return [];
-				})];
+				//
 			}
 			app.model(Collection);
 

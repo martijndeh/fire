@@ -94,6 +94,9 @@ function findAuthenticator(authenticatorModel, request) {
 }
 
 
+
+
+
 app.post('/api/collections', function(app, response, request, CollectionModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -125,11 +128,11 @@ app.post('/api/collections', function(app, response, request, CollectionModel, U
 								return checkCreateMap(createMap);
 							});
 
-							return CollectionModel.create(createMaps);
+							return CollectionModel.create(createMaps, {authenticator: authenticator, request: request, response: response});
 							
 						}
 						else {
-							return CollectionModel.create(checkCreateMap(request.body || {}));
+							return CollectionModel.create(checkCreateMap(request.body || {}), {authenticator: authenticator, request: request, response: response});
 						}
 					}
 					else {
@@ -344,29 +347,6 @@ app.delete('/api/collections/:id', function(request, response, app,  CollectionM
 		});
 });
 
-
-
-
-
-
-
-
-app.get('/api/collections/:id/apps', function(app, request, response,  CollectionModel, UserModel) {
-	return findAuthenticator(UserModel, request)
-		.then(function(authenticator) {
-			var accessControl = CollectionModel.getAccessControl();
-			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response}))
-				.then(function(canRead) {
-					if(canRead === true) {
-						var property = CollectionModel.getProperty('apps');
-						return app.injector.call(property.options.hasMethod, {request: request, response: response, authenticator: authenticator});
-					}
-					else {
-						throw unauthenticatedError(authenticator);
-					}
-				});
-		});
-});
 
 
 

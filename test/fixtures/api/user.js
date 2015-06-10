@@ -143,6 +143,7 @@ app.delete('/api/users/access-token', function(request, UserModel) {
 		});
 });
 
+
 app.post('/api/users/access-token', function(request, UserModel) {
 	return UserModel.authorize({ email: request.body.email, password: request.body.password})
 		.then(function(modelInstance) {
@@ -191,6 +192,8 @@ app.post('/api/users/password', function(request, UserModel) {
 		});
 });
 
+
+
 app.post('/api/users', function(app, response, request, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -222,7 +225,7 @@ app.post('/api/users', function(app, response, request, UserModel) {
 							throw error;
 						}
 						else {
-							return UserModel.create(checkCreateMap(request.body || {}))
+							return UserModel.create(checkCreateMap(request.body || {}), {authenticator: authenticator, request: request, response: response})
 								.then(function(modelInstance) {
 									request.session.at = modelInstance.accessToken;
 									return modelInstance;
@@ -447,13 +450,6 @@ app.delete('/api/users/:id', function(request, response, app,  UserModel) {
 
 
 
-
-
-
-
-
-
-
 app.post('/api/users/:id/password-reset', function(request, response, app,  UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -503,7 +499,7 @@ app.post('/api/users/:id/password-reset', function(request, response, app,  User
 						}
 
 						if(_canSetProperties(Object.keys(createMap), associatedModel)) {
-							return associatedModel.create(createMap);
+							return associatedModel.create(createMap, {authenticator: authenticator, request: request, response: response});
 						}
 						else {
 							throw badRequestError();
@@ -666,6 +662,7 @@ app.put('/api/users/:id/password-reset', function(request, response, app,  UserM
 
 
 
+
 app.post('/api/users/:id/container', function(request, response, app,  UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -715,7 +712,7 @@ app.post('/api/users/:id/container', function(request, response, app,  UserModel
 						}
 
 						if(_canSetProperties(Object.keys(createMap), associatedModel)) {
-							return associatedModel.create(createMap);
+							return associatedModel.create(createMap, {authenticator: authenticator, request: request, response: response});
 						}
 						else {
 							throw badRequestError();

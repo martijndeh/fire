@@ -94,6 +94,9 @@ function findAuthenticator(authenticatorModel, request) {
 }
 
 
+
+
+
 app.post('/api/testers', function(app, response, request, TesterModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -125,11 +128,11 @@ app.post('/api/testers', function(app, response, request, TesterModel, UserModel
 								return checkCreateMap(createMap);
 							});
 
-							return TesterModel.create(createMaps);
+							return TesterModel.create(createMaps, {authenticator: authenticator, request: request, response: response});
 							
 						}
 						else {
-							return TesterModel.create(checkCreateMap(request.body || {}));
+							return TesterModel.create(checkCreateMap(request.body || {}), {authenticator: authenticator, request: request, response: response});
 						}
 					}
 					else {
@@ -343,12 +346,6 @@ app.delete('/api/testers/:id', function(request, response, app,  TesterModel, Us
 			});
 		});
 });
-
-
-
-
-
-
 
 
 

@@ -94,6 +94,9 @@ function findAuthenticator(authenticatorModel, request) {
 }
 
 
+
+
+
 app.post('/api/containers', function(app, response, request, ContainerModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -125,11 +128,11 @@ app.post('/api/containers', function(app, response, request, ContainerModel, Use
 								return checkCreateMap(createMap);
 							});
 
-							return ContainerModel.create(createMaps);
+							return ContainerModel.create(createMaps, {authenticator: authenticator, request: request, response: response});
 							
 						}
 						else {
-							return ContainerModel.create(checkCreateMap(request.body || {}));
+							return ContainerModel.create(checkCreateMap(request.body || {}), {authenticator: authenticator, request: request, response: response});
 						}
 					}
 					else {
@@ -355,9 +358,6 @@ app.delete('/api/containers/:id', function(request, response, app,  ContainerMod
 
 
 
-
-
-
 app.post('/api/containers/:id/users', function(request, response, app,  ContainerModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -402,7 +402,7 @@ app.post('/api/containers/:id/users', function(request, response, app,  Containe
 						}
 
 						if(_canSetProperties(Object.keys(createMap), associatedModel)) {
-							return associatedModel.create(createMap);
+							return associatedModel.create(createMap, {authenticator: authenticator, request: request, response: response});
 						}
 						else {
 							throw badRequestError();
