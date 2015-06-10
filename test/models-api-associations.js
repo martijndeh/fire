@@ -221,7 +221,7 @@ describe('models api associations', function() {
 			.get('/api/articles/' + article1ID + '/location')
 			.send()
 			.expect(200, function(error, response) {
-				assert.equal(response.body.article, article1ID);
+				assert.equal(response.body.article.id, article1ID);
 
 				done(error);
 			});
@@ -235,7 +235,7 @@ describe('models api associations', function() {
 				longitude: 4
 			})
 			.expect(200, function(error, response) {
-				assert.equal(response.body.article, article2ID);
+				assert.equal(response.body.article.id, article2ID);
 				done(error);
 			});
 	});
@@ -245,7 +245,7 @@ describe('models api associations', function() {
 			.delete('/api/articles/' + article1ID + '/location')
 			.send()
 			.expect(200, function(error, response) {
-				assert.equal(response.body.article, article1ID);
+				assert.equal(response.body.article.id, article1ID);
 				done(error);
 			});
 	});
@@ -257,7 +257,7 @@ describe('models api associations', function() {
 				latitude: 5
 			})
 			.expect(200, function(error, response) {
-				assert.equal(response.body.article, article1ID);
+				assert.equal(response.body.article.id, article1ID);
 				assert.equal(response.body.latitude, 5);
 
 				done(error);
