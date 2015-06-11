@@ -175,4 +175,80 @@ describe('models find orderBy', function() {
                 .done();
         });
     });
+
+    describe('sqlish', function() {
+        before(function() {
+            helper.setup = function(app) {
+                app.models.Comment = 'Comment';
+                app.models.Article = 'Article';
+
+                function TestArticle() {
+                    this.name = [this.String];
+                    this.comments = [this.HasMany(this.models.TestComment), this.AutoFetch, this.Private];
+                    this.numberOfComments = [this.SQL('SELECT COUNT(*) FROM test_comments WHERE test_comments.article_id = $id')];
+                }
+                app.model(TestArticle);
+
+                function TestComment() {
+                    this.name = [this.String];
+                    this.article = [this.BelongsTo(this.models.TestArticle)];
+                }
+                app.model(TestComment);
+            };
+
+            helper.createModels = function(app) {
+                return Q.all([
+                    app.models.TestArticle.create({
+                        name: 'Test 3'
+                    }),
+
+                    app.models.TestArticle.create({
+                        name: 'Test 1'
+                    }),
+
+                    app.models.TestArticle.create({
+                        name: 'Test 2'
+                    })
+                ]).spread(function(a, b, c) {
+                    var actions = [];
+
+                    var numberOfComments = 20;
+                    while(numberOfComments--) {
+                        actions.push(app.models.TestComment.create({name: 'Comment ' + numberOfComments, article: a}));
+                    }
+
+                    numberOfComments = 10;
+                    while(numberOfComments--) {
+                        actions.push(app.models.TestComment.create({name: 'Comment ' + numberOfComments, article: b}));
+                    }
+
+                    numberOfComments = 8;
+                    while(numberOfComments--) {
+                        actions.push(app.models.TestComment.create({name: 'Comment ' + numberOfComments, article: c}));
+                    }
+
+                    return Q.all(actions);
+                });
+            };
+        });
+
+        it('can orderBy read-only property', function(done) {
+            helper.app.models.TestArticle.find({}, {orderBy:{numberOfComments:1}, limit: 3})
+                .then(function(articles) {
+                    assert.equal(articles.length, 3);
+
+                    assert.equal(articles[2].name, 'Test 3');
+                    assert.equal(articles[2].comments.length, 20);
+
+                    assert.equal(articles[1].name, 'Test 1');
+                    assert.equal(articles[1].comments.length, 10);
+
+                    assert.equal(articles[0].name, 'Test 2');
+                    assert.equal(articles[0].comments.length, 8);
+
+                    done();
+                })
+                .done();
+        });
+    });
 });
