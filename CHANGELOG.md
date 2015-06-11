@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.40.2
+
+### Bug fixes
+
+- Fixes issue where Model#find with limit and orderBy on SQLish properties doesn't work.
+
 ## 0.40.1
 
 ### Bug fixes
