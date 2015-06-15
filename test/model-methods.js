@@ -1177,7 +1177,7 @@ describe('model methods', function() {
                 })
                 .then(function(article) {
                     var string = JSON.stringify(article);
-                    assert.equal(string, '{"_type":"Article","id":"' + article.id + '","title":"Title","url":"https://github.com/martijndeh/fire","user":{"_type":"User","id":"' + userID + '","name":"Martijn","articles":[]}}');
+                    assert.equal(string, '{"_type":"Article","id":"' + article.id + '","title":"Title","url":"https://github.com/martijndeh/fire","user":{"_type":"User","id":"' + userID + '","name":"Martijn"}}');
 
                     return models.User.findOne()
                         .then(function(user) {
