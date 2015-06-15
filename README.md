@@ -168,6 +168,10 @@ $ fire run
 
 For additional reading and documentation please visit http://nodeonfire.org/.
 
+### Beta releases
+
+From version `0.41.0` and later, every odd numbered minor release is a beta release. Every even numbered minor release is considered a stable release.
+
 ### Questions
 
 Open an issue over at GitHub or send a tweet to [@nodeonfire](http://twitter.com/nodeonfire).
