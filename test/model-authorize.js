@@ -100,7 +100,7 @@ describe('model authorize', function() {
 					return user.getLoginToken();
 				})
 				.then(function(loginToken) {
-					assert.equal(loginToken.token.length, 256);
+					assert.equal(loginToken.token.length, 128);
 
 					done();
 				})
