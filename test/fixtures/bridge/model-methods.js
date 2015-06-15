@@ -307,6 +307,11 @@ app.factory('PetModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$ro
     var model = new FireModel();
     model.endpoint = '/api/pets';
 
+    model.new = function() {
+        var fireModelInstanceConstructor = $injector.get('FireModelInstancePet');
+        return new fireModelInstanceConstructor(null, model.endpoint);
+    };
+
     model.parseResult = function(setMapOrList, path) {
         function parseSetMap(setMap) {
             var fireModelInstanceConstructor = $injector.get('FireModelInstancePet');
@@ -334,7 +339,7 @@ app.factory('FireModelInstancePet', ['PetModel', '$q', '$http', '$injector', fun
             throw new Error('FireModelInstancePet only accepts two arguments now.');
         }
 
-        this._map = setMap || {};
+        this._map = setMap || null;
         this._changes = {};
 
         if(this._map.id) {
@@ -393,6 +398,15 @@ app.factory('FireModelInstancePet', ['PetModel', '$q', '$http', '$injector', fun
 
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
+            this._changes = {};
+
+            if(this._map.id) {
+                this._endpoint = path + '/' + this._map.id;
+            }
+            else {
+                this._endpoint = null;
+            }
+
         	return this;
         };
 
@@ -405,28 +419,36 @@ app.factory('FireModelInstancePet', ['PetModel', '$q', '$http', '$injector', fun
         };
 
         this.save = function() {
-            var self = this;
-            return $q.when(Object.keys(this._changes).length)
-                .then(function(numberOfChanges) {
-                    if(numberOfChanges) {
-                        var queryMap = transformQueryMap(self._changes);
+            if(this._map === null) {
+                return PetModel.create(this._changes)
+                    .then(function(modelInstance) {
+                        return self.refresh(modelInstance);
+                    });
+            }
+            else {
+                var numberOfChanges = Object.keys(this._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(this._changes);
 
-                        return PetModel._put(self._endpoint, queryMap)
-                            .then(function(instance) {
-                                self._changes = {};
+                    return PetModel._put(this._endpoint, queryMap)
+                        .then(function(instance) {
+                            self._changes = {};
 
-                                Object.keys(instance._map).forEach(function(key) {
-                                    if(instance._map[key] !== null) {
-                                        self._map[key] = instance._map[key];
-                                    }
-                                });
-                                return self;
+                            console.log('Received:');
+                            console.log(instance._map);
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    self._map[key] = instance._map[key];
+                                }
                             });
-                    }
-                    else {
-                        return self;
-                    }
-                });
+                            return self;
+                        });
+                }
+                else {
+                    return $q.when(this);
+                }
+            }
         };
 
         Object.defineProperty(this, '_model', {
@@ -444,6 +466,11 @@ app.factory('FireModelInstancePet', ['PetModel', '$q', '$http', '$injector', fun
 app.factory('UserModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
     var model = new FireModel();
     model.endpoint = '/api/users';
+
+    model.new = function() {
+        var fireModelInstanceConstructor = $injector.get('FireModelInstanceUser');
+        return new fireModelInstanceConstructor(null, model.endpoint);
+    };
 
     model.parseResult = function(setMapOrList, path) {
         function parseSetMap(setMap) {
@@ -472,7 +499,7 @@ app.factory('FireModelInstanceUser', ['UserModel', '$q', '$http', '$injector', f
             throw new Error('FireModelInstanceUser only accepts two arguments now.');
         }
 
-        this._map = setMap || {};
+        this._map = setMap || null;
         this._changes = {};
 
         if(this._map.id) {
@@ -531,6 +558,15 @@ app.factory('FireModelInstanceUser', ['UserModel', '$q', '$http', '$injector', f
 
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
+            this._changes = {};
+
+            if(this._map.id) {
+                this._endpoint = path + '/' + this._map.id;
+            }
+            else {
+                this._endpoint = null;
+            }
+
         	return this;
         };
 
@@ -543,28 +579,36 @@ app.factory('FireModelInstanceUser', ['UserModel', '$q', '$http', '$injector', f
         };
 
         this.save = function() {
-            var self = this;
-            return $q.when(Object.keys(this._changes).length)
-                .then(function(numberOfChanges) {
-                    if(numberOfChanges) {
-                        var queryMap = transformQueryMap(self._changes);
+            if(this._map === null) {
+                return UserModel.create(this._changes)
+                    .then(function(modelInstance) {
+                        return self.refresh(modelInstance);
+                    });
+            }
+            else {
+                var numberOfChanges = Object.keys(this._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(this._changes);
 
-                        return UserModel._put(self._endpoint, queryMap)
-                            .then(function(instance) {
-                                self._changes = {};
+                    return UserModel._put(this._endpoint, queryMap)
+                        .then(function(instance) {
+                            self._changes = {};
 
-                                Object.keys(instance._map).forEach(function(key) {
-                                    if(instance._map[key] !== null) {
-                                        self._map[key] = instance._map[key];
-                                    }
-                                });
-                                return self;
+                            console.log('Received:');
+                            console.log(instance._map);
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    self._map[key] = instance._map[key];
+                                }
                             });
-                    }
-                    else {
-                        return self;
-                    }
-                });
+                            return self;
+                        });
+                }
+                else {
+                    return $q.when(this);
+                }
+            }
         };
 
         Object.defineProperty(this, '_model', {
@@ -582,6 +626,11 @@ app.factory('FireModelInstanceUser', ['UserModel', '$q', '$http', '$injector', f
 app.factory('ArticleModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
     var model = new FireModel();
     model.endpoint = '/api/articles';
+
+    model.new = function() {
+        var fireModelInstanceConstructor = $injector.get('FireModelInstanceArticle');
+        return new fireModelInstanceConstructor(null, model.endpoint);
+    };
 
     model.parseResult = function(setMapOrList, path) {
         function parseSetMap(setMap) {
@@ -610,7 +659,7 @@ app.factory('FireModelInstanceArticle', ['ArticleModel', '$q', '$http', '$inject
             throw new Error('FireModelInstanceArticle only accepts two arguments now.');
         }
 
-        this._map = setMap || {};
+        this._map = setMap || null;
         this._changes = {};
 
         if(this._map.id) {
@@ -669,6 +718,15 @@ app.factory('FireModelInstanceArticle', ['ArticleModel', '$q', '$http', '$inject
 
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
+            this._changes = {};
+
+            if(this._map.id) {
+                this._endpoint = path + '/' + this._map.id;
+            }
+            else {
+                this._endpoint = null;
+            }
+
         	return this;
         };
 
@@ -681,28 +739,36 @@ app.factory('FireModelInstanceArticle', ['ArticleModel', '$q', '$http', '$inject
         };
 
         this.save = function() {
-            var self = this;
-            return $q.when(Object.keys(this._changes).length)
-                .then(function(numberOfChanges) {
-                    if(numberOfChanges) {
-                        var queryMap = transformQueryMap(self._changes);
+            if(this._map === null) {
+                return ArticleModel.create(this._changes)
+                    .then(function(modelInstance) {
+                        return self.refresh(modelInstance);
+                    });
+            }
+            else {
+                var numberOfChanges = Object.keys(this._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(this._changes);
 
-                        return ArticleModel._put(self._endpoint, queryMap)
-                            .then(function(instance) {
-                                self._changes = {};
+                    return ArticleModel._put(this._endpoint, queryMap)
+                        .then(function(instance) {
+                            self._changes = {};
 
-                                Object.keys(instance._map).forEach(function(key) {
-                                    if(instance._map[key] !== null) {
-                                        self._map[key] = instance._map[key];
-                                    }
-                                });
-                                return self;
+                            console.log('Received:');
+                            console.log(instance._map);
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    self._map[key] = instance._map[key];
+                                }
                             });
-                    }
-                    else {
-                        return self;
-                    }
-                });
+                            return self;
+                        });
+                }
+                else {
+                    return $q.when(this);
+                }
+            }
         };
 
         Object.defineProperty(this, '_model', {
