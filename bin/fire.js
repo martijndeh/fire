@@ -8,9 +8,13 @@ var crypto = require('crypto');
 var spawn = require('child_process').spawn;
 var dotenv = require('dotenv-save');
 var pg = require('pg');
+var debug = require('debug')('fire:cli');
+
 pg.defaults.poolIdleTimeout = 500;
 
 function mkdir(dirPath) {
+	debug('Creating directory `' + dirPath + '`');
+
 	var defer = Q.defer();
 	fs.mkdir(dirPath, defer.makeNodeResolver());
 	return defer.promise;
@@ -27,6 +31,8 @@ function space(count) {
 function template(source, dest, options) {
 	var readStream = mu.compileAndRender(path.join(__dirname, source), options);
 	var defer = Q.defer();
+
+	debug('Compiling and rendering `' + source + '` to `' + dest + '`.');
 
 	var writeStream = fs.createWriteStream(dest);
 
@@ -68,6 +74,8 @@ function runCommand(command, params, cwd) {
 	var commandProcess = spawn(command, params, options);
 	commandProcess.on('exit', function(code, sig) {
 		if(code > 0) {
+			console.log('Uh-oh. Failed to run `' + command + '`.');
+
 			defer.reject(new Error(code));
 		}
 		else {
