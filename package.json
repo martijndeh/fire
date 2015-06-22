@@ -40,6 +40,7 @@
     "amqplib": "^0.3.2",
     "body": "^5.0.0",
     "body-parser": "^1.2.0",
+    "bower": "^1.4.1",
     "cookie-session": "^1.1.0",
     "cookies": "^0.5.0",
     "cron": "^1.0.5",

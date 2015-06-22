@@ -108,7 +108,7 @@ function createApp(name) {
 			]);
 		})
 		.then(function() {
-			return runCommand('bower', ['install'], path.join(process.cwd(), name));
+			return runCommand(path.join(__dirname, '..', 'node_modules', '.bin', 'bower'), ['install'], path.join(process.cwd(), name));
 		})
 		.then(function() {
 			return runCommand('npm', ['install'], path.join(process.cwd(), name));
