@@ -58,48 +58,6 @@ describe('bridge', function() {
 		done();
 	});
 
-	it('can generate controller methods', function(done) {
-		function TestController() {}
-		app.controller(TestController);
-
-		TestController.prototype.doTest = function(foo, bar, baz) { //jshint ignore:line
-			return 123;
-		};
-
-		TestController.prototype._doTest2 = function() {
-			return 333;
-		};
-
-		TestController.prototype.doTest3 = function(a) {
-			return a;
-		};
-
-		TestController.prototype.getTest4 = function(id) {
-			return id;
-		};
-
-		var writeStream = new streams.WritableStream();
-
-		app.models.setup()
-			.then(function() {
-				return app.controllers.setup();
-			})
-			.then(function() {
-				return bridge.generate(writeStream);
-			})
-			.then(function() {
-				if(write) {
-					fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/controller-methods.js'), writeStream.toString());
-				}
-
-				assert.equal(writeStream.toString().length > 0, true);
-				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/controller-methods.js')).toString());
-
-				done();
-			})
-			.done();
-	});
-
 	it('can generate model methods', function() {
 		function Pet() {
 			this.name = [this.String];
@@ -193,7 +151,7 @@ describe('bridge', function() {
      	app.controller(fn0);
 
      	var writeStream = new streams.WritableStream({
-			highWaterMark: 32768
+			highWaterMark: 65536
 		});
 
 		return app.models.setup()
@@ -229,7 +187,9 @@ describe('bridge', function() {
 			return this;
 		});
 
-		var writeStream = new streams.WritableStream();
+		var writeStream = new streams.WritableStream({
+			highWaterMark: 65536
+		});
 
 		app.models.setup()
 			.then(function() {
@@ -263,7 +223,9 @@ describe('bridge', function() {
 			return this.template('test');
 		};
 
-		var writeStream = new streams.WritableStream();
+		var writeStream = new streams.WritableStream({
+			highWaterMark: 65536
+		});
 
 		app.models.setup()
 			.then(function() {
@@ -291,7 +253,9 @@ describe('bridge', function() {
 		}
 		app.channel(TestChannel);
 
-		var writeStream = new streams.WritableStream();
+		var writeStream = new streams.WritableStream({
+			highWaterMark: 65536
+		});
 
 		app.models.setup()
 			.then(function() {
@@ -310,6 +274,7 @@ describe('bridge', function() {
 
 				done();
 			})
+			.catch(done)
 			.done();
 	});
 });

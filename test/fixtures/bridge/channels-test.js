@@ -53,8 +53,250 @@ function FireError(message) {
 }
 FireError.prototype = new Error();
 
-app.factory('FireModel', ['$http', '$q', function($http, $q) {
-    return function() {
+app.factory('_djb2Hash', function() {
+    return function _djb2Hash(str){
+        var hash = 5381;
+        var char = 0;
+        for(var i = 0, il = str.length; i < il; i++) {
+            char = str.charCodeAt(i);
+            hash = hash * 33 + char;
+        }
+        return (Math.abs(hash) % (Math.pow(2, 52) - 1));
+    };
+});
+
+app.service('_CacheService', ['$injector', '$timeout', function($injector, $timeout) {
+    var CAPACITY = 25;
+    var LOCAL_STORAGE_KEY = '_CacheService';
+    var objects = {};
+    var keys = [];
+    var indices = {};
+
+    this.numberOfCaches = function() {
+        return keys.length;
+    };
+
+    if(window.localStorage) {
+        var item = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+        if(item) {
+            try {
+                var data = JSON.parse(item);
+                if(data && data.objects && data.keys && data.indices) {
+                    objects = data.objects;
+                    keys = data.keys;
+                    indices = data.indices;
+                }
+            }
+            catch(e) {
+                window.localStorage.setItem(LOCAL_STORAGE_KEY, null);
+            }
+        }
+    }
+
+    function persist() {
+        if(window.localStorage) {
+            window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+                objects: objects,
+                keys: keys,
+                indices: indices
+            }));
+        }
+    }
+
+    function refreshKey(key) {
+        keys.splice(keys.indexOf(key), 1);
+        keys.push(key);
+    }
+
+    function getKeys(key) {
+        var indexOfDot = key.indexOf('.');
+        if(indexOfDot != -1) {
+            var stringBeforeDot = key.substring(0, indexOfDot);
+            var stringAfterDot = key.substring(indexOfDot + 1);
+
+            return [stringBeforeDot, stringAfterDot];
+        }
+
+        return [];
+    }
+
+    function index(key) {
+        var strings = getKeys(key);
+
+        if(strings.length) {
+            var stringBeforeDot = strings[0];
+            var stringAfterDot = strings[1];
+
+            if(typeof indices[stringBeforeDot] != 'undefined') {
+                if(indices[stringBeforeDot].indexOf(stringAfterDot) == -1) {
+                    indices[stringBeforeDot].push(stringAfterDot);
+                    return true;
+                }
+            }
+            else {
+                indices[stringBeforeDot] = [
+                    stringAfterDot
+                ];
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function unindex(key) {
+        var strings = getKeys(key);
+
+        if(strings.length) {
+            var stringBeforeDot = strings[0];
+            var stringAfterDot = strings[1];
+
+            if(typeof indices[stringBeforeDot] != 'undefined') {
+                if(stringAfterDot == '*') {
+                    indices[stringBeforeDot].forEach(function(oldKey) {
+                        var completeKey = stringBeforeDot + '.' + oldKey;
+                        delete objects[completeKey];
+
+                        var indexOfCompleteKey = keys.indexOf(completeKey);
+                        if(indexOfCompleteKey != -1) {
+                            keys.splice(indexOfCompleteKey, 1);
+                        }
+                    });
+                    delete indices[stringBeforeDot];
+                    return true;
+                }
+                else {
+                    var indexOfKey = indices[stringBeforeDot].indexOf(stringAfterDot);
+                    if(indexOfKey != -1) {
+                        indices[stringBeforeDot].splice(indexOfKey, 1);
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    this.remove = function(key) {
+        if(!unindex(key)) {
+            if(typeof objects[key] != 'undefined') {
+                delete objects[key];
+                keys.splice(keys.indexOf(key), 1);
+            }
+        }
+    };
+
+    this.removeAll = function() {
+        objects = {};
+        keys = [];
+        indices = {};
+
+        persist();
+    };
+
+    this.get = function(key, expire) {
+        var object = objects[key];
+        if(typeof objects[key] != 'undefined' && (typeof expire == 'undefined' || expire == -1 || (new Date().getTime() - object.time) < expire)) {
+            refreshKey(key);
+
+            if(object.value && object.value._map && object.value._map._type) {
+				var fireModelInstanceConstructor = $injector.get('FireModelInstance' + object.value._map._type);
+				object.value = new fireModelInstanceConstructor(object.value._map, object.value._path);
+			}
+
+            return object.value;
+        }
+
+        return null;
+    };
+
+    this.put = function(key, value, expire) {
+        if(typeof expire != 'undefined' && (expire == -1 || expire > 0)) {
+            if(keys.length > CAPACITY) {
+                var oldKeys = keys.splice(0, keys.length - CAPACITY);
+                oldKeys.forEach(function(oldKey) {
+                    unindex(oldKey);
+                    objects[oldKey] = null;
+                });
+            }
+
+            if(index(key)) {
+                keys.push(key);
+            }
+
+            objects[key] = {
+                value: value,
+                time: new Date().getTime()
+            };
+
+            persist();
+        }
+    };
+
+    this.persist = function() {
+        persist();
+    };
+}]);
+
+app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout', '_djb2Hash', function($http, $q, $injector, _CacheService, $timeout, _djb2Hash) {
+    return function FireModel(name, autoFetchedAssociationNames, endpoint) {
+        this.name = name;
+        this.autoFetchedAssociationNames = autoFetchedAssociationNames;
+        this.endpoint = endpoint;
+
+        var self = this;
+        this.parse = function(parseMap) {
+            return this.parseResult(parseMap, null);
+        };
+
+        this.purge = function() {
+            if(_CacheService.numberOfCaches() > 0) {
+                var purgedModelNames = [];
+
+                var purge = function(modelName) {
+                    if(purgedModelNames.indexOf(modelName) == -1) {
+                        purgedModelNames.push(modelName);
+
+                        var model = $injector.get(modelName + 'Model');
+
+                        _CacheService.remove(model.name + '.*', false);
+                        model.autoFetchedAssociationNames.forEach(function(associatedModelName) {
+                            purge(associatedModelName);
+                        });
+                    }
+                };
+
+                purge(this.name);
+                _CacheService.persist();
+            }
+        };
+
+        this.new = function() {
+            var fireModelInstanceConstructor = $injector.get('FireModelInstance' + this.name);
+            return new fireModelInstanceConstructor(null, this.endpoint);
+        };
+
+        this.parseResult = function(setMapOrList, path) {
+            function parseSetMap(setMap) {
+                var fireModelInstanceConstructor;
+                if(setMap._type) {
+                    fireModelInstanceConstructor = $injector.get('FireModelInstance' + setMap._type);
+                }
+                else {
+                    fireModelInstanceConstructor = $injector.get('FireModelInstance' + self.name);
+                }
+
+                return new fireModelInstanceConstructor(setMap, path);
+            }
+
+        	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
+        		return setMapOrList.map(parseSetMap);
+        	}
+        	else {
+        		return parseSetMap(setMapOrList);
+        	}
+        };
+
         this._prepare = function(paramsOrList) {
             var prepare = function(params) {
                 var map = {};
@@ -75,16 +317,21 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         this._action = function(verb, path, params, data) {
         	var defer = $q.defer();
 
-        	var self = this;
-        	$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true,  'Content-Type': 'application/json;charset=utf-8'}})
-        		.success(function(result) {
-        			defer.resolve(self.parseResult(result, path));
-        		})
-        		.error(function(data, statusCode) {
-                    var error = new FireError(data);
-                    error.number = statusCode;
-        			defer.reject(error);
-        		});
+            $timeout(function() {
+                $http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true, 'Content-Type': 'application/json;charset=utf-8'}})
+            		.success(function(result) {
+                        if(verb != 'get') {
+                            self.purge();
+                        }
+
+                        defer.resolve(self.parseResult(result, path));
+            		})
+            		.error(function(errorData, statusCode) {
+                        var error = new FireError(errorData);
+                        error.number = statusCode;
+            			defer.reject(error);
+            		});
+            }, 1000);
 
         	return defer.promise;
         };
@@ -98,7 +345,41 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         };
 
         this._get = function(path, params) {
-        	return this._action('get', path, this._prepare(params));
+            var key = this.name + '.' + _djb2Hash(path + ((Object.keys(params || {}).length > 0) ? JSON.stringify(params) : ''));
+            var data = _CacheService.get(key, params.$options && params.$options.cache);
+            if(data && (!params.$options || typeof params.$options.returnCache == 'undefined' || params.$options.returnCache)) {
+                if(params.$options && params.$options.autoReload) {
+                    params.$options.returnCache = false;
+                    delete params.$options.autoReload;
+
+                    this._get(path, params)
+                        .then(function(result) {
+                            if(Array.isArray(data)) {
+                                // TODO: What if result contains more items than data?
+                                data.forEach(function(modelInstance, index) {
+                                    if(index < result.length) {
+                                        modelInstance.refresh(result[index]);
+                                    }
+                                    else {
+                                        // TODO: data contains more items than result. So a couple of items were removed. Now what?
+                                    }
+                                });
+                            }
+                            else {
+                                data.refresh(result);
+                            }
+                        });
+                }
+
+                return $q.when(data);
+            }
+            else {
+            	return this._action('get', path, this._prepare(params))
+                    .then(function(result) {
+                        _CacheService.put(key, result, params.$options && params.$options.cache);
+                        return result;
+                    });
+            }
         };
 
         this._put = function(path, fields, query) {
@@ -133,7 +414,6 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         };
 
         this.updateOrCreate = function(where, set) {
-            var self = this;
             return this.update(where, set).then(function(modelInstances) {
                 if(modelInstances.length) {
                     return modelInstances[0];
@@ -154,7 +434,6 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         };
 
         this.findOrCreate = function(where, set) {
-        	var self = this;
         	return this.findOne(where)
         		.then(function(modelInstance) {
         			if(modelInstance) {
@@ -206,8 +485,7 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         		var modelID = fieldsMap.id;
         		delete fieldsMap.id;
 
-        		var self = this;
-        		return this._get(this.endpoint + '/' + modelID, transformQueryMap(fieldsMap))
+        		return this._get(this.endpoint + '/' + modelID, transformQueryMap(fieldsMap, options))
         			.then(function(modelInstance) {
         				if(modelInstance) {
         					modelInstance._endpoint = self.endpoint + '/' + modelID;
