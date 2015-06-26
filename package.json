@@ -1,6 +1,6 @@
 {
   "name": "fire",
-  "description": "An isomorphic web framework built on top of [AngularJS](https://angularjs.org/), [express](http://expressjs.com/) and [PostgreSQL](http://www.postgresql.org/).",
+  "description": "An isomorphic web framework built on top of [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [express](http://expressjs.com/) and more.",
   "keywords": [
     "models",
     "isomorphic",
@@ -34,7 +34,7 @@
     "supertest": "^0.13.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test ./node_modules/.bin/mocha -g 'model instance new' --reporter spec ./test/*.js"
+    "test": "NODE_ENV=test ./node_modules/.bin/mocha -g '^' --reporter spec ./test/*.js"
   },
   "dependencies": {
     "amqplib": "^0.3.2",
