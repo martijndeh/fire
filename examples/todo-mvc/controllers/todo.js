@@ -21,9 +21,11 @@ function TodoController($scope, list, $routeParams) {
 		name = name.trim();
 
 		if(name.length) {
-			return list.createItem({name: name}).then(function() {
-				$scope.name = '';
-			});
+			return list
+				.createItem({name: name})
+				.then(function() {
+					$scope.name = '';
+				});
 		}
 	};
 
@@ -76,7 +78,7 @@ app.controller('/:status', TodoController);
 TodoController.prototype.resolve = function() {
 	return {
 		list: function(TodoListModel) {
-			return TodoListModel.getCurrentList(123);
+			return TodoListModel.getCurrentList();
 		}
 	};
 };

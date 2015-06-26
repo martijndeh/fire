@@ -42,15 +42,9 @@ app.filter('completedFilter', ['$routeParams', function($routeParams) {
 
 
 
-app.controller('TodoController', ['$scope', 'list', '$routeParams', 'TodoListModel', function($scope, list, $routeParams, TodoListModel) {
+app.controller('TodoController', ['$scope', 'list', '$routeParams', function($scope, list, $routeParams) {
 	$scope.status = $routeParams.status || '';
 	$scope.list = list;
-
-	console.log('Going to create:');
-	TodoListModel.create([{}, {}, {}]).then(function(lists) {
-		console.log('Lists:');
-		console.log(lists);
-	});
 
 	$scope.completeAllItems = function() {
 		var completed = true;
@@ -66,9 +60,11 @@ app.controller('TodoController', ['$scope', 'list', '$routeParams', 'TodoListMod
 		name = name.trim();
 
 		if(name.length) {
-			return list.createItem({name: name}).then(function() {
-				$scope.name = '';
-			});
+			return list
+				.createItem({name: name})
+				.then(function() {
+					$scope.name = '';
+				});
 		}
 	};
 
@@ -161,8 +157,285 @@ function FireError(message) {
 }
 FireError.prototype = new Error();
 
-app.factory('FireModel', ['$http', '$q', function($http, $q) {
-    return function() {
+app.factory('_djb2Hash', function() {
+    return function _djb2Hash(str){
+        var hash = 5381;
+        var char = 0;
+        for(var i = 0, il = str.length; i < il; i++) {
+            char = str.charCodeAt(i);
+            hash = hash * 33 + char;
+        }
+        return (Math.abs(hash) % (Math.pow(2, 52) - 1));
+    };
+});
+
+app.service('_CacheService', ['$injector', '$timeout', function($injector, $timeout) {
+    var CAPACITY = 25;
+    var LOCAL_STORAGE_KEY = '_CacheService';
+    var objects = {};
+    var keys = [];
+    var indices = {};
+
+    this.numberOfCaches = function() {
+        return keys.length;
+    };
+
+    if(window.localStorage) {
+        var item = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+        if(item) {
+            try {
+                var data = JSON.parse(item);
+                if(data && data.objects && data.keys && data.indices) {
+                    console.log('Parse data:');
+                    console.log(data);
+
+                    objects = data.objects;
+                    keys = data.keys;
+                    indices = data.indices;
+                }
+            }
+            catch(e) {
+                console.log('Error is:');
+                console.log(e);
+
+                window.localStorage.setItem(LOCAL_STORAGE_KEY, null);
+            }
+        }
+    }
+
+    function persist() {
+        if(window.localStorage) {
+            console.log('Persist!');
+
+            window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+                objects: objects,
+                keys: keys,
+                indices: indices
+            }));
+        }
+    }
+
+    function refreshKey(key) {
+        keys.splice(keys.indexOf(key), 1);
+        keys.push(key);
+    }
+
+    function getKeys(key) {
+        var indexOfDot = key.indexOf('.');
+        if(indexOfDot != -1) {
+            var stringBeforeDot = key.substring(0, indexOfDot);
+            var stringAfterDot = key.substring(indexOfDot + 1);
+
+            return [stringBeforeDot, stringAfterDot];
+        }
+
+        return [];
+    }
+
+    function index(key) {
+        var strings = getKeys(key);
+
+        console.log('index ' + strings.join(' '));
+
+        if(strings.length) {
+            var stringBeforeDot = strings[0];
+            var stringAfterDot = strings[1];
+
+            if(typeof indices[stringBeforeDot] != 'undefined') {
+                if(indices[stringBeforeDot].indexOf(stringAfterDot) == -1) {
+                    indices[stringBeforeDot].push(stringAfterDot);
+                    return true;
+                }
+            }
+            else {
+                indices[stringBeforeDot] = [
+                    stringAfterDot
+                ];
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function unindex(key) {
+        console.log('unindex ' + key);
+
+        var strings = getKeys(key);
+
+        if(strings.length) {
+            var stringBeforeDot = strings[0];
+            var stringAfterDot = strings[1];
+
+            console.log(stringBeforeDot + ' ' + stringAfterDot);
+
+            if(typeof indices[stringBeforeDot] != 'undefined') {
+                console.log('We have an index!');
+
+                if(stringAfterDot == '*') {
+                    indices[stringBeforeDot].forEach(function(oldKey) {
+                        var completeKey = stringBeforeDot + '.' + oldKey;
+                        delete objects[completeKey];
+                        console.log('Remove object ' + oldKey);
+
+                        var indexOfCompleteKey = keys.indexOf(completeKey);
+                        if(indexOfCompleteKey != -1) {
+                            console.log('Remove key ' + completeKey);
+
+                            keys.splice(indexOfCompleteKey, 1);
+                        }
+                    });
+                    delete indices[stringBeforeDot];
+                    return true;
+                }
+                else {
+                    var indexOfKey = indices[stringBeforeDot].indexOf(stringAfterDot);
+                    if(indexOfKey != -1) {
+                        indices[stringBeforeDot].splice(indexOfKey, 1);
+                    }
+                }
+            }
+            else {
+                console.log('no index...');
+                console.log(indices);
+            }
+        }
+
+        return false;
+    }
+
+    this.remove = function(key) {
+        if(!unindex(key)) {
+            if(typeof objects[key] != 'undefined') {
+                console.log('delete object');
+
+                delete objects[key];
+                keys.splice(keys.indexOf(key), 1);
+            }
+            else {
+                console.log('doesnt exist...');
+            }
+        }
+    };
+
+    this.removeAll = function() {
+        objects = {};
+        keys = [];
+        indices = {};
+
+        persist();
+    };
+
+    this.get = function(key, expire) {
+        var object = objects[key];
+        if(typeof objects[key] != 'undefined' && (typeof expire == 'undefined' || expire == -1 || (new Date().getTime() - object.time) < expire)) {
+            refreshKey(key);
+
+            if(object.value && object.value._map && object.value._map._type) {
+				var fireModelInstanceConstructor = $injector.get('FireModelInstance' + object.value._map._type);
+				object.value = new fireModelInstanceConstructor(object.value._map, object.value._path);
+			}
+
+            return object.value;
+        }
+
+        return null;
+    };
+
+    this.put = function(key, value, expire) {
+        if(typeof expire != 'undefined' && (expire == -1 || expire > 0)) {
+            console.log('put cache ' + key);
+
+            if(keys.length > CAPACITY) {
+                var oldKeys = keys.splice(0, keys.length - CAPACITY);
+                oldKeys.forEach(function(oldKey) {
+                    unindex(oldKey);
+                    objects[oldKey] = null;
+                });
+            }
+
+            if(index(key)) {
+                console.log('add key');
+                keys.push(key);
+            }
+
+            objects[key] = {
+                value: value,
+                time: new Date().getTime()
+            };
+
+            persist();
+        }
+    };
+
+    this.persist = function() {
+        persist();
+    };
+}]);
+
+app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout', '_djb2Hash', function($http, $q, $injector, _CacheService, $timeout, _djb2Hash) {
+    return function FireModel(name, autoFetchedAssociationNames, endpoint) {
+        this.name = name;
+        this.autoFetchedAssociationNames = autoFetchedAssociationNames;
+        this.endpoint = endpoint;
+
+        var self = this;
+        this.parse = function(parseMap) {
+            return this.parseResult(parseMap, null);
+        };
+
+        this.purge = function() {
+            if(_CacheService.numberOfCaches() > 0) {
+                console.log('Removing all cache for ' + this.name);
+
+                var purgedModelNames = [];
+
+                var purge = function(modelName) {
+                    if(purgedModelNames.indexOf(modelName) == -1) {
+                        purgedModelNames.push(modelName);
+
+                        var model = $injector.get(modelName + 'Model');
+
+                        console.log('    Remove association: ' + modelName);
+
+                        _CacheService.remove(model.name + '.*', false);
+                        model.autoFetchedAssociationNames.forEach(function(associatedModelName) {
+                            purge(associatedModelName);
+                        });
+                    }
+                };
+
+                purge(this.name);
+                _CacheService.persist();
+            }
+        };
+
+        this.new = function() {
+            var fireModelInstanceConstructor = $injector.get('FireModelInstance' + this.name);
+            return new fireModelInstanceConstructor(null, this.endpoint);
+        };
+
+        this.parseResult = function(setMapOrList, path) {
+            function parseSetMap(setMap) {
+                var fireModelInstanceConstructor;
+                if(setMap._type) {
+                    fireModelInstanceConstructor = $injector.get('FireModelInstance' + setMap._type);
+                }
+                else {
+                    fireModelInstanceConstructor = $injector.get('FireModelInstance' + self.name);
+                }
+
+                return new fireModelInstanceConstructor(setMap, path);
+            }
+
+        	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
+        		return setMapOrList.map(parseSetMap);
+        	}
+        	else {
+        		return parseSetMap(setMapOrList);
+        	}
+        };
+
         this._prepare = function(paramsOrList) {
             var prepare = function(params) {
                 var map = {};
@@ -181,23 +454,31 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         };
 
         this._action = function(verb, path, params, data) {
+            console.log('_action ' + verb + ' on ' + self.name);
+
         	var defer = $q.defer();
 
-            console.log(verb + ' ' + path);
-            console.log(data);
+            $timeout(function() {
+                $http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true, 'Content-Type': 'application/json;charset=utf-8'}})
+            		.success(function(result) {
+                        if(verb != 'get') {
+                            self.purge();
+                        }
 
-        	var self = this;
-        	$http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true}})
-        		.success(function(result) {
-        			defer.resolve(self.parseResult(result, path));
-        		})
-        		.error(function(data, statusCode) {
-                    var error = new FireError(data);
-                    error.number = statusCode;
-        			defer.reject(error);
-        		});
+                        defer.resolve(self.parseResult(result, path));
+            		})
+            		.error(function(errorData, statusCode) {
+                        var error = new FireError(errorData);
+                        error.number = statusCode;
+            			defer.reject(error);
+            		});
+            }, 1000);
 
         	return defer.promise;
+        };
+
+        this._delete = function(path, fields) {
+        	return this._action('delete', path, null, this._prepare(fields));
         };
 
         this._post = function(path, fields) {
@@ -205,7 +486,52 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         };
 
         this._get = function(path, params) {
-        	return this._action('get', path, this._prepare(params));
+            var key = this.name + '.' + _djb2Hash(path + ((Object.keys(params || {}).length > 0) ? JSON.stringify(params) : ''));
+
+            console.log('_get `' + key + '`');
+            console.log(params);
+
+            var data = _CacheService.get(key, params.$options && params.$options.cache);
+            if(data && (!params.$options || typeof params.$options.returnCache == 'undefined' || params.$options.returnCache)) {
+                console.log('returning cached data...');
+                console.log(data);
+
+                if(params.$options && params.$options.autoReload) {
+                    console.log('auto reload');
+
+                    params.$options.returnCache = false;
+                    delete params.$options.autoReload;
+
+                    this._get(path, params)
+                        .then(function(result) {
+                            if(Array.isArray(data)) {
+                                // TODO: What if result contains more items than data?
+                                data.forEach(function(modelInstance, index) {
+                                    if(index < result.length) {
+                                        modelInstance.refresh(result[index]);
+                                    }
+                                    else {
+                                        // TODO: data contains more items than result. So a couple of items were removed. Now what?
+                                    }
+                                });
+                            }
+                            else {
+                                data.refresh(result);
+                            }
+                        });
+                }
+
+                return $q.when(data);
+            }
+            else {
+            	return this._action('get', path, this._prepare(params))
+                    .then(function(result) {
+                        console.log('Storing cache to ' + key);
+
+                        _CacheService.put(key, result, params.$options && params.$options.cache);
+                        return result;
+                    });
+            }
         };
 
         this._put = function(path, fields, query) {
@@ -240,7 +566,6 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         };
 
         this.updateOrCreate = function(where, set) {
-            var self = this;
             return this.update(where, set).then(function(modelInstances) {
                 if(modelInstances.length) {
                     return modelInstances[0];
@@ -261,7 +586,6 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         };
 
         this.findOrCreate = function(where, set) {
-        	var self = this;
         	return this.findOne(where)
         		.then(function(modelInstance) {
         			if(modelInstance) {
@@ -313,8 +637,7 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
         		var modelID = fieldsMap.id;
         		delete fieldsMap.id;
 
-        		var self = this;
-        		return this._get(this.endpoint + '/' + modelID, transformQueryMap(fieldsMap))
+        		return this._get(this.endpoint + '/' + modelID, transformQueryMap(fieldsMap, options))
         			.then(function(modelInstance) {
         				if(modelInstance) {
         					modelInstance._endpoint = self.endpoint + '/' + modelID;
@@ -359,23 +682,8 @@ app.factory('FireModel', ['$http', '$q', function($http, $q) {
 }]);
 
 
-app.factory('TodoItemModel', ['$http', '$q', 'FireModel', '$injector', function($http, $q, FireModel, $injector) {
-    var model = new FireModel();
-    model.endpoint = '/api/todo-items';
-
-    model.parseResult = function(setMapOrList, path) {
-        function parseSetMap(setMap) {
-            var fireModelInstanceConstructor = $injector.get('FireModelInstanceTodoItem');
-            return new fireModelInstanceConstructor(setMap, path);
-        }
-
-    	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-    		return setMapOrList.map(parseSetMap);
-    	}
-    	else {
-    		return parseSetMap(setMapOrList);
-    	}
-    };
+app.factory('TodoItemModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
+    var model = new FireModel('TodoItem', ['TodoList'], '/api/todo-items');
 
     
 
@@ -390,8 +698,15 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
             throw new Error('FireModelInstanceTodoItem only accepts two arguments now.');
         }
 
-        this._map = setMap || {};
+        this._map = setMap || null;
         this._changes = {};
+
+        this.toJSON = function() {
+            return {
+                _map: this._map,
+                _path: path
+            };
+        };
 
         if(this._map.id) {
             this._endpoint = path + '/' + this._map.id;
@@ -406,15 +721,15 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
 
     	Object.defineProperty(this, 'id', {
     		get: function() {
-    			if(typeof self._changes['id'] != 'undefined') {
-    				return self._changes['id'];
+    			if(typeof self._changes.id != 'undefined') {
+    				return self._changes.id;
     			}
 
-    			return self._map['id'];
+    			return self._map.id;
     		},
 
     		set: function(value) {
-    			self._changes['id'] = value;
+    			self._changes.id = value;
     		}
     	});
     
@@ -423,27 +738,37 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
     		if(Array.isArray(setMap.list)) {
     			setMap.list = setMap.list.map(function(object) {
                     var fireModelInstanceConstructor = $injector.get('FireModelInstanceTodoList');
-                    return new fireModelInstanceConstructor(object, path + '/' + 'lists');
+                    if(object._map) {
+                        return new fireModelInstanceConstructor(object._map, path + '/' + 'lists');
+                    }
+                    else {
+                        return new fireModelInstanceConstructor(object, path + '/' + 'lists');
+                    }
     			});
     		}
     		else {
                 var fireModelInstanceConstructor = $injector.get('FireModelInstanceTodoList');
-    			setMap.list = new fireModelInstanceConstructor(setMap.list, path + '/' + 'lists');
+                if(setMap.list._map) {
+    			    setMap.list = new fireModelInstanceConstructor(setMap.list._map, path + '/' + 'lists');
+                }
+                else {
+                    setMap.list = new fireModelInstanceConstructor(setMap.list, path + '/' + 'lists');
+                }
     		}
     	}
     	
 
     	Object.defineProperty(this, 'list', {
     		get: function() {
-    			if(typeof self._changes['list'] != 'undefined') {
-    				return self._changes['list'];
+    			if(typeof self._changes.list != 'undefined') {
+    				return self._changes.list;
     			}
 
-    			return self._map['list'];
+    			return self._map.list;
     		},
 
     		set: function(value) {
-    			self._changes['list'] = value;
+    			self._changes.list = value;
     		}
     	});
     
@@ -451,15 +776,15 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
 
     	Object.defineProperty(this, 'name', {
     		get: function() {
-    			if(typeof self._changes['name'] != 'undefined') {
-    				return self._changes['name'];
+    			if(typeof self._changes.name != 'undefined') {
+    				return self._changes.name;
     			}
 
-    			return self._map['name'];
+    			return self._map.name;
     		},
 
     		set: function(value) {
-    			self._changes['name'] = value;
+    			self._changes.name = value;
     		}
     	});
     
@@ -467,15 +792,15 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
 
     	Object.defineProperty(this, 'completed', {
     		get: function() {
-    			if(typeof self._changes['completed'] != 'undefined') {
-    				return self._changes['completed'];
+    			if(typeof self._changes.completed != 'undefined') {
+    				return self._changes.completed;
     			}
 
-    			return self._map['completed'];
+    			return self._map.completed;
     		},
 
     		set: function(value) {
-    			self._changes['completed'] = value;
+    			self._changes.completed = value;
     		}
     	});
     
@@ -483,15 +808,15 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
 
     	Object.defineProperty(this, 'createdAt', {
     		get: function() {
-    			if(typeof self._changes['createdAt'] != 'undefined') {
-    				return self._changes['createdAt'];
+    			if(typeof self._changes.createdAt != 'undefined') {
+    				return self._changes.createdAt;
     			}
 
-    			return self._map['createdAt'];
+    			return self._map.createdAt;
     		},
 
     		set: function(value) {
-    			self._changes['createdAt'] = value;
+    			self._changes.createdAt = value;
     		}
     	});
     
@@ -512,12 +837,27 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
         
     
 
+
+
         this.cancel = function() {
             this._changes = {};
         };
 
+        this.reload = function() {
+            //
+        };
+
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
+            this._changes = {};
+
+            if(this._map.id) {
+                this._endpoint = path + '/' + this._map.id;
+            }
+            else {
+                this._endpoint = null;
+            }
+
         	return this;
         };
 
@@ -530,42 +870,43 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
         };
 
         this.save = function() {
-            var self = this;
-            return $q.when(Object.keys(this._changes).length)
-                .then(function(numberOfChanges) {
-                    if(numberOfChanges) {
-                        var queryMap = transformQueryMap(self._changes);
-
-                        return TodoItemModel._put(self._endpoint, queryMap)
-                            .then(function(instance) {
-                                self._changes = {};
-
-                                Object.keys(instance._map).forEach(function(key) {
-                                    if(instance._map[key] !== null) {
-                                        self._map[key] = instance._map[key];
-                                    }
-                                });
-                                return self;
-                            });
-                    }
-                    else {
-                        return self;
-                    }
-                });
-        };
-
-        Object.defineProperty(this, '_model', {
-            get: function() {
-                throw new Error('FireModelInstanceTodoItem._model is deprecated.');
+            if(this._map === null) {
+                return TodoItemModel.create(this._changes)
+                    .then(function(modelInstance) {
+                        return self.refresh(modelInstance);
+                    });
             }
-        });
+            else {
+                var numberOfChanges = Object.keys(this._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(this._changes);
+
+                    return TodoItemModel._put(this._endpoint, queryMap)
+                        .then(function(instance) {
+                            console.log('Instance is:');
+                            console.log(instance);
+
+                            self._changes = {};
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    self._map[key] = instance._map[key];
+                                }
+                            });
+                            return self;
+                        });
+                }
+                else {
+                    return $q.when(this);
+                }
+            }
+        };
 
         
 
         
         
         this.getList = function(queryMap, optionsMap) {
-            var self = this;
             return $injector.get('TodoListModel')._find(TodoItemModel.endpoint + '/' + this.id + '/list', queryMap, optionsMap)
                 .then(function(modelInstance) {
                     if(modelInstance) {
@@ -584,7 +925,6 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
         };
 
         this.createList = function(queryMap) {
-            var self = this;
             return $injector.get('TodoListModel')._create(TodoItemModel.endpoint + '/' + this.id + '/list', queryMap)
                 .then(function(modelInstance) {
                     self.list = modelInstance;
@@ -593,7 +933,6 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
         };
 
         this.removeList = function() {
-            var self = this;
             return $injector.get('TodoListModel')._action('delete', TodoItemModel.endpoint + '/' + this.id + '/list')
                 .then(function(removeModelInstance) {
                     self.list = null;
@@ -603,27 +942,11 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
         
         
         
-        
     };
 }]);
 
-app.factory('TodoListModel', ['$http', '$q', 'FireModel', '$injector', function($http, $q, FireModel, $injector) {
-    var model = new FireModel();
-    model.endpoint = '/api/todo-lists';
-
-    model.parseResult = function(setMapOrList, path) {
-        function parseSetMap(setMap) {
-            var fireModelInstanceConstructor = $injector.get('FireModelInstanceTodoList');
-            return new fireModelInstanceConstructor(setMap, path);
-        }
-
-    	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-    		return setMapOrList.map(parseSetMap);
-    	}
-    	else {
-    		return parseSetMap(setMapOrList);
-    	}
-    };
+app.factory('TodoListModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
+    var model = new FireModel('TodoList', ['TodoItem'], '/api/todo-lists');
 
     
 
@@ -635,15 +958,17 @@ var TodoListModel = $injector.get('TodoListModel');
 
         return (function(){
 		if(_StorageService.get('list')) {
-			return TodoListModel.findOne({id: _StorageService.get('list')});
+			return TodoListModel.findOne({id: _StorageService.get('list')}, {cache: 1000 * 10, autoReload: true});
 		}
 		else {
-			return TodoListModel.create({}).then(function(list) {
-				_StorageService.set('list', list.id);
-				return list;
-			});
+			return TodoListModel
+				.create({})
+				.then(function(list) {
+					_StorageService.set('list', list.id);
+					return list;
+				});
 		}
-	})();
+	}.bind(this))();
     };
     
 
@@ -656,8 +981,15 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
             throw new Error('FireModelInstanceTodoList only accepts two arguments now.');
         }
 
-        this._map = setMap || {};
+        this._map = setMap || null;
         this._changes = {};
+
+        this.toJSON = function() {
+            return {
+                _map: this._map,
+                _path: path
+            };
+        };
 
         if(this._map.id) {
             this._endpoint = path + '/' + this._map.id;
@@ -672,15 +1004,15 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
 
     	Object.defineProperty(this, 'id', {
     		get: function() {
-    			if(typeof self._changes['id'] != 'undefined') {
-    				return self._changes['id'];
+    			if(typeof self._changes.id != 'undefined') {
+    				return self._changes.id;
     			}
 
-    			return self._map['id'];
+    			return self._map.id;
     		},
 
     		set: function(value) {
-    			self._changes['id'] = value;
+    			self._changes.id = value;
     		}
     	});
     
@@ -689,27 +1021,37 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
     		if(Array.isArray(setMap.items)) {
     			setMap.items = setMap.items.map(function(object) {
                     var fireModelInstanceConstructor = $injector.get('FireModelInstanceTodoItem');
-                    return new fireModelInstanceConstructor(object, path + '/' + 'items');
+                    if(object._map) {
+                        return new fireModelInstanceConstructor(object._map, path + '/' + 'items');
+                    }
+                    else {
+                        return new fireModelInstanceConstructor(object, path + '/' + 'items');
+                    }
     			});
     		}
     		else {
                 var fireModelInstanceConstructor = $injector.get('FireModelInstanceTodoItem');
-    			setMap.items = new fireModelInstanceConstructor(setMap.items, path + '/' + 'items');
+                if(setMap.items._map) {
+    			    setMap.items = new fireModelInstanceConstructor(setMap.items._map, path + '/' + 'items');
+                }
+                else {
+                    setMap.items = new fireModelInstanceConstructor(setMap.items, path + '/' + 'items');
+                }
     		}
     	}
     	
 
     	Object.defineProperty(this, 'items', {
     		get: function() {
-    			if(typeof self._changes['items'] != 'undefined') {
-    				return self._changes['items'];
+    			if(typeof self._changes.items != 'undefined') {
+    				return self._changes.items;
     			}
 
-    			return self._map['items'];
+    			return self._map.items;
     		},
 
     		set: function(value) {
-    			self._changes['items'] = value;
+    			self._changes.items = value;
     		}
     	});
     
@@ -717,15 +1059,15 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
 
     	Object.defineProperty(this, 'createdAt', {
     		get: function() {
-    			if(typeof self._changes['createdAt'] != 'undefined') {
-    				return self._changes['createdAt'];
+    			if(typeof self._changes.createdAt != 'undefined') {
+    				return self._changes.createdAt;
     			}
 
-    			return self._map['createdAt'];
+    			return self._map.createdAt;
     		},
 
     		set: function(value) {
-    			self._changes['createdAt'] = value;
+    			self._changes.createdAt = value;
     		}
     	});
     
@@ -742,12 +1084,27 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
         
     
 
+
+
         this.cancel = function() {
             this._changes = {};
         };
 
+        this.reload = function() {
+            //
+        };
+
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
+            this._changes = {};
+
+            if(this._map.id) {
+                this._endpoint = path + '/' + this._map.id;
+            }
+            else {
+                this._endpoint = null;
+            }
+
         	return this;
         };
 
@@ -760,35 +1117,37 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
         };
 
         this.save = function() {
-            var self = this;
-            return $q.when(Object.keys(this._changes).length)
-                .then(function(numberOfChanges) {
-                    if(numberOfChanges) {
-                        var queryMap = transformQueryMap(self._changes);
-
-                        return TodoListModel._put(self._endpoint, queryMap)
-                            .then(function(instance) {
-                                self._changes = {};
-
-                                Object.keys(instance._map).forEach(function(key) {
-                                    if(instance._map[key] !== null) {
-                                        self._map[key] = instance._map[key];
-                                    }
-                                });
-                                return self;
-                            });
-                    }
-                    else {
-                        return self;
-                    }
-                });
-        };
-
-        Object.defineProperty(this, '_model', {
-            get: function() {
-                throw new Error('FireModelInstanceTodoList._model is deprecated.');
+            if(this._map === null) {
+                return TodoListModel.create(this._changes)
+                    .then(function(modelInstance) {
+                        return self.refresh(modelInstance);
+                    });
             }
-        });
+            else {
+                var numberOfChanges = Object.keys(this._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(this._changes);
+
+                    return TodoListModel._put(this._endpoint, queryMap)
+                        .then(function(instance) {
+                            console.log('Instance is:');
+                            console.log(instance);
+
+                            self._changes = {};
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    self._map[key] = instance._map[key];
+                                }
+                            });
+                            return self;
+                        });
+                }
+                else {
+                    return $q.when(this);
+                }
+            }
+        };
 
         
         this.getCurrentList = function() {
@@ -798,15 +1157,17 @@ var TodoListModel = $injector.get('TodoListModel');
 
             return (function(){
 		if(_StorageService.get('list')) {
-			return TodoListModel.findOne({id: _StorageService.get('list')});
+			return TodoListModel.findOne({id: _StorageService.get('list')}, {cache: 1000 * 10, autoReload: true});
 		}
 		else {
-			return TodoListModel.create({}).then(function(list) {
-				_StorageService.set('list', list.id);
-				return list;
-			});
+			return TodoListModel
+				.create({})
+				.then(function(list) {
+					_StorageService.set('list', list.id);
+					return list;
+				});
 		}
-	})();
+	}.bind(this))();
         };
         
 
@@ -814,7 +1175,6 @@ var TodoListModel = $injector.get('TodoListModel');
         
         
         this.getItems = function(queryMap, optionsMap) {
-            var self = this;
         	return $injector.get('TodoItemModel')._find(TodoListModel.endpoint + '/' + this.id + '/items', queryMap, optionsMap)
                 .then(function(modelInstances) {
                     self.items = modelInstances;
@@ -823,7 +1183,6 @@ var TodoListModel = $injector.get('TodoListModel');
         };
 
         this.createItem = function(queryMap) {
-            var self = this;
             return $injector.get('TodoItemModel')._create(TodoListModel.endpoint + '/' + this.id + '/items', queryMap)
                 .then(function(createdModelInstance) {
                     if(!self.items) {
@@ -839,7 +1198,6 @@ var TodoListModel = $injector.get('TodoListModel');
         this.removeItem = function(modelInstanceOrUUID) {
             var UUID = _getUUID(modelInstanceOrUUID);
 
-            var self = this;
             return $injector.get('TodoItemModel')._action('delete', TodoListModel.endpoint + '/' + this.id + '/items/' + UUID)
                 .then(function(removedModelInstance) {
                     for(var i = 0, il = self.items.length; i < il; i++) {
@@ -855,7 +1213,6 @@ var TodoListModel = $injector.get('TodoListModel');
         };
 
         this.removeItems = function(map) {
-            var self = this;
             return $injector.get('TodoItemModel')._action('delete', TodoListModel.endpoint + '/' + this.id + '/items', TodoListModel._prepare(transformQueryMap(map)))
                 .then(function(removedModelInstances) {
                     var ids = removedModelInstances.map(function(modelInstance) {
@@ -871,7 +1228,6 @@ var TodoListModel = $injector.get('TodoListModel');
         };
 
         this.updateItems = function(where, set) {
-            var self = this;
             return $injector.get('TodoItemModel')._put(TodoListModel.endpoint + '/' + this.id + '/items', transformQueryMap(set), transformQueryMap(where))
                 .then(function(updatedModelInstances) {
                     for(var i = 0, il = updatedModelInstances.length; i < il; i++) {
@@ -895,27 +1251,11 @@ var TodoListModel = $injector.get('TodoListModel');
 
         
         
-        
     };
 }]);
 
-app.factory('TestModel', ['$http', '$q', 'FireModel', '$injector', function($http, $q, FireModel, $injector) {
-    var model = new FireModel();
-    model.endpoint = '/api/tests';
-
-    model.parseResult = function(setMapOrList, path) {
-        function parseSetMap(setMap) {
-            var fireModelInstanceConstructor = $injector.get('FireModelInstanceTest');
-            return new fireModelInstanceConstructor(setMap, path);
-        }
-
-    	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-    		return setMapOrList.map(parseSetMap);
-    	}
-    	else {
-    		return parseSetMap(setMapOrList);
-    	}
-    };
+app.factory('TestModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
+    var model = new FireModel('Test', [], '/api/tests');
 
     
 
@@ -930,8 +1270,15 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
             throw new Error('FireModelInstanceTest only accepts two arguments now.');
         }
 
-        this._map = setMap || {};
+        this._map = setMap || null;
         this._changes = {};
+
+        this.toJSON = function() {
+            return {
+                _map: this._map,
+                _path: path
+            };
+        };
 
         if(this._map.id) {
             this._endpoint = path + '/' + this._map.id;
@@ -946,15 +1293,15 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
 
     	Object.defineProperty(this, 'id', {
     		get: function() {
-    			if(typeof self._changes['id'] != 'undefined') {
-    				return self._changes['id'];
+    			if(typeof self._changes.id != 'undefined') {
+    				return self._changes.id;
     			}
 
-    			return self._map['id'];
+    			return self._map.id;
     		},
 
     		set: function(value) {
-    			self._changes['id'] = value;
+    			self._changes.id = value;
     		}
     	});
     
@@ -962,15 +1309,15 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
 
     	Object.defineProperty(this, 'name', {
     		get: function() {
-    			if(typeof self._changes['name'] != 'undefined') {
-    				return self._changes['name'];
+    			if(typeof self._changes.name != 'undefined') {
+    				return self._changes.name;
     			}
 
-    			return self._map['name'];
+    			return self._map.name;
     		},
 
     		set: function(value) {
-    			self._changes['name'] = value;
+    			self._changes.name = value;
     		}
     	});
     
@@ -979,27 +1326,37 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
     		if(Array.isArray(setMap.sessions)) {
     			setMap.sessions = setMap.sessions.map(function(object) {
                     var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestSession');
-                    return new fireModelInstanceConstructor(object, path + '/' + 'sessions');
+                    if(object._map) {
+                        return new fireModelInstanceConstructor(object._map, path + '/' + 'sessions');
+                    }
+                    else {
+                        return new fireModelInstanceConstructor(object, path + '/' + 'sessions');
+                    }
     			});
     		}
     		else {
                 var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestSession');
-    			setMap.sessions = new fireModelInstanceConstructor(setMap.sessions, path + '/' + 'sessions');
+                if(setMap.sessions._map) {
+    			    setMap.sessions = new fireModelInstanceConstructor(setMap.sessions._map, path + '/' + 'sessions');
+                }
+                else {
+                    setMap.sessions = new fireModelInstanceConstructor(setMap.sessions, path + '/' + 'sessions');
+                }
     		}
     	}
     	
 
     	Object.defineProperty(this, 'sessions', {
     		get: function() {
-    			if(typeof self._changes['sessions'] != 'undefined') {
-    				return self._changes['sessions'];
+    			if(typeof self._changes.sessions != 'undefined') {
+    				return self._changes.sessions;
     			}
 
-    			return self._map['sessions'];
+    			return self._map.sessions;
     		},
 
     		set: function(value) {
-    			self._changes['sessions'] = value;
+    			self._changes.sessions = value;
     		}
     	});
     
@@ -1008,27 +1365,37 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
     		if(Array.isArray(setMap.variants)) {
     			setMap.variants = setMap.variants.map(function(object) {
                     var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestVariant');
-                    return new fireModelInstanceConstructor(object, path + '/' + 'variants');
+                    if(object._map) {
+                        return new fireModelInstanceConstructor(object._map, path + '/' + 'variants');
+                    }
+                    else {
+                        return new fireModelInstanceConstructor(object, path + '/' + 'variants');
+                    }
     			});
     		}
     		else {
                 var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestVariant');
-    			setMap.variants = new fireModelInstanceConstructor(setMap.variants, path + '/' + 'variants');
+                if(setMap.variants._map) {
+    			    setMap.variants = new fireModelInstanceConstructor(setMap.variants._map, path + '/' + 'variants');
+                }
+                else {
+                    setMap.variants = new fireModelInstanceConstructor(setMap.variants, path + '/' + 'variants');
+                }
     		}
     	}
     	
 
     	Object.defineProperty(this, 'variants', {
     		get: function() {
-    			if(typeof self._changes['variants'] != 'undefined') {
-    				return self._changes['variants'];
+    			if(typeof self._changes.variants != 'undefined') {
+    				return self._changes.variants;
     			}
 
-    			return self._map['variants'];
+    			return self._map.variants;
     		},
 
     		set: function(value) {
-    			self._changes['variants'] = value;
+    			self._changes.variants = value;
     		}
     	});
     
@@ -1043,12 +1410,27 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         
     
 
+
+
         this.cancel = function() {
             this._changes = {};
         };
 
+        this.reload = function() {
+            //
+        };
+
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
+            this._changes = {};
+
+            if(this._map.id) {
+                this._endpoint = path + '/' + this._map.id;
+            }
+            else {
+                this._endpoint = null;
+            }
+
         	return this;
         };
 
@@ -1061,35 +1443,37 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         };
 
         this.save = function() {
-            var self = this;
-            return $q.when(Object.keys(this._changes).length)
-                .then(function(numberOfChanges) {
-                    if(numberOfChanges) {
-                        var queryMap = transformQueryMap(self._changes);
-
-                        return TestModel._put(self._endpoint, queryMap)
-                            .then(function(instance) {
-                                self._changes = {};
-
-                                Object.keys(instance._map).forEach(function(key) {
-                                    if(instance._map[key] !== null) {
-                                        self._map[key] = instance._map[key];
-                                    }
-                                });
-                                return self;
-                            });
-                    }
-                    else {
-                        return self;
-                    }
-                });
-        };
-
-        Object.defineProperty(this, '_model', {
-            get: function() {
-                throw new Error('FireModelInstanceTest._model is deprecated.');
+            if(this._map === null) {
+                return TestModel.create(this._changes)
+                    .then(function(modelInstance) {
+                        return self.refresh(modelInstance);
+                    });
             }
-        });
+            else {
+                var numberOfChanges = Object.keys(this._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(this._changes);
+
+                    return TestModel._put(this._endpoint, queryMap)
+                        .then(function(instance) {
+                            console.log('Instance is:');
+                            console.log(instance);
+
+                            self._changes = {};
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    self._map[key] = instance._map[key];
+                                }
+                            });
+                            return self;
+                        });
+                }
+                else {
+                    return $q.when(this);
+                }
+            }
+        };
 
         
 
@@ -1097,7 +1481,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         
         
         this.getSessions = function(queryMap, optionsMap) {
-            var self = this;
         	return $injector.get('TestSessionModel')._find(TestModel.endpoint + '/' + this.id + '/sessions', queryMap, optionsMap)
                 .then(function(modelInstances) {
                     self.sessions = modelInstances;
@@ -1106,7 +1489,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         };
 
         this.createSession = function(queryMap) {
-            var self = this;
             return $injector.get('TestSessionModel')._create(TestModel.endpoint + '/' + this.id + '/sessions', queryMap)
                 .then(function(createdModelInstance) {
                     if(!self.sessions) {
@@ -1122,7 +1504,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         this.removeSession = function(modelInstanceOrUUID) {
             var UUID = _getUUID(modelInstanceOrUUID);
 
-            var self = this;
             return $injector.get('TestSessionModel')._action('delete', TestModel.endpoint + '/' + this.id + '/sessions/' + UUID)
                 .then(function(removedModelInstance) {
                     for(var i = 0, il = self.sessions.length; i < il; i++) {
@@ -1138,7 +1519,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         };
 
         this.removeSessions = function(map) {
-            var self = this;
             return $injector.get('TestSessionModel')._action('delete', TestModel.endpoint + '/' + this.id + '/sessions', TestModel._prepare(transformQueryMap(map)))
                 .then(function(removedModelInstances) {
                     var ids = removedModelInstances.map(function(modelInstance) {
@@ -1154,7 +1534,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         };
 
         this.updateSessions = function(where, set) {
-            var self = this;
             return $injector.get('TestSessionModel')._put(TestModel.endpoint + '/' + this.id + '/sessions', transformQueryMap(set), transformQueryMap(where))
                 .then(function(updatedModelInstances) {
                     for(var i = 0, il = updatedModelInstances.length; i < il; i++) {
@@ -1180,9 +1559,7 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         
         
         
-        
         this.getVariants = function(queryMap, optionsMap) {
-            var self = this;
         	return $injector.get('TestVariantModel')._find(TestModel.endpoint + '/' + this.id + '/variants', queryMap, optionsMap)
                 .then(function(modelInstances) {
                     self.variants = modelInstances;
@@ -1191,7 +1568,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         };
 
         this.createVariant = function(queryMap) {
-            var self = this;
             return $injector.get('TestVariantModel')._create(TestModel.endpoint + '/' + this.id + '/variants', queryMap)
                 .then(function(createdModelInstance) {
                     if(!self.variants) {
@@ -1207,7 +1583,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         this.removeVariant = function(modelInstanceOrUUID) {
             var UUID = _getUUID(modelInstanceOrUUID);
 
-            var self = this;
             return $injector.get('TestVariantModel')._action('delete', TestModel.endpoint + '/' + this.id + '/variants/' + UUID)
                 .then(function(removedModelInstance) {
                     for(var i = 0, il = self.variants.length; i < il; i++) {
@@ -1223,7 +1598,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         };
 
         this.removeVariants = function(map) {
-            var self = this;
             return $injector.get('TestVariantModel')._action('delete', TestModel.endpoint + '/' + this.id + '/variants', TestModel._prepare(transformQueryMap(map)))
                 .then(function(removedModelInstances) {
                     var ids = removedModelInstances.map(function(modelInstance) {
@@ -1239,7 +1613,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         };
 
         this.updateVariants = function(where, set) {
-            var self = this;
             return $injector.get('TestVariantModel')._put(TestModel.endpoint + '/' + this.id + '/variants', transformQueryMap(set), transformQueryMap(where))
                 .then(function(updatedModelInstances) {
                     for(var i = 0, il = updatedModelInstances.length; i < il; i++) {
@@ -1263,27 +1636,11 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
 
         
         
-        
     };
 }]);
 
-app.factory('TestParticipantModel', ['$http', '$q', 'FireModel', '$injector', function($http, $q, FireModel, $injector) {
-    var model = new FireModel();
-    model.endpoint = '/api/test-participants';
-
-    model.parseResult = function(setMapOrList, path) {
-        function parseSetMap(setMap) {
-            var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestParticipant');
-            return new fireModelInstanceConstructor(setMap, path);
-        }
-
-    	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-    		return setMapOrList.map(parseSetMap);
-    	}
-    	else {
-    		return parseSetMap(setMapOrList);
-    	}
-    };
+app.factory('TestParticipantModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
+    var model = new FireModel('TestParticipant', [], '/api/test-participants');
 
     
 
@@ -1298,8 +1655,15 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
             throw new Error('FireModelInstanceTestParticipant only accepts two arguments now.');
         }
 
-        this._map = setMap || {};
+        this._map = setMap || null;
         this._changes = {};
+
+        this.toJSON = function() {
+            return {
+                _map: this._map,
+                _path: path
+            };
+        };
 
         if(this._map.id) {
             this._endpoint = path + '/' + this._map.id;
@@ -1314,15 +1678,15 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
 
     	Object.defineProperty(this, 'id', {
     		get: function() {
-    			if(typeof self._changes['id'] != 'undefined') {
-    				return self._changes['id'];
+    			if(typeof self._changes.id != 'undefined') {
+    				return self._changes.id;
     			}
 
-    			return self._map['id'];
+    			return self._map.id;
     		},
 
     		set: function(value) {
-    			self._changes['id'] = value;
+    			self._changes.id = value;
     		}
     	});
     
@@ -1331,27 +1695,37 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
     		if(Array.isArray(setMap.sessions)) {
     			setMap.sessions = setMap.sessions.map(function(object) {
                     var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestSession');
-                    return new fireModelInstanceConstructor(object, path + '/' + 'sessions');
+                    if(object._map) {
+                        return new fireModelInstanceConstructor(object._map, path + '/' + 'sessions');
+                    }
+                    else {
+                        return new fireModelInstanceConstructor(object, path + '/' + 'sessions');
+                    }
     			});
     		}
     		else {
                 var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestSession');
-    			setMap.sessions = new fireModelInstanceConstructor(setMap.sessions, path + '/' + 'sessions');
+                if(setMap.sessions._map) {
+    			    setMap.sessions = new fireModelInstanceConstructor(setMap.sessions._map, path + '/' + 'sessions');
+                }
+                else {
+                    setMap.sessions = new fireModelInstanceConstructor(setMap.sessions, path + '/' + 'sessions');
+                }
     		}
     	}
     	
 
     	Object.defineProperty(this, 'sessions', {
     		get: function() {
-    			if(typeof self._changes['sessions'] != 'undefined') {
-    				return self._changes['sessions'];
+    			if(typeof self._changes.sessions != 'undefined') {
+    				return self._changes.sessions;
     			}
 
-    			return self._map['sessions'];
+    			return self._map.sessions;
     		},
 
     		set: function(value) {
-    			self._changes['sessions'] = value;
+    			self._changes.sessions = value;
     		}
     	});
     
@@ -1362,12 +1736,27 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
         
     
 
+
+
         this.cancel = function() {
             this._changes = {};
         };
 
+        this.reload = function() {
+            //
+        };
+
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
+            this._changes = {};
+
+            if(this._map.id) {
+                this._endpoint = path + '/' + this._map.id;
+            }
+            else {
+                this._endpoint = null;
+            }
+
         	return this;
         };
 
@@ -1380,35 +1769,37 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
         };
 
         this.save = function() {
-            var self = this;
-            return $q.when(Object.keys(this._changes).length)
-                .then(function(numberOfChanges) {
-                    if(numberOfChanges) {
-                        var queryMap = transformQueryMap(self._changes);
-
-                        return TestParticipantModel._put(self._endpoint, queryMap)
-                            .then(function(instance) {
-                                self._changes = {};
-
-                                Object.keys(instance._map).forEach(function(key) {
-                                    if(instance._map[key] !== null) {
-                                        self._map[key] = instance._map[key];
-                                    }
-                                });
-                                return self;
-                            });
-                    }
-                    else {
-                        return self;
-                    }
-                });
-        };
-
-        Object.defineProperty(this, '_model', {
-            get: function() {
-                throw new Error('FireModelInstanceTestParticipant._model is deprecated.');
+            if(this._map === null) {
+                return TestParticipantModel.create(this._changes)
+                    .then(function(modelInstance) {
+                        return self.refresh(modelInstance);
+                    });
             }
-        });
+            else {
+                var numberOfChanges = Object.keys(this._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(this._changes);
+
+                    return TestParticipantModel._put(this._endpoint, queryMap)
+                        .then(function(instance) {
+                            console.log('Instance is:');
+                            console.log(instance);
+
+                            self._changes = {};
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    self._map[key] = instance._map[key];
+                                }
+                            });
+                            return self;
+                        });
+                }
+                else {
+                    return $q.when(this);
+                }
+            }
+        };
 
         
 
@@ -1416,7 +1807,6 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
         
         
         this.getSessions = function(queryMap, optionsMap) {
-            var self = this;
         	return $injector.get('TestSessionModel')._find(TestParticipantModel.endpoint + '/' + this.id + '/sessions', queryMap, optionsMap)
                 .then(function(modelInstances) {
                     self.sessions = modelInstances;
@@ -1425,7 +1815,6 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
         };
 
         this.createSession = function(queryMap) {
-            var self = this;
             return $injector.get('TestSessionModel')._create(TestParticipantModel.endpoint + '/' + this.id + '/sessions', queryMap)
                 .then(function(createdModelInstance) {
                     if(!self.sessions) {
@@ -1441,7 +1830,6 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
         this.removeSession = function(modelInstanceOrUUID) {
             var UUID = _getUUID(modelInstanceOrUUID);
 
-            var self = this;
             return $injector.get('TestSessionModel')._action('delete', TestParticipantModel.endpoint + '/' + this.id + '/sessions/' + UUID)
                 .then(function(removedModelInstance) {
                     for(var i = 0, il = self.sessions.length; i < il; i++) {
@@ -1457,7 +1845,6 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
         };
 
         this.removeSessions = function(map) {
-            var self = this;
             return $injector.get('TestSessionModel')._action('delete', TestParticipantModel.endpoint + '/' + this.id + '/sessions', TestParticipantModel._prepare(transformQueryMap(map)))
                 .then(function(removedModelInstances) {
                     var ids = removedModelInstances.map(function(modelInstance) {
@@ -1473,7 +1860,6 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
         };
 
         this.updateSessions = function(where, set) {
-            var self = this;
             return $injector.get('TestSessionModel')._put(TestParticipantModel.endpoint + '/' + this.id + '/sessions', transformQueryMap(set), transformQueryMap(where))
                 .then(function(updatedModelInstances) {
                     for(var i = 0, il = updatedModelInstances.length; i < il; i++) {
@@ -1497,27 +1883,11 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
 
         
         
-        
     };
 }]);
 
-app.factory('TestSessionModel', ['$http', '$q', 'FireModel', '$injector', function($http, $q, FireModel, $injector) {
-    var model = new FireModel();
-    model.endpoint = '/api/test-sessions';
-
-    model.parseResult = function(setMapOrList, path) {
-        function parseSetMap(setMap) {
-            var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestSession');
-            return new fireModelInstanceConstructor(setMap, path);
-        }
-
-    	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-    		return setMapOrList.map(parseSetMap);
-    	}
-    	else {
-    		return parseSetMap(setMapOrList);
-    	}
-    };
+app.factory('TestSessionModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
+    var model = new FireModel('TestSession', [], '/api/test-sessions');
 
     
 
@@ -1532,8 +1902,15 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
             throw new Error('FireModelInstanceTestSession only accepts two arguments now.');
         }
 
-        this._map = setMap || {};
+        this._map = setMap || null;
         this._changes = {};
+
+        this.toJSON = function() {
+            return {
+                _map: this._map,
+                _path: path
+            };
+        };
 
         if(this._map.id) {
             this._endpoint = path + '/' + this._map.id;
@@ -1548,15 +1925,15 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
 
     	Object.defineProperty(this, 'id', {
     		get: function() {
-    			if(typeof self._changes['id'] != 'undefined') {
-    				return self._changes['id'];
+    			if(typeof self._changes.id != 'undefined') {
+    				return self._changes.id;
     			}
 
-    			return self._map['id'];
+    			return self._map.id;
     		},
 
     		set: function(value) {
-    			self._changes['id'] = value;
+    			self._changes.id = value;
     		}
     	});
     
@@ -1565,27 +1942,37 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
     		if(Array.isArray(setMap.test)) {
     			setMap.test = setMap.test.map(function(object) {
                     var fireModelInstanceConstructor = $injector.get('FireModelInstanceTest');
-                    return new fireModelInstanceConstructor(object, path + '/' + 'tests');
+                    if(object._map) {
+                        return new fireModelInstanceConstructor(object._map, path + '/' + 'tests');
+                    }
+                    else {
+                        return new fireModelInstanceConstructor(object, path + '/' + 'tests');
+                    }
     			});
     		}
     		else {
                 var fireModelInstanceConstructor = $injector.get('FireModelInstanceTest');
-    			setMap.test = new fireModelInstanceConstructor(setMap.test, path + '/' + 'tests');
+                if(setMap.test._map) {
+    			    setMap.test = new fireModelInstanceConstructor(setMap.test._map, path + '/' + 'tests');
+                }
+                else {
+                    setMap.test = new fireModelInstanceConstructor(setMap.test, path + '/' + 'tests');
+                }
     		}
     	}
     	
 
     	Object.defineProperty(this, 'test', {
     		get: function() {
-    			if(typeof self._changes['test'] != 'undefined') {
-    				return self._changes['test'];
+    			if(typeof self._changes.test != 'undefined') {
+    				return self._changes.test;
     			}
 
-    			return self._map['test'];
+    			return self._map.test;
     		},
 
     		set: function(value) {
-    			self._changes['test'] = value;
+    			self._changes.test = value;
     		}
     	});
     
@@ -1594,27 +1981,37 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
     		if(Array.isArray(setMap.participant)) {
     			setMap.participant = setMap.participant.map(function(object) {
                     var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestParticipant');
-                    return new fireModelInstanceConstructor(object, path + '/' + 'participants');
+                    if(object._map) {
+                        return new fireModelInstanceConstructor(object._map, path + '/' + 'participants');
+                    }
+                    else {
+                        return new fireModelInstanceConstructor(object, path + '/' + 'participants');
+                    }
     			});
     		}
     		else {
                 var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestParticipant');
-    			setMap.participant = new fireModelInstanceConstructor(setMap.participant, path + '/' + 'participants');
+                if(setMap.participant._map) {
+    			    setMap.participant = new fireModelInstanceConstructor(setMap.participant._map, path + '/' + 'participants');
+                }
+                else {
+                    setMap.participant = new fireModelInstanceConstructor(setMap.participant, path + '/' + 'participants');
+                }
     		}
     	}
     	
 
     	Object.defineProperty(this, 'participant', {
     		get: function() {
-    			if(typeof self._changes['participant'] != 'undefined') {
-    				return self._changes['participant'];
+    			if(typeof self._changes.participant != 'undefined') {
+    				return self._changes.participant;
     			}
 
-    			return self._map['participant'];
+    			return self._map.participant;
     		},
 
     		set: function(value) {
-    			self._changes['participant'] = value;
+    			self._changes.participant = value;
     		}
     	});
     
@@ -1622,15 +2019,15 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
 
     	Object.defineProperty(this, 'variant', {
     		get: function() {
-    			if(typeof self._changes['variant'] != 'undefined') {
-    				return self._changes['variant'];
+    			if(typeof self._changes.variant != 'undefined') {
+    				return self._changes.variant;
     			}
 
-    			return self._map['variant'];
+    			return self._map.variant;
     		},
 
     		set: function(value) {
-    			self._changes['variant'] = value;
+    			self._changes.variant = value;
     		}
     	});
     
@@ -1638,15 +2035,15 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
 
     	Object.defineProperty(this, 'createdAt', {
     		get: function() {
-    			if(typeof self._changes['createdAt'] != 'undefined') {
-    				return self._changes['createdAt'];
+    			if(typeof self._changes.createdAt != 'undefined') {
+    				return self._changes.createdAt;
     			}
 
-    			return self._map['createdAt'];
+    			return self._map.createdAt;
     		},
 
     		set: function(value) {
-    			self._changes['createdAt'] = value;
+    			self._changes.createdAt = value;
     		}
     	});
     
@@ -1667,12 +2064,27 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         
     
 
+
+
         this.cancel = function() {
             this._changes = {};
         };
 
+        this.reload = function() {
+            //
+        };
+
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
+            this._changes = {};
+
+            if(this._map.id) {
+                this._endpoint = path + '/' + this._map.id;
+            }
+            else {
+                this._endpoint = null;
+            }
+
         	return this;
         };
 
@@ -1685,42 +2097,43 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         };
 
         this.save = function() {
-            var self = this;
-            return $q.when(Object.keys(this._changes).length)
-                .then(function(numberOfChanges) {
-                    if(numberOfChanges) {
-                        var queryMap = transformQueryMap(self._changes);
-
-                        return TestSessionModel._put(self._endpoint, queryMap)
-                            .then(function(instance) {
-                                self._changes = {};
-
-                                Object.keys(instance._map).forEach(function(key) {
-                                    if(instance._map[key] !== null) {
-                                        self._map[key] = instance._map[key];
-                                    }
-                                });
-                                return self;
-                            });
-                    }
-                    else {
-                        return self;
-                    }
-                });
-        };
-
-        Object.defineProperty(this, '_model', {
-            get: function() {
-                throw new Error('FireModelInstanceTestSession._model is deprecated.');
+            if(this._map === null) {
+                return TestSessionModel.create(this._changes)
+                    .then(function(modelInstance) {
+                        return self.refresh(modelInstance);
+                    });
             }
-        });
+            else {
+                var numberOfChanges = Object.keys(this._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(this._changes);
+
+                    return TestSessionModel._put(this._endpoint, queryMap)
+                        .then(function(instance) {
+                            console.log('Instance is:');
+                            console.log(instance);
+
+                            self._changes = {};
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    self._map[key] = instance._map[key];
+                                }
+                            });
+                            return self;
+                        });
+                }
+                else {
+                    return $q.when(this);
+                }
+            }
+        };
 
         
 
         
         
         this.getTest = function(queryMap, optionsMap) {
-            var self = this;
             return $injector.get('TestModel')._find(TestSessionModel.endpoint + '/' + this.id + '/test', queryMap, optionsMap)
                 .then(function(modelInstance) {
                     if(modelInstance) {
@@ -1739,7 +2152,6 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         };
 
         this.createTest = function(queryMap) {
-            var self = this;
             return $injector.get('TestModel')._create(TestSessionModel.endpoint + '/' + this.id + '/test', queryMap)
                 .then(function(modelInstance) {
                     self.test = modelInstance;
@@ -1748,7 +2160,6 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         };
 
         this.removeTest = function() {
-            var self = this;
             return $injector.get('TestModel')._action('delete', TestSessionModel.endpoint + '/' + this.id + '/test')
                 .then(function(removeModelInstance) {
                     self.test = null;
@@ -1759,9 +2170,7 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         
         
         
-        
         this.getParticipant = function(queryMap, optionsMap) {
-            var self = this;
             return $injector.get('TestParticipantModel')._find(TestSessionModel.endpoint + '/' + this.id + '/participant', queryMap, optionsMap)
                 .then(function(modelInstance) {
                     if(modelInstance) {
@@ -1780,7 +2189,6 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         };
 
         this.createParticipant = function(queryMap) {
-            var self = this;
             return $injector.get('TestParticipantModel')._create(TestSessionModel.endpoint + '/' + this.id + '/participant', queryMap)
                 .then(function(modelInstance) {
                     self.participant = modelInstance;
@@ -1789,7 +2197,6 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         };
 
         this.removeParticipant = function() {
-            var self = this;
             return $injector.get('TestParticipantModel')._action('delete', TestSessionModel.endpoint + '/' + this.id + '/participant')
                 .then(function(removeModelInstance) {
                     self.participant = null;
@@ -1799,27 +2206,11 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         
         
         
-        
     };
 }]);
 
-app.factory('TestVariantModel', ['$http', '$q', 'FireModel', '$injector', function($http, $q, FireModel, $injector) {
-    var model = new FireModel();
-    model.endpoint = '/api/test-variants';
-
-    model.parseResult = function(setMapOrList, path) {
-        function parseSetMap(setMap) {
-            var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestVariant');
-            return new fireModelInstanceConstructor(setMap, path);
-        }
-
-    	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
-    		return setMapOrList.map(parseSetMap);
-    	}
-    	else {
-    		return parseSetMap(setMapOrList);
-    	}
-    };
+app.factory('TestVariantModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
+    var model = new FireModel('TestVariant', [], '/api/test-variants');
 
     
 
@@ -1834,8 +2225,15 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
             throw new Error('FireModelInstanceTestVariant only accepts two arguments now.');
         }
 
-        this._map = setMap || {};
+        this._map = setMap || null;
         this._changes = {};
+
+        this.toJSON = function() {
+            return {
+                _map: this._map,
+                _path: path
+            };
+        };
 
         if(this._map.id) {
             this._endpoint = path + '/' + this._map.id;
@@ -1850,15 +2248,15 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
 
     	Object.defineProperty(this, 'id', {
     		get: function() {
-    			if(typeof self._changes['id'] != 'undefined') {
-    				return self._changes['id'];
+    			if(typeof self._changes.id != 'undefined') {
+    				return self._changes.id;
     			}
 
-    			return self._map['id'];
+    			return self._map.id;
     		},
 
     		set: function(value) {
-    			self._changes['id'] = value;
+    			self._changes.id = value;
     		}
     	});
     
@@ -1866,15 +2264,15 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
 
     	Object.defineProperty(this, 'name', {
     		get: function() {
-    			if(typeof self._changes['name'] != 'undefined') {
-    				return self._changes['name'];
+    			if(typeof self._changes.name != 'undefined') {
+    				return self._changes.name;
     			}
 
-    			return self._map['name'];
+    			return self._map.name;
     		},
 
     		set: function(value) {
-    			self._changes['name'] = value;
+    			self._changes.name = value;
     		}
     	});
     
@@ -1882,15 +2280,15 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
 
     	Object.defineProperty(this, 'numberOfParticipants', {
     		get: function() {
-    			if(typeof self._changes['numberOfParticipants'] != 'undefined') {
-    				return self._changes['numberOfParticipants'];
+    			if(typeof self._changes.numberOfParticipants != 'undefined') {
+    				return self._changes.numberOfParticipants;
     			}
 
-    			return self._map['numberOfParticipants'];
+    			return self._map.numberOfParticipants;
     		},
 
     		set: function(value) {
-    			self._changes['numberOfParticipants'] = value;
+    			self._changes.numberOfParticipants = value;
     		}
     	});
     
@@ -1899,27 +2297,37 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
     		if(Array.isArray(setMap.test)) {
     			setMap.test = setMap.test.map(function(object) {
                     var fireModelInstanceConstructor = $injector.get('FireModelInstanceTest');
-                    return new fireModelInstanceConstructor(object, path + '/' + 'tests');
+                    if(object._map) {
+                        return new fireModelInstanceConstructor(object._map, path + '/' + 'tests');
+                    }
+                    else {
+                        return new fireModelInstanceConstructor(object, path + '/' + 'tests');
+                    }
     			});
     		}
     		else {
                 var fireModelInstanceConstructor = $injector.get('FireModelInstanceTest');
-    			setMap.test = new fireModelInstanceConstructor(setMap.test, path + '/' + 'tests');
+                if(setMap.test._map) {
+    			    setMap.test = new fireModelInstanceConstructor(setMap.test._map, path + '/' + 'tests');
+                }
+                else {
+                    setMap.test = new fireModelInstanceConstructor(setMap.test, path + '/' + 'tests');
+                }
     		}
     	}
     	
 
     	Object.defineProperty(this, 'test', {
     		get: function() {
-    			if(typeof self._changes['test'] != 'undefined') {
-    				return self._changes['test'];
+    			if(typeof self._changes.test != 'undefined') {
+    				return self._changes.test;
     			}
 
-    			return self._map['test'];
+    			return self._map.test;
     		},
 
     		set: function(value) {
-    			self._changes['test'] = value;
+    			self._changes.test = value;
     		}
     	});
     
@@ -1934,12 +2342,27 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
         
     
 
+
+
         this.cancel = function() {
             this._changes = {};
         };
 
+        this.reload = function() {
+            //
+        };
+
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
+            this._changes = {};
+
+            if(this._map.id) {
+                this._endpoint = path + '/' + this._map.id;
+            }
+            else {
+                this._endpoint = null;
+            }
+
         	return this;
         };
 
@@ -1952,42 +2375,43 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
         };
 
         this.save = function() {
-            var self = this;
-            return $q.when(Object.keys(this._changes).length)
-                .then(function(numberOfChanges) {
-                    if(numberOfChanges) {
-                        var queryMap = transformQueryMap(self._changes);
-
-                        return TestVariantModel._put(self._endpoint, queryMap)
-                            .then(function(instance) {
-                                self._changes = {};
-
-                                Object.keys(instance._map).forEach(function(key) {
-                                    if(instance._map[key] !== null) {
-                                        self._map[key] = instance._map[key];
-                                    }
-                                });
-                                return self;
-                            });
-                    }
-                    else {
-                        return self;
-                    }
-                });
-        };
-
-        Object.defineProperty(this, '_model', {
-            get: function() {
-                throw new Error('FireModelInstanceTestVariant._model is deprecated.');
+            if(this._map === null) {
+                return TestVariantModel.create(this._changes)
+                    .then(function(modelInstance) {
+                        return self.refresh(modelInstance);
+                    });
             }
-        });
+            else {
+                var numberOfChanges = Object.keys(this._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(this._changes);
+
+                    return TestVariantModel._put(this._endpoint, queryMap)
+                        .then(function(instance) {
+                            console.log('Instance is:');
+                            console.log(instance);
+
+                            self._changes = {};
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    self._map[key] = instance._map[key];
+                                }
+                            });
+                            return self;
+                        });
+                }
+                else {
+                    return $q.when(this);
+                }
+            }
+        };
 
         
 
         
         
         this.getTest = function(queryMap, optionsMap) {
-            var self = this;
             return $injector.get('TestModel')._find(TestVariantModel.endpoint + '/' + this.id + '/test', queryMap, optionsMap)
                 .then(function(modelInstance) {
                     if(modelInstance) {
@@ -2006,7 +2430,6 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
         };
 
         this.createTest = function(queryMap) {
-            var self = this;
             return $injector.get('TestModel')._create(TestVariantModel.endpoint + '/' + this.id + '/test', queryMap)
                 .then(function(modelInstance) {
                     self.test = modelInstance;
@@ -2015,14 +2438,12 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
         };
 
         this.removeTest = function() {
-            var self = this;
             return $injector.get('TestModel')._action('delete', TestVariantModel.endpoint + '/' + this.id + '/test')
                 .then(function(removeModelInstance) {
                     self.test = null;
                     return removeModelInstance;
                 });
         };
-        
         
         
         
@@ -2079,7 +2500,7 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         
         
             list: ['TodoListModel', function(TodoListModel) {
-			return TodoListModel.getCurrentList(123);
+			return TodoListModel.getCurrentList();
 		}],
         
         }
@@ -2092,7 +2513,7 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         
         
             list: ['TodoListModel', function(TodoListModel) {
-			return TodoListModel.getCurrentList(123);
+			return TodoListModel.getCurrentList();
 		}],
         
         }

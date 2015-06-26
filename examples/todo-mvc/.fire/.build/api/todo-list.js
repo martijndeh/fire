@@ -94,6 +94,9 @@ function findAuthenticator(authenticatorModel, request) {
 }
 
 
+
+
+
 app.post('/api/todo-lists', function(app, response, request, TodoListModel) {
 	return findAuthenticator(null, request)
 		.then(function(authenticator) {
@@ -119,20 +122,17 @@ app.post('/api/todo-lists', function(app, response, request, TodoListModel) {
 						};
 
 						if(Array.isArray(request.body)) {
-
+							
 
 							var createMaps = request.body.map(function(createMap) {
 								return checkCreateMap(createMap);
 							});
 
-							console.log('Create maps:');
-							console.log(createMaps);
-
-							return TodoListModel.create(createMaps);
-
+							return TodoListModel.create(createMaps, {authenticator: authenticator, request: request, response: response});
+							
 						}
 						else {
-							return TodoListModel.create(checkCreateMap(request.body || {}));
+							return TodoListModel.create(checkCreateMap(request.body || {}), {authenticator: authenticator, request: request, response: response});
 						}
 					}
 					else {
@@ -161,6 +161,8 @@ app.get('/api/todo-lists', function(request, response, app,  TodoListModel) {
 							delete queryMap.$options;
 						}
 
+						optionsMap.isShallow = true;
+
 						if(TodoListModel.options.automaticPropertyName) {
 							queryMap[TodoListModel.options.automaticPropertyName] = authenticator;
 						}
@@ -183,7 +185,7 @@ app.get('/api/todo-lists/:id', function(request, response, app,  TodoListModel) 
 		.spread(function(canRead, authenticator) {
 			if(canRead) {
 				var whereMap = request.query || {};
-				whereMap.id = request.param('id');
+				whereMap.id = request.params.id;
 
 				if(typeof canRead == 'object') {
 					whereMap = merge(whereMap, canRead);
@@ -193,7 +195,16 @@ app.get('/api/todo-lists/:id', function(request, response, app,  TodoListModel) 
 					whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
 				}
 
-				return TodoListModel.getOne(whereMap);
+				var optionsMap = {};
+
+				if(whereMap.$options) {
+					optionsMap = whereMap.$options;
+					delete whereMap.$options;
+				}
+
+				optionsMap.isShallow = true;
+
+				return TodoListModel.getOne(whereMap, optionsMap);
 			}
 			else {
 				throw unauthenticatedError(authenticator);
@@ -219,7 +230,7 @@ app.put('/api/todo-lists/:id', function(request, response, app,  TodoListModel) 
 					whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
 				}
 
-				whereMap.id = request.param('id');
+				whereMap.id = request.params.id;
 				return [_canUpdateProperties(Object.keys(request.body), TodoListModel), whereMap, authenticator];
 			}
 			else {
@@ -321,7 +332,7 @@ app.delete('/api/todo-lists/:id', function(request, response, app,  TodoListMode
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					whereMap.id = request.param('id');
+					whereMap.id = request.params.id;
 
 					if(TodoListModel.options.automaticPropertyName) {
 						whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
@@ -335,8 +346,6 @@ app.delete('/api/todo-lists/:id', function(request, response, app,  TodoListMode
 			});
 		});
 });
-
-
 
 
 
@@ -372,7 +381,7 @@ app.post('/api/todo-lists/:id/items', function(request, response, app,  TodoList
 				.then(function(canCreate) {
 					if(canCreate) {
 						var createMap = request.body || {};
-						createMap[association.options.hasMany] = request.param('id');
+						createMap[association.options.hasMany] = request.params.id;
 
 						if(typeof canCreate == 'object') {
 							createMap = merge(createMap, canCreate);
@@ -389,7 +398,7 @@ app.post('/api/todo-lists/:id/items', function(request, response, app,  TodoList
 						}
 
 						if(_canSetProperties(Object.keys(createMap), associatedModel)) {
-							return associatedModel.create(createMap);
+							return associatedModel.create(createMap, {authenticator: authenticator, request: request, response: response});
 						}
 						else {
 							throw badRequestError();
@@ -420,6 +429,8 @@ app.get('/api/todo-lists/:id/items', function(request, response, app,  TodoListM
 							delete queryMap.$options;
 						}
 
+						optionsMap.isShallow = true;
+
 						var association = TodoListModel.getProperty('items');
 						var associatedModel = association.options.relationshipVia.model;
 
@@ -427,7 +438,7 @@ app.get('/api/todo-lists/:id/items', function(request, response, app,  TodoListM
 							queryMap = merge(queryMap, canRead);
 						}
 
-						queryMap[association.options.relationshipVia.name] = request.param('id');
+						queryMap[association.options.relationshipVia.name] = request.params.id;
 
 						if(associatedModel.options.automaticPropertyName) {
 							if(queryMap[associatedModel.options.automaticPropertyName] && queryMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
@@ -475,8 +486,8 @@ app.delete('/api/todo-lists/:id/items/:associationID', function(request, respons
 				var association = TodoListModel.getProperty('items');
 				var associatedModel = association.getAssociatedModel();
 
-				removeMap[association.options.hasMany] = request.param('id');
-				removeMap.id = request.param('associationID');
+				removeMap[association.options.hasMany] = request.params.id;
+				removeMap.id = request.params.associationID;
 
 				if(associatedModel.options.automaticPropertyName) {
 					// This is definitely a bad request if the user tries to set the automatic property manually.
@@ -517,7 +528,7 @@ app.delete('/api/todo-lists/:id/items', function(request, response, app,  TodoLi
 				var association = TodoListModel.getProperty('items');
 				var associatedModel = association.getAssociatedModel();
 
-				removeMap[association.options.hasMany] = request.param('id');
+				removeMap[association.options.hasMany] = request.params.id;
 
 				if(associatedModel.options.automaticPropertyName) {
 					// This is definitely a bad request if the user tries to set the automatic property manually.
@@ -565,8 +576,8 @@ app.put('/api/todo-lists/:id/items/:associationID', function(request, response, 
 										whereMap = merge(whereMap, canUpdate);
 									}
 
-									whereMap[association.options.relationshipVia.name] = request.param('id');
-									whereMap.id = request.param('associationID');
+									whereMap[association.options.relationshipVia.name] = request.params.id;
+									whereMap.id = request.params.associationID;
 
 									if(associatedModel.options.automaticPropertyName) {
 										// This is definitely a bad request if the user tries to set the automatic property manually.
@@ -608,7 +619,7 @@ app.put('/api/todo-lists/:id/items', function(request, response, app,  TodoListM
 								var error;
 								if(canUpdateProperties) {
 									var whereMap = request.query || {};
-									whereMap[association.options.relationshipVia.name] = request.param('id');
+									whereMap[association.options.relationshipVia.name] = request.params.id;
 
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);
@@ -638,3 +649,10 @@ app.put('/api/todo-lists/:id/items', function(request, response, app,  TodoListM
 				});
 		});
 });
+
+
+
+
+
+
+

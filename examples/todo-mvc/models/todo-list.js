@@ -7,13 +7,15 @@ app.model(function TodoList(TodoItemModel, _StorageService, TodoListModel) {
 
 	this.getCurrentList = function() {
 		if(_StorageService.get('list')) {
-			return TodoListModel.findOne({id: _StorageService.get('list')});
+			return TodoListModel.findOne({id: _StorageService.get('list')}, {cache: 1000 * 10, autoReload: true});
 		}
 		else {
-			return TodoListModel.create({}).then(function(list) {
-				_StorageService.set('list', list.id);
-				return list;
-			});
+			return TodoListModel
+				.create({})
+				.then(function(list) {
+					_StorageService.set('list', list.id);
+					return list;
+				});
 		}
 	};
 });
