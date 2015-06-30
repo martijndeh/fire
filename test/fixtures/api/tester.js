@@ -113,6 +113,8 @@ app.post('/api/testers', function(app, response, request, TesterModel, UserModel
 								createMap[TesterModel.options.automaticPropertyName] = authenticator;
 							}
 
+
+
 							if(_canSetProperties(Object.keys(createMap), TesterModel)) {
 								return createMap;
 							}
@@ -145,29 +147,28 @@ app.post('/api/testers', function(app, response, request, TesterModel, UserModel
 app.get('/api/testers', function(request, response, app,  TesterModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+
+			if(whereMap.$options) {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(TesterModel.options.automaticPropertyName) {
+				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = TesterModel.getAccessControl();
-			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canRead) {
 					if(canRead) {
-						var queryMap = request.query || {};
-						var optionsMap = {};
-
 						if(typeof canRead == 'object') {
-							queryMap = merge(queryMap, canRead);
+							whereMap = merge(whereMap, canRead);
 						}
 
-						if(queryMap.$options) {
-							optionsMap = queryMap.$options;
-							delete queryMap.$options;
-						}
-
-						optionsMap.isShallow = true;
-
-						if(TesterModel.options.automaticPropertyName) {
-							queryMap[TesterModel.options.automaticPropertyName] = authenticator;
-						}
-
-						return TesterModel.find(queryMap, optionsMap);
+						return TesterModel.find(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -179,36 +180,36 @@ app.get('/api/testers', function(request, response, app,  TesterModel, UserModel
 app.get('/api/testers/:id', function(request, response, app,  TesterModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			whereMap.id = request.params.id;
+
+			if(TesterModel.options.automaticPropertyName) {
+				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var optionsMap = {};
+
+			if(whereMap.$options) {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+
+			optionsMap.isShallow = true;
+
 			var accessControl = TesterModel.getAccessControl();
-			return Q.all([accessControl.canRead({authenticator: authenticator, request: request, response: response}), authenticator]);
-		})
-		.spread(function(canRead, authenticator) {
-			if(canRead) {
-				var whereMap = request.query || {};
-				whereMap.id = request.params.id;
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
 
-				if(typeof canRead == 'object') {
-					whereMap = merge(whereMap, canRead);
-				}
-
-				if(TesterModel.options.automaticPropertyName) {
-					whereMap[TesterModel.options.automaticPropertyName] = authenticator;
-				}
-
-				var optionsMap = {};
-
-				if(whereMap.$options) {
-					optionsMap = whereMap.$options;
-					delete whereMap.$options;
-				}
-
-				optionsMap.isShallow = true;
-
-				return TesterModel.getOne(whereMap, optionsMap);
-			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
+						return TesterModel.getOne(whereMap, optionsMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
 		});
 });
 
@@ -216,26 +217,27 @@ app.put('/api/testers/:id', function(request, response, app,  TesterModel, UserM
 	var accessControl = TesterModel.getAccessControl();
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
-			return Q.all([accessControl.canUpdate({authenticator: authenticator, request: request, response: response}), authenticator]);
-		})
-		.spread(function(canUpdate, authenticator) {
-			if(canUpdate) {
-				var whereMap = request.query || {};
+			var whereMap = request.query || {};
 
-				if(typeof canUpdate == 'object') {
-					whereMap = merge(whereMap, canUpdate);
-				}
-
-				if(TesterModel.options.automaticPropertyName) {
-					whereMap[TesterModel.options.automaticPropertyName] = authenticator;
-				}
-
-				whereMap.id = request.params.id;
-				return [_canUpdateProperties(Object.keys(request.body), TesterModel), whereMap, authenticator];
+			if(TesterModel.options.automaticPropertyName) {
+				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
 			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
+
+			whereMap.id = request.params.id;
+
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canUpdate) {
+					if(canUpdate) {
+						if(typeof canUpdate == 'object') {
+							whereMap = merge(whereMap, canUpdate);
+						}
+
+						return [_canUpdateProperties(Object.keys(request.body), TesterModel), whereMap, authenticator];
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
 		})
 		.all()
 		.spread(function(canUpdateProperties, whereMap, authenticator) {
@@ -262,21 +264,21 @@ app.put('/api/testers/:id', function(request, response, app,  TesterModel, UserM
 app.put('/api/testers', function(request, response, app,  TesterModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+
+			if(TesterModel.options.automaticPropertyName) {
+				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = TesterModel.getAccessControl();
-			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canUpdate) {
 					if(canUpdate) {
 						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), TesterModel))
 							.then(function(canUpdateProperties) {
 								if(canUpdateProperties) {
-									var whereMap = request.query || {};
-
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);
-									}
-
-									if(TesterModel.options.automaticPropertyName) {
-										whereMap[TesterModel.options.automaticPropertyName] = authenticator;
 									}
 
 									return TesterModel.update(whereMap, request.body || {});
@@ -296,18 +298,17 @@ app.put('/api/testers', function(request, response, app,  TesterModel, UserModel
 app.delete('/api/testers', function(request, response, app,  TesterModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			if(TesterModel.options.automaticPropertyName) {
+				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = TesterModel.getAccessControl();
-			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canDelete) {
 					if(canDelete) {
-						var whereMap = request.query || {};
-
 						if(typeof canDelete == 'object') {
 							whereMap = merge(whereMap, canDelete);
-						}
-
-						if(TesterModel.options.automaticPropertyName) {
-							whereMap[TesterModel.options.automaticPropertyName] = authenticator;
 						}
 
 						return TesterModel.remove(whereMap);
@@ -322,20 +323,18 @@ app.delete('/api/testers', function(request, response, app,  TesterModel, UserMo
 app.delete('/api/testers/:id', function(request, response, app,  TesterModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			whereMap.id = request.params.id;
+			if(TesterModel.options.automaticPropertyName) {
+				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = TesterModel.getAccessControl();
-			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 			.then(function(canDelete) {
 				if(canDelete) {
-					var whereMap = request.query || {};
-
 					if(typeof canDelete == 'object') {
 						whereMap = merge(whereMap, canDelete);
-					}
-
-					whereMap.id = request.params.id;
-
-					if(TesterModel.options.automaticPropertyName) {
-						whereMap[TesterModel.options.automaticPropertyName] = authenticator;
 					}
 
 					return TesterModel.removeOne(whereMap);

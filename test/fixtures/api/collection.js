@@ -113,6 +113,8 @@ app.post('/api/collections', function(app, response, request, CollectionModel, U
 								createMap[CollectionModel.options.automaticPropertyName] = authenticator;
 							}
 
+
+
 							if(_canSetProperties(Object.keys(createMap), CollectionModel)) {
 								return createMap;
 							}
@@ -145,29 +147,28 @@ app.post('/api/collections', function(app, response, request, CollectionModel, U
 app.get('/api/collections', function(request, response, app,  CollectionModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+
+			if(whereMap.$options) {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(CollectionModel.options.automaticPropertyName) {
+				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = CollectionModel.getAccessControl();
-			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canRead) {
 					if(canRead) {
-						var queryMap = request.query || {};
-						var optionsMap = {};
-
 						if(typeof canRead == 'object') {
-							queryMap = merge(queryMap, canRead);
+							whereMap = merge(whereMap, canRead);
 						}
 
-						if(queryMap.$options) {
-							optionsMap = queryMap.$options;
-							delete queryMap.$options;
-						}
-
-						optionsMap.isShallow = true;
-
-						if(CollectionModel.options.automaticPropertyName) {
-							queryMap[CollectionModel.options.automaticPropertyName] = authenticator;
-						}
-
-						return CollectionModel.find(queryMap, optionsMap);
+						return CollectionModel.find(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -179,36 +180,36 @@ app.get('/api/collections', function(request, response, app,  CollectionModel, U
 app.get('/api/collections/:id', function(request, response, app,  CollectionModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			whereMap.id = request.params.id;
+
+			if(CollectionModel.options.automaticPropertyName) {
+				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var optionsMap = {};
+
+			if(whereMap.$options) {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+
+			optionsMap.isShallow = true;
+
 			var accessControl = CollectionModel.getAccessControl();
-			return Q.all([accessControl.canRead({authenticator: authenticator, request: request, response: response}), authenticator]);
-		})
-		.spread(function(canRead, authenticator) {
-			if(canRead) {
-				var whereMap = request.query || {};
-				whereMap.id = request.params.id;
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
 
-				if(typeof canRead == 'object') {
-					whereMap = merge(whereMap, canRead);
-				}
-
-				if(CollectionModel.options.automaticPropertyName) {
-					whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
-				}
-
-				var optionsMap = {};
-
-				if(whereMap.$options) {
-					optionsMap = whereMap.$options;
-					delete whereMap.$options;
-				}
-
-				optionsMap.isShallow = true;
-
-				return CollectionModel.getOne(whereMap, optionsMap);
-			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
+						return CollectionModel.getOne(whereMap, optionsMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
 		});
 });
 
@@ -216,26 +217,27 @@ app.put('/api/collections/:id', function(request, response, app,  CollectionMode
 	var accessControl = CollectionModel.getAccessControl();
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
-			return Q.all([accessControl.canUpdate({authenticator: authenticator, request: request, response: response}), authenticator]);
-		})
-		.spread(function(canUpdate, authenticator) {
-			if(canUpdate) {
-				var whereMap = request.query || {};
+			var whereMap = request.query || {};
 
-				if(typeof canUpdate == 'object') {
-					whereMap = merge(whereMap, canUpdate);
-				}
-
-				if(CollectionModel.options.automaticPropertyName) {
-					whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
-				}
-
-				whereMap.id = request.params.id;
-				return [_canUpdateProperties(Object.keys(request.body), CollectionModel), whereMap, authenticator];
+			if(CollectionModel.options.automaticPropertyName) {
+				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
 			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
+
+			whereMap.id = request.params.id;
+
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canUpdate) {
+					if(canUpdate) {
+						if(typeof canUpdate == 'object') {
+							whereMap = merge(whereMap, canUpdate);
+						}
+
+						return [_canUpdateProperties(Object.keys(request.body), CollectionModel), whereMap, authenticator];
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
 		})
 		.all()
 		.spread(function(canUpdateProperties, whereMap, authenticator) {
@@ -262,21 +264,21 @@ app.put('/api/collections/:id', function(request, response, app,  CollectionMode
 app.put('/api/collections', function(request, response, app,  CollectionModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+
+			if(CollectionModel.options.automaticPropertyName) {
+				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = CollectionModel.getAccessControl();
-			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canUpdate) {
 					if(canUpdate) {
 						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), CollectionModel))
 							.then(function(canUpdateProperties) {
 								if(canUpdateProperties) {
-									var whereMap = request.query || {};
-
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);
-									}
-
-									if(CollectionModel.options.automaticPropertyName) {
-										whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
 									}
 
 									return CollectionModel.update(whereMap, request.body || {});
@@ -296,18 +298,17 @@ app.put('/api/collections', function(request, response, app,  CollectionModel, U
 app.delete('/api/collections', function(request, response, app,  CollectionModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			if(CollectionModel.options.automaticPropertyName) {
+				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = CollectionModel.getAccessControl();
-			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canDelete) {
 					if(canDelete) {
-						var whereMap = request.query || {};
-
 						if(typeof canDelete == 'object') {
 							whereMap = merge(whereMap, canDelete);
-						}
-
-						if(CollectionModel.options.automaticPropertyName) {
-							whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
 						}
 
 						return CollectionModel.remove(whereMap);
@@ -322,20 +323,18 @@ app.delete('/api/collections', function(request, response, app,  CollectionModel
 app.delete('/api/collections/:id', function(request, response, app,  CollectionModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			whereMap.id = request.params.id;
+			if(CollectionModel.options.automaticPropertyName) {
+				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = CollectionModel.getAccessControl();
-			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 			.then(function(canDelete) {
 				if(canDelete) {
-					var whereMap = request.query || {};
-
 					if(typeof canDelete == 'object') {
 						whereMap = merge(whereMap, canDelete);
-					}
-
-					whereMap.id = request.params.id;
-
-					if(CollectionModel.options.automaticPropertyName) {
-						whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
 					}
 
 					return CollectionModel.removeOne(whereMap);
