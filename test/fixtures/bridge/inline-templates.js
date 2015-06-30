@@ -69,7 +69,7 @@ app.factory('_djb2Hash', function() {
     };
 });
 
-app.service('_CacheService', ['$injector', '$timeout', function($injector, $timeout) {
+app.service('_CacheService', ['$injector', function($injector) {
     var CAPACITY = 25;
     var LOCAL_STORAGE_KEY = '_CacheService';
     var objects = {};
@@ -99,11 +99,16 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
 
     function persist() {
         if(window.localStorage) {
-            window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
-                objects: objects,
-                keys: keys,
-                indices: indices
-            }));
+            try {
+                window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+                    objects: objects,
+                    keys: keys,
+                    indices: indices
+                }));
+            }
+            catch(e) {
+                //
+            }
         }
     }
 
@@ -242,7 +247,7 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
     };
 }]);
 
-app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout', '_djb2Hash', function($http, $q, $injector, _CacheService, $timeout, _djb2Hash) {
+app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '_djb2Hash', function($http, $q, $injector, _CacheService, _djb2Hash) {
     return function FireModel(name, autoFetchedAssociationNames, endpoint) {
         this.name = name;
         this.autoFetchedAssociationNames = autoFetchedAssociationNames;
@@ -321,21 +326,19 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout
         this._action = function(verb, path, params, data) {
         	var defer = $q.defer();
 
-            $timeout(function() {
-                $http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true, 'Content-Type': 'application/json;charset=utf-8'}})
-            		.success(function(result) {
-                        if(verb != 'get') {
-                            self.purge();
-                        }
+            $http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true, 'Content-Type': 'application/json;charset=utf-8'}})
+        		.success(function(result) {
+                    if(verb != 'get') {
+                        self.purge();
+                    }
 
-                        defer.resolve(self.parseResult(result, path));
-            		})
-            		.error(function(errorData, statusCode) {
-                        var error = new FireError(errorData);
-                        error.number = statusCode;
-            			defer.reject(error);
-            		});
-            }, 1000);
+                    defer.resolve(self.parseResult(result, path));
+        		})
+        		.error(function(errorData, statusCode) {
+                    var error = new FireError(errorData);
+                    error.number = statusCode;
+        			defer.reject(error);
+        		});
 
         	return defer.promise;
         };
