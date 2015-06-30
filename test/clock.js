@@ -23,7 +23,7 @@ describe('clock', function() {
 	it('can schedule task', function() {
 		var executed = 0;
 
-		var task = helper.app.clock.addTask('*/2 * * * * *', 'MyTask', function() {
+		var task = helper.app.clock.addTask('*/2 * * * * *', null, 'MyTask', function() {
 			executed++;
 		});
 
@@ -39,7 +39,7 @@ describe('clock', function() {
 	it('creates initial task result when first started', function() {
 		var executed = 0;
 
-		var task = helper.app.clock.addTask('*/2 * * * * *', 'MyTask', function() {
+		var task = helper.app.clock.addTask('*/2 * * * * *', null, 'MyTask', function() {
 			executed++;
 		});
 
@@ -58,7 +58,7 @@ describe('clock', function() {
 	it('creates task result when scheduled', function() {
 		var executed = 0;
 
-		var task = helper.app.clock.addTask('*/2 * * * * *', 'MyTask', function() {
+		var task = helper.app.clock.addTask('*/2 * * * * *', null, 'MyTask', function() {
 			executed++;
 		});
 
@@ -77,7 +77,7 @@ describe('clock', function() {
 	it('immediately invoke task when skipped interval', function() {
 		var executed = 0;
 
-		var task = helper.app.clock.addTask('* 30 * * * *', 'MyTask', function() {
+		var task = helper.app.clock.addTask('* 30 * * * *', null, 'MyTask', function() {
 			executed++;
 		});
 
@@ -97,7 +97,7 @@ describe('clock', function() {
 	it('will not invoke task when not skipped interval', function() {
 		var executed = 0;
 
-		var task = helper.app.clock.addTask('*/2 * * * * *', 'MyTask', function() {
+		var task = helper.app.clock.addTask('*/2 * * * * *', null, 'MyTask', function() {
 			executed++;
 		});
 
@@ -125,7 +125,7 @@ describe('clock', function() {
 
 		var executed = 0;
 
-		var task = helper.app.clock.addTask('* * * * * *', 'MyTask', function() {
+		var task = helper.app.clock.addTask('* * * * * *', null, 'MyTask', function() {
 			executed++;
 		});
 
