@@ -47,24 +47,51 @@ describe('models find with association property', function() {
 		};
 	});
 
-	it('can find with ignore false', function() {
-		return helper.app.models.Event.find({test: null, 'app.ignore': false}, {limit:20})
-			.then(function(events) {
-				assert.equal(events.length, 0);
-			});
+	describe('dot syntax', function() {
+		it('can find with ignore false', function() {
+			return helper.app.models.Event.find({test: null, 'app.ignore': false}, {limit:20})
+				.then(function(events) {
+					assert.equal(events.length, 0);
+				});
+		});
+
+		it('can find with ignore true', function() {
+			return helper.app.models.Event.find({test: null, 'app.ignore': true}, {limit:20})
+				.then(function(events) {
+					assert.equal(events.length, 1);
+				});
+		});
+
+		it('can find with ignore and orderBy', function() {
+			return helper.app.models.Event.find({test: null, 'app.ignore': true, user: userID}, {orderBy:{createdAt: 1}, limit: 600})
+				.then(function(events) {
+					assert.equal(events.length, 1);
+				});
+		});
 	});
 
-	it('can find with ignore true', function() {
-		return helper.app.models.Event.find({test: null, 'app.ignore': true}, {limit:20})
-			.then(function(events) {
-				assert.equal(events.length, 1);
-			});
-	});
+	/*
+	describe('nested syntax', function() {
+		it('can find with ignore false', function() {
+			return helper.app.models.Event.find({test: null, app:{ignore: false}}, {limit:20})
+				.then(function(events) {
+					assert.equal(events.length, 0);
+				});
+		});
 
-	it('can find with ignore and orderBy', function() {
-		return helper.app.models.Event.find({test: null, 'app.ignore': true, user: userID}, {orderBy:{createdAt: 1}, limit: 600})
-			.then(function(events) {
-				assert.equal(events.length, 1);
-			});
+		it('can find with ignore true', function() {
+			return helper.app.models.Event.find({test: null, app:{ignore: true}}, {limit:20})
+				.then(function(events) {
+					assert.equal(events.length, 1);
+				});
+		});
+
+		it('can find with ignore and orderBy', function() {
+			return helper.app.models.Event.find({test: null, app:{ignore: true}, user: userID}, {orderBy:{createdAt: 1}, limit: 600})
+				.then(function(events) {
+					assert.equal(events.length, 1);
+				});
+		});
 	});
+	*/
 });
