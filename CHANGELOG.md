@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.42.0
+
+### Breaking changes
+
+- Disables web sockets and channels modules. A new publish-subscribe module is in the making.
+- Replaces functions in migrations with noops.
+- Changes BelongsTo to required by default.
+
+### Bug fixes
+
+- Fixes issue where ModelInstance#save would sometimes fail.
+- Fixes issue where model instance methods would sometimes be named incorrectly.
+- Fixes issue where bower was sometimes unavailable.
+- Fixes issue where continuous workers would sometimes fail to run.
+- Fixes querying on arrays.
+- Fixes issue where services would sometimes be unavailable on the back-end.
+- Makes $q and $http available on back-en.
+
+### New features
+
+- Implements ModelInstance#new.
+- Implements smart client-side caching.
+- Adds time zone support in clock and triggers.
+
 ## 0.40.2
 
 ### Bug fixes
