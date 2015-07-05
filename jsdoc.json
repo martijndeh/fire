@@ -11,7 +11,7 @@
 			"../fire/lib/modules/api",
 			"../fire/lib/modules/bridge",
 			"../fire/lib/modules/bridge/generators",
-			"../fire/lib/modules/channels",
+
 			"../fire/lib/modules/clock",
 			"../fire/lib/modules/configure-functions",
 			"../fire/lib/modules/controllers",
@@ -30,7 +30,6 @@
 			"../fire/lib/modules/tests",
 			"../fire/lib/modules/triggers",
 			"../fire/lib/modules/upgrader",
-			"../fire/lib/modules/websockets",
 			"../fire/lib/modules/workers"
 		],
 		"includePattern": ".*\\.(js|md)$"

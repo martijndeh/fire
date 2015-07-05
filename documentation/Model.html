@@ -276,28 +276,13 @@ app.controller(SignInController);</code></pre><p>To sign out a user you can use 
     
     
     <div class="description">
-        <p>Creates a model instance. This method is available on both ends.</p>
+        <p>Creates one or more model instance. This method is isomorphic and available on the back-end and the front-end.</p>
 <p>For example, to create one model instance in the back-end:</p>
-<pre class="prettyprint source"><code>TestController.prototype.createUser = function() {
-    return models.User.create({
-        name: 'Martijn'
- });
-}</code></pre><p>In the front-end:</p>
-<pre class="prettyprint source lang-js"><code>function TestController(UserModel) {
-    UserModel.create({name: 'Martijn'})
-        .then(function(user) {
-            //
-        });
-}</code></pre><p>But, on the back-end you can create multiple model instances:</p>
-<pre class="prettyprint source"><code>TestController.prototype.createUsers = function() {
-    return models.User.create([{
-     name: 'Martijn'
- }, {
-     name: 'John'
- }]).spread(function(user1, user2) {
-     //
- });
-}</code></pre><p>When creating multiple model instances, they are created one-by-one and no bulk-insert is performed. This is an improvement for a future release.</p>
+<pre class="prettyprint source"><code>app.controller('/sign-in', function AuthController($scope, UserModel) {
+    $scope.createUser = function(userMap) {
+        return UserModel.create(userMap);
+    };
+});</code></pre><p>You can also create multiple model instances when passing an array. When creating multiple model instances, they are created one-by-one in the database and no bulk-insert is performed. This is an improvement for a future release.</p>
     </div>
     
 
@@ -348,7 +333,7 @@ app.controller(SignInController);</code></pre><p>To sign out a user you can use 
 
             
 
-            <td class="description last"><p>The dictionary to create the model. On the back-end side, this may be an array. On the front-end this must be a dictionary.</p></td>
+            <td class="description last"><p>A dictionary to create one model instance, or an array to create multiple model instances.</p></td>
         </tr>
 
 	
@@ -1418,18 +1403,73 @@ app.controller(UserModel);</code></pre><p>On the back-end side:</p>
         
             
 <dt>
-    <h4 class="name" id="forgotPassword"><span class="type-signature"></span>forgotPassword<span class="signature">()</span></h4>
+    <h4 class="name" id="forgotPassword"><span class="type-signature"></span>forgotPassword<span class="signature">(authenticatingPropertyValue)</span></h4>
     
     
 </dt>
 <dd>
     
     
+    <div class="description">
+        <p>Starts the forgot password process. If a correct <code>authenticatingPropertyValue</code> is provided, for example a valid email of your user, create a reset password token.</p>
+<p>When the forgot password succeeds, <code>onForgotPassword</code> is called on your authenticator. In here, you could, for example, send a reset password email.</p>
+    </div>
+    
 
     
     
     
     
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>authenticatingPropertyValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value of your authenticating property e.g. email.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     
@@ -1683,6 +1723,72 @@ app.controller(UserModel);</code></pre><p>On the back-end side:</p>
         
             
 <dt>
+    <h4 class="name" id="isPasswordBasedAuthenticator"><span class="type-signature"></span>isPasswordBasedAuthenticator<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Returns if this model is the authenticator with a password property.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="isShared"><span class="type-signature"></span>isShared<span class="signature">()</span></h4>
     
     
@@ -1693,6 +1799,72 @@ app.controller(UserModel);</code></pre><p>On the back-end side:</p>
     <div class="description">
         <p>Returns if this model is shared.</p>
 <p>A shared model is available in every app. A shared model's migrations are created in the master app.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="new"><span class="type-signature"></span>new<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates an empty model instance. This model instance is not persisted to the datastore until calling ModelInstance#save.</p>
     </div>
     
 
@@ -1886,18 +2058,121 @@ app.controller(UserModel);</code></pre><p>On the back-end side:</p>
         
             
 <dt>
-    <h4 class="name" id="resetPassword"><span class="type-signature"></span>resetPassword<span class="signature">()</span></h4>
+    <h4 class="name" id="resetPassword"><span class="type-signature"></span>resetPassword<span class="signature">(resetToken, newPassword, confirmPassword)</span></h4>
     
     
 </dt>
 <dd>
     
     
+    <div class="description">
+        <p>Resets the authenticator's password if forgot password was requested.</p>
+<p>If the reset password succeeds, the onResetPassword method on your authenticator is called.</p>
+    </div>
+    
 
     
     
     
     
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>resetToken</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The token generated from the forgotPassword method.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>newPassword</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The new password.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>confirmPassword</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The new password again.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     

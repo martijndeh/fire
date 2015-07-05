@@ -64,18 +64,20 @@
 <pre class="prettyprint source lang-js"><code>function User() {
     this.name = [this.String];
 }
-app.model(User);</code></pre><p>A <code>User</code> key is added to models instance so you can access the <code>User</code> model via:</p>
-<pre class="prettyprint source"><code>models.User.findOne();</code></pre><p>In a model and controller instance, the models instance is always available as a property <code>models</code>. In a controller, for example:</p>
-<pre class="prettyprint source"><code>MyController.prototype.getUsers = function() {
-    return this.models.User.find({});
-};</code></pre><p>In the client-context, in a controller, you use the fire dependency:</p>
-<pre class="prettyprint source"><code>function MyController($scope, UserModel) {
-    UserModel.find()
-        .then(function(users) {
-          // Do something with `users`.
-        })
+app.model(User);</code></pre><p>A <code>UserModel</code> is added to the dependency injection so you can access the <code>User</code> model via:</p>
+<pre class="prettyprint source"><code>app.service(function TestService(UserModel) {
+    UserModel.findOne();
+});</code></pre><p>You can also add methods to your models:</p>
+<pre class="prettyprint source"><code>function User() {
+    this.name = [this.String];
+    this.getTest = function() {
+        return 123;
+    };
 }
-app.controller(MyController);</code></pre>
+app.model(User);</code></pre><p>Now the <code>User#getTest</code> is available in, for example, your service:</p>
+<pre class="prettyprint source"><code>app.service(function TestService(UserModel) {
+    UserModel.getTest();
+});</code></pre><p>The method is also available as instance method on your model instances.</p>
     </div>
     
 

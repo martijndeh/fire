@@ -3,7 +3,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="A full-stack isomorphic web framework built on top of Node.js, AngularJS, PostgreSQL."/>
-	<title>Node on Fire -- a full-stack isomorphic web framework built on top of Node.js, AngularJS and PostgreSQL</title>
+	<title>A full-stack isomorphic web framework built on top of Node.js, AngularJS and PostgreSQL | Node on Fire</title>
 	<link rel="stylesheet" href="/styles/default.min.css"/>
 	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="/scripts/highlight.min.js"></script>
@@ -35,36 +35,10 @@
 
 		<div class="row desc">
 			<div class="col-md-5 col-md-offset-1">
-				<h2>Embracing isomorphism</h2>
-				<p>All your services are available on both the front- and back-end. This makes it easy to create isomorphic services. The below `TextService` is available on the front- and back-end.</p>
+				<h2>Dependency injection</h2>
+				<p>Angular's dependency injection is great. That's why, in Node on Fire, that dependency injection is also available in the back-end.</p>
 
-				<pre><code class="javascript">app.service(function TextService() {
-    this.slugify = function(text) {
-        return text.toString().toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[àáâãäå]+/g, 'a')
-        .replace(/[èéêë]+/g, 'e')
-        .replace(/[ìíîï]+/g, 'i')
-        .replace(/[òóôõö]+/g, 'o')
-        .replace(/[ùúûü]+/g, 'u')
-        .replace(/\\s+/g, "")
-        .replace(/æ+/g, "ae")
-        .replace(/ç+/g, "c")
-        .replace(/ñ"+/g, 'n')
-        .replace(/œ+/g, "oe")
-        .replace(/[ýÿ]+/g, 'y')
-        .replace(/\\W+/g, '')
-        .replace(/[^\w\-]+/g, '')
-        .replace(/\-\-+/g, '-')
-        .replace(/^-+/, '')
-        .replace(/-+$/, '');
-    };
-});</code></pre>
-			</div>
-
-			<div class="col-md-5">
-				<h2>Express with dependency injection</h2>
-				<p>Dependency injection is now also available on the back-end side, which makes creating Express routes super easy.</p>
+				<p>You can even use the simpler <a href="https://docs.angularjs.org/guide/di#implicit-annotation">implicit annotation</a> because Node on Fire seamlessly replaces implicit annotations with inline array notations in the build phase.</p>
 
 				<pre><code class="javascript">app.post('/api/users', function(UserModel, request) {
     return UserModel.create(request.body)
@@ -73,120 +47,165 @@
         });
 });</code></pre>
 			</div>
+
+			<div class="col-md-5">
+				<h2>Isomorphic services</h2>
+				<p>When you create a service, it's available on both the front- and the back-end. This makes it easy to re-use code in your UI but also in your back-end logic.</p>
+
+				<pre><code class="javascript">// This creates a GET route and returns 123 from MyService (in the back-end).
+app.get('/api/value', function(MyService) {
+    return MyService.getValue();
+});
+
+// This creates a controller and sets the scope's value to 123 from MyService (in the front-end).
+app.controller('/', function MyController(MyService, $scope) {
+    $scope.value = MyService.getValue();
+});
+
+// This is an isomorphic service, available in both the front- and the back-end.
+app.service(function MyService() {
+    this.getValue = function() {
+        return 123;
+    };
+});</code></pre>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<div class="col-md-5 col-md-offset-1">
+				<h2>Data model (ORM)</h2>
+				<p>It's easy to declare your data model and all associations (one-to-one, one-to-many and many-to-many).</p>
+
+				<pre><code class="javascript">app.model(function TodoItem(TodoListModel) {
+	this.list = [this.BelongsTo(TodoListModel), this.Required];
+	this.name = [this.String, this.Required];
+	this.completed = [this.Boolean, this.Required, this.Default(false)];
+	this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
+});
+
+app.model(function TodoList(TodoItemModel) {
+	this.items = [this.HasMany(TodoItemModel), this.AutoFetch];
+	this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
+});</code></pre>
+			</div>
+
+			<div class="col-md-5">
+				<h2>Migrations</h2>
+				<p>All changes to your data model are applied through migrations. This makes it super easy to share your data model. You do not need to write migrations yourself, instead, migrations are generated automatically based on the changes of your models.</p>
+
+				<pre><code class="javascript">Migration.prototype.up = function() {
+	this.models.createModel('TodoItem', {
+		id: [this.UUID, this.CanUpdate(false)],
+		list: [this.BelongsTo(this.models.TodoList), this.Required],
+		name: [this.String, this.Required],
+		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
+	});
+
+	this.models.createModel('TodoList', {
+		id: [this.UUID, this.CanUpdate(false)],
+		items: [this.HasMany(this.models.TodoItem)],
+		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
+	});
+};
+
+Migration.prototype.down = function() {
+	this.models.destroyModel('TodoItem');
+	this.models.destroyModel('TodoList');
+};</code></pre>
+			</div>
 		</div>
 
 		<div class="row desc">
 			<div class="col-md-5 col-md-offset-1">
 				<h2>Integrated A/B testing</h2>
-				<p>It's trivial to create A/B tests. You can A/B test every feature with ease. See <a href="https://github.com/martijndeh/fire/tree/master/examples/test">A/B test example project</a>.</p>
+				<p>It's trivial to create A/B tests. Tests work with your existing analytics service e.g. Mixpanel.</p>
 
-				<pre><code class="javascript">app.controller('/', function StartController(TextOfButtonTest, $scope) {
-    if(TextOfButtonTest.getVariant() == 'A') {
+				<pre><code class="javascript">function StartController(textOfButtonTest, $scope) {
+    if(textOfButtonTest == 'A') {
         $scope.buttonText = 'Register for FREE';
     }
     else {
         $scope.buttonText = 'Register now';
     };
-});</code></pre>
-			</div>
-
-			<div class="col-md-5 col-md-offset-1">
-				<h2>Data model creation</h2>
-				<p>It's easy to declare your data model and all associations (one-to-one, one-to-many and many-to-many).</p>
-
-				<pre><code class="javascript">var fire = require('fire');
-var app = fire.app('todomvc');
-
-app.model(function TodoItem(TodoListModel) {
-    this.list = [this.BelongsTo(TodoListModel), this.Required];
-    this.name = [this.String, this.Required];
-    this.completed = [this.Boolean, this.Required, this.Default(false)];
-    this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
-});
-
-app.model(function TodoList(TodoItemModel) {
-    this.items = [this.HasMany(TodoItemModel), this.AutoFetch];
-    this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
-});</code></pre>
-			</div>
-		</div>
-
-		<div class="row desc">
-			<div class="col-md-5 col-md-offset-1">
-				<h2>Migration-based schema changes</h2>
-				<p>All changes to your data model are applied in migrations. Migrations are automatically generated based on the changes of your models.</p>
-
-				<pre><code class="javascript">exports = module.exports = Migration;
-
-function Migration() {
-    //
 }
+app.controller('/', StartController);
 
-Migration.prototype.up = function() {
-    this.models.createModel('TodoItem', {
-        id: [this.UUID, this.CanUpdate(false)],
-        list: [this.BelongsTo(this.models.TodoList), this.Required],
-        name: [this.String, this.Required],
-        createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
-    });
-
-    this.models.createModel('TodoList', {
-        id: [this.UUID, this.CanUpdate(false)],
-        items: [this.HasMany(this.models.TodoItem)],
-        createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
-    });
-};
-
-Migration.prototype.down = function() {
-    this.models.destroyModel('TodoItem');
-    this.models.destroyModel('TodoList');
-};</code></pre>
-			</div>
-
-			<div class="col-md-5 col-md-offset-1">
-				<h2>Create workers</h2>
-				<p>Easily create workers which execute background tasks.</p>
-
-				<pre><code class="javascript">function MailWorker() {
-    //
-}
-app.worker(MailWorker);
-
-MailWorker.prototype.sendResetPasswordMail = function(user, resetPassword) {
-    var defer = Q.defer();
-
-    mandrill('/messages/send', {
-        message: {
-            to: [{
-                email: user.email,
-                name: user.name
-            }],
-            ...
+StartController.prototype.resolve = function() {
+    return {
+        textOfButtonTest: function() {
+            return TextOfButtonTest.participate();
         }
-    }, defer.makeNodeResolver());
-
-    return defer.promise;
+    };
 };</code></pre>
+			</div>
 
-				<p>It's easy to queue a background task which the worker executes in a worker process.</p>
+			<div class="col-md-5">
+				<h2>Workers and queues</h2>
+				<p>Workers execute background tasks to off-load intensive tasks from the web process. It is super easy to create workers.</p>
+
+				<pre><code class="javascript">app.worker(function MailWorker() {
+    this.sendResetPasswordMail = function(user, resetPassword) {
+    	var defer = Q.defer();
+
+    	mandrill('/messages/send', {
+    		message: {
+    			to: [{
+    				email: user.email,
+    				name: user.name
+    			}],
+    			...
+    		}
+    	}, defer.makeNodeResolver());
+
+    	return defer.promise;
+    };
+});</code></pre>
+
+				<p>It's easy to queue a background task from a web process which the worker executes in a worker process.</p>
 
 				<pre><code class="javascript">app.post('/api/forgot-password', function(request, MailWorker, UserModel) {
-    return UserModel.getMe(request).then(function(user) {
-        return MailWorker.sendResetPassword(user, user.resetPassword);
-    });
+    return UserModel
+        .getMe(request)
+        .then(function(user) {
+            return MailWorker.sendResetPassword(user, user.resetPassword);
+        });
 });</code></pre>
 			</div>
 		</div>
 
 		<div class="row desc">
-			<div class="col-md-offset-1 col-md-5">
-				<h2>Built on top of AngularJS, PostgreSQL and more</h2>
-				<p>Node on Fire is built on top of existing technologies, like AngularJS, PostgreSQL, Grunt, Yeoman, RabbitMQ, and uses a collection of libraries, like Express and Knex.</p>
+			<div class="col-md-5 col-md-offset-1">
+				<h2>Config management</h2>
+				<p>All your config is stored in the `.env` file (this file shouldn't be tracked in version control), but you can use the `fire` command line interface to manage the config. You can e.g. set `NODE_ENV` to `production` by invoking `fire config:set NODE_ENV=production` or view your config by invoking `fire config`.</p>
+
+				<pre><code class="javascript">$ fire config
+DEBUG:
+NODE_ENV:     development
+SESSION_KEYS: XI4frrvs+z1JU9auFEmOIAtM...FL3di8Eysw==
+DATABASE_URL: postgres://martijndeh@127.0.0.1/todomvc
+</code></pre>
+			</div>
+
+			<div class="col-md-5">
+				<h2>Smart caching</h2>
+				<p>To make your app feel even more snappy, Node on Fire utilizes smart caching. Node on Fire instantly shows a result if a cache is available, and quickly replaces it with a fresh version from your back-end.</p>
+
+				<p>Node on Fire automatically purges any cache when a related model gets created or updated.</p>
+
+				<pre><code class="javascript">// retrieve a recipe
+RecipeModel.findOne({id: $route.params.id}, {autoReload: true, cache: 1000 * 60 * 5})
+    .then(function(recipes) {
+        // recipes
+    });</code></pre>
 			</div>
 		</div>
 
 		<div class="row desc">
 			<div class="col-md-6 col-md-offset-3">
+				<h2>Built on top of AngularJS, PostgreSQL and more</h2>
+
+				<p>Node on Fire is built on top of existing technologies, like AngularJS, PostgreSQL, Grunt, RabbitMQ, and uses a collection of libraries, like Express and Knex.</p>
+
 				<p>The below list contains some more points you will like about Node on Fire.</p>
 				<ul>
 					<li>An object-relational mapper to quickly build your data model and manage your database.</li>

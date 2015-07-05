@@ -57,9 +57,10 @@
     
     
     <div class="description">
-        <p>The Workers module. This module is responsible for the orchestration of worker process types.</p>
-<p>With workers you can off-load intensive tasks away from the web processes to separate worker processes.</p>
-<p>In your controllers and models, you can pass messages to workers. Under the hood, the messages are posted over a message queueing system and consumed by a worker process. For example, consider the below example:</p>
+        <p>The Workers module. This module is responsible for the orchestration of worker process types. With workers you can off-load intensive tasks away from the web processes to separate worker processes.</p>
+<p>There are two types of workers: task-based workers and continuous workers. Task-based workers listen to a work queue and consume tasks. Other processes can tasks to a work queue. Continuous workers simply start work. It's important to understand continuous workers should be able to be restarted at any point.</p>
+<p>To create a task-based worker:</p>
+<p>In your controllers and models, you can pass messages to task-based workers. Under the hood, the messages are posted over a message queueing system and consumed by a worker process. For example, consider the below example:</p>
 <pre class="prettyprint source lang-js"><code>// Our User model.
 
 function User() {
@@ -80,11 +81,12 @@ app.worker(MailWorker);
 
 MailWorker.prototype.sendWelcomeMail = function(user) {
     // now send the mail to the user...
-}
-
-// The Procfile
-web: node index.js
-worker: node index.js --worker MailWorker</code></pre><p>If you want to have a time-based process running, have a look at the Scheduler module.</p>
+}</code></pre><p>The below snippet shows how to create a continuous worker. A continuous worker starts tasks in the <code>run</code> method.</p>
+<pre class="prettyprint source"><code>app.worker(function MyContinuousWorker() {
+    this.run = function() {
+        // Start task here.
+    };
+});</code></pre><p>If you want to have a time-based process running, e.g. I want this task to run every sunday at 11 am, have a look at the Scheduler module.</p>
     </div>
     
 
@@ -573,7 +575,78 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
         
             
 <dt>
-    <h4 class="name" id="startConsumingTasks"><span class="type-signature"></span>startConsumingTasks<span class="signature">(workerNames)</span></h4>
+    <h4 class="name" id="startConsumingTasks"><span class="type-signature"></span>startConsumingTasks<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+	<dt class="important tag-deprecated">Deprecated:</dt>
+	
+	<dd>
+		<ul class="dummy">
+			<li>Please use Workers#startWorkers instead.</li>
+		</ul>
+	</dd>
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span></h4>
     
     
 </dt>
@@ -581,7 +654,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
     
     
     <div class="description">
-        <p>Starts consuming messages in the workers specified by <code>workerNames</code>. This is invoked in the worker processes.</p>
+        <p>This method is invoked when the process quits. Does clean up: closes the message queue's connection.</p>
     </div>
     
 
@@ -589,56 +662,6 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
     
     
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>workerNames</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Array:<a href="global.html"></a>.&lt;String:<a href="global.html"></a>></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Only the workers with it's name in this array are started. This is a required argument.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
     
     
     
@@ -689,7 +712,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
         
             
 <dt>
-    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span></h4>
+    <h4 class="name" id="swizzleExternalMethods"><span class="type-signature"></span>swizzleExternalMethods<span class="signature">()</span></h4>
     
     
 </dt>
@@ -697,7 +720,7 @@ worker: node index.js --worker MailWorker</code></pre><p>If you want to have a t
     
     
     <div class="description">
-        <p>This method is invoked when the process quits. Does clean up: closes the message queue's connection.</p>
+        <p>In a multi-app project, external workers are considered workers from another app.</p>
     </div>
     
 

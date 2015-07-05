@@ -49,7 +49,7 @@
     
         
 <dt>
-    <h4 class="name" id="ModelInstance"><span class="type-signature"></span>new ModelInstance<span class="signature">(model, row, changes, id, hookname, isPartial)</span></h4>
+    <h4 class="name" id="ModelInstance"><span class="type-signature"></span>new ModelInstance<span class="signature">(model, row, changes, id, hookname, isPartial, isShallow)</span></h4>
     
     
 </dt>
@@ -240,6 +240,30 @@ User.prototype.afterCreate = function() {
             
 
             <td class="description last"><p><code>true</code> if the model instance is partial. A partial model instance is returned from a create, update, delete or execute action.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>isShallow</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">Boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>If set to <code>true</code> the model instance does not dynamically create any methods. This is useful when you don't want to do anything with the model instances directly and don't need to overhead of creating dynamic methods.</p></td>
         </tr>
 
 	
@@ -462,8 +486,7 @@ User.prototype.afterCreate = function() {
     
     
     <div class="description">
-        <p>Warning: in the future the effects of these hooks might change. Currently the hooks are invoked on the same process, in the future, the hooks will be invoked in a worker process.</p>
-<p>Internally calls the hooks.</p>
+        <p>Internally calls the hooks.</p>
 <p>The following hooks are supported:</p>
 <h5>beforeLoad</h5><p>Before the model instance gets loaded. Please note: you cannot return a promise here to block the loading of the model.</p>
 <h5>afterLoad</h5><p>After a model instance is loaded this hook is called. Please note: you cannot return a promise here to block the loading of the model.</p>
@@ -594,6 +617,170 @@ User.prototype.afterCreate = function() {
     
     
     
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="changePassword"><span class="type-signature"></span>changePassword<span class="signature">(currentPassword, newPassword, confirmPassword)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Changes the instance's password. This method is only available on authenticator model instances.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>currentPassword</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The current password</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>newPassword</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A new password</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>confirmPassword</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type">String</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Confirm password. Should be the same as <code>newPassword</code>.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     
@@ -1112,6 +1299,73 @@ Reads the information of a datastore's row and parses the row if it's considerd 
         
             
 <dt>
+    <h4 class="name" id="getLoginToken"><span class="type-signature"></span>getLoginToken<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Either finds an existing login token if it's less than 1 week old. If no tokens can be found, or the tokens are older than a week, a new token is created.</p>
+<p>By default, tokens expire after two weeks.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="parseRow"><span class="type-signature"></span>parseRow<span class="signature">(row)</span></h4>
     
     
@@ -1178,6 +1432,72 @@ Reads the information of a datastore's row and parses the row if it's considerd 
 	</tbody>
 </table>
 
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="remove"><span class="type-signature"></span>remove<span class="signature">()</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Removes the model instance.</p>
+    </div>
+    
+
+    
+    
+    
+    
     
     
     
@@ -1677,7 +1997,9 @@ This method is invoked before saving the model in ModelInstance#save.</li>
         <p>Validates a hashed property, see <a href="PropertyTypes.html#Hash">PropertyTypes#Hash</a>.</p>
 <pre class="prettyprint source"><code>return UserModel.getOne({email: 'martijn@ff00ff.nl'})
     .then(function(instance) {
-        if(instance.validateHash('password', 'my password')) {
+     return instance.validateHash('password', 'my password');
+ }).then(function(correct) {
+     if(correct) {
          // Correct!
        }
         else {
