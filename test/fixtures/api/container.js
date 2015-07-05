@@ -5,6 +5,8 @@ var Q = require('q');
 var fire = require('./..');
 var app = fire.app('test');
 
+var http = require('http');
+
 function merge(dest, source) {
 	Object.keys(source).forEach(function(key) {
 		dest[key] = source[key];
@@ -17,20 +19,19 @@ function unauthenticatedError(authenticator) {
 
 	if(authenticator) {
 		error.status = 403;
-		error.message = 'Forbidden';
 	}
 	else {
 		error.status = 401;
-		error.message = 'Unauthorized';
 	}
 
+	error.message = http.STATUS_CODES[error.status];
 	return error;
 }
 
 function badRequestError() {
 	var error = new Error();
 	error.status = 400;
-	error.message = 'Bad Request';
+	error.message = http.STATUS_CODES[error.status];
 	return error;
 }
 
@@ -420,37 +421,41 @@ app.get('/api/containers/:id/users', function(request, response, app,  Container
 			var association = ContainerModel.getProperty('users');
 			var associatedModel = association.options.relationshipVia.model;
 
+			var whereMap = request.query || {};
+			var optionsMap = {};
+
+			if(whereMap.$options) {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+
+			optionsMap.isShallow = true;
+
+			var association = ContainerModel.getProperty('users');
+			var associatedModel = association.options.relationshipVia.model;
+
+			if(typeof canRead == 'object') {
+				whereMap = merge(whereMap, canRead);
+			}
+
+			whereMap[association.options.relationshipVia.name] = request.params.id;
+
+			if(associatedModel.options.automaticPropertyName) {
+				if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
+					var error = new Error('Cannot set automatic property manually.');
+					error.status = 400;
+					throw error;
+				}
+
+				whereMap[associatedModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = associatedModel.getAccessControl();
-			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canRead) {
 					if(canRead) {
-						var whereMap = request.query || {};
-						var optionsMap = {};
-
-						if(whereMap.$options) {
-							optionsMap = whereMap.$options;
-							delete whereMap.$options;
-						}
-
-						optionsMap.isShallow = true;
-
-						var association = ContainerModel.getProperty('users');
-						var associatedModel = association.options.relationshipVia.model;
-
 						if(typeof canRead == 'object') {
 							whereMap = merge(whereMap, canRead);
-						}
-
-						whereMap[association.options.relationshipVia.name] = request.params.id;
-
-						if(associatedModel.options.automaticPropertyName) {
-							if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
-								var error = new Error('Cannot set automatic property manually.');
-								error.status = 400;
-								throw error;
-							}
-
-							whereMap[associatedModel.options.automaticPropertyName] = authenticator;
 						}
 
 						return associatedModel.find(whereMap, optionsMap);

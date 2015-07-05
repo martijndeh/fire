@@ -1,8 +1,7 @@
+/* global describe, afterEach, beforeEach, it */
 'use strict';
 
 var fire = require('..');
-var Models = require('./../lib/modules/models');
-var Model = require('./../lib/modules/models/model');
 var Migrations = require('./../lib/modules/migrations');
 var assert = require('assert');
 var Q = require('q');
@@ -100,7 +99,7 @@ describe('migrations associations one-to-one', function() {
     		this.models.createModel('A', {
     			id: [this.UUID],
     			name: [this.String],
-    			b: [this.BelongsTo(this.models.B), this.AutoFetch]
+    			b: [this.BelongsTo(this.models.B), this.AutoFetch, this.Optional]
     		});
     	};
     	Migration.prototype.down = function() {
@@ -159,7 +158,7 @@ describe('migrations associations one-to-one', function() {
     		this.models.createModel('A', {
     			id: [this.UUID],
     			name: [this.String],
-    			b: [this.BelongsTo(this.models.B), this.AutoFetch]
+    			b: [this.BelongsTo(this.models.B), this.AutoFetch, this.Optional]
     		});
     	};
     	Migration.prototype.down = function() {

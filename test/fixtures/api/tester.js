@@ -5,6 +5,8 @@ var Q = require('q');
 var fire = require('./..');
 var app = fire.app('test');
 
+var http = require('http');
+
 function merge(dest, source) {
 	Object.keys(source).forEach(function(key) {
 		dest[key] = source[key];
@@ -17,20 +19,19 @@ function unauthenticatedError(authenticator) {
 
 	if(authenticator) {
 		error.status = 403;
-		error.message = 'Forbidden';
 	}
 	else {
 		error.status = 401;
-		error.message = 'Unauthorized';
 	}
 
+	error.message = http.STATUS_CODES[error.status];
 	return error;
 }
 
 function badRequestError() {
 	var error = new Error();
 	error.status = 400;
-	error.message = 'Bad Request';
+	error.message = http.STATUS_CODES[error.status];
 	return error;
 }
 

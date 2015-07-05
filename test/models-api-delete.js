@@ -32,7 +32,7 @@ describe('models api delete', function() {
 			function Child() {
 				this.name = [this.String];
 				this.status = [this.String, this.Required];
-				this.parent = [this.BelongsTo(this.models.Parent)];
+				this.parent = [this.BelongsTo(this.models.Parent), this.Optional];
 			}
 			app.model(Child);
 

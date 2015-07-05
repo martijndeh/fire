@@ -537,10 +537,6 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '_djb2Has
 }]);
 
 
-
-app.service('FireModels', [function() {
-    throw new Error('FireModels service is deprecated.');
-}]);
 function unwrap(promise, initialValue) {
     var value = initialValue;
 
@@ -551,7 +547,7 @@ function unwrap(promise, initialValue) {
     return value;
 };
 
-app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+app.service('fire', [function() {
     function unwrap(promise, initialValue) {
         var value = initialValue;
 
@@ -562,7 +558,6 @@ app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q
         return value;
     };
     this.unwrap = unwrap;
-    this.models = FireModels;
 
     this.isServer = function() {
         return false;
@@ -582,126 +577,6 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 
 
 }]);
-app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSocketService, $rootScope) {
-	var channelsMap = {};
-
-	function getChannelAddress(channelId, channelType) {
-		return (channelType + ':' + channelId);
-	}
-
-	this.registerChannel = function(channel) {
-		channelsMap[getChannelAddress(channel.id, channel.type)] = channel;
-
-		this.sendMessageOnChannel({
-			event: '_subscribe'
-		}, channel);
-	};
-
-	this.getChannel = function(channelId, channelType) {
-		return channelsMap[getChannelAddress(channelId, channelType)];
-	};
-
-	this.getUnknownMessage = function(messageMap, channelMap) { //jshint ignore:line
-		console.log('Unknown message.');
-	};
-
-	this.sendMessageOnChannel = function(message, channel) {
-		return WebSocketService.send({
-			channel: {
-				type: channel.type,
-				id: channel.id
-			},
-			message: message
-		});
-	};
-
-	var self = this;
-	WebSocketService.parsePacket = function(packet) {
-		var channel = self.getChannel(packet.channel.id, packet.channel.type);
-		if(channel) {
-			if(channel.delegate) {
-				$rootScope.$apply(function() {
-					channel.delegate(packet.message);
-				});
-			}
-			else {
-				console.log('Warning: no delegate set on channel.');
-			}
-		}
-		else {
-			$rootScope.$apply(function() {
-				self.getUnknownMessage(packet.message, packet.channel);
-			});
-		}
-	};
-}]);
-
-app.service('WebSocketService', ['$location', '$timeout', function($location, $timeout) {
-	var queue = [];
-
-	var reconnectInterval = 1000;
-	var reconnectDecay = 1.5;
-	var reconnectAttempts = 0;
-	var reconnectMaximum = 60 * 1000;
-	var socket = null;
-
-	var self = this;
-	var onOpen = function () {
-		if(queue && queue.length > 0) {
-			var queue_ = queue;
-			queue = null;
-
-			queue_.forEach(function(message) {
-				self.send(message);
-			});
-		}
-	};
-
-	var onError = function(error) {
-		console.log('error');
-		console.log(error);
-	};
-
-	var onClose = function(event) {
-		$timeout(connect, Math.max(reconnectMaximum, reconnectInterval * Math.pow(reconnectDecay, reconnectAttempts)));
-	};
-
-	var onMessage = function(event) {
-		var packet = JSON.parse(event.data);
-
-		// TODO: Change this to an event emitter instead. Now it's only possible to delegate the packets to 1 listeners.
-
-		if(self.parsePacket) {
-			self.parsePacket(packet);
-		}
-	};
-
-	function connect() {
-		reconnectAttempts++;
-
-		socket = new WebSocket('ws://' + $location.host() + ($location.port() ? ':' + $location.port() : ''));
-		socket.onopen = onOpen;
-		socket.onerror = onError;
-		socket.onclose = onClose;
-		socket.onmessage = onMessage;
-	}
-
-	this.send = function(message) {
-		if(queue !== null) {
-			queue.push(message);
-		}
-		else {
-			console.log(socket);
-
-			socket.send(JSON.stringify(message));
-		}
-	};
-	this.parsePacket = null;
-
-	connect();
-}]);
-
-
 /* global window, app */
 app.service('_StorageService', [function _StorageService() {
 	var storage = {};

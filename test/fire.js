@@ -10,7 +10,7 @@ describe('fire', function() {
 
 	before(function() {
 		helper.setup = function() {
-			//
+
 		};
 
 		helper.createModels = function() {

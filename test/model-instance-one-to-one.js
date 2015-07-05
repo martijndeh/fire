@@ -19,7 +19,7 @@ describe('model instance one to one', function() {
 
 			function Project() {
 				this.name = [this.String];
-				this.user = [this.BelongsTo(this.models.User), this.AutoFetch];
+				this.user = [this.BelongsTo(this.models.User), this.AutoFetch, this.Optional];
 			}
 			app.model(Project);
 		};

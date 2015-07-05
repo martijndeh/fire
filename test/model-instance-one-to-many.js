@@ -21,7 +21,7 @@ describe('model instance one to many', function() {
 
 			function Project() {
 				this.name = [this.String];
-				this.user = [this.BelongsTo(this.models.User)];
+				this.user = [this.BelongsTo(this.models.User), this.Optional];
 			}
 			app.model(Project);
 		};

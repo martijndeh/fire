@@ -68,6 +68,13 @@ describe('models find with association property', function() {
 					assert.equal(events.length, 1);
 				});
 		});
+
+		it('can find with ignore and $or', function() {
+			return helper.app.models.Event.find({$or:[{'app.ignore': true}, {user: userID}]})
+				.then(function(events) {
+					assert.equal(events.length, 1);
+				});
+		});
 	});
 
 	/*
