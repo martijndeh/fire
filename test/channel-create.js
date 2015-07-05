@@ -5,6 +5,7 @@ var helper = require('./support/helper');
 var assert = require('assert');
 var Q = require('q');
 
+/*
 describe('channels', function() {
 	beforeEach(helper.beforeEach({migrate: true}));
 	afterEach(helper.afterEach());
@@ -161,3 +162,4 @@ describe('channels', function() {
 		});
 	});
 });
+*/

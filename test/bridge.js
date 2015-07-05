@@ -247,6 +247,7 @@ describe('bridge', function() {
 			.done();
 	});
 
+	/*
 	it('can export channels', function(done) {
 		function TestChannel() {
 
@@ -277,4 +278,5 @@ describe('bridge', function() {
 			.catch(done)
 			.done();
 	});
+	*/
 });
