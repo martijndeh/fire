@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.42.2
+
+### Bug fixes
+
+- Fixes dependency injection in tasks module.
+- Fixes exiting a task when finished.
+
+## 0.42.1
+
+### Bug fixes
+
+- Fixes undefined variable in API.
+- Fixes through model definitions in soft migrations.
+
 ## 0.42.0
 
 ### Breaking changes
