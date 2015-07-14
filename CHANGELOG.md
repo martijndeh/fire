@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.42.3
+
+### Bug fixes
+
+- Fixes issue where participating tests sometimes fails.
+- Fixes issue where deleting with $options sometimes fails.
+
+### Improvements
+
+- Implements setting multiple key-value pairs in config:set.
+
 ## 0.42.2
 
 ### Bug fixes
