@@ -246,15 +246,39 @@ if(argv._.length) {
 	}
 	else if(command == 'config' && subcommand == 'set') {
 		if(argv._.length > 1) {
-			var keyValue = argv._[1];
-			var config = keyValue.split('=');
+			var config = {};
 
-			if(config.length == 2) {
-				dotenv.set(config[0], config[1]);
+			var index = 1;
+			while(argv._.length > index) {
+				var keyValue = argv._[index];
+				var pair = keyValue.split('=');
+
+				if(pair.length == 2) {
+					config[pair[0]] = pair[1];
+
+					dotenv.set(pair[0], pair[1]);
+				}
+				else {
+					console.log('Please specify a key-value pair joined with a = e.g. fire config:set KEY=value');
+				}
+
+				index++;
 			}
-			else {
-				console.log('Please specify a key-value pair joined with a = e.g. fire config:set KEY=value');
-			}
+
+			var length = Object.keys(config).map(function(key) {
+				return key.length;
+			}).reduce(function(last, now) {
+				if(last >= now) {
+					return last;
+				}
+				else {
+					return now;
+				}
+			}, 0);
+
+			Object.keys(config).forEach(function(key) {
+				console.log(key + ': ' + space(length - key.length) + config[key]);
+			});
 		}
 		else {
 			console.log('Please specify which config key-value to set e.g. fire config:set KEY=value');
