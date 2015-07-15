@@ -5,6 +5,8 @@ var Q = require('q');
 var fire = require('fire');
 var app = fire.app('todomvc');
 
+var http = require('http');
+
 function merge(dest, source) {
 	Object.keys(source).forEach(function(key) {
 		dest[key] = source[key];
@@ -17,20 +19,19 @@ function unauthenticatedError(authenticator) {
 
 	if(authenticator) {
 		error.status = 403;
-		error.message = 'Forbidden';
 	}
 	else {
 		error.status = 401;
-		error.message = 'Unauthorized';
 	}
 
+	error.message = http.STATUS_CODES[error.status];
 	return error;
 }
 
 function badRequestError() {
 	var error = new Error();
 	error.status = 400;
-	error.message = 'Bad Request';
+	error.message = http.STATUS_CODES[error.status];
 	return error;
 }
 
@@ -113,6 +114,8 @@ app.post('/api/todo-lists', function(app, response, request, TodoListModel) {
 								createMap[TodoListModel.options.automaticPropertyName] = authenticator;
 							}
 
+
+
 							if(_canSetProperties(Object.keys(createMap), TodoListModel)) {
 								return createMap;
 							}
@@ -142,32 +145,68 @@ app.post('/api/todo-lists', function(app, response, request, TodoListModel) {
 		});
 });
 
+app.get('/api/todo-lists/_count', function(request, response, app,  TodoListModel) {
+	return findAuthenticator(null, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var propertyName = null;
+
+
+
+			if(whereMap.$options) {
+				propertyName = whereMap.$options.propertyName;
+				delete whereMap.$options;
+			}
+
+			console.log('Where map:');
+			console.log(whereMap);
+
+			if(TodoListModel.options.automaticPropertyName) {
+				whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var accessControl = TodoListModel.getAccessControl();
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
+
+						return TodoListModel.count(propertyName, whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
 app.get('/api/todo-lists', function(request, response, app,  TodoListModel) {
 	return findAuthenticator(null, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+
+			if(whereMap.$options) {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(TodoListModel.options.automaticPropertyName) {
+				whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = TodoListModel.getAccessControl();
-			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canRead) {
 					if(canRead) {
-						var queryMap = request.query || {};
-						var optionsMap = {};
-
 						if(typeof canRead == 'object') {
-							queryMap = merge(queryMap, canRead);
+							whereMap = merge(whereMap, canRead);
 						}
 
-						if(queryMap.$options) {
-							optionsMap = queryMap.$options;
-							delete queryMap.$options;
-						}
-
-						optionsMap.isShallow = true;
-
-						if(TodoListModel.options.automaticPropertyName) {
-							queryMap[TodoListModel.options.automaticPropertyName] = authenticator;
-						}
-
-						return TodoListModel.find(queryMap, optionsMap);
+						return TodoListModel.find(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -179,36 +218,36 @@ app.get('/api/todo-lists', function(request, response, app,  TodoListModel) {
 app.get('/api/todo-lists/:id', function(request, response, app,  TodoListModel) {
 	return findAuthenticator(null, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			whereMap.id = request.params.id;
+
+			if(TodoListModel.options.automaticPropertyName) {
+				whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var optionsMap = {};
+
+			if(whereMap.$options) {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+
+			optionsMap.isShallow = true;
+
 			var accessControl = TodoListModel.getAccessControl();
-			return Q.all([accessControl.canRead({authenticator: authenticator, request: request, response: response}), authenticator]);
-		})
-		.spread(function(canRead, authenticator) {
-			if(canRead) {
-				var whereMap = request.query || {};
-				whereMap.id = request.params.id;
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
 
-				if(typeof canRead == 'object') {
-					whereMap = merge(whereMap, canRead);
-				}
-
-				if(TodoListModel.options.automaticPropertyName) {
-					whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
-				}
-
-				var optionsMap = {};
-
-				if(whereMap.$options) {
-					optionsMap = whereMap.$options;
-					delete whereMap.$options;
-				}
-
-				optionsMap.isShallow = true;
-
-				return TodoListModel.getOne(whereMap, optionsMap);
-			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
+						return TodoListModel.getOne(whereMap, optionsMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
 		});
 });
 
@@ -216,26 +255,27 @@ app.put('/api/todo-lists/:id', function(request, response, app,  TodoListModel) 
 	var accessControl = TodoListModel.getAccessControl();
 	return findAuthenticator(null, request)
 		.then(function(authenticator) {
-			return Q.all([accessControl.canUpdate({authenticator: authenticator, request: request, response: response}), authenticator]);
-		})
-		.spread(function(canUpdate, authenticator) {
-			if(canUpdate) {
-				var whereMap = request.query || {};
+			var whereMap = request.query || {};
 
-				if(typeof canUpdate == 'object') {
-					whereMap = merge(whereMap, canUpdate);
-				}
-
-				if(TodoListModel.options.automaticPropertyName) {
-					whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
-				}
-
-				whereMap.id = request.params.id;
-				return [_canUpdateProperties(Object.keys(request.body), TodoListModel), whereMap, authenticator];
+			if(TodoListModel.options.automaticPropertyName) {
+				whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
 			}
-			else {
-				throw unauthenticatedError(authenticator);
-			}
+
+			whereMap.id = request.params.id;
+
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canUpdate) {
+					if(canUpdate) {
+						if(typeof canUpdate == 'object') {
+							whereMap = merge(whereMap, canUpdate);
+						}
+
+						return [_canUpdateProperties(Object.keys(request.body), TodoListModel), whereMap, authenticator];
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
 		})
 		.all()
 		.spread(function(canUpdateProperties, whereMap, authenticator) {
@@ -262,21 +302,21 @@ app.put('/api/todo-lists/:id', function(request, response, app,  TodoListModel) 
 app.put('/api/todo-lists', function(request, response, app,  TodoListModel) {
 	return findAuthenticator(null, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+
+			if(TodoListModel.options.automaticPropertyName) {
+				whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = TodoListModel.getAccessControl();
-			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canUpdate) {
 					if(canUpdate) {
 						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), TodoListModel))
 							.then(function(canUpdateProperties) {
 								if(canUpdateProperties) {
-									var whereMap = request.query || {};
-
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);
-									}
-
-									if(TodoListModel.options.automaticPropertyName) {
-										whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
 									}
 
 									return TodoListModel.update(whereMap, request.body || {});
@@ -296,21 +336,26 @@ app.put('/api/todo-lists', function(request, response, app,  TodoListModel) {
 app.delete('/api/todo-lists', function(request, response, app,  TodoListModel) {
 	return findAuthenticator(null, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			if(TodoListModel.options.automaticPropertyName) {
+				whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = TodoListModel.getAccessControl();
-			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canDelete) {
 					if(canDelete) {
-						var whereMap = request.query || {};
-
 						if(typeof canDelete == 'object') {
 							whereMap = merge(whereMap, canDelete);
 						}
 
-						if(TodoListModel.options.automaticPropertyName) {
-							whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
-						}
-
-						return TodoListModel.remove(whereMap);
+						return TodoListModel.remove(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -322,23 +367,27 @@ app.delete('/api/todo-lists', function(request, response, app,  TodoListModel) {
 app.delete('/api/todo-lists/:id', function(request, response, app,  TodoListModel) {
 	return findAuthenticator(null, request)
 		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			whereMap.id = request.params.id;
+			if(TodoListModel.options.automaticPropertyName) {
+				whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = TodoListModel.getAccessControl();
-			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 			.then(function(canDelete) {
 				if(canDelete) {
-					var whereMap = request.query || {};
-
 					if(typeof canDelete == 'object') {
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					whereMap.id = request.params.id;
-
-					if(TodoListModel.options.automaticPropertyName) {
-						whereMap[TodoListModel.options.automaticPropertyName] = authenticator;
-					}
-
-					return TodoListModel.removeOne(whereMap);
+					return TodoListModel.removeOne(whereMap, optionsMap);
 				}
 				else {
 					throw unauthenticatedError(authenticator);
@@ -417,40 +466,44 @@ app.get('/api/todo-lists/:id/items', function(request, response, app,  TodoListM
 			var association = TodoListModel.getProperty('items');
 			var associatedModel = association.options.relationshipVia.model;
 
+			var whereMap = request.query || {};
+			var optionsMap = {};
+
+			if(whereMap.$options) {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+
+			optionsMap.isShallow = true;
+
+			var association = TodoListModel.getProperty('items');
+			var associatedModel = association.options.relationshipVia.model;
+
+			if(typeof canRead == 'object') {
+				whereMap = merge(whereMap, canRead);
+			}
+
+			whereMap[association.options.relationshipVia.name] = request.params.id;
+
+			if(associatedModel.options.automaticPropertyName) {
+				if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
+					var error = new Error('Cannot set automatic property manually.');
+					error.status = 400;
+					throw error;
+				}
+
+				whereMap[associatedModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = associatedModel.getAccessControl();
-			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canRead) {
 					if(canRead) {
-						var queryMap = request.query || {};
-						var optionsMap = {};
-
-						if(queryMap.$options) {
-							optionsMap = queryMap.$options;
-							delete queryMap.$options;
-						}
-
-						optionsMap.isShallow = true;
-
-						var association = TodoListModel.getProperty('items');
-						var associatedModel = association.options.relationshipVia.model;
-
 						if(typeof canRead == 'object') {
-							queryMap = merge(queryMap, canRead);
+							whereMap = merge(whereMap, canRead);
 						}
 
-						queryMap[association.options.relationshipVia.name] = request.params.id;
-
-						if(associatedModel.options.automaticPropertyName) {
-							if(queryMap[associatedModel.options.automaticPropertyName] && queryMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
-								var error = new Error('Cannot set automatic property manually.');
-								error.status = 400;
-								throw error;
-							}
-
-							queryMap[associatedModel.options.automaticPropertyName] = authenticator;
-						}
-
-						return associatedModel.find(queryMap, optionsMap);
+						return associatedModel.find(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -562,32 +615,31 @@ app.put('/api/todo-lists/:id/items/:associationID', function(request, response, 
 			var association = TodoListModel.getProperty('items');
 			var associatedModel = association.options.relationshipVia.model;
 
+			var whereMap = request.query || {};
+			whereMap[association.options.relationshipVia.name] = request.params.id;
+			whereMap.id = request.params.associationID;
+
+			if(associatedModel.options.automaticPropertyName) {
+				// This is definitely a bad request if the user tries to set the automatic property manually.
+				if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
+					error = new Error('Cannot set automatic property manually.');
+					error.status = 400;
+					throw error;
+				}
+
+				whereMap[associatedModel.options.automaticPropertyName] = authenticator;
+			}
+
 			var accessControl = associatedModel.getAccessControl();
-			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response}))
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canUpdate) {
 					if(canUpdate) {
 						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), associatedModel))
 							.then(function(canUpdateProperties) {
 								var error;
 								if(canUpdateProperties) {
-									var whereMap = request.query || {};
-
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);
-									}
-
-									whereMap[association.options.relationshipVia.name] = request.params.id;
-									whereMap.id = request.params.associationID;
-
-									if(associatedModel.options.automaticPropertyName) {
-										// This is definitely a bad request if the user tries to set the automatic property manually.
-										if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
-											error = new Error('Cannot set automatic property manually.');
-											error.status = 400;
-											throw error;
-										}
-
-										whereMap[associatedModel.options.automaticPropertyName] = authenticator;
 									}
 
 									return associatedModel.updateOne(whereMap, request.body);

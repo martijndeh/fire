@@ -9,9 +9,7 @@ html(ng-app="default")
         title Node on Fire • TodoMVC
     body
         div(ng-view)
-    script(src="/bower_components/angular/angular.min.js")
-    script(src="/bower_components/angular-route/angular-route.min.js")
     if NODE_ENV == 'development'
-        script(src="/scripts/fire.js")
+        script(src="/scripts/bundle.min.js")
     else
-        script(src="/scripts/fire.min.js")
+        script(src="/scripts/bundle.min.js")
