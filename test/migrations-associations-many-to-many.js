@@ -40,7 +40,7 @@ describe('migrations-associations-many-to-many', function() {
                 migrations = new Migrations(app, app.models);
                 migrations.setup(null)
                     .then(function() {
-                        return models.Schema.exists()
+                        return models.Schema.isCreated()
                             .then(function(exists) {
                                 return !exists && models.Schema.setup();
                             });
@@ -99,7 +99,7 @@ describe('migrations-associations-many-to-many', function() {
             return migrations.migrate(0, 1)
                 .then(function() {
                     assert.notEqual(models.SomeThrough, null);
-                    return models.SomeThrough.exists();
+                    return models.SomeThrough.isCreated();
                 })
                 .then(function(exists) {
                     assert.equal(exists, true);
@@ -207,7 +207,7 @@ describe('migrations-associations-many-to-many', function() {
         migrations.migrate(0, 1)
             .then(function() {
                 models.postInstallModel(models.Through);
-                
+
                 return models.A.create({
                     name: 'Aart'
                 });
