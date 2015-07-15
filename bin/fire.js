@@ -109,7 +109,7 @@ function createApp(name) {
 		})
 		.then(function() {
 			if(argv['global-bower']) {
-				return runCommand('bower', ['install'], path.join(process.cwd(), name));
+				return runCommand('bower.cmd', ['install'], path.join(process.cwd(), name));
 			}
 			else {
 				return runCommand(path.join(__dirname, '..', 'node_modules', '.bin', 'bower'), ['install'], path.join(process.cwd(), name));
