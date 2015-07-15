@@ -3,7 +3,7 @@
 /* jshint undef: true, unused: true */
 /* global angular */
 
-var app = angular.module('app1', ['ngRoute']);
+var app = angular.module('app1', ['angular-route']);
 
 
 

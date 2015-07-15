@@ -2,7 +2,7 @@
 
 var fire = require('fire');
 var app = fire.app('{{name}}', {
-	modules: ['ngRoute']
+	modules: ['angular-route']
 });
 
 app.controller('/', function StartController() {

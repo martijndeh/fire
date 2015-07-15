@@ -1,9 +1,5 @@
-'use strict';
-
-/* jshint undef: true, unused: true */
-/* global angular */
-
-var app = angular.module('default', ['ngRoute']);
+var angular = require('angular');
+var app = angular.module('default', [require('angular-route')]);
 
 
 app.directive('todoEscape', [function() {
@@ -169,7 +165,7 @@ app.factory('_djb2Hash', function() {
     };
 });
 
-app.service('_CacheService', ['$injector', '$timeout', function($injector, $timeout) {
+app.service('_CacheService', ['$injector', function($injector) {
     var CAPACITY = 25;
     var LOCAL_STORAGE_KEY = '_CacheService';
     var objects = {};
@@ -186,18 +182,12 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
             try {
                 var data = JSON.parse(item);
                 if(data && data.objects && data.keys && data.indices) {
-                    console.log('Parse data:');
-                    console.log(data);
-
                     objects = data.objects;
                     keys = data.keys;
                     indices = data.indices;
                 }
             }
             catch(e) {
-                console.log('Error is:');
-                console.log(e);
-
                 window.localStorage.setItem(LOCAL_STORAGE_KEY, null);
             }
         }
@@ -205,13 +195,16 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
 
     function persist() {
         if(window.localStorage) {
-            console.log('Persist!');
-
-            window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
-                objects: objects,
-                keys: keys,
-                indices: indices
-            }));
+            try {
+                window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+                    objects: objects,
+                    keys: keys,
+                    indices: indices
+                }));
+            }
+            catch(e) {
+                //
+            }
         }
     }
 
@@ -235,8 +228,6 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
     function index(key) {
         var strings = getKeys(key);
 
-        console.log('index ' + strings.join(' '));
-
         if(strings.length) {
             var stringBeforeDot = strings[0];
             var stringAfterDot = strings[1];
@@ -259,29 +250,20 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
     }
 
     function unindex(key) {
-        console.log('unindex ' + key);
-
         var strings = getKeys(key);
 
         if(strings.length) {
             var stringBeforeDot = strings[0];
             var stringAfterDot = strings[1];
 
-            console.log(stringBeforeDot + ' ' + stringAfterDot);
-
             if(typeof indices[stringBeforeDot] != 'undefined') {
-                console.log('We have an index!');
-
                 if(stringAfterDot == '*') {
                     indices[stringBeforeDot].forEach(function(oldKey) {
                         var completeKey = stringBeforeDot + '.' + oldKey;
                         delete objects[completeKey];
-                        console.log('Remove object ' + oldKey);
 
                         var indexOfCompleteKey = keys.indexOf(completeKey);
                         if(indexOfCompleteKey != -1) {
-                            console.log('Remove key ' + completeKey);
-
                             keys.splice(indexOfCompleteKey, 1);
                         }
                     });
@@ -295,10 +277,6 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
                     }
                 }
             }
-            else {
-                console.log('no index...');
-                console.log(indices);
-            }
         }
 
         return false;
@@ -307,13 +285,8 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
     this.remove = function(key) {
         if(!unindex(key)) {
             if(typeof objects[key] != 'undefined') {
-                console.log('delete object');
-
                 delete objects[key];
                 keys.splice(keys.indexOf(key), 1);
-            }
-            else {
-                console.log('doesnt exist...');
             }
         }
     };
@@ -344,8 +317,6 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
 
     this.put = function(key, value, expire) {
         if(typeof expire != 'undefined' && (expire == -1 || expire > 0)) {
-            console.log('put cache ' + key);
-
             if(keys.length > CAPACITY) {
                 var oldKeys = keys.splice(0, keys.length - CAPACITY);
                 oldKeys.forEach(function(oldKey) {
@@ -355,7 +326,6 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
             }
 
             if(index(key)) {
-                console.log('add key');
                 keys.push(key);
             }
 
@@ -373,7 +343,7 @@ app.service('_CacheService', ['$injector', '$timeout', function($injector, $time
     };
 }]);
 
-app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout', '_djb2Hash', function($http, $q, $injector, _CacheService, $timeout, _djb2Hash) {
+app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '_djb2Hash', function($http, $q, $injector, _CacheService, _djb2Hash) {
     return function FireModel(name, autoFetchedAssociationNames, endpoint) {
         this.name = name;
         this.autoFetchedAssociationNames = autoFetchedAssociationNames;
@@ -386,8 +356,6 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout
 
         this.purge = function() {
             if(_CacheService.numberOfCaches() > 0) {
-                console.log('Removing all cache for ' + this.name);
-
                 var purgedModelNames = [];
 
                 var purge = function(modelName) {
@@ -395,8 +363,6 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout
                         purgedModelNames.push(modelName);
 
                         var model = $injector.get(modelName + 'Model');
-
-                        console.log('    Remove association: ' + modelName);
 
                         _CacheService.remove(model.name + '.*', false);
                         model.autoFetchedAssociationNames.forEach(function(associatedModelName) {
@@ -431,6 +397,9 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout
         	if(Object.prototype.toString.call(setMapOrList) === '[object Array]') {
         		return setMapOrList.map(parseSetMap);
         	}
+            else if(typeof setMapOrList == 'string') {
+                return setMapOrList;
+            }
         	else {
         		return parseSetMap(setMapOrList);
         	}
@@ -454,25 +423,21 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout
         };
 
         this._action = function(verb, path, params, data) {
-            console.log('_action ' + verb + ' on ' + self.name);
-
         	var defer = $q.defer();
 
-            $timeout(function() {
-                $http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true, 'Content-Type': 'application/json;charset=utf-8'}})
-            		.success(function(result) {
-                        if(verb != 'get') {
-                            self.purge();
-                        }
+            $http({method: verb, url: path, data: data, params: params, headers: {'x-json-params': true, 'Content-Type': 'application/json;charset=utf-8'}})
+        		.success(function(result) {
+                    if(verb != 'get') {
+                        self.purge();
+                    }
 
-                        defer.resolve(self.parseResult(result, path));
-            		})
-            		.error(function(errorData, statusCode) {
-                        var error = new FireError(errorData);
-                        error.number = statusCode;
-            			defer.reject(error);
-            		});
-            }, 1000);
+                    defer.resolve(self.parseResult(result, path));
+        		})
+        		.error(function(errorData, statusCode) {
+                    var error = new FireError(errorData);
+                    error.number = statusCode;
+        			defer.reject(error);
+        		});
 
         	return defer.promise;
         };
@@ -487,18 +452,9 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout
 
         this._get = function(path, params) {
             var key = this.name + '.' + _djb2Hash(path + ((Object.keys(params || {}).length > 0) ? JSON.stringify(params) : ''));
-
-            console.log('_get `' + key + '`');
-            console.log(params);
-
             var data = _CacheService.get(key, params.$options && params.$options.cache);
             if(data && (!params.$options || typeof params.$options.returnCache == 'undefined' || params.$options.returnCache)) {
-                console.log('returning cached data...');
-                console.log(data);
-
                 if(params.$options && params.$options.autoReload) {
-                    console.log('auto reload');
-
                     params.$options.returnCache = false;
                     delete params.$options.autoReload;
 
@@ -526,8 +482,6 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout
             else {
             	return this._action('get', path, this._prepare(params))
                     .then(function(result) {
-                        console.log('Storing cache to ' + key);
-
                         _CacheService.put(key, result, params.$options && params.$options.cache);
                         return result;
                     });
@@ -627,6 +581,31 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '$timeout
         	return this._get(path, queryMap);
         };
 
+        this.exists = function(whereMap) {
+            return this.count(whereMap)
+                .then(function(count) {
+                    return (count > 0);
+                });
+        };
+
+        this.count = function(propertyName_, whereMap_) {
+            var propertyName = null;
+            var whereMap = null;
+
+            if(propertyName_ && typeof propertyName_ == 'object') {
+        		whereMap = propertyName_;
+        	}
+        	else {
+        		propertyName = propertyName_;
+        		whereMap = whereMap_ || {};
+        	}
+
+            return this._find(this.endpoint + '/_count', whereMap, {propertyName: propertyName})
+                .then(function(result) {
+                    return parseInt(result);
+                });
+        };
+
         this.find = function(fields, options) {
         	return this._find(this.endpoint, fields, options);
         };
@@ -709,7 +688,7 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
         };
 
         if(this._map.id) {
-            this._endpoint = path + '/' + this._map.id;
+            this._endpoint = TodoItemModel.endpoint + '/' + this._map.id;
         }
         else {
             this._endpoint = null;
@@ -843,16 +822,12 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
             this._changes = {};
         };
 
-        this.reload = function() {
-            //
-        };
-
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
             this._changes = {};
 
             if(this._map.id) {
-                this._endpoint = path + '/' + this._map.id;
+                this._endpoint = TodoItemModel.endpoint + '/' + this._map.id;
             }
             else {
                 this._endpoint = null;
@@ -883,9 +858,6 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
 
                     return TodoItemModel._put(this._endpoint, queryMap)
                         .then(function(instance) {
-                            console.log('Instance is:');
-                            console.log(instance);
-
                             self._changes = {};
 
                             Object.keys(instance._map).forEach(function(key) {
@@ -906,6 +878,18 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
 
         
         
+        this.getList = function() {
+            console.log('Warning: getList is deprecated. Please use get instead.');
+        };
+
+        this.createList = function() {
+            console.log('Warning: createList is deprecated. Please use create instead.');
+        };
+
+        this.removeList = function() {
+            console.log('Warning: removeList is deprecated. Please use remove instead.');
+        };
+
         this.getList = function(queryMap, optionsMap) {
             return $injector.get('TodoListModel')._find(TodoItemModel.endpoint + '/' + this.id + '/list', queryMap, optionsMap)
                 .then(function(modelInstance) {
@@ -992,7 +976,7 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
         };
 
         if(this._map.id) {
-            this._endpoint = path + '/' + this._map.id;
+            this._endpoint = TodoListModel.endpoint + '/' + this._map.id;
         }
         else {
             this._endpoint = null;
@@ -1090,16 +1074,12 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
             this._changes = {};
         };
 
-        this.reload = function() {
-            //
-        };
-
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
             this._changes = {};
 
             if(this._map.id) {
-                this._endpoint = path + '/' + this._map.id;
+                this._endpoint = TodoListModel.endpoint + '/' + this._map.id;
             }
             else {
                 this._endpoint = null;
@@ -1130,9 +1110,6 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
 
                     return TodoListModel._put(this._endpoint, queryMap)
                         .then(function(instance) {
-                            console.log('Instance is:');
-                            console.log(instance);
-
                             self._changes = {};
 
                             Object.keys(instance._map).forEach(function(key) {
@@ -1281,7 +1258,7 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
         };
 
         if(this._map.id) {
-            this._endpoint = path + '/' + this._map.id;
+            this._endpoint = TestModel.endpoint + '/' + this._map.id;
         }
         else {
             this._endpoint = null;
@@ -1416,16 +1393,12 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
             this._changes = {};
         };
 
-        this.reload = function() {
-            //
-        };
-
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
             this._changes = {};
 
             if(this._map.id) {
-                this._endpoint = path + '/' + this._map.id;
+                this._endpoint = TestModel.endpoint + '/' + this._map.id;
             }
             else {
                 this._endpoint = null;
@@ -1456,9 +1429,6 @@ app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', f
 
                     return TestModel._put(this._endpoint, queryMap)
                         .then(function(instance) {
-                            console.log('Instance is:');
-                            console.log(instance);
-
                             self._changes = {};
 
                             Object.keys(instance._map).forEach(function(key) {
@@ -1666,7 +1636,7 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
         };
 
         if(this._map.id) {
-            this._endpoint = path + '/' + this._map.id;
+            this._endpoint = TestParticipantModel.endpoint + '/' + this._map.id;
         }
         else {
             this._endpoint = null;
@@ -1742,16 +1712,12 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
             this._changes = {};
         };
 
-        this.reload = function() {
-            //
-        };
-
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
             this._changes = {};
 
             if(this._map.id) {
-                this._endpoint = path + '/' + this._map.id;
+                this._endpoint = TestParticipantModel.endpoint + '/' + this._map.id;
             }
             else {
                 this._endpoint = null;
@@ -1782,9 +1748,6 @@ app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '
 
                     return TestParticipantModel._put(this._endpoint, queryMap)
                         .then(function(instance) {
-                            console.log('Instance is:');
-                            console.log(instance);
-
                             self._changes = {};
 
                             Object.keys(instance._map).forEach(function(key) {
@@ -1913,7 +1876,7 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         };
 
         if(this._map.id) {
-            this._endpoint = path + '/' + this._map.id;
+            this._endpoint = TestSessionModel.endpoint + '/' + this._map.id;
         }
         else {
             this._endpoint = null;
@@ -2070,16 +2033,12 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
             this._changes = {};
         };
 
-        this.reload = function() {
-            //
-        };
-
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
             this._changes = {};
 
             if(this._map.id) {
-                this._endpoint = path + '/' + this._map.id;
+                this._endpoint = TestSessionModel.endpoint + '/' + this._map.id;
             }
             else {
                 this._endpoint = null;
@@ -2110,9 +2069,6 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
 
                     return TestSessionModel._put(this._endpoint, queryMap)
                         .then(function(instance) {
-                            console.log('Instance is:');
-                            console.log(instance);
-
                             self._changes = {};
 
                             Object.keys(instance._map).forEach(function(key) {
@@ -2133,6 +2089,18 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
 
         
         
+        this.getTest = function() {
+            console.log('Warning: getTest is deprecated. Please use get instead.');
+        };
+
+        this.createTest = function() {
+            console.log('Warning: createTest is deprecated. Please use create instead.');
+        };
+
+        this.removeTest = function() {
+            console.log('Warning: removeTest is deprecated. Please use remove instead.');
+        };
+
         this.getTest = function(queryMap, optionsMap) {
             return $injector.get('TestModel')._find(TestSessionModel.endpoint + '/' + this.id + '/test', queryMap, optionsMap)
                 .then(function(modelInstance) {
@@ -2170,6 +2138,18 @@ app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', 
         
         
         
+        this.getParticipant = function() {
+            console.log('Warning: getParticipant is deprecated. Please use get instead.');
+        };
+
+        this.createParticipant = function() {
+            console.log('Warning: createParticipant is deprecated. Please use create instead.');
+        };
+
+        this.removeParticipant = function() {
+            console.log('Warning: removeParticipant is deprecated. Please use remove instead.');
+        };
+
         this.getParticipant = function(queryMap, optionsMap) {
             return $injector.get('TestParticipantModel')._find(TestSessionModel.endpoint + '/' + this.id + '/participant', queryMap, optionsMap)
                 .then(function(modelInstance) {
@@ -2236,7 +2216,7 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
         };
 
         if(this._map.id) {
-            this._endpoint = path + '/' + this._map.id;
+            this._endpoint = TestVariantModel.endpoint + '/' + this._map.id;
         }
         else {
             this._endpoint = null;
@@ -2348,16 +2328,12 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
             this._changes = {};
         };
 
-        this.reload = function() {
-            //
-        };
-
         this.refresh = function(otherInstance) {
         	this._map = otherInstance._map;
             this._changes = {};
 
             if(this._map.id) {
-                this._endpoint = path + '/' + this._map.id;
+                this._endpoint = TestVariantModel.endpoint + '/' + this._map.id;
             }
             else {
                 this._endpoint = null;
@@ -2388,9 +2364,6 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
 
                     return TestVariantModel._put(this._endpoint, queryMap)
                         .then(function(instance) {
-                            console.log('Instance is:');
-                            console.log(instance);
-
                             self._changes = {};
 
                             Object.keys(instance._map).forEach(function(key) {
@@ -2411,6 +2384,18 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
 
         
         
+        this.getTest = function() {
+            console.log('Warning: getTest is deprecated. Please use get instead.');
+        };
+
+        this.createTest = function() {
+            console.log('Warning: createTest is deprecated. Please use create instead.');
+        };
+
+        this.removeTest = function() {
+            console.log('Warning: removeTest is deprecated. Please use remove instead.');
+        };
+
         this.getTest = function(queryMap, optionsMap) {
             return $injector.get('TestModel')._find(TestVariantModel.endpoint + '/' + this.id + '/test', queryMap, optionsMap)
                 .then(function(modelInstance) {
@@ -2450,10 +2435,6 @@ app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', 
     };
 }]);
 
-
-app.service('FireModels', [function() {
-    throw new Error('FireModels service is deprecated.');
-}]);
 function unwrap(promise, initialValue) {
     var value = initialValue;
 
@@ -2464,7 +2445,7 @@ function unwrap(promise, initialValue) {
     return value;
 };
 
-app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q) {
+app.service('fire', [function() {
     function unwrap(promise, initialValue) {
         var value = initialValue;
 
@@ -2475,7 +2456,6 @@ app.service('fire', ['FireModels', '$http', '$q', function(FireModels, $http, $q
         return value;
     };
     this.unwrap = unwrap;
-    this.models = FireModels;
 
     this.isServer = function() {
         return false;
@@ -2521,126 +2501,6 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 
 
 }]);
-app.service('ChannelService', ['WebSocketService', '$rootScope', function(WebSocketService, $rootScope) {
-	var channelsMap = {};
-
-	function getChannelAddress(channelId, channelType) {
-		return (channelType + ':' + channelId);
-	}
-
-	this.registerChannel = function(channel) {
-		channelsMap[getChannelAddress(channel.id, channel.type)] = channel;
-
-		this.sendMessageOnChannel({
-			event: '_subscribe'
-		}, channel);
-	};
-
-	this.getChannel = function(channelId, channelType) {
-		return channelsMap[getChannelAddress(channelId, channelType)];
-	};
-
-	this.getUnknownMessage = function(messageMap, channelMap) { //jshint ignore:line
-		console.log('Unknown message.');
-	};
-
-	this.sendMessageOnChannel = function(message, channel) {
-		return WebSocketService.send({
-			channel: {
-				type: channel.type,
-				id: channel.id
-			},
-			message: message
-		});
-	};
-
-	var self = this;
-	WebSocketService.parsePacket = function(packet) {
-		var channel = self.getChannel(packet.channel.id, packet.channel.type);
-		if(channel) {
-			if(channel.delegate) {
-				$rootScope.$apply(function() {
-					channel.delegate(packet.message);
-				});
-			}
-			else {
-				console.log('Warning: no delegate set on channel.');
-			}
-		}
-		else {
-			$rootScope.$apply(function() {
-				self.getUnknownMessage(packet.message, packet.channel);
-			});
-		}
-	};
-}]);
-
-app.service('WebSocketService', ['$location', '$timeout', function($location, $timeout) {
-	var queue = [];
-
-	var reconnectInterval = 1000;
-	var reconnectDecay = 1.5;
-	var reconnectAttempts = 0;
-	var reconnectMaximum = 60 * 1000;
-	var socket = null;
-
-	var self = this;
-	var onOpen = function () {
-		if(queue && queue.length > 0) {
-			var queue_ = queue;
-			queue = null;
-
-			queue_.forEach(function(message) {
-				self.send(message);
-			});
-		}
-	};
-
-	var onError = function(error) {
-		console.log('error');
-		console.log(error);
-	};
-
-	var onClose = function(event) {
-		$timeout(connect, Math.max(reconnectMaximum, reconnectInterval * Math.pow(reconnectDecay, reconnectAttempts)));
-	};
-
-	var onMessage = function(event) {
-		var packet = JSON.parse(event.data);
-
-		// TODO: Change this to an event emitter instead. Now it's only possible to delegate the packets to 1 listeners.
-
-		if(self.parsePacket) {
-			self.parsePacket(packet);
-		}
-	};
-
-	function connect() {
-		reconnectAttempts++;
-
-		socket = new WebSocket('ws://' + $location.host() + ($location.port() ? ':' + $location.port() : ''));
-		socket.onopen = onOpen;
-		socket.onerror = onError;
-		socket.onclose = onClose;
-		socket.onmessage = onMessage;
-	}
-
-	this.send = function(message) {
-		if(queue !== null) {
-			queue.push(message);
-		}
-		else {
-			console.log(socket);
-
-			socket.send(JSON.stringify(message));
-		}
-	};
-	this.parsePacket = null;
-
-	connect();
-}]);
-
-
 /* global window, app */
 app.service('_StorageService', [function _StorageService() {
 	var storage = {};

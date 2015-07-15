@@ -6,10 +6,10 @@
 var fire = require('fire');
 
 /**
- * Create our app—with the ngRoute module.
+ * Create our app—with the angular-route module.
  */
 var app = fire.app('nodeonfire.org', {
-	modules: ['ngRoute']
+	modules: ['angular-route']
 });
 
 /**

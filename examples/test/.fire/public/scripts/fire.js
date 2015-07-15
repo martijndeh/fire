@@ -3,7 +3,7 @@
 /* jshint undef: true, unused: true */
 /* global angular */
 
-var app = angular.module('default', ['ngRoute']);
+var app = angular.module('default', ['angular-route']);
 
 
 app.config(['TestsServiceProvider', function(TestsServiceProvider) {

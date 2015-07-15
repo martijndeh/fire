@@ -4,7 +4,7 @@
 var fire = require('fire');
 
 var app = fire.app('nodeonfire.org', {
-	modules: ['ngRoute'],
+	modules: ['angular-route'],
 	MIXPANEL_API_KEY: process.env.MIXPANEL_API_KEY
 });
 
