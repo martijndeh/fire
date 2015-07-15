@@ -15,6 +15,6 @@
     "todomvc-common": "^1.0.0"
   },
   "scripts": {
-    "postinstall": "./node_modules/grunt-cli/bin/grunt build && ./node_modules/grunt-cli/bin/grunt release"
+    "postinstall": "./node_modules/.bin/grunt build release"
   }
 }
