@@ -92,6 +92,11 @@ function createApp(name) {
 		return;
 	}
 
+	var postfix = '';
+	if(process.platform == 'win32') {
+		postfix = '.cmd';
+	}
+
 	mkdir(name)
 		.then(function() {
 			return mkdir(path.join(name, 'templates'));
@@ -108,15 +113,10 @@ function createApp(name) {
 			]);
 		})
 		.then(function() {
-			if(argv['global-bower']) {
-				return runCommand('bower.cmd', ['install'], path.join(process.cwd(), name));
-			}
-			else {
-				return runCommand(path.join(__dirname, '..', 'node_modules', '.bin', 'bower'), ['install'], path.join(process.cwd(), name));
-			}
+			return runCommand(path.join(__dirname, '..', 'node_modules', '.bin', 'bower' + postfix), ['install'], path.join(process.cwd(), name));
 		})
 		.then(function() {
-			return runCommand('npm', ['install'], path.join(process.cwd(), name));
+			return runCommand('npm' + postfix, ['install'], path.join(process.cwd(), name));
 		})
 		.then(function() {
 			console.log(' ');
