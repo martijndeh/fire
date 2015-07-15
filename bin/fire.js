@@ -108,14 +108,19 @@ function createApp(name) {
 			]);
 		})
 		.then(function() {
-			return runCommand(path.join(__dirname, '..', 'node_modules', '.bin', 'bower'), ['install'], path.join(process.cwd(), name));
+			if(argv['global-bower']) {
+				return runCommand('bower', ['install'], path.join(process.cwd(), name));
+			}
+			else {
+				return runCommand(path.join(__dirname, '..', 'node_modules', '.bin', 'bower'), ['install'], path.join(process.cwd(), name));
+			}
 		})
 		.then(function() {
 			return runCommand('npm', ['install'], path.join(process.cwd(), name));
 		})
 		.then(function() {
 			console.log(' ');
-			console.log('	Created app `' + name + '`. You can now run `fire run` and visit your app at `http://127.0.0.1:3000/`.');
+			console.log('	Created app `' + name + '`. You can now run `fire run`.');
 			console.log(' ');
 		})
 		.catch(function(error) {
