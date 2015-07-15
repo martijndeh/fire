@@ -120,7 +120,7 @@ function createApp(name) {
 		})
 		.then(function() {
 			console.log(' ');
-			console.log('	Created app `' + name + '`. You can now run `fire run`.');
+			console.log('	Created app `' + name + '`. `cd ' + name + '` and run `fire run`.');
 			console.log(' ');
 		})
 		.catch(function(error) {
@@ -220,14 +220,20 @@ if(argv._.length) {
 		subcommand = commands[1];
 	}
 
+	var postfix = '';
+	if(process.platform == 'win32') {
+		postfix = '.cmd';
+	}
+
+	var gruntPath = path.join('node_modules', '.bin', 'grunt' + postfix);
 	if(command == 'run') {
-		runCommand('./node_modules/grunt-cli/bin/grunt', ['run']);
+		runCommand(gruntPath, ['run']);
 	}
 	else if(command == 'build') {
-		runCommand('./node_modules/grunt-cli/bin/grunt', ['build']);
+		runCommand(gruntPath, ['build']);
 	}
 	else if(command == 'release') {
-		runCommand('./node_modules/grunt-cli/bin/grunt', ['release']);
+		runCommand(gruntPath, ['release']);
 	}
 	else if((command == 'app' || command == 'apps') && (!subcommand || subcommand == 'create')) {
 		createApp(argv._[1] || '');
