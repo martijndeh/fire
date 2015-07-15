@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.42.4
+
+### Bug fixes
+
+- Fixes `fire apps:create` on Windows.
+
 ## 0.42.3
 
 ### Bug fixes
