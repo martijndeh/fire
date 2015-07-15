@@ -142,7 +142,7 @@ Helper.prototype.afterEach = function() {
 
         self.app.models.forEach(function(model) {
             result = result.then(function() {
-                return model.exists().then(function(exists) {
+                return model.isCreated().then(function(exists) {
                     if(exists) {
                         return model.forceDestroy();
                     }

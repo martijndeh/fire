@@ -34,7 +34,7 @@ describe('access control', function() {
 
 				app.models.forEach(function(model) {
 		            result = result.then(function() {
-		                return model.exists()
+		                return model.isCreated()
 		                	.then(function(exists) {
 		                    	if(!exists) {
 		                        	return model.setup();
@@ -98,7 +98,7 @@ describe('access control', function() {
 
         app.models.forEach(function(model) {
             result = result.then(function() {
-                return model.exists()
+                return model.isCreated()
 					.then(function(exists) {
 	                    if(exists) {
 	                        return model.forceDestroy();
