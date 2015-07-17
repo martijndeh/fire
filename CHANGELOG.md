@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.42.5
+
+### Bug fixes
+
+- Fixes issue where participating tests when not signed in fails.
+
 ## 0.42.4
 
 ### Bug fixes
