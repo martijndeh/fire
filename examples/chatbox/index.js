@@ -9,7 +9,6 @@ var fire = require('fire');
  */
 var app = fire.app('chatbox', {
 	modules: ['angular-route'],
-	require: ['jquery'],
 	NODE_ENV: process.env.NODE_ENV
 });
 

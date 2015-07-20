@@ -3,8 +3,9 @@ var app = angular.module('default', [require('angular-route')]);
 
 
 app.directive('autoFocus', [function() {
+    var $ = require('jquery');
     return function(scope, element) {
-        element.focus();
+        $(element).focus();
     };
 }]);
 
