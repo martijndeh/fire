@@ -104,16 +104,13 @@ function createApp(name) {
 		.then(function() {
 			return Q.all([
 				template('skeleton/index-js.template', name + '/index.js', {name: name}),
-				template('skeleton/bower-json.template', name + '/bower.json', {name: name}),
+				template('skeleton/package-json.template', name + '/package.json', {name: name}),
 				template('skeleton/env.template', name + '/.env', {sessionKey: crypto.randomBytes(127).toString('base64')}),
 				template('skeleton/package-json.template', name + '/package.json', {name: name}),
 				template('skeleton/Gruntfile-js.template', name + '/Gruntfile.js', {}),
 				template('skeleton/view-jade.template', name + '/templates/view.jade', {}),
 				template('skeleton/start-jade.template', name + '/templates/start.jade', {})
 			]);
-		})
-		.then(function() {
-			return runCommand(path.join(__dirname, '..', 'node_modules', '.bin', 'bower' + postfix), ['install'], path.join(process.cwd(), name));
 		})
 		.then(function() {
 			return runCommand('npm' + postfix, ['install'], path.join(process.cwd(), name));
