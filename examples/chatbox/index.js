@@ -8,7 +8,7 @@ var fire = require('fire');
  * Chatbox is a simple application.
  */
 var app = fire.app('chatbox', {
-	modules: ['angular-route'],
+	modules: ['angular-route', 'angular-moment'],
 	NODE_ENV: process.env.NODE_ENV
 });
 
@@ -98,13 +98,18 @@ function StartController($scope, user, MessageModel, UserModel, $window) {
 	$scope.messageStream = MessageModel.stream({}, {limit: 30, orderBy:{createdAt: 1}});
 
 	$scope.createMessage = function(text) {
-		return MessageModel.create({text: text})
-			.then(function() {
-				$scope.chatForm.$setPristine();
-			})
-			.catch(function() {
-				$window.alert('Aye, some things went wrong. Can you try again?');
-			});
+		if(!$scope.user) {
+
+		}
+		else {
+			return MessageModel.create({text: text})
+				.then(function() {
+					$scope.chatForm.$setPristine();
+				})
+				.catch(function() {
+					$window.alert('Aye, some things went wrong. Can you try again?');
+				});
+		}
 	};
 
 	$scope.createUser = function(email, name, password) {
@@ -147,7 +152,7 @@ app.template('start', [
 			'',
 			'<div class="contents">',
 				'<span class="name">{{message.user.name}}</span>',
-				'<span class="date">{{message.createdAt}}</span>',
+				'<span class="date">{{message.createdAt | amDateFormat:\'h:mm A\'}}</span>',
 				'<p>{{message.text}}</p>',
 			'</div>',
 		'</li>',

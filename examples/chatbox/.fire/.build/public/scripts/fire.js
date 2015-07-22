@@ -1,5 +1,5 @@
 var angular = require('angular');
-var app = angular.module('default', [require('angular-route')]);
+var app = angular.module('default', [require('angular-route'),require('angular-moment')]);
 
 
 app.directive('autoFocus', [function() {
@@ -16,13 +16,18 @@ app.controller('StartController', ['$scope', 'user', 'MessageModel', 'UserModel'
 	$scope.messageStream = MessageModel.stream({}, {limit: 30, orderBy:{createdAt: 1}});
 
 	$scope.createMessage = function(text) {
-		return MessageModel.create({text: text})
-			.then(function() {
-				$scope.chatForm.$setPristine();
-			})
-			.catch(function() {
-				$window.alert('Aye, some things went wrong. Can you try again?');
-			});
+		if(!$scope.user) {
+
+		}
+		else {
+			return MessageModel.create({text: text})
+				.then(function() {
+					$scope.chatForm.$setPristine();
+				})
+				.catch(function() {
+					$window.alert('Aye, some things went wrong. Can you try again?');
+				});
+		}
 	};
 
 	$scope.createUser = function(email, name, password) {
