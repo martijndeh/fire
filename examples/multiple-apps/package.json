@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "./node_modules/grunt-cli/bin/grunt build release"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fire": "^0.27.1"
+    "fire": "^0.42.5",
+    "grunt-cli": "^0.1.13"
   }
 }
