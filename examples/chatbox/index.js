@@ -95,11 +95,11 @@ Message.prototype.beforeCreate = function(authenticator) {
 
 function StartController($scope, user, MessageModel, UserModel, $window) {
 	$scope.user = user;
-	$scope.messageStream = MessageModel.stream({}, {limit: 30, orderBy:{createdAt: 1}});
+	$scope.messageStream = MessageModel.stream({}, {limit: 30, orderBy:{createdAt: -1}});
 
 	$scope.createMessage = function(text) {
 		if(!$scope.user) {
-
+			$window.alert('Please sign in before sending messages.');
 		}
 		else {
 			return MessageModel.create({text: text})

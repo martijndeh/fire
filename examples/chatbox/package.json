@@ -7,7 +7,7 @@
     "angular": "^1.4.3",
     "angular-moment": "^0.10.1",
     "angular-route": "^1.4.3",
-    "fire": "*",
+    "fire": "file:../..",
     "grunt": "^0.4.5",
     "grunt-browserify": "^3.8.0",
     "grunt-cli": "^0.1.13",
