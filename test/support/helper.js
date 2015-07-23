@@ -104,7 +104,7 @@ Helper.prototype.beforeEach = function(options) {
                 self.modules = [];
 
                 self.app.models.forEach(function(model) {
-                    if(!model.disableAutomaticModelController) {
+                    if(!model.isPrivate) {
                         result = result.then(function() {
                             var writeStream = fs.createWriteStream(path.join(__dirname, '..', '..', 'temp', model.getName().toLowerCase() + '.js'));
 

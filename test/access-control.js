@@ -63,7 +63,7 @@ describe('access control', function() {
 				modules = [];
 
 				app.models.forEach(function(model) {
-					if(!model.disableAutomaticModelController) {
+					if(!model.isPrivate) {
 						result = result.then(function() {
 							var writeStream = fs.createWriteStream(path.join(__dirname, '..', 'temp', model.getName().toLowerCase() + '.js'));
 
