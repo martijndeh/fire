@@ -8,4 +8,7 @@ html(ng-app="default")
         title
     body
         div(ng-view)
-    script(src="/scripts/fire.min.js")
+    if NODE_ENV == 'development'
+        script(src="/scripts/bundle.js")
+    else
+        script(src="/scripts/bundle.min.js")

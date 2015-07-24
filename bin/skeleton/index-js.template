@@ -2,7 +2,8 @@
 
 var fire = require('fire');
 var app = fire.app('{{name}}', {
-	modules: ['angular-route']
+	modules: ['angular-route'],
+	NODE_ENV: process.env.NODE_ENV
 });
 
 app.controller('/', function StartController() {
