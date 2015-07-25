@@ -79,6 +79,18 @@ Helper.prototype.beforeEach = function(options) {
                 return result;
             })
             .then(function() {
+                var result = Q.when(true);
+
+                // Execute all queries configured through App#sql.
+                Object.keys(self.app.models._sqlMap).forEach(function(hash) {
+                    result = result.then(function() {
+                        return self.app.models.execute(self.app.models._sqlMap[hash][0]);
+                    });
+                });
+
+                return result;
+            })
+            .then(function() {
                 return self.app.tests.createTests();
             })
             .then(function() {
