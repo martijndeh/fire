@@ -22,4 +22,6 @@ docs-template
 temp
 run-test.js
 websockets-test
-.fire/.build
+**/.fire/.build
+**/.env
+**/Procfile
