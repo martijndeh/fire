@@ -18,7 +18,7 @@
     "type": "git",
     "url": "https://github.com/martijndeh/fire.git"
   },
-  "version": "0.43.4",
+  "version": "0.43.5",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "main": "index.js",
   "devDependencies": {
@@ -34,7 +34,7 @@
     "supertest": "^0.13.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test ./node_modules/.bin/mocha -g '' --reporter spec ./test/*.js"
+    "test": "NODE_ENV=test ./node_modules/.bin/mocha -g '^' --reporter spec ./test/*.js"
   },
   "dependencies": {
     "amqplib": "^0.3.2",
