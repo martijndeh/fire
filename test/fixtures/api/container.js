@@ -98,6 +98,7 @@ function findAuthenticator(authenticatorModel, request) {
 
 
 
+
 app.post('/api/containers', function(app, response, request, ContainerModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -142,6 +143,82 @@ app.post('/api/containers', function(app, response, request, ContainerModel, Use
 						throw unauthenticatedError(authenticator);
 					}
 				});
+		});
+});
+
+app.get('/api/containers/_count', function(request, response, app,  ContainerModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var propertyName = null;
+
+
+
+			if(whereMap.$options) {
+				propertyName = whereMap.$options.propertyName;
+				delete whereMap.$options;
+			}
+
+			if(ContainerModel.options.automaticPropertyName) {
+				whereMap[ContainerModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var accessControl = ContainerModel.getAccessControl();
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
+
+						return ContainerModel.count(propertyName, whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.search('/api/containers', function(request, response, app,  ContainerModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+			var searchText = whereMap._search;
+			if(typeof whereMap._search != 'undefined') {
+				delete whereMap._search;
+			}
+
+			if(typeof whereMap.$options != 'undefined') {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(ContainerModel.options.automaticPropertyName) {
+				whereMap[ContainerModel.options.automaticPropertyName] = authenticator;
+			}
+
+			if(!searchText || searchText.length === 0) {
+				throw badRequestError();
+			}
+			else {
+				var accessControl = ContainerModel.getAccessControl();
+				return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+					.then(function(canRead) {
+						if(canRead) {
+							if(typeof canRead == 'object') {
+								whereMap = merge(whereMap, canRead);
+							}
+
+							return ContainerModel.search(searchText, whereMap, optionsMap);
+						}
+						else {
+							throw unauthenticatedError(authenticator);
+						}
+					});
+			}
 		});
 });
 
@@ -304,6 +381,12 @@ app.delete('/api/containers', function(request, response, app,  ContainerModel, 
 				whereMap[ContainerModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = ContainerModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canDelete) {
@@ -312,7 +395,7 @@ app.delete('/api/containers', function(request, response, app,  ContainerModel, 
 							whereMap = merge(whereMap, canDelete);
 						}
 
-						return ContainerModel.remove(whereMap);
+						return ContainerModel.remove(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -330,6 +413,12 @@ app.delete('/api/containers/:id', function(request, response, app,  ContainerMod
 				whereMap[ContainerModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = ContainerModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 			.then(function(canDelete) {
@@ -338,7 +427,7 @@ app.delete('/api/containers/:id', function(request, response, app,  ContainerMod
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					return ContainerModel.removeOne(whereMap);
+					return ContainerModel.removeOne(whereMap, optionsMap);
 				}
 				else {
 					throw unauthenticatedError(authenticator);

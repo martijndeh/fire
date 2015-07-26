@@ -98,6 +98,7 @@ function findAuthenticator(authenticatorModel, request) {
 
 
 
+
 app.post('/api/testers', function(app, response, request, TesterModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -142,6 +143,82 @@ app.post('/api/testers', function(app, response, request, TesterModel, UserModel
 						throw unauthenticatedError(authenticator);
 					}
 				});
+		});
+});
+
+app.get('/api/testers/_count', function(request, response, app,  TesterModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var propertyName = null;
+
+
+
+			if(whereMap.$options) {
+				propertyName = whereMap.$options.propertyName;
+				delete whereMap.$options;
+			}
+
+			if(TesterModel.options.automaticPropertyName) {
+				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var accessControl = TesterModel.getAccessControl();
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
+
+						return TesterModel.count(propertyName, whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.search('/api/testers', function(request, response, app,  TesterModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+			var searchText = whereMap._search;
+			if(typeof whereMap._search != 'undefined') {
+				delete whereMap._search;
+			}
+
+			if(typeof whereMap.$options != 'undefined') {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(TesterModel.options.automaticPropertyName) {
+				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
+			}
+
+			if(!searchText || searchText.length === 0) {
+				throw badRequestError();
+			}
+			else {
+				var accessControl = TesterModel.getAccessControl();
+				return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+					.then(function(canRead) {
+						if(canRead) {
+							if(typeof canRead == 'object') {
+								whereMap = merge(whereMap, canRead);
+							}
+
+							return TesterModel.search(searchText, whereMap, optionsMap);
+						}
+						else {
+							throw unauthenticatedError(authenticator);
+						}
+					});
+			}
 		});
 });
 
@@ -304,6 +381,12 @@ app.delete('/api/testers', function(request, response, app,  TesterModel, UserMo
 				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = TesterModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canDelete) {
@@ -312,7 +395,7 @@ app.delete('/api/testers', function(request, response, app,  TesterModel, UserMo
 							whereMap = merge(whereMap, canDelete);
 						}
 
-						return TesterModel.remove(whereMap);
+						return TesterModel.remove(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -330,6 +413,12 @@ app.delete('/api/testers/:id', function(request, response, app,  TesterModel, Us
 				whereMap[TesterModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = TesterModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 			.then(function(canDelete) {
@@ -338,7 +427,7 @@ app.delete('/api/testers/:id', function(request, response, app,  TesterModel, Us
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					return TesterModel.removeOne(whereMap);
+					return TesterModel.removeOne(whereMap, optionsMap);
 				}
 				else {
 					throw unauthenticatedError(authenticator);

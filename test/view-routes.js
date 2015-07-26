@@ -18,7 +18,7 @@ describe('view routes', function() {
 
         // Let's create some controllers
         function TestController() {}
-        app.controller(TestController);
+        app.controller('/', TestController);
 
         app.template('view', DEFAULT_HTML);
 
@@ -28,35 +28,19 @@ describe('view routes', function() {
             };
         };
 
-        app.template('/templates/test1', 'test1');
-        app.template('/templates/test2', 'test2');
-        app.template('/templates/test3', 'test3');
-        app.template('/templates/test4', 'test4');
-
-        TestController.prototype.view = function() {
-            return this.template('/templates/test1');
-        };
-
-        TestController.prototype.viewUser = function() {
-            return this.template('/templates/test2');
-        };
-
-        TestController.prototype.viewSpecial = ['/special/page', function() {
-            return this.template('/templates/test3');
-        }];
+        app.template('test1', 'test1');
+        app.template('test2', 'test2');
+        app.template('test3', 'test3');
+        app.template('test4', 'test4');
 
         function Test2Controller() {}
-        app.controller(Test2Controller);
+        app.controller('/test2', Test2Controller);
 
         Test2Controller.prototype.page = function() {
             return {
-                template: '/templates/test4'
+                template: 'test4'
             };
         };
-
-        Test2Controller.prototype.viewTest = ['/test', function() {
-            return this.template('/templates/test3');
-        }];
 
         fire.start()
             .then(function() {
@@ -83,18 +67,9 @@ describe('view routes', function() {
             });
     });
 
-    it('can find /special/page', function(done) {
-        request(app.HTTPServer.express)
-            .get('/special/page')
-            .expect(200, function(error, response) {
-                assert.equal(response.text, DEFAULT_HTML);
-                done(error);
-            });
-    });
-
     it('can find test1 template', function(done) {
         request(app.HTTPServer.express)
-            .get('/templates/test1')
+            .get('/templates/test1.html')
             .expect(200, function(error, response) {
                 assert.equal(response.text, 'test1');
                 done(error);
@@ -103,7 +78,7 @@ describe('view routes', function() {
 
     it('can find test2 template', function(done) {
         request(app.HTTPServer.express)
-            .get('/templates/test2')
+            .get('/templates/test2.html')
             .expect(200, function(error, response) {
                 assert.equal(response.text, 'test2');
                 done(error);
@@ -112,7 +87,7 @@ describe('view routes', function() {
 
     it('can find test3 template', function(done) {
         request(app.HTTPServer.express)
-            .get('/templates/test3')
+            .get('/templates/test3.html')
             .expect(200, function(error, response) {
                 assert.equal(response.text, 'test3');
                 done(error);

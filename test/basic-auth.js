@@ -5,7 +5,7 @@ var helper = require('./support/helper');
 var assert = require('assert');
 var request = require('supertest');
 
-describe('controller basic auth', function() {
+describe('basic auth', function() {
 	var accessToken, id;
 
 	beforeEach(helper.beforeEach({migrate: true}));
@@ -16,14 +16,7 @@ describe('controller basic auth', function() {
 			function TestController() {
 				//
 			}
-			helper.app.controller(TestController);
-
-			TestController.prototype.getTest = ['/api/test', function() {
-				return this.findAuthenticator()
-					.then(function(authenticator) {
-						return {authenticated: !!authenticator};
-					});
-			}];
+			helper.app.controller('/', TestController);
 
 			function User() {
 				this.name = [this.String, this.Authenticate];
@@ -40,28 +33,6 @@ describe('controller basic auth', function() {
 				id = user.id;
 			});
 		};
-	});
-
-	it('can check authorization', function(done) {
-		return request(helper.app.HTTPServer.express)
-			.get('/api/test')
-			.set('Authorization', 'Basic ' + new Buffer(('Martijn:' + accessToken), 'utf8').toString('base64'))
-			.send()
-			.expect(200, function(error, response) {
-				assert.equal(response.body.authenticated, true);
-				done(error);
-			});
-	});
-
-	it('can check authorization failure', function(done) {
-		return request(helper.app.HTTPServer.express)
-			.get('/api/test')
-			.set('Authorization', 'Basic ' + new Buffer(('Someone else:' + accessToken), 'utf8').toString('base64'))
-			.send()
-			.expect(200, function(error, response) {
-				assert.equal(response.body.authenticated, false);
-				done(error);
-			});
 	});
 
 	it('cannot get user without authentication', function(done) {

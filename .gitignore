@@ -25,3 +25,4 @@ websockets-test
 **/.fire/.build
 **/.env
 **/Procfile
+.idea

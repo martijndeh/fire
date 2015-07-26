@@ -94,6 +94,7 @@ function findAuthenticator(authenticatorModel, request) {
 	return authenticatorModel.findOne({accessToken: request.session.at});
 }
 
+
 app.get('/api/users/me', function(request, UserModel, UserLoginTokenModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -239,6 +240,82 @@ app.post('/api/users', function(app, response, request, UserModel) {
 						throw unauthenticatedError(authenticator);
 					}
 				});
+		});
+});
+
+app.get('/api/users/_count', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var propertyName = null;
+
+
+
+			if(whereMap.$options) {
+				propertyName = whereMap.$options.propertyName;
+				delete whereMap.$options;
+			}
+
+			if(UserModel.options.automaticPropertyName) {
+				whereMap[UserModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var accessControl = UserModel.getAccessControl();
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
+
+						return UserModel.count(propertyName, whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.search('/api/users', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+			var searchText = whereMap._search;
+			if(typeof whereMap._search != 'undefined') {
+				delete whereMap._search;
+			}
+
+			if(typeof whereMap.$options != 'undefined') {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(UserModel.options.automaticPropertyName) {
+				whereMap[UserModel.options.automaticPropertyName] = authenticator;
+			}
+
+			if(!searchText || searchText.length === 0) {
+				throw badRequestError();
+			}
+			else {
+				var accessControl = UserModel.getAccessControl();
+				return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+					.then(function(canRead) {
+						if(canRead) {
+							if(typeof canRead == 'object') {
+								whereMap = merge(whereMap, canRead);
+							}
+
+							return UserModel.search(searchText, whereMap, optionsMap);
+						}
+						else {
+							throw unauthenticatedError(authenticator);
+						}
+					});
+			}
 		});
 });
 
@@ -401,6 +478,12 @@ app.delete('/api/users', function(request, response, app,  UserModel) {
 				whereMap[UserModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = UserModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canDelete) {
@@ -409,7 +492,7 @@ app.delete('/api/users', function(request, response, app,  UserModel) {
 							whereMap = merge(whereMap, canDelete);
 						}
 
-						return UserModel.remove(whereMap);
+						return UserModel.remove(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -427,6 +510,12 @@ app.delete('/api/users/:id', function(request, response, app,  UserModel) {
 				whereMap[UserModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = UserModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 			.then(function(canDelete) {
@@ -435,7 +524,7 @@ app.delete('/api/users/:id', function(request, response, app,  UserModel) {
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					return UserModel.removeOne(whereMap);
+					return UserModel.removeOne(whereMap, optionsMap);
 				}
 				else {
 					throw unauthenticatedError(authenticator);
@@ -613,7 +702,7 @@ app.put('/api/users/:id/password-reset', function(request, response, app,  UserM
 
 			if(associatedModel.options.automaticPropertyName) {
 				if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
-					error = new Error('Cannot set automatic property manually.');
+					var error = new Error('Cannot set automatic property manually.');
 					error.status = 400;
 					throw error;
 				}
@@ -627,7 +716,6 @@ app.put('/api/users/:id/password-reset', function(request, response, app,  UserM
 					if(canUpdate) {
 						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), association.options.relationshipVia.model))
 							.then(function(canUpdateProperties) {
-								var error;
 								if(canUpdateProperties) {
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);
@@ -826,7 +914,7 @@ app.put('/api/users/:id/container', function(request, response, app,  UserModel)
 
 			if(associatedModel.options.automaticPropertyName) {
 				if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
-					error = new Error('Cannot set automatic property manually.');
+					var error = new Error('Cannot set automatic property manually.');
 					error.status = 400;
 					throw error;
 				}
@@ -840,7 +928,6 @@ app.put('/api/users/:id/container', function(request, response, app,  UserModel)
 					if(canUpdate) {
 						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), association.options.relationshipVia.model))
 							.then(function(canUpdateProperties) {
-								var error;
 								if(canUpdateProperties) {
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);
