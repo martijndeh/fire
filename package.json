@@ -18,7 +18,7 @@
     "type": "git",
     "url": "https://github.com/martijndeh/fire.git"
   },
-  "version": "0.43.5",
+  "version": "0.43.6",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "main": "index.js",
   "devDependencies": {
@@ -56,6 +56,7 @@
     "mu2": "^0.5.20",
     "node-uuid": "^1.4.3",
     "pg": "^4.3.0",
-    "q": "^1.4.0"
+    "q": "^1.4.0",
+    "ws": "^0.7.2"
   }
 }
