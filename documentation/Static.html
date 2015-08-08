@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Documentation Class: Static | Node on Fire</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
+	<link rel="stylesheet" href="/styles/default.min.css"/>
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/scripts/highlight.min.js"></script>
+</head>
+
+<body>
+	<div class="container-fluid">
+		<nav>
+			<ul>
+				<li class="logo"><a href="/"><img src="/images/node-on-fire-icon.png" alt="Node on Fire"/></a></li>
+
+				<li class="pull-right active"><a href="/documentation">Documentation</a></li>
+				<li class="pull-right"><a href="/examples">Examples</a></li>
+				<li class="pull-right"><a href="/getting-started">Getting Started</a></li>
+				<li class="pull-right"><a href="/">Home</a></li>
+			</ul>
+		</nav>
+
+		<div class="row mailing">
+    <div class="col-md-6 col-md-offset-3">
+        <div id="mc_embed_signup">
+            <form action="//ff00ff.us9.list-manage.com/subscribe/post?u=695bb623f0e64230b0de02e66&amp;id=e8ee6483bb" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+                <div id="mc_embed_signup_scroll">
+                    <div class="mc-field-group">
+                        <span>Subscribe to our list to receive the latest updates on Node on Fire</span>
+                        <input placeholder="you@domain.com" type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"/>
+                        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"/>
+                    </div>
+                    <div id="mce-responses" class="clear">
+                        <div class="response" id="mce-error-response" style="display:none"></div>
+                        <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+                    <div style="position: absolute; left: -5000px;"><input type="text" name="b_695bb623f0e64230b0de02e66_e8ee6483bb" tabindex="-1" value=""></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+		<div class="row">
+			<div class="col-md-offset-1 col-md-3">
+				
+				<div id="toc"></div>
+				
+			</div>
+
+			<div id="main" class="col-md-7">
+				
+
+
+	<h1 class="page-title">Class: Static</h1>
+<section>
+
+<header>
+    <h2>
+    Static
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+<dt>
+    <h4 class="name" id="Static"><span class="type-signature"></span>new Static<span class="signature">(app)</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Convenience module to route requests to static folders.</p>
+<pre class="prettyprint source"><code>- Makes the public folder .. public. All files in public will be accessible.</code></pre><p>In production, you should not use this module. But rather, let something like nginx or a CDN handle your static assets. Compiling scripts at runtime in production is also something you should avoid.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>app</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="label label-primary param-type"><a href="App.html">App</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The app.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+			</div>
+		</div>
+
+		<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+		<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<script src="scripts/toc.js"></script>
+		<script>
+		$( function () {
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+		} );
+		</script>
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				<p class="expl disqus-expl">Do you have any questions or comments on this page? Start a discussion below.</p>
+
+			    <div id="disqus_thread"></div>
+				<script type="text/javascript">
+    			var disqus_shortname = 'nodeonfire';
+    			(function() {
+        			var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    			})();
+				</script>
+				<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+			</div>
+		</div>
+
+
+		<div class="row social">
+			<div class="col-md-8 col-md-offset-2">
+				<a href="https://twitter.com/nodeonfire" class="twitter-follow-button" data-show-count="true">Follow @nodeonfire</a> <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+				<iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
+allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
+			</div>
+		</div>
+
+		<div class="row mailing">
+			<div class="col-md-6 col-md-offset-3">
+				<div id="mc_embed_signup">
+					<form action="//ff00ff.us9.list-manage.com/subscribe/post?u=695bb623f0e64230b0de02e66&amp;id=e8ee6483bb" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+					    <div id="mc_embed_signup_scroll">
+							<div class="mc-field-group">
+								<span>Subscribe to our list to receive the latest updates on Node on Fire</span>
+								<input placeholder="you@domain.com" type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"/>
+								<input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"/>
+							</div>
+							<div id="mce-responses" class="clear">
+								<div class="response" id="mce-error-response" style="display:none"></div>
+								<div class="response" id="mce-success-response" style="display:none"></div>
+							</div>
+						    <div style="position: absolute; left: -5000px;"><input type="text" name="b_695bb623f0e64230b0de02e66_e8ee6483bb" tabindex="-1" value=""></div>
+					    </div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="row footer fire-gradient">
+			<div class="col-md-10 col-md-offset-1 buttons">
+				<a class="btn btn-primary" href="/getting-started">Install Node on Fire</a>
+				<a class="btn btn-secundary" href="/examples">View examples</a>
+			</div>
+
+			<div class="col-md-offset-1 col-md-5">
+				<p>&lt;&gt; with &lt;3 by Ff00ff. <a href="https://github.com/martijndeh/fire">Join the open-source project</a>.</p>
+				<p>Thanks to Alan Hussey from the Noun Project for creating the Node on Fire icon.</p>
+			</div>
+		</div>
+	</div>
+
+</body>
+<script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script><script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';fnames[1]='FNAME';ftypes[1]='text';fnames[2]='LNAME';ftypes[2]='text';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-52717773-3', 'auto');
+ga('send', 'pageview');
+</script>
+</html>
