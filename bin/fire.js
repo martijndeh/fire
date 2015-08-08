@@ -21,11 +21,7 @@ function mkdir(dirPath) {
 }
 
 function space(count) {
-	var str = '';
-	while(count--) {
-		str += ' ';
-	}
-	return str;
+	return new Array(count + 1).join(' ');
 }
 
 function template(source, dest, options) {
@@ -97,7 +93,7 @@ function createApp(name) {
 		postfix = '.cmd';
 	}
 
-	mkdir(name)
+	return mkdir(name)
 		.then(function() {
 			return mkdir(path.join(name, 'templates'));
 		})
@@ -107,7 +103,6 @@ function createApp(name) {
 				template('skeleton/package-json.template', name + '/package.json', {name: name}),
 				template('skeleton/env.template', name + '/.env', {sessionKey: crypto.randomBytes(127).toString('base64')}),
 				template('skeleton/package-json.template', name + '/package.json', {name: name}),
-				template('skeleton/Gruntfile-js.template', name + '/Gruntfile.js', {}),
 				template('skeleton/view-jade.template', name + '/templates/view.jade', {}),
 				template('skeleton/start-jade.template', name + '/templates/start.jade', {})
 			]);
@@ -119,11 +114,7 @@ function createApp(name) {
 			console.log(' ');
 			console.log('	Created app `' + name + '`. `cd ' + name + '` and run `fire run`.');
 			console.log(' ');
-		})
-		.catch(function(error) {
-			console.log(error);
-		})
-		.done();
+		});
 }
 
 function _createDatabase(datastore, name, count) {
@@ -204,115 +195,239 @@ function createDatastore(name) {
 	}.bind(this));
 }
 
+function unloadModules(basePath, index) {
+	debug('unloadModules ' + basePath);
+
+	var name = require.resolve('fire');
+	if(typeof require.cache[name] != 'undefined') {
+		delete require.cache[name];
+	}
+
+	name = path.join(basePath, 'node_modules', 'fire');
+	if(typeof require.cache[name] != 'undefined') {
+		delete require.cache[name];
+	}
+
+	var moduleName = require.resolve(path.join(basePath, index));
+	if(typeof require.cache[moduleName] != 'undefined') {
+		delete require.cache[moduleName];
+	}
+
+	Object.keys(require.cache).forEach(function(requireName) {
+		// We destroy the cache of all files in the projects, except any libraries.
+		if(requireName.indexOf(basePath) === 0 && requireName.indexOf('node_modules') == -1) {
+			delete require.cache[requireName];
+		}
+	});
+}
+
+function loadApp(basePath, stage) {
+	debug('loadApp ' + basePath + ' ' + stage);
+
+	var packageJSON = require(path.join(basePath, 'package.json'));
+	var index = packageJSON.main || 'index.js';
+
+	unloadModules(basePath, index);
+
+	// It's important we're retrieving the fire module used by the project. Not any global fire module.
+	var firePath = path.join(basePath, 'node_modules', 'fire');
+
+	var firestarter = require(firePath)._getFirestarter();
+	firestarter.stage = stage;
+	firestarter.disabled = true;
+	firestarter.appsContainerMap = {};
+
+	require(path.join(basePath, index));
+
+	var appContainerIds = Object.keys(firestarter.appsContainerMap);
+	if(appContainerIds.length > 1) {
+		throw new Error('More than 1 app container found. This is currently not supported. You can create multiple apps by using the same id but different names. Please check `fire#app()`.');
+	}
+	else if(!appContainerIds.length) {
+		throw new Error('Could not find any app. Did you create an app in ' + index + ' (this is your main entry point specified in your package.json)? Is the current working directory correct?');
+	}
+
+	var appContainer = firestarter.appsContainerMap[appContainerIds[0]];
+	return appContainer.getActiveApp();
+}
+
+function getApp(stage) {
+	var basePath = process.cwd();
+	var app = loadApp(basePath, stage);
+	var defer = Q.defer();
+	setImmediate(function() {
+		defer.resolve(app);
+	});
+	return defer.promise;
+}
+
 if(argv._.length) {
-	var command, subcommand;
+	var tasks = argv._;
+	var _runTask = function(firstTask) {
+		var topic, task, parameter;
+		var parts = firstTask.split(':');
 
-	var commands = argv._[0].split(':');
+		if(parts.length) {
+			topic = parts[0];
+		}
 
-	if(commands.length) {
-		command = commands[0];
-	}
+		if(parts.length > 1) {
+			task = parts[1];
+		}
 
-	if(commands.length > 1) {
-		subcommand = commands[1];
-	}
+		if(parts.length > 2) {
+			parameter = parts[2];
+		}
 
-	var postfix = '';
-	if(process.platform == 'win32') {
-		postfix = '.cmd';
-	}
+		debug('Execute ' + topic + ':' + task + ':' + parameter);
 
-	var gruntPath = path.join('node_modules', '.bin', 'grunt' + postfix);
-	if(command == 'run') {
-		runCommand(gruntPath, ['run']);
-	}
-	else if(command == 'build') {
-		runCommand(gruntPath, ['build']);
-	}
-	else if(command == 'release') {
-		runCommand(gruntPath, ['release']);
-	}
-	else if((command == 'app' || command == 'apps') && (!subcommand || subcommand == 'create')) {
-		createApp(argv._[1] || '');
-	}
-	else if(command == 'datastore' && (!subcommand || subcommand == 'create')) {
-		createDatastore(argv._[1]);
-	}
-	else if(command == 'config' && subcommand == 'get') {
-		if(argv._.length > 1) {
-			var config = dotenv._load(dotenv.options({}));
-			if(config[argv._[1]]) {
-				console.log(config[argv._[1]].value);
+		if(topic == 'run') {
+			var _execute = function(cmd) {
+		        var postfix = '';
+				if(process.platform == 'win32') {
+					postfix = '.cmd';
+				}
+
+		        return spawn(cmd + postfix, ['start'], {stdio: 'inherit'});
+		    };
+
+	        return _execute(path.join('node_modules', 'fire', 'node_modules', '.bin', 'nf'), ['start']);
+		}
+		else if(topic == 'build') {
+			return getApp('build')
+				.then(function(app) {
+					return app.injector
+						.call(function(stageMethods) {
+							return stageMethods.build(task, parameter);
+						})
+						.finally(function() {
+							return app.stop();
+						});
+				});
+		}
+		else if(topic == 'release') {
+			return getApp('release')
+				.then(function(app) {
+					return app.injector
+						.call(function(stageMethods) {
+							return stageMethods.release(task, parameter);
+						})
+						.finally(function() {
+							return app.stop();
+						});
+				});
+		}
+		else if((topic == 'app' || topic == 'apps') && (!task || task == 'create')) {
+			return createApp(argv._[1] || '');
+		}
+		else if(topic == 'datastore' && (!task || task == 'create')) {
+			return createDatastore(tasks.shift());
+		}
+		else if(topic == 'datastore' && task == 'open') {
+			
+		}
+		else if(topic == 'config' && topic == 'get') {
+			if(tasks.length) {
+				var config = dotenv._load(dotenv.options({}));
+				var configKey = tasks.splice(0, 1)[0];
+				if(config[configKey]) {
+					console.log(config[configKey].value);
+				}
+				else {
+					console.log('');
+				}
 			}
 			else {
-				console.log('');
+				console.log('Please specify which config to get e.g. fire config:get KEY.');
 			}
 		}
-		else {
-			console.log('Please specify which config to get e.g. fire config:get KEY.');
-		}
-	}
-	else if(command == 'config' && subcommand == 'set') {
-		if(argv._.length > 1) {
-			var config = {};
+		else if(topic == 'config' && task == 'set') {
+			if(tasks.length) {
+				var configMap = {};
 
-			var index = 1;
-			while(argv._.length > index) {
-				var keyValue = argv._[index];
-				var pair = keyValue.split('=');
+				var index = 0;
+				while(tasks.length > index) {
+					var keyValue = tasks[index];
+					var pair = keyValue.split('=');
 
-				if(pair.length == 2) {
-					config[pair[0]] = pair[1];
+					if(pair.length == 2) {
+						configMap[pair[0]] = pair[1];
 
-					dotenv.set(pair[0], pair[1]);
+						dotenv.set(pair[0], pair[1]);
+					}
+					else {
+						console.log('Please specify a key-value pair joined with a = e.g. fire config:set KEY=value');
+					}
+
+					index++;
 				}
-				else {
-					console.log('Please specify a key-value pair joined with a = e.g. fire config:set KEY=value');
-				}
+				tasks = [];
 
-				index++;
+				var length = Object.keys(configMap)
+					.map(function(key) {
+						return key.length;
+					})
+					.reduce(function(last, now) {
+						if(last >= now) {
+							return last;
+						}
+						else {
+							return now;
+						}
+					}, 0);
+
+				Object.keys(configMap).forEach(function(key) {
+					console.log(key + ': ' + space(length - key.length) + configMap[key]);
+				});
 			}
+			else {
+				console.log('Please specify which config key-value to set e.g. fire config:set KEY=value');
+			}
+		}
+		else if(topic == 'config' && !task) {
+	        var config = dotenv._load(dotenv.options({}));
 
-			var length = Object.keys(config).map(function(key) {
-				return key.length;
-			}).reduce(function(last, now) {
-				if(last >= now) {
-					return last;
-				}
-				else {
-					return now;
-				}
-			}, 0);
+			var length = Object.keys(config)
+				.map(function(key) {
+					return key.length;
+				})
+				.reduce(function(last, now) {
+					if(last >= now) {
+						return last;
+					}
+					else {
+						return now;
+					}
+				}, 0);
 
 			Object.keys(config).forEach(function(key) {
-				console.log(key + ': ' + space(length - key.length) + config[key]);
+				console.log(key + ': ' + space(length - key.length) + config[key].value);
 			});
 		}
 		else {
-			console.log('Please specify which config key-value to set e.g. fire config:set KEY=value');
+			console.log('Unknown task `' + firstTask + '`.');
 		}
-	}
-	else if(command == 'config' && !subcommand) {
-        var config = dotenv._load(dotenv.options({}));
+	};
 
-		var length = Object.keys(config).map(function(key) {
-			return key.length;
-		}).reduce(function(last, now) {
-			if(last >= now) {
-				return last;
-			}
-			else {
-				return now;
-			}
-		}, 0);
+	var _run = function() {
+		var firstTask = tasks.shift();
+		if(firstTask) {
+			return Q.when(_runTask(firstTask))
+				.then(function() {
+					return _run();
+				});
+		}
+	};
 
-		Object.keys(config).forEach(function(key) {
-			console.log(key + ': ' + space(length - key.length) + config[key].value);
-		});
-	}
-	else {
-		console.log('Unknown command `' + command + '`.');
-	}
+	_run()
+		.then(function() {
+			debug('Finished!');
+		})
+		.catch(function(error) {
+			console.log(error);
+			console.log(error.stack);
+		})
+		.done();
 }
 else {
 	// show help
