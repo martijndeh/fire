@@ -1,0 +1,62 @@
+<%= include('header', {page: 'getting-started'}) %>
+
+<div class="row header fire-gradient getting-started">
+    <div class="col-md-10 col-md-offset-1">
+        <h1>Getting Started</h1>
+        <p>Setting up your first project.</p>
+    </div>
+</div>
+
+<div class="row mailing">
+    <div class="col-md-6 col-md-offset-3">
+        <div id="mc_embed_signup">
+            <form action="//ff00ff.us9.list-manage.com/subscribe/post?u=695bb623f0e64230b0de02e66&amp;id=e8ee6483bb" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+                <div id="mc_embed_signup_scroll">
+                    <div class="mc-field-group">
+                        <span>Subscribe to our list to receive the latest updates on Node on Fire</span>
+                        <input placeholder="you@domain.com" type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"/>
+                        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"/>
+                    </div>
+                    <div id="mce-responses" class="clear">
+                        <div class="response" id="mce-error-response" style="display:none"></div>
+                        <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+                    <div style="position: absolute; left: -5000px;"><input type="text" name="b_695bb623f0e64230b0de02e66_e8ee6483bb" tabindex="-1" value=""></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row desc">
+    <div class="col-md-8 col-md-offset-1">
+        <h3>Install Node on Fire</h3>
+        <p>Install Node on Fire (globally):</p>
+
+        <p><kbd>$ npm install -g fire</kbd></p>
+
+        <p>Set up the initial files and folders of the app:</p>
+
+        <p><kbd>$ fire apps:create helloworld</kbd></p>
+
+        <p>You can now run the app:</p>
+
+        <p><kbd>$ cd helloworld/</kbd></p>
+        <p><kbd>$ fire run</kbd></p>
+
+        <p>To view the app, head over to <a href="http://127.0.0.1:5000/">http://127.0.0.1:5000/</a>. When you make changes, run <code>fire build && fire release</code> and then <code>fire run</code>.</p>
+    </div>
+
+    <div class="col-md-8 col-md-offset-1">
+        <h3>Configure the database</h3>
+        <p>If you have Postgres running locally, you can quickly create a new database and update your environment variable:</p>
+        <p><kbd>$ fire datastore:create helloworld</kdb></p>
+    </div>
+
+    <div class="col-md-8 col-md-offset-1">
+        <h3>Next steps</h3>
+        <p>Have a look at our <a href="/examples">examples</a> or browse through the <a href="/documentation">documentation</a>. If you have any questions, send a tweet to <a href="https://twitter.com/nodeonfire">@nodeonfire</a> or ask a question on <a href="http://stackoverflow.com/questions/ask?tags=nodeonfire">Stack Overflow</a>.</p>
+    </div>
+</div>
+
+<%= include('footer') %>

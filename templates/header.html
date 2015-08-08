@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
+	<title>A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL | Node on Fire</title>
+	<link rel="stylesheet" href="/styles/default.min.css"/>
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/scripts/highlight.min.js"></script>
+</head>
+<body>
+	<div class="container-fluid">
+		<nav>
+			<ul>
+				<li class="logo"><a href="/"><img src="/images/node-on-fire-icon.png" alt="Node on Fire"/></a></li>
+
+				<li class="pull-right<%- page == 'documentation' ? ' active' : '' %>"><a href="/documentation">Documentation</a></li>
+				<li class="pull-right<%- page == 'examples' ? ' active' : '' %>"><a href="/examples">Examples</a></li>
+				<li class="pull-right<%- page == 'getting-started' ? ' active' : '' %>"><a href="/getting-started">Getting Started</a></li>
+				<li class="pull-right<%- page == 'index' ? ' active' : '' %>"><a href="/">Home</a></li>
+			</ul>
+		</nav>

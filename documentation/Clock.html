@@ -3,24 +3,49 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: Clock - Node on Fire</title>
+	<title>Documentation Class: Clock | Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
-	<meta name="description" content="A full-stack isomorphic web framework built on top of Node.js, AngularJS, PostgreSQL."/>
+	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
 	<link rel="stylesheet" href="/styles/default.min.css"/>
 	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="/scripts/highlight.min.js"></script>
 </head>
 
 <body>
-	<nav>
-		<ul>
-			<li><a href="/">Home</a></li>
-			<li><a href="/getting-started">Getting Started</a></li>
-			<li class="active"><a href="/documentation">Documentation</a></li>
-		</ul>
-	</nav>
-
 	<div class="container-fluid">
+		<nav>
+			<ul>
+				<li class="logo"><a href="/"><img src="/images/node-on-fire-icon.png" alt="Node on Fire"/></a></li>
+
+				<li class="pull-right active"><a href="/documentation">Documentation</a></li>
+				<li class="pull-right"><a href="/examples">Examples</a></li>
+				<li class="pull-right"><a href="/getting-started">Getting Started</a></li>
+				<li class="pull-right"><a href="/">Home</a></li>
+			</ul>
+		</nav>
+
+		<div class="row mailing">
+    <div class="col-md-6 col-md-offset-3">
+        <div id="mc_embed_signup">
+            <form action="//ff00ff.us9.list-manage.com/subscribe/post?u=695bb623f0e64230b0de02e66&amp;id=e8ee6483bb" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+                <div id="mc_embed_signup_scroll">
+                    <div class="mc-field-group">
+                        <span>Subscribe to our list to receive the latest updates on Node on Fire</span>
+                        <input placeholder="you@domain.com" type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"/>
+                        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"/>
+                    </div>
+                    <div id="mce-responses" class="clear">
+                        <div class="response" id="mce-error-response" style="display:none"></div>
+                        <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+                    <div style="position: absolute; left: -5000px;"><input type="text" name="b_695bb623f0e64230b0de02e66_e8ee6483bb" tabindex="-1" value=""></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 		<div class="row">
 			<div class="col-md-offset-1 col-md-3">
 				
@@ -58,10 +83,11 @@
     
     <div class="description">
         <p>The clock module is responsible for the clock process type. The clock process schedules tasks to run at scheduled time intervals in your worker processes. The clock module is used by e.g. the Triggers and the Scheduler module. The clock module guarantees to schedule tasks without skipping an interval.</p>
-<p>Because the clock process might at some point restart or crash and potentially skip a scheduled tasks, the clock process checks at startup if it skipped any task based on the date of the previous executed task. If it identifies a skipped task, it'll schedule the task immediately.</p>
+<p>Tip: explicitly set the <code>TZ</code> environment to your time zone and align this with the time zone set in your datastore. This to avoid any issues with dates and their time zones.</p>
+<p>Because the clock process might at some point restart or crash and potentially skip a scheduled task, the clock process checks at start-up, if it skipped any task based on the date of the previous executed task. If it identifies a skipped task, it'll schedule the task immediately.</p>
 <p>For example, consider a task which sends a mail to all users every month at the 1st day of the month at 13:00 hour exactly. If the clock process crashes at 12:59 hour and starts again at 13:01 the time interval was skipped. The clock module recognizes this and schedules the task at 13:01 instead.</p>
 <p>(When the clock module starts the first time, and there are no results, it inserts a fake clock result).</p>
-<p>To start the clock process simply invoke the app with the <code>--clock</code> argument. For example, add the following entry to your <code>Procfile</code>:</p>
+<p>You generally do not need to manually use this Clock module. The Clock module is used by <a href="Schedulers.html">Schedulers</a> and <a href="Triggers.html">Triggers</a>. If you want to run the clock process, define the below in your Procfile (this is automatically added when creating triggers or schedulers).</p>
 <pre class="prettyprint source"><code>clock: node index.js --clock</code></pre>
     </div>
     
@@ -197,7 +223,7 @@
     
     <div class="description">
         <p>Creates a task to run at a time interval. The callback is guaranteed to run. The callback should schedule a job on a worker process and not actually execute any work.</p>
-<p>Check the Schedule or Trigger modules instead if you want to schedule periodic tasks.</p>
+<p>Please have a look at the Schedule and Trigger modules if you want to execute work on a worker process.</p>
     </div>
     
 
@@ -432,6 +458,27 @@
 			</div>
 		</div>
 
+		<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+		<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<script src="scripts/toc.js"></script>
+		<script>
+		$( function () {
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+		} );
+		</script>
 		<div class="row">
 			<div class="col-md-offset-4 col-md-7">
 				<p class="expl disqus-expl">Do you have any questions or comments on this page? Start a discussion below.</p>
@@ -449,35 +496,52 @@
 			</div>
 		</div>
 
-		<div class="row">
-			<div class="col-md-offset-4 col-md-7">
-				This is the footer.
+
+		<div class="row social">
+			<div class="col-md-8 col-md-offset-2">
+				<a href="https://twitter.com/nodeonfire" class="twitter-follow-button" data-show-count="true">Follow @nodeonfire</a> <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+				<iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
+allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
+			</div>
+		</div>
+
+		<div class="row mailing">
+			<div class="col-md-6 col-md-offset-3">
+				<div id="mc_embed_signup">
+					<form action="//ff00ff.us9.list-manage.com/subscribe/post?u=695bb623f0e64230b0de02e66&amp;id=e8ee6483bb" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+					    <div id="mc_embed_signup_scroll">
+							<div class="mc-field-group">
+								<span>Subscribe to our list to receive the latest updates on Node on Fire</span>
+								<input placeholder="you@domain.com" type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"/>
+								<input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"/>
+							</div>
+							<div id="mce-responses" class="clear">
+								<div class="response" id="mce-error-response" style="display:none"></div>
+								<div class="response" id="mce-success-response" style="display:none"></div>
+							</div>
+						    <div style="position: absolute; left: -5000px;"><input type="text" name="b_695bb623f0e64230b0de02e66_e8ee6483bb" tabindex="-1" value=""></div>
+					    </div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="row footer fire-gradient">
+			<div class="col-md-10 col-md-offset-1 buttons">
+				<a class="btn btn-primary" href="/getting-started">Install Node on Fire</a>
+				<a class="btn btn-secundary" href="/examples">View examples</a>
+			</div>
+
+			<div class="col-md-offset-1 col-md-5">
+				<p>&lt;&gt; with &lt;3 by Ff00ff. <a href="https://github.com/martijndeh/fire">Join the open-source project</a>.</p>
+				<p>Thanks to Alan Hussey from the Noun Project for creating the Node on Fire icon.</p>
 			</div>
 		</div>
 	</div>
 
-	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
-	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-	<script src="scripts/toc.js"></script>
-	<script>
-		$( function () {
-			$( "#toc" ).toc( {
-				anchorName  : function ( i, heading, prefix ) {
-					return $( heading ).attr( "id" ) || ( prefix + i );
-				},
-				selectors   : "h1,h2,h3,h4",
-				showAndHide : false,
-				scrollTo    : "0px"
-			} );
-
-			$( "[id*='$']" ).each( function () {
-				var $this = $( this );
-
-				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
-			} );
-		} );
-	 </script>
-
+</body>
+<script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script><script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';fnames[1]='FNAME';ftypes[1]='text';fnames[2]='LNAME';ftypes[2]='text';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
+<script>hljs.initHighlightingOnLoad();</script>
 <script>
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -487,6 +551,4 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 ga('create', 'UA-52717773-3', 'auto');
 ga('send', 'pageview');
 </script>
-
-</body>
 </html>

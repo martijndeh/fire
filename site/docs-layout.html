@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<?js var that = this; ?>
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title><?js= this.navOptions.systemName ?> <?js= title ?> | Node on Fire</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
+	<link rel="stylesheet" href="/styles/default.min.css"/>
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/scripts/highlight.min.js"></script>
+</head>
+
+<body>
+	<div class="container-fluid">
+		<nav>
+			<ul>
+				<li class="logo"><a href="/"><img src="/images/node-on-fire-icon.png" alt="Node on Fire"/></a></li>
+
+				<li class="pull-right active"><a href="/documentation">Documentation</a></li>
+				<li class="pull-right"><a href="/examples">Examples</a></li>
+				<li class="pull-right"><a href="/getting-started">Getting Started</a></li>
+				<li class="pull-right"><a href="/">Home</a></li>
+			</ul>
+		</nav>
+
+		<%= include('mailing') %>
+
+		<div class="row">
+			<div class="col-md-offset-1 col-md-3">
+				<?js if(docs && docs[0].kind !== "source" && docs[0].kind !== "package"){ ?>
+				<div id="toc"></div>
+				<?js } ?>
+			</div>
+
+			<div id="main" class="col-md-7">
+				<?js= content ?>
+			</div>
+		</div>
+
+		<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+		<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<script src="scripts/toc.js"></script>
+		<script>
+		$( function () {
+			$( "#toc" ).toc( {
+				anchorName  : function ( i, heading, prefix ) {
+					return $( heading ).attr( "id" ) || ( prefix + i );
+				},
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : "0px"
+			} );
+
+			$( "[id*='$']" ).each( function () {
+				var $this = $( this );
+
+				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+			} );
+		} );
+		</script>
+		<div class="row">
+			<div class="col-md-offset-4 col-md-7">
+				<p class="expl disqus-expl">Do you have any questions or comments on this page? Start a discussion below.</p>
+
+			    <div id="disqus_thread"></div>
+				<script type="text/javascript">
+    			var disqus_shortname = 'nodeonfire';
+    			(function() {
+        			var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    			})();
+				</script>
+				<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+			</div>
+		</div>
+
+<%= include('footer') %>

@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: HTTPServer | Node on Fire</title>
+	<title>Documentation Class: ModuleProperties | Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
 	<link rel="stylesheet" href="/styles/default.min.css"/>
@@ -57,12 +57,12 @@
 				
 
 
-	<h1 class="page-title">Class: HTTPServer</h1>
+	<h1 class="page-title">Class: ModuleProperties</h1>
 <section>
 
 <header>
     <h2>
-    HTTPServer
+    ModuleProperties
     </h2>
     
 </header>
@@ -74,7 +74,7 @@
     
         
 <dt>
-    <h4 class="name" id="HTTPServer"><span class="type-signature"></span>new HTTPServer<span class="signature">()</span></h4>
+    <h4 class="name" id="ModuleProperties"><span class="type-signature"></span>new ModuleProperties<span class="signature">()</span></h4>
     
     
 </dt>
@@ -82,7 +82,7 @@
     
     
     <div class="description">
-        <p>The HTTP server module. Actually creates the web server.</p>
+        <p>The ModuleProperties module sets all modules as properties to an object. This module will be replaced once dependency injection is broadly available. See <a href="ModuleProperties.html#set">ModuleProperties#set</a>.</p>
     </div>
     
 
@@ -158,7 +158,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">(argv)</span></h4>
+    <h4 class="name" id="set"><span class="type-signature"></span>set<span class="signature">(object)</span></h4>
     
     
 </dt>
@@ -166,9 +166,7 @@
     
     
     <div class="description">
-        <p>Starts the HTTP server if no argv is supplied or if --web is provided.</p>
-<p>E.g. in the Procfile:</p>
-<pre class="prettyprint source"><code>web: node index.js --web</code></pre>
+        <p>Sets all of the app's modules as properties to object. For example, this creates <code>object.models</code> referencing the Models module, <code>object.HTTPServer</code> to the HTTPServer module and many more.</p>
     </div>
     
 
@@ -202,13 +200,13 @@
 
         <tr>
             
-                <td class="name"><code>argv</code></td>
+                <td class="name"><code>object</code></td>
             
 
             <td class="type">
             
                 
-<span class="label label-primary param-type">Dictionary</span>
+<span class="label label-primary param-type">Object</span>
 
 
 
@@ -219,7 +217,7 @@
 
             
 
-            <td class="description last"><p>The arguments passed to the process.</p></td>
+            <td class="description last"><p>The object on which the properties are added.</p></td>
         </tr>
 
 	
@@ -269,92 +267,6 @@
     
     
     
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Stops the HTTP server by calling <code>close()</code> on the http server object.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>

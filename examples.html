@@ -1,30 +1,35 @@
-<!DOCTYPE html>
-
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-	<meta charset="utf-8"/>
-	<title>Documentation Class: HTTPServer | Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
+	<title>A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL | Node on Fire</title>
 	<link rel="stylesheet" href="/styles/default.min.css"/>
 	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="/scripts/highlight.min.js"></script>
 </head>
-
 <body>
 	<div class="container-fluid">
 		<nav>
 			<ul>
 				<li class="logo"><a href="/"><img src="/images/node-on-fire-icon.png" alt="Node on Fire"/></a></li>
 
-				<li class="pull-right active"><a href="/documentation">Documentation</a></li>
-				<li class="pull-right"><a href="/examples">Examples</a></li>
+				<li class="pull-right"><a href="/documentation">Documentation</a></li>
+				<li class="pull-right active"><a href="/examples">Examples</a></li>
 				<li class="pull-right"><a href="/getting-started">Getting Started</a></li>
 				<li class="pull-right"><a href="/">Home</a></li>
 			</ul>
 		</nav>
 
-		<div class="row mailing">
+
+<div class="row header fire-gradient getting-started">
+    <div class="col-md-10 col-md-offset-1">
+        <h1>Examples</h1>
+        <p>A list of projects created for you to highlight some of Node on Fire's features.</p>
+    </div>
+</div>
+
+<div class="row mailing">
     <div class="col-md-6 col-md-offset-3">
         <div id="mc_embed_signup">
             <form action="//ff00ff.us9.list-manage.com/subscribe/post?u=695bb623f0e64230b0de02e66&amp;id=e8ee6483bb" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
@@ -46,372 +51,27 @@
 </div>
 
 
-		<div class="row">
-			<div class="col-md-offset-1 col-md-3">
-				
-				<div id="toc"></div>
-				
-			</div>
+<div class="row desc">
+    <div class="col-md-10 col-md-offset-1">
+        <h3>TodoMVC</h3>
+        <p>The mandatory todo-app example. Shows you how a complete Node on Fire app is structured. Includes models and migrations. <a href="https://github.com/martijndeh/fire/tree/develop/examples/todo-mvc">View example.</a></p>
 
-			<div id="main" class="col-md-7">
-				
+        <h3>A/B Test</h3>
+        <p>Create an A/B test, participate the user and use the variant to display different results in your controllers. <a href="https://github.com/martijndeh/fire/tree/develop/examples/test">View example.</a></p>
 
+        <h3>Multiple Apps</h3>
+        <p>Create multiple apps in your project which also use shared models. <a href="https://github.com/martijndeh/fire/tree/develop/examples/multiple-apps">View example.</a></p>
 
-	<h1 class="page-title">Class: HTTPServer</h1>
-<section>
+        <h3>Isomorphic Services</h3>
+        <p>Create an ismorphic service. A service which is available in both the front-end and the back-end. <a href="https://github.com/martijndeh/fire/tree/develop/examples/multiple-apps">View example.</a></p>
 
-<header>
-    <h2>
-    HTTPServer
-    </h2>
-    
-</header>
+        <h3>Search</h3>
+        <p>Create a full-text search on your models. <a href="https://github.com/martijndeh/fire/tree/develop/examples/search">View example.</a></p>
 
-<article>
-    <div class="container-overview">
-    
-
-    
-        
-<dt>
-    <h4 class="name" id="HTTPServer"><span class="type-signature"></span>new HTTPServer<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>The HTTP server module. Actually creates the web server.</p>
+        <h3>Real-Time Chat</h3>
+        <p>Create a real-time stream on your models. The examples shows how to build a simple but real-time chat app. <a href="https://github.com/martijndeh/fire/tree/develop/examples/chatbox">View example.</a></p>
     </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        <dl>
-            
-<dt>
-    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">(argv)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Starts the HTTP server if no argv is supplied or if --web is provided.</p>
-<p>E.g. in the Procfile:</p>
-<pre class="prettyprint source"><code>web: node index.js --web</code></pre>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>argv</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Dictionary</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The arguments passed to the process.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Stops the HTTP server by calling <code>close()</code> on the http server object.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        </dl>
-    
-
-    
-
-    
-</article>
-
-</section>
-
-
-
-
-			</div>
-		</div>
-
-		<script src="/bower_components/jquery/dist/jquery.min.js"></script>
-		<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-		<script src="scripts/toc.js"></script>
-		<script>
-		$( function () {
-			$( "#toc" ).toc( {
-				anchorName  : function ( i, heading, prefix ) {
-					return $( heading ).attr( "id" ) || ( prefix + i );
-				},
-				selectors   : "h1,h2,h3,h4",
-				showAndHide : false,
-				scrollTo    : "0px"
-			} );
-
-			$( "[id*='$']" ).each( function () {
-				var $this = $( this );
-
-				$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
-			} );
-		} );
-		</script>
-		<div class="row">
-			<div class="col-md-offset-4 col-md-7">
-				<p class="expl disqus-expl">Do you have any questions or comments on this page? Start a discussion below.</p>
-
-			    <div id="disqus_thread"></div>
-				<script type="text/javascript">
-    			var disqus_shortname = 'nodeonfire';
-    			(function() {
-        			var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    			})();
-				</script>
-				<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-			</div>
-		</div>
+</div>
 
 
 		<div class="row social">
@@ -469,3 +129,4 @@ ga('create', 'UA-52717773-3', 'auto');
 ga('send', 'pageview');
 </script>
 </html>
+

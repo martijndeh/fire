@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "express": "^4.8.5"
+    "express": "^4.8.5",
+    "grunt-build-html": "^0.3.0",
+    "grunt-html-build": "^0.5.1"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: HTTPServer | Node on Fire</title>
+	<title>Documentation Class: SearchSystem | Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
 	<link rel="stylesheet" href="/styles/default.min.css"/>
@@ -57,12 +57,12 @@
 				
 
 
-	<h1 class="page-title">Class: HTTPServer</h1>
+	<h1 class="page-title">Class: SearchSystem</h1>
 <section>
 
 <header>
     <h2>
-    HTTPServer
+    SearchSystem
     </h2>
     
 </header>
@@ -74,7 +74,7 @@
     
         
 <dt>
-    <h4 class="name" id="HTTPServer"><span class="type-signature"></span>new HTTPServer<span class="signature">()</span></h4>
+    <h4 class="name" id="SearchSystem"><span class="type-signature"></span>new SearchSystem<span class="signature">()</span></h4>
     
     
 </dt>
@@ -82,7 +82,20 @@
     
     
     <div class="description">
-        <p>The HTTP server module. Actually creates the web server.</p>
+        <p>The search system module implements Model#search to allow you to do a full text search on your models.</p>
+<p>To configure a model to be searchable, you need to create a search config.</p>
+<pre class="prettyprint source"><code>Recipe.prototype.searchConfig = function() {
+    return {
+        lang: 'english',
+        parser: function(searchText) {
+            return searchText.split(' ').join(' & ');
+        },
+        properties: ['title', 'description']
+    };
+};</code></pre><p>The search config method should return an object with the following keys:</p>
+<p><code>properties</code>: an array of property names as strings. Which properties to search through when searching. Required.
+<code>lang</code>: a string which is the language config passed to Postgres. Default value is <code>english</code>.
+<code>parser</code>: a function which takes one argument, the search text, and transforms it to a Postgres search query.</p>
     </div>
     
 
@@ -152,214 +165,6 @@
 
     
 
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        <dl>
-            
-<dt>
-    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">(argv)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Starts the HTTP server if no argv is supplied or if --web is provided.</p>
-<p>E.g. in the Procfile:</p>
-<pre class="prettyprint source"><code>web: node index.js --web</code></pre>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>argv</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Dictionary</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The arguments passed to the process.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Stops the HTTP server by calling <code>close()</code> on the http server object.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        </dl>
     
 
     

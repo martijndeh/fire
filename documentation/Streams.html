@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: HTTPServer | Node on Fire</title>
+	<title>Documentation Class: Streams | Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
 	<link rel="stylesheet" href="/styles/default.min.css"/>
@@ -57,12 +57,12 @@
 				
 
 
-	<h1 class="page-title">Class: HTTPServer</h1>
+	<h1 class="page-title">Class: Streams</h1>
 <section>
 
 <header>
     <h2>
-    HTTPServer
+    Streams
     </h2>
     
 </header>
@@ -74,7 +74,7 @@
     
         
 <dt>
-    <h4 class="name" id="HTTPServer"><span class="type-signature"></span>new HTTPServer<span class="signature">()</span></h4>
+    <h4 class="name" id="Streams"><span class="type-signature"></span>new Streams<span class="signature">()</span></h4>
     
     
 </dt>
@@ -82,7 +82,10 @@
     
     
     <div class="description">
-        <p>The HTTP server module. Actually creates the web server.</p>
+        <p>The Streams module.</p>
+<p>Creates streams over web sockets connections and listens for changes in the datastore through PostgreSQL's LISTEN and NOTIFY mechanisms.</p>
+<p>Important: this module creates triggers to notify any listeners for changes whenever a row gets inserted, updated or deleted. It uses the PostgreSQL's NOTIFY system. By default, this system has a payload limit of 8000 bytes. The payload is the changed row plus a few bytes of additional data combined and transformed to json. The triggers created by Node on Fire check if the payload is longer than 8000 bytes, and if so, do not notify any listeners of the change.</p>
+<p>If you want to change this default behavior, or if you have changed the maximum size of the payload, you can change the trigger in your migrations manually. Please note: if you do NOTIFY with a payload larger than the maximum size it will raise an exception and stop the original SELECT, UPDATE or DELETE from happening.</p>
     </div>
     
 
@@ -166,9 +169,7 @@
     
     
     <div class="description">
-        <p>Starts the HTTP server if no argv is supplied or if --web is provided.</p>
-<p>E.g. in the Procfile:</p>
-<pre class="prettyprint source"><code>web: node index.js --web</code></pre>
+        <p>Starts the web socket server if this is the web process.</p>
     </div>
     
 
@@ -219,7 +220,7 @@
 
             
 
-            <td class="description last"><p>The arguments passed to the process.</p></td>
+            <td class="description last"><p>The process starting arguments.</p></td>
         </tr>
 
 	
@@ -269,92 +270,6 @@
     
     
     
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Stops the HTTP server by calling <code>close()</code> on the http server object.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
     
     
 </dd>

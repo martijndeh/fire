@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8"/>
-	<title>Documentation Class: HTTPServer | Node on Fire</title>
+	<title>Documentation Class: StageMethods | Node on Fire</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
 	<link rel="stylesheet" href="/styles/default.min.css"/>
@@ -57,12 +57,12 @@
 				
 
 
-	<h1 class="page-title">Class: HTTPServer</h1>
+	<h1 class="page-title">Class: StageMethods</h1>
 <section>
 
 <header>
     <h2>
-    HTTPServer
+    StageMethods
     </h2>
     
 </header>
@@ -74,7 +74,7 @@
     
         
 <dt>
-    <h4 class="name" id="HTTPServer"><span class="type-signature"></span>new HTTPServer<span class="signature">()</span></h4>
+    <h4 class="name" id="StageMethods"><span class="type-signature"></span>new StageMethods<span class="signature">()</span></h4>
     
     
 </dt>
@@ -82,7 +82,24 @@
     
     
     <div class="description">
-        <p>The HTTP server module. Actually creates the web server.</p>
+        <p>This module is responsible for the management of run build and release methods invoked in the stages.</p>
+<p>For example, you can set a function to be executed in the build stage:</p>
+<pre class="prettyprint source"><code>app.build(function test() {
+    // Do some work.
+});</code></pre><p>This test method gets executed when you <code>fire build</code> or you can invoke it directly by calling <code>fire build:test</code>.</p>
+<p>If you want to create tasks which do not run in the build stage automatically, see the <a href="Tasks.html">Tasks</a> module.</p>
+<p>You can also create functions to be executed in the release and the run stage:</p>
+<pre class="prettyprint source"><code>app.release(function check() {
+    // Do your thing.
+});</code></pre><p>Or for the run:</p>
+<pre class="prettyprint source"><code>app.run(function() {
+    // Run called.
+});</code></pre><p>Please note that run is invoked in every process. To see which process is being run, you can check the argv dependency:</p>
+<pre class="prettyprint source"><code>app.run(function(argv) {
+    if(argv.web) {
+        // This is the web process.
+    }
+});</code></pre>
     </div>
     
 
@@ -152,214 +169,6 @@
 
     
 
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        <dl>
-            
-<dt>
-    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">(argv)</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Starts the HTTP server if no argv is supplied or if --web is provided.</p>
-<p>E.g. in the Procfile:</p>
-<pre class="prettyprint source"><code>web: node index.js --web</code></pre>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>argv</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="label label-primary param-type">Dictionary</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The arguments passed to the process.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Stops the HTTP server by calling <code>close()</code> on the http server object.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="label label-primary param-type">Promise</span>
-
-
-
-	</dd>
-</dl>
-
-
-        
-    
-    
-</dd>
-
-        </dl>
     
 
     

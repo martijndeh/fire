@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="A full-stack isomorphic web framework built on top of Node.js, AngularJS, PostgreSQL and Express."/>
+	<title>Building your first app with Node on Fire</title>
+	<link rel="stylesheet" href="/styles/default.min.css"/>
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/scripts/highlight.min.js"></script>
+</head>
+<body>
+	<a class="hidden-sm hidden-xs" href="https://github.com/martijndeh/fire"><img style="position: fixed; top: 0; left: 0; border: 0;z-index:1031;" src="https://camo.githubusercontent.com/82b228a3648bf44fc1163ef44c62fcc60081495e/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png"></a>
+
+	<nav>
+		<ul>
+			<li><a href="/">Home</a></li>
+			<li class="active"><a href="/getting-started">Getting Started</a></li>
+			<li><a href="/documentation">Documentation</a></li>
+		</ul>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row header getting-started">
+			<div class="col-md-8 col-md-offset-2">
+				<h1>Building your first app</h1>
+				<p>Let's create a simple survey for our users.</p>
+			</div>
+		</div>
+
+		<div class="row desc">
+			<div class="col-md-6 col-md-offset-2">
+				<h3>Before You Start</h3>
+				<div class="alert alert-danger">
+					<p>Do you have node and npm installed? If not, head over to <a href="https://nodejs.org">nodejs.org</a> to download and install the latest version.</p>
+				</div>
+				<p>Please make sure you have Node on Fire installed, ideally globally. You can install Node on Fire by running:</p>
+
+				<p><kbd>$ npm install -g fire</kbd></p>
+			</div>
+
+			<div class="col-md-6 col-md-offset-2">
+				<h3>Create the Project</h3>
+				<p>Now we'll create the project. Open a terminal window and create a new project (we'll call it Survey Chef \o/):</p>
+
+				<p><kbd>$ fire apps:create surveychef</kbd></p>
+
+				<p>When running this command Node on Fire will create a new folder and install the initial project's dependencies.</p>
+
+				<div class="alert alert-danger">
+					<p>Are you running in any errors at this point? Please <a href="https://twitter.com/nodeonfire">reach out on Twitter</a> and we'll be able to help you out.</p>
+				</div>
+			</div>
+
+			<div class="col-md-6 col-md-offset-2">
+				<h3>Configure the Database</h3>
+				<p>We will also be using a PostgreSQL datastore. Please configure a database locally, or set-up a <a href="https://addons.heroku.com/heroku-postgresql">free Heroku database</a>.</p>
+
+				<p>If you have Postgres running locally, you can quickly create a new database and update your environment variable:</p>
+				<p><kbd>$ fire datastore:create surveychef</kdb></p>
+
+				<p>This creates a new database and stores the connection string in the <code>.env</code> file. If you are using a remote Heroku datastore, please paste the connection string in your <code>.env</code> file like below:</p>
+				<p><kbd>DATABASE_URL=postgres://user:password@hostname:port/database?ssl=true</kbd></p>
+
+				<div class="alert alert-danger"><p>Please note the last part in the connection string. You should make sure <em>?ssl=true</em> is added to your connection string.</p></div>
+			</div>
+
+			<div class="col-md-6 col-md-offset-2">
+				<h3>Create the User Model</h3>
+				<p>Let's start by creating the User model.</p>
+			</div>
+		</div>
+
+
+
+		<div class="row pitch">
+			<div class="col-md-8 col-md-offset-2">
+				<hr>
+
+				<h1>What's next?</h1>
+
+				<p>Have a look at the <a href="https://github.com/martijndeh/fire/tree/master/examples">example projects</a> or browse through <a href="/documentation">the documentation</a>. If you have any questions, please reach out <a href="https://twitter.com/nodeonfire">on Twitter</a>. Enjoy!</p>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="buttons col-md-8 col-md-offset-2 text-center">
+				<iframe src="http://ghbtns.com/github-btn.html?user=martijndeh&repo=fire&type=watch&count=true"
+allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-52717773-3', 'auto');
+ga('send', 'pageview');
+</script>
+</html>
