@@ -76,11 +76,11 @@
         <p>You can even use the simpler <a href="https://docs.angularjs.org/guide/di#implicit-annotation">implicit annotation</a> because Node on Fire seamlessly replaces implicit annotations with inline array notations in the build phase.</p>
 
         <pre><code class="javascript">app.post('/api/users', function(UserModel, request) {
-return UserModel.create(request.body)
-.then(function(user) {
-    return user;
-});
-});</code></pre>
+    return UserModel.create(request.body)
+        .then(function(user) {
+            return user;
+        });
+    });</code></pre>
     </div>
 </div>
 
@@ -91,19 +91,19 @@ return UserModel.create(request.body)
 
         <pre><code class="javascript">// This creates a GET route and returns 123 from MyService (in the back-end).
 app.get('/api/value', function(MyService) {
-return MyService.getValue();
+    return MyService.getValue();
 });
 
 // This creates a controller and sets the scope's value to 123 from MyService (in the front-end).
 app.controller('/', function MyController(MyService, $scope) {
-$scope.value = MyService.getValue();
+    $scope.value = MyService.getValue();
 });
 
 // This is an isomorphic service, available in both the front- and the back-end.
 app.service(function MyService() {
-this.getValue = function() {
-return 123;
-};
+    this.getValue = function() {
+        return 123;
+    };
 });</code></pre>
     </div>
 
@@ -113,7 +113,7 @@ return 123;
         <p>It's trivial to leverage PostgreSQL's powerfull full-text search. With just a few lines you create a search column, keep it up-to-date, create an API endpoint and an isomorphic <code>Model#search</code> method.</p>
 
         <pre><code class="javascript">$scope.searchCities = function(query) {
-return CityModel.search(query, {}, {limit: 20});
+    return CityModel.search(query, {}, {limit: 20});
 };</code></pre>
     </div>
 </div>
@@ -124,15 +124,15 @@ return CityModel.search(query, {}, {limit: 20});
         <p>It's easy to declare your data model and all associations (one-to-one, one-to-many and many-to-many).</p>
 
         <pre><code class="javascript">app.model(function TodoItem(TodoListModel) {
-this.list = [this.BelongsTo(TodoListModel), this.Required];
-this.name = [this.String, this.Required];
-this.completed = [this.Boolean, this.Required, this.Default(false)];
-this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
+    this.list = [this.BelongsTo(TodoListModel), this.Required];
+    this.name = [this.String, this.Required];
+    this.completed = [this.Boolean, this.Required, this.Default(false)];
+    this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
 });
 
 app.model(function TodoList(TodoItemModel) {
-this.items = [this.HasMany(TodoItemModel), this.AutoFetch];
-this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
+    this.items = [this.HasMany(TodoItemModel), this.AutoFetch];
+    this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
 });</code></pre>
     </div>
 
@@ -142,22 +142,22 @@ this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
 
         <pre><code class="javascript">Migration.prototype.up = function() {
 this.models.createModel('TodoItem', {
-id: [this.UUID, this.CanUpdate(false)],
-list: [this.BelongsTo(this.models.TodoList), this.Required],
-name: [this.String, this.Required],
-createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
+    id: [this.UUID, this.CanUpdate(false)],
+    list: [this.BelongsTo(this.models.TodoList), this.Required],
+    name: [this.String, this.Required],
+    createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
 });
 
 this.models.createModel('TodoList', {
-id: [this.UUID, this.CanUpdate(false)],
-items: [this.HasMany(this.models.TodoItem)],
-createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
+    id: [this.UUID, this.CanUpdate(false)],
+    items: [this.HasMany(this.models.TodoItem)],
+    createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
 });
 };
 
 Migration.prototype.down = function() {
-this.models.destroyModel('TodoItem');
-this.models.destroyModel('TodoList');
+    this.models.destroyModel('TodoItem');
+    this.models.destroyModel('TodoList');
 };</code></pre>
     </div>
 </div>
@@ -168,21 +168,21 @@ this.models.destroyModel('TodoList');
         <p>It's trivial to create A/B tests. Tests work with your existing analytics service e.g. Mixpanel.</p>
 
         <pre><code class="javascript">function StartController(textOfButtonTest, $scope) {
-if(textOfButtonTest == 'A') {
-$scope.buttonText = 'Register for FREE';
-}
-else {
-$scope.buttonText = 'Register now';
-};
+    if(textOfButtonTest == 'A') {
+    $scope.buttonText = 'Register for FREE';
+    }
+    else {
+    $scope.buttonText = 'Register now';
+    };
 }
 app.controller('/', StartController);
 
 StartController.prototype.resolve = function() {
-return {
-textOfButtonTest: function() {
-    return TextOfButtonTest.participate();
-}
-};
+    return {
+        textOfButtonTest: function() {
+            return TextOfButtonTest.participate();
+        }
+    };
 };</code></pre>
     </div>
 
@@ -191,31 +191,31 @@ textOfButtonTest: function() {
         <p>Workers execute background tasks to off-load intensive tasks from the web process. It is super easy to create workers.</p>
 
         <pre><code class="javascript">app.worker(function MailWorker() {
-this.sendResetPasswordMail = function(user, resetPassword) {
-var defer = Q.defer();
+    this.sendResetPasswordMail = function(user, resetPassword) {
+        var defer = Q.defer();
 
-mandrill('/messages/send', {
-    message: {
-        to: [{
-            email: user.email,
-            name: user.name
-        }],
-        ...
-    }
-}, defer.makeNodeResolver());
+        mandrill('/messages/send', {
+            message: {
+                to: [{
+                    email: user.email,
+                    name: user.name
+                }],
+                ...
+            }
+        }, defer.makeNodeResolver());
 
-return defer.promise;
-};
+        return defer.promise;
+    };
 });</code></pre>
 
         <p>It's easy to queue a background task from a web process which the worker executes in a worker process.</p>
 
         <pre><code class="javascript">app.post('/api/forgot-password', function(request, MailWorker, UserModel) {
-return UserModel
-.getMe(request)
-.then(function(user) {
-    return MailWorker.sendResetPassword(user, user.resetPassword);
-});
+    return UserModel
+        .getMe(request)
+        .then(function(user) {
+            return MailWorker.sendResetPassword(user, user.resetPassword);
+        });
 });</code></pre>
     </div>
 </div>
@@ -241,9 +241,9 @@ DATABASE_URL: postgres://martijndeh@127.0.0.1/todomvc
 
         <pre><code class="javascript">// retrieve a recipe
 RecipeModel.findOne({id: $route.params.id}, {autoReload: true, cache: 1000 * 60 * 5})
-.then(function(recipes) {
-// recipes
-});</code></pre>
+    .then(function(recipes) {
+        // recipes
+    });</code></pre>
     </div>
 </div>
 
