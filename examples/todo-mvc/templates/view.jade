@@ -1,5 +1,5 @@
 doctype html
-html(ng-app="default")
+html(ng-app=_fire.appName)
     head
         meta(charset="utf-8")
         meta(http-equiv="X-UA-Compatible" content="IE=edge")
@@ -10,6 +10,6 @@ html(ng-app="default")
     body
         div(ng-view)
     if NODE_ENV == 'development'
-        script(src="/scripts/bundle.min.js")
+        script(src="/scripts/bundle.js")
     else
         script(src="/scripts/bundle.min.js")

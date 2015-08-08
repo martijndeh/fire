@@ -1,5 +1,4 @@
-var fire = require('fire');
-var app = fire.app('todomvc');
+var app = require('fire')('todomvc');
 
 app.model(function TodoItem(TodoListModel) {
 	this.list = [this.BelongsTo(TodoListModel), this.Required];

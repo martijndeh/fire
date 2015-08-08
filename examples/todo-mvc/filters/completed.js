@@ -1,5 +1,4 @@
-var fire = require('fire');
-var app = fire.app('todomvc');
+var app = require('fire')('todomvc');
 
 app.filter(function completedFilter($routeParams) {
 	return function(items) {

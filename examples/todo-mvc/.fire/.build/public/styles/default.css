@@ -376,4 +376,10 @@ html .clear-completed:active {
 		bottom: 10px;
 	}
 }
-li.editing{-webkit-user-select:none;-moz-user-select:none;-khtml-user-select:none;-ms-user-select:none}
+
+li.editing {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -ms-user-select: none;
+}

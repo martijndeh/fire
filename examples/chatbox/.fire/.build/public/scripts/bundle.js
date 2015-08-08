@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var angular = require('angular');
-var app = angular.module('default', [require('angular-route'),require('angular-moment')]);
+var app = angular.module('chatbox', [require('angular-route'),require('angular-moment')]);
 
 
 app.directive('autoFocus', [function() {
@@ -312,8 +312,7 @@ app.service('FireSocketService', ['$location', '$rootScope', function($location,
     }
 
     function onError(error) {
-        console.log('Socket error');
-        console.log(error);
+        //
     }
 
     function onClose() {
@@ -391,9 +390,6 @@ app.service('FireSocketService', ['$location', '$rootScope', function($location,
 app.service('FireStreamService', ['FireSocketService', 'FireUUID', function(FireSocketService, FireUUID) {
     var streams = {};
     function parseMessage(messageMap) {
-        console.log('parseMessage');
-        console.log(messageMap);
-
         if(messageMap.msg == 'added') {
             var stream = streams[messageMap.id];
             if(stream) {
@@ -734,6 +730,12 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '_djb2Has
                 });
         };
 
+        this.search = function(searchText, fields, options) {
+            var queryMap = transformQueryMap(fields, options);
+            queryMap._search = searchText;
+            return this._action('search', this.endpoint, this._prepare(queryMap));
+        };
+
         this.find = function(fields, options) {
         	return this._find(this.endpoint, fields, options);
         };
@@ -751,7 +753,10 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '_djb2Has
         				}
 
         				return modelInstance;
-        			});
+        			})
+                    .catch(function() {
+                        return null;
+                    });
         	}
         	else {
         		var optionsMap = options || {};
@@ -784,6 +789,240 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '_djb2Has
         			}
         		});
         	return defer.promise;
+        };
+    };
+}]);
+
+app.service('FireModelInstance', ['$injector', '$q', function($injector, $q) {
+    this.construct = function(modelInstance, setMap, path, model) {
+        modelInstance._model = model;
+        modelInstance._path = path;
+        modelInstance._map = setMap || null;
+        modelInstance._changes = {};
+
+        modelInstance.toJSON = function() {
+            return {
+                _map: modelInstance._map,
+                _path: modelInstance._path
+            };
+        };
+
+        if(modelInstance._map.id) {
+            modelInstance._endpoint = modelInstance._model.endpoint + '/' + modelInstance._map.id;
+        }
+        else {
+            modelInstance._endpoint = null;
+        }
+
+        modelInstance.cancel = function() {
+            modelInstance._changes = {};
+        };
+
+        modelInstance.refresh = function(otherInstance) {
+        	modelInstance._map = otherInstance._map;
+            modelInstance._changes = {};
+
+            if(modelInstance._map.id) {
+                modelInstance._endpoint = modelInstance._model.endpoint + '/' + modelInstance._map.id;
+            }
+            else {
+                modelInstance._endpoint = null;
+            }
+
+        	return modelInstance;
+        };
+
+        modelInstance.toQueryValue = function() {
+        	return modelInstance._map.id;
+        };
+
+        modelInstance.remove = function() {
+        	return modelInstance._model.remove(modelInstance._map.id);
+        };
+
+        modelInstance.save = function() {
+            if(modelInstance._map === null) {
+                return modelInstance._model.create(modelInstance._changes)
+                    .then(function(modelInstance) {
+                        return modelInstance.refresh(modelInstance);
+                    });
+            }
+            else {
+                var numberOfChanges = Object.keys(modelInstance._changes).length;
+                if(numberOfChanges) {
+                    var queryMap = transformQueryMap(modelInstance._changes);
+
+                    return modelInstance._model._put(modelInstance._endpoint, queryMap)
+                        .then(function(instance) {
+                            modelInstance._changes = {};
+
+                            Object.keys(instance._map).forEach(function(key) {
+                                if(instance._map[key] !== null) {
+                                    modelInstance._map[key] = instance._map[key];
+                                }
+                            });
+                            return modelInstance;
+                        });
+                }
+                else {
+                    return $q.when(modelInstance);
+                }
+            }
+        };
+    }
+
+    this.parseAssociation = function(modelInstance, propertyName, resourceName, associatedModelName) {
+        if(typeof modelInstance._map[propertyName] != 'undefined' && modelInstance._map[propertyName] !== null) {
+            if(Array.isArray(modelInstance._map[propertyName])) {
+                modelInstance._map[propertyName] = modelInstance._map[propertyName].map(function(object) {
+                    var fireModelInstanceConstructor = $injector.get('FireModelInstance' + associatedModelName);
+                    if(object._map) {
+                        return new fireModelInstanceConstructor(object._map, modelInstance._path + '/' + resourceName);
+                    }
+                    else {
+                        return new fireModelInstanceConstructor(object, modelInstance._path + '/' + resourceName);
+                    }
+                });
+            }
+            else {
+                var fireModelInstanceConstructor = $injector.get('FireModelInstance' + associatedModelName);
+                if(modelInstance._map[propertyName]._map) {
+                    modelInstance._map[propertyName] = new fireModelInstanceConstructor(modelInstance._map[propertyName]._map, modelInstance._path + '/' + '');
+                }
+                else {
+                    modelInstance._map[propertyName] = new fireModelInstanceConstructor(modelInstance._map[propertyName], modelInstance._path + '/' + '');
+                }
+            }
+        }
+    }
+
+    this.parseProperty = function(modelInstance, propertyName) {
+        Object.defineProperty(modelInstance, propertyName, {
+            get: function() {
+                if(typeof modelInstance._changes[propertyName] != 'undefined') {
+                    return modelInstance._changes[propertyName];
+                }
+
+                return modelInstance._map[propertyName];
+            },
+
+            set: function(value) {
+                modelInstance._changes[propertyName] = value;
+            }
+        });
+    }
+
+    this.createOneToOneMethods = function(modelInstance, modelName, propertyName, resource, singularMethodName) {
+        modelInstance['get' + singularMethodName] = function(queryMap, optionsMap) {
+            return $injector.get(modelName + 'Model')._find(modelInstance._model.endpoint + '/' + this.id + '/' + resource, queryMap, optionsMap)
+                .then(function(foundModelInstance) {
+                    if(foundModelInstance) {
+                        if(foundModelInstance) {
+        					foundModelInstance._endpoint = $injector.get(modelName + 'Model').endpoint + '/' + foundModelInstance.id;
+        				}
+
+                        modelInstance[propertyName] = foundModelInstance;
+                        return foundModelInstance;
+                    }
+                    else {
+                        // TODO: Should we set the local property name to null as well?
+                        return null;
+                    }
+                });
+        };
+
+        modelInstance['create' + singularMethodName] = function(queryMap) {
+            return $injector.get(modelName + 'Model')._create(modelInstance._model.endpoint + '/' + this.id + '/' + resource, queryMap)
+                .then(function(createdModelInstance) {
+                    modelInstance[propertyName] = createdModelInstance;
+                    return createdModelInstance;
+                });
+        };
+
+        modelInstance['remove' + singularMethodName] = function() {
+            return $injector.get(modelName + 'Model')._action('delete', modelInstance._model.endpoint + '/' + this.id + '/' + resource)
+                .then(function(removedModelInstance) {
+                    modelInstance[propertyName] = null;
+                    return removedModelInstance;
+                });
+        };
+    };
+
+    this.createXToManyMethods = function(modelInstance, modelName, propertyName, resource, singularMethodName, pluralMethodName) {
+        modelInstance['get' + pluralMethodName] = function(queryMap, optionsMap) {
+        	return $injector.get(modelName + 'Model')._find(modelInstance._model.endpoint + '/' + this.id + '/' + resource, queryMap, optionsMap)
+                .then(function(modelInstances) {
+                    modelInstance[propertyName] = modelInstances;
+                    return modelInstances;
+                })
+        };
+
+        modelInstance['create' + singularMethodName] = function(queryMap) {
+            return $injector.get(modelName + 'Model')._create(modelInstance._model.endpoint + '/' + this.id + '/' + resource, queryMap)
+                .then(function(createdModelInstance) {
+                    if(!modelInstance[propertyName]) {
+                        modelInstance[propertyName] = [];
+                    }
+
+                    // TODO: How should we sort these associations?
+                    modelInstance[propertyName].push(createdModelInstance);
+                    return createdModelInstance;
+                });
+        };
+
+        modelInstance['remove' + singularMethodName] = function(modelInstanceOrUUID) {
+            var UUID = _getUUID(modelInstanceOrUUID);
+
+            return $injector.get(modelName + 'Model')._action('delete', modelInstance._model.endpoint + '/' + this.id + '//' + UUID)
+                .then(function(removedModelInstance) {
+                    for(var i = 0, il = modelInstance[propertyName].length; i < il; i++) {
+                        var instance = modelInstance[propertyName][i];
+
+                        if(instance.id === UUID) {
+                            modelInstance[propertyName].splice(i, 1);
+                            break;
+                        }
+                    }
+                    return removedModelInstance;
+                });
+        };
+
+        modelInstance['remove' + pluralMethodName] = function(map) {
+            return $injector.get(modelName + 'Model')._action('delete', modelInstance._model.endpoint + '/' + this.id + '/' + resource, modelInstance._model._prepare(transformQueryMap(map)))
+                .then(function(removedModelInstances) {
+                    var ids = removedModelInstances.map(function(instance) {
+                        return instance.id;
+                    });
+
+                    modelInstance[propertyName] = modelInstance[propertyName].filter(function(instance) {
+                        return (ids.indexOf(instance.id) === -1);
+                    });
+
+                    return removedModelInstances;
+                });
+        };
+
+        modelInstance['update' + pluralMethodName] = function(where, set) {
+            return $injector.get(modelName + 'Model')._put(modelInstance._model.endpoint + '/' + this.id + '/' + resource, transformQueryMap(set), transformQueryMap(where))
+                .then(function(updatedModelInstances) {
+                    for(var i = 0, il = updatedModelInstances.length; i < il; i++) {
+                        var updatedModelInstance = updatedModelInstances[i];
+
+                        for(var j = 0, jl = modelInstance[propertyName].length; j < jl; j++) {
+                            var instance = modelInstance[propertyName][j];
+
+                            if(instance.id == updatedModelInstance.id) {
+                                Object.keys(updatedModelInstance._map).forEach(function(key) {
+                                    if(updatedModelInstance._map[key] !== null) {
+                                        instance._map[key] = updatedModelInstance._map[key];
+                                    }
+                                });
+                                break;
+                            }
+                        }
+                    }
+                    return updatedModelInstances;
+                });
         };
     };
 }]);
@@ -942,229 +1181,57 @@ app.factory('UserModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$r
     return model;
 }]);
 
-app.factory('FireModelInstanceUser', ['UserModel', '$q', '$http', '$injector', function(UserModel, $q, $http, $injector) {
+app.factory('FireModelInstanceUser', ['UserModel', '$q', '$http', '$injector', 'FireModelInstance', function(UserModel, $q, $http, $injector, FireModelInstance) {
     return function(setMap, path, shouldBeUndefined) {
-        if(shouldBeUndefined) {
-            throw new Error('FireModelInstanceUser only accepts two arguments now.');
-        }
-
-        this._map = setMap || null;
-        this._changes = {};
-
-        this.toJSON = function() {
-            return {
-                _map: this._map,
-                _path: path
-            };
-        };
-
-        if(this._map.id) {
-            this._endpoint = UserModel.endpoint + '/' + this._map.id;
-        }
-        else {
-            this._endpoint = null;
-        }
+        FireModelInstance.construct(this, setMap, path, UserModel);
 
         var self = this;
     
     	
 
-    	Object.defineProperty(this, 'id', {
-    		get: function() {
-    			if(typeof self._changes.id != 'undefined') {
-    				return self._changes.id;
-    			}
-
-    			return self._map.id;
-    		},
-
-    		set: function(value) {
-    			self._changes.id = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'id');
     
     	
-    	if(typeof setMap.passwordReset != 'undefined' && setMap.passwordReset !== null) {
-    		if(Array.isArray(setMap.passwordReset)) {
-    			setMap.passwordReset = setMap.passwordReset.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceUserResetPassword');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'password-resets');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'password-resets');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceUserResetPassword');
-                if(setMap.passwordReset._map) {
-    			    setMap.passwordReset = new fireModelInstanceConstructor(setMap.passwordReset._map, path + '/' + 'password-resets');
-                }
-                else {
-                    setMap.passwordReset = new fireModelInstanceConstructor(setMap.passwordReset, path + '/' + 'password-resets');
-                }
-    		}
-    	}
+    	FireModelInstance.parseAssociation(this, 'passwordReset', 'password-resets', 'UserResetPassword');
     	
 
-    	Object.defineProperty(this, 'passwordReset', {
-    		get: function() {
-    			if(typeof self._changes.passwordReset != 'undefined') {
-    				return self._changes.passwordReset;
-    			}
-
-    			return self._map.passwordReset;
-    		},
-
-    		set: function(value) {
-    			self._changes.passwordReset = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'passwordReset');
     
     	
 
-    	Object.defineProperty(this, 'accessToken', {
-    		get: function() {
-    			if(typeof self._changes.accessToken != 'undefined') {
-    				return self._changes.accessToken;
-    			}
-
-    			return self._map.accessToken;
-    		},
-
-    		set: function(value) {
-    			self._changes.accessToken = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'accessToken');
     
     	
 
-    	Object.defineProperty(this, 'email', {
-    		get: function() {
-    			if(typeof self._changes.email != 'undefined') {
-    				return self._changes.email;
-    			}
-
-    			return self._map.email;
-    		},
-
-    		set: function(value) {
-    			self._changes.email = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'email');
     
     	
 
-    	Object.defineProperty(this, 'name', {
-    		get: function() {
-    			if(typeof self._changes.name != 'undefined') {
-    				return self._changes.name;
-    			}
-
-    			return self._map.name;
-    		},
-
-    		set: function(value) {
-    			self._changes.name = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'name');
     
     	
 
-    	Object.defineProperty(this, 'avatarUrl', {
-    		get: function() {
-    			if(typeof self._changes.avatarUrl != 'undefined') {
-    				return self._changes.avatarUrl;
-    			}
-
-    			return self._map.avatarUrl;
-    		},
-
-    		set: function(value) {
-    			self._changes.avatarUrl = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'avatarUrl');
     
     	
-    	if(typeof setMap.messages != 'undefined' && setMap.messages !== null) {
-    		if(Array.isArray(setMap.messages)) {
-    			setMap.messages = setMap.messages.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceMessage');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'messages');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'messages');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceMessage');
-                if(setMap.messages._map) {
-    			    setMap.messages = new fireModelInstanceConstructor(setMap.messages._map, path + '/' + 'messages');
-                }
-                else {
-                    setMap.messages = new fireModelInstanceConstructor(setMap.messages, path + '/' + 'messages');
-                }
-    		}
-    	}
+    	FireModelInstance.parseAssociation(this, 'messages', 'messages', 'Message');
     	
 
-    	Object.defineProperty(this, 'messages', {
-    		get: function() {
-    			if(typeof self._changes.messages != 'undefined') {
-    				return self._changes.messages;
-    			}
-
-    			return self._map.messages;
-    		},
-
-    		set: function(value) {
-    			self._changes.messages = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'messages');
     
     	
-    	if(typeof setMap.testParticipant != 'undefined' && setMap.testParticipant !== null) {
-    		if(Array.isArray(setMap.testParticipant)) {
-    			setMap.testParticipant = setMap.testParticipant.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestParticipant');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'test-participants');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'test-participants');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestParticipant');
-                if(setMap.testParticipant._map) {
-    			    setMap.testParticipant = new fireModelInstanceConstructor(setMap.testParticipant._map, path + '/' + 'test-participants');
-                }
-                else {
-                    setMap.testParticipant = new fireModelInstanceConstructor(setMap.testParticipant, path + '/' + 'test-participants');
-                }
-    		}
-    	}
+
+    	FireModelInstance.parseProperty(this, 'triggerResult');
+    
+    	
+    	FireModelInstance.parseAssociation(this, 'testParticipant', 'test-participants', 'TestParticipant');
     	
 
-    	Object.defineProperty(this, 'testParticipant', {
-    		get: function() {
-    			if(typeof self._changes.testParticipant != 'undefined') {
-    				return self._changes.testParticipant;
-    			}
-
-    			return self._map.testParticipant;
-    		},
-
-    		set: function(value) {
-    			self._changes.testParticipant = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'testParticipant');
     
 
+    
+        
     
         
     
@@ -1193,242 +1260,24 @@ app.factory('FireModelInstanceUser', ['UserModel', '$q', '$http', '$injector', f
         };
 
 
-        this.cancel = function() {
-            this._changes = {};
-        };
 
-        this.refresh = function(otherInstance) {
-        	this._map = otherInstance._map;
-            this._changes = {};
 
-            if(this._map.id) {
-                this._endpoint = UserModel.endpoint + '/' + this._map.id;
-            }
-            else {
-                this._endpoint = null;
-            }
 
-        	return this;
-        };
-
-        this.toQueryValue = function() {
-        	return this._map.id;
-        };
-
-        this.remove = function() {
-        	return UserModel.remove(this._map.id);
-        };
-
-        this.save = function() {
-            if(this._map === null) {
-                return UserModel.create(this._changes)
-                    .then(function(modelInstance) {
-                        return self.refresh(modelInstance);
-                    });
-            }
-            else {
-                var numberOfChanges = Object.keys(this._changes).length;
-                if(numberOfChanges) {
-                    var queryMap = transformQueryMap(this._changes);
-
-                    return UserModel._put(this._endpoint, queryMap)
-                        .then(function(instance) {
-                            self._changes = {};
-
-                            Object.keys(instance._map).forEach(function(key) {
-                                if(instance._map[key] !== null) {
-                                    self._map[key] = instance._map[key];
-                                }
-                            });
-                            return self;
-                        });
-                }
-                else {
-                    return $q.when(this);
-                }
-            }
-        };
-
+        
+        FireModelInstance.createOneToOneMethods(this, 'UserResetPassword', 'passwordReset', 'password-reset', 'PasswordReset');
+        
         
 
         
         
-        this.getPasswordreset = function() {
-            console.log('Warning: getPasswordreset is deprecated. Please use get instead.');
-        };
-
-        this.createPasswordreset = function() {
-            console.log('Warning: createPasswordreset is deprecated. Please use create instead.');
-        };
-
-        this.removePasswordreset = function() {
-            console.log('Warning: removePasswordreset is deprecated. Please use remove instead.');
-        };
-
-        this.getPasswordReset = function(queryMap, optionsMap) {
-            return $injector.get('UserResetPasswordModel')._find(UserModel.endpoint + '/' + this.id + '/password-reset', queryMap, optionsMap)
-                .then(function(modelInstance) {
-                    if(modelInstance) {
-                        if(modelInstance) {
-        					modelInstance._endpoint = $injector.get('UserResetPasswordModel').endpoint + '/' + modelInstance.id;
-        				}
-
-                        self.passwordReset = modelInstance;
-                        return modelInstance;
-                    }
-                    else {
-                        // TODO: Should we set the local property name to null as well?
-                        return null;
-                    }
-                });
-        };
-
-        this.createPasswordReset = function(queryMap) {
-            return $injector.get('UserResetPasswordModel')._create(UserModel.endpoint + '/' + this.id + '/password-reset', queryMap)
-                .then(function(modelInstance) {
-                    self.passwordReset = modelInstance;
-                    return modelInstance;
-                });
-        };
-
-        this.removePasswordReset = function() {
-            return $injector.get('UserResetPasswordModel')._action('delete', UserModel.endpoint + '/' + this.id + '/password-reset')
-                .then(function(removeModelInstance) {
-                    self.passwordReset = null;
-                    return removeModelInstance;
-                });
-        };
+        FireModelInstance.createXToManyMethods(this, 'Message', 'messages', 'messages', 'Message', 'Messages');
         
-        
-        
-        
-        
-        this.getMessages = function(queryMap, optionsMap) {
-        	return $injector.get('MessageModel')._find(UserModel.endpoint + '/' + this.id + '/messages', queryMap, optionsMap)
-                .then(function(modelInstances) {
-                    self.messages = modelInstances;
-                    return modelInstances;
-                })
-        };
-
-        this.createMessage = function(queryMap) {
-            return $injector.get('MessageModel')._create(UserModel.endpoint + '/' + this.id + '/messages', queryMap)
-                .then(function(createdModelInstance) {
-                    if(!self.messages) {
-                        self.messages = [];
-                    }
-
-                    // TODO: How should we sort these associations?
-                    self.messages.push(createdModelInstance);
-                    return createdModelInstance;
-                });
-        };
-
-        this.removeMessage = function(modelInstanceOrUUID) {
-            var UUID = _getUUID(modelInstanceOrUUID);
-
-            return $injector.get('MessageModel')._action('delete', UserModel.endpoint + '/' + this.id + '/messages/' + UUID)
-                .then(function(removedModelInstance) {
-                    for(var i = 0, il = self.messages.length; i < il; i++) {
-                        var modelInstance = self.messages[i];
-
-                        if(modelInstance.id === UUID) {
-                            self.messages.splice(i, 1);
-                            break;
-                        }
-                    }
-                    return removedModelInstance;
-                });
-        };
-
-        this.removeMessages = function(map) {
-            return $injector.get('MessageModel')._action('delete', UserModel.endpoint + '/' + this.id + '/messages', UserModel._prepare(transformQueryMap(map)))
-                .then(function(removedModelInstances) {
-                    var ids = removedModelInstances.map(function(modelInstance) {
-                        return modelInstance.id;
-                    });
-
-                    self.messages = self.messages.filter(function(modelInstance) {
-                        return (ids.indexOf(modelInstance.id) === -1);
-                    });
-
-                    return removedModelInstances;
-                });
-        };
-
-        this.updateMessages = function(where, set) {
-            return $injector.get('MessageModel')._put(UserModel.endpoint + '/' + this.id + '/messages', transformQueryMap(set), transformQueryMap(where))
-                .then(function(updatedModelInstances) {
-                    for(var i = 0, il = updatedModelInstances.length; i < il; i++) {
-                        var updatedModelInstance = updatedModelInstances[i];
-
-                        for(var j = 0, jl = self.messages.length; j < jl; j++) {
-                            var modelInstance = self.messages[j];
-
-                            if(modelInstance.id == updatedModelInstance.id) {
-                                Object.keys(updatedModelInstance._map).forEach(function(key) {
-                                    if(updatedModelInstance._map[key] !== null) {
-                                        modelInstance._map[key] = updatedModelInstance._map[key];
-                                    }
-                                });
-                                break;
-                            }
-                        }
-                    }
-                });
-        };
 
         
+        FireModelInstance.createOneToOneMethods(this, 'TestParticipant', 'testParticipant', 'test-participant', 'TestParticipant');
         
         
-        this.getTestparticipant = function() {
-            console.log('Warning: getTestparticipant is deprecated. Please use get instead.');
-        };
 
-        this.createTestparticipant = function() {
-            console.log('Warning: createTestparticipant is deprecated. Please use create instead.');
-        };
-
-        this.removeTestparticipant = function() {
-            console.log('Warning: removeTestparticipant is deprecated. Please use remove instead.');
-        };
-
-        this.getTestParticipant = function(queryMap, optionsMap) {
-            return $injector.get('TestParticipantModel')._find(UserModel.endpoint + '/' + this.id + '/test-participant', queryMap, optionsMap)
-                .then(function(modelInstance) {
-                    if(modelInstance) {
-                        if(modelInstance) {
-        					modelInstance._endpoint = $injector.get('TestParticipantModel').endpoint + '/' + modelInstance.id;
-        				}
-
-                        self.testParticipant = modelInstance;
-                        return modelInstance;
-                    }
-                    else {
-                        // TODO: Should we set the local property name to null as well?
-                        return null;
-                    }
-                });
-        };
-
-        this.createTestParticipant = function(queryMap) {
-            return $injector.get('TestParticipantModel')._create(UserModel.endpoint + '/' + this.id + '/test-participant', queryMap)
-                .then(function(modelInstance) {
-                    self.testParticipant = modelInstance;
-                    return modelInstance;
-                });
-        };
-
-        this.removeTestParticipant = function() {
-            return $injector.get('TestParticipantModel')._action('delete', UserModel.endpoint + '/' + this.id + '/test-participant')
-                .then(function(removeModelInstance) {
-                    self.testParticipant = null;
-                    return removeModelInstance;
-                });
-        };
-        
-        
-        
     };
 }]);
 
@@ -1442,117 +1291,29 @@ app.factory('MessageModel', ['$http', '$q', 'FireModel', '$injector', '$route', 
     return model;
 }]);
 
-app.factory('FireModelInstanceMessage', ['MessageModel', '$q', '$http', '$injector', function(MessageModel, $q, $http, $injector) {
+app.factory('FireModelInstanceMessage', ['MessageModel', '$q', '$http', '$injector', 'FireModelInstance', function(MessageModel, $q, $http, $injector, FireModelInstance) {
     return function(setMap, path, shouldBeUndefined) {
-        if(shouldBeUndefined) {
-            throw new Error('FireModelInstanceMessage only accepts two arguments now.');
-        }
-
-        this._map = setMap || null;
-        this._changes = {};
-
-        this.toJSON = function() {
-            return {
-                _map: this._map,
-                _path: path
-            };
-        };
-
-        if(this._map.id) {
-            this._endpoint = MessageModel.endpoint + '/' + this._map.id;
-        }
-        else {
-            this._endpoint = null;
-        }
+        FireModelInstance.construct(this, setMap, path, MessageModel);
 
         var self = this;
     
     	
 
-    	Object.defineProperty(this, 'id', {
-    		get: function() {
-    			if(typeof self._changes.id != 'undefined') {
-    				return self._changes.id;
-    			}
-
-    			return self._map.id;
-    		},
-
-    		set: function(value) {
-    			self._changes.id = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'id');
     
     	
-    	if(typeof setMap.user != 'undefined' && setMap.user !== null) {
-    		if(Array.isArray(setMap.user)) {
-    			setMap.user = setMap.user.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceUser');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'users');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'users');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceUser');
-                if(setMap.user._map) {
-    			    setMap.user = new fireModelInstanceConstructor(setMap.user._map, path + '/' + 'users');
-                }
-                else {
-                    setMap.user = new fireModelInstanceConstructor(setMap.user, path + '/' + 'users');
-                }
-    		}
-    	}
+    	FireModelInstance.parseAssociation(this, 'user', 'users', 'User');
     	
 
-    	Object.defineProperty(this, 'user', {
-    		get: function() {
-    			if(typeof self._changes.user != 'undefined') {
-    				return self._changes.user;
-    			}
-
-    			return self._map.user;
-    		},
-
-    		set: function(value) {
-    			self._changes.user = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'user');
     
     	
 
-    	Object.defineProperty(this, 'createdAt', {
-    		get: function() {
-    			if(typeof self._changes.createdAt != 'undefined') {
-    				return self._changes.createdAt;
-    			}
-
-    			return self._map.createdAt;
-    		},
-
-    		set: function(value) {
-    			self._changes.createdAt = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'createdAt');
     
     	
 
-    	Object.defineProperty(this, 'text', {
-    		get: function() {
-    			if(typeof self._changes.text != 'undefined') {
-    				return self._changes.text;
-    			}
-
-    			return self._map.text;
-    		},
-
-    		set: function(value) {
-    			self._changes.text = value;
-    		}
-    	});
+    	FireModelInstance.parseProperty(this, 'text');
     
 
     
@@ -1571,1862 +1332,18 @@ app.factory('FireModelInstanceMessage', ['MessageModel', '$q', '$http', '$inject
 
 
 
-        this.cancel = function() {
-            this._changes = {};
-        };
 
-        this.refresh = function(otherInstance) {
-        	this._map = otherInstance._map;
-            this._changes = {};
 
-            if(this._map.id) {
-                this._endpoint = MessageModel.endpoint + '/' + this._map.id;
-            }
-            else {
-                this._endpoint = null;
-            }
-
-        	return this;
-        };
-
-        this.toQueryValue = function() {
-        	return this._map.id;
-        };
-
-        this.remove = function() {
-        	return MessageModel.remove(this._map.id);
-        };
-
-        this.save = function() {
-            if(this._map === null) {
-                return MessageModel.create(this._changes)
-                    .then(function(modelInstance) {
-                        return self.refresh(modelInstance);
-                    });
-            }
-            else {
-                var numberOfChanges = Object.keys(this._changes).length;
-                if(numberOfChanges) {
-                    var queryMap = transformQueryMap(this._changes);
-
-                    return MessageModel._put(this._endpoint, queryMap)
-                        .then(function(instance) {
-                            self._changes = {};
-
-                            Object.keys(instance._map).forEach(function(key) {
-                                if(instance._map[key] !== null) {
-                                    self._map[key] = instance._map[key];
-                                }
-                            });
-                            return self;
-                        });
-                }
-                else {
-                    return $q.when(this);
-                }
-            }
-        };
 
         
-
+        FireModelInstance.createOneToOneMethods(this, 'User', 'user', 'user', 'User');
         
         
-        this.getUser = function() {
-            console.log('Warning: getUser is deprecated. Please use get instead.');
-        };
 
-        this.createUser = function() {
-            console.log('Warning: createUser is deprecated. Please use create instead.');
-        };
-
-        this.removeUser = function() {
-            console.log('Warning: removeUser is deprecated. Please use remove instead.');
-        };
-
-        this.getUser = function(queryMap, optionsMap) {
-            return $injector.get('UserModel')._find(MessageModel.endpoint + '/' + this.id + '/user', queryMap, optionsMap)
-                .then(function(modelInstance) {
-                    if(modelInstance) {
-                        if(modelInstance) {
-        					modelInstance._endpoint = $injector.get('UserModel').endpoint + '/' + modelInstance.id;
-        				}
-
-                        self.user = modelInstance;
-                        return modelInstance;
-                    }
-                    else {
-                        // TODO: Should we set the local property name to null as well?
-                        return null;
-                    }
-                });
-        };
-
-        this.createUser = function(queryMap) {
-            return $injector.get('UserModel')._create(MessageModel.endpoint + '/' + this.id + '/user', queryMap)
-                .then(function(modelInstance) {
-                    self.user = modelInstance;
-                    return modelInstance;
-                });
-        };
-
-        this.removeUser = function() {
-            return $injector.get('UserModel')._action('delete', MessageModel.endpoint + '/' + this.id + '/user')
-                .then(function(removeModelInstance) {
-                    self.user = null;
-                    return removeModelInstance;
-                });
-        };
-        
-        
-        
     };
 }]);
-
-app.factory('UserResetPasswordModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
-    var model = new FireModel('UserResetPassword', [], '/api/user-reset-passwords');
-
-    
-
-    
-
-    return model;
-}]);
-
-app.factory('FireModelInstanceUserResetPassword', ['UserResetPasswordModel', '$q', '$http', '$injector', function(UserResetPasswordModel, $q, $http, $injector) {
-    return function(setMap, path, shouldBeUndefined) {
-        if(shouldBeUndefined) {
-            throw new Error('FireModelInstanceUserResetPassword only accepts two arguments now.');
-        }
-
-        this._map = setMap || null;
-        this._changes = {};
-
-        this.toJSON = function() {
-            return {
-                _map: this._map,
-                _path: path
-            };
-        };
-
-        if(this._map.id) {
-            this._endpoint = UserResetPasswordModel.endpoint + '/' + this._map.id;
-        }
-        else {
-            this._endpoint = null;
-        }
-
-        var self = this;
-    
-    	
-
-    	Object.defineProperty(this, 'id', {
-    		get: function() {
-    			if(typeof self._changes.id != 'undefined') {
-    				return self._changes.id;
-    			}
-
-    			return self._map.id;
-    		},
-
-    		set: function(value) {
-    			self._changes.id = value;
-    		}
-    	});
-    
-    	
-    	if(typeof setMap.authenticator != 'undefined' && setMap.authenticator !== null) {
-    		if(Array.isArray(setMap.authenticator)) {
-    			setMap.authenticator = setMap.authenticator.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceUser');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'authenticators');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'authenticators');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceUser');
-                if(setMap.authenticator._map) {
-    			    setMap.authenticator = new fireModelInstanceConstructor(setMap.authenticator._map, path + '/' + 'authenticators');
-                }
-                else {
-                    setMap.authenticator = new fireModelInstanceConstructor(setMap.authenticator, path + '/' + 'authenticators');
-                }
-    		}
-    	}
-    	
-
-    	Object.defineProperty(this, 'authenticator', {
-    		get: function() {
-    			if(typeof self._changes.authenticator != 'undefined') {
-    				return self._changes.authenticator;
-    			}
-
-    			return self._map.authenticator;
-    		},
-
-    		set: function(value) {
-    			self._changes.authenticator = value;
-    		}
-    	});
-    
-    	
-
-    	Object.defineProperty(this, 'token', {
-    		get: function() {
-    			if(typeof self._changes.token != 'undefined') {
-    				return self._changes.token;
-    			}
-
-    			return self._map.token;
-    		},
-
-    		set: function(value) {
-    			self._changes.token = value;
-    		}
-    	});
-    
-
-    
-        
-    
-        
-    
-        
-    
-
-
-
-        this.cancel = function() {
-            this._changes = {};
-        };
-
-        this.refresh = function(otherInstance) {
-        	this._map = otherInstance._map;
-            this._changes = {};
-
-            if(this._map.id) {
-                this._endpoint = UserResetPasswordModel.endpoint + '/' + this._map.id;
-            }
-            else {
-                this._endpoint = null;
-            }
-
-        	return this;
-        };
-
-        this.toQueryValue = function() {
-        	return this._map.id;
-        };
-
-        this.remove = function() {
-        	return UserResetPasswordModel.remove(this._map.id);
-        };
-
-        this.save = function() {
-            if(this._map === null) {
-                return UserResetPasswordModel.create(this._changes)
-                    .then(function(modelInstance) {
-                        return self.refresh(modelInstance);
-                    });
-            }
-            else {
-                var numberOfChanges = Object.keys(this._changes).length;
-                if(numberOfChanges) {
-                    var queryMap = transformQueryMap(this._changes);
-
-                    return UserResetPasswordModel._put(this._endpoint, queryMap)
-                        .then(function(instance) {
-                            self._changes = {};
-
-                            Object.keys(instance._map).forEach(function(key) {
-                                if(instance._map[key] !== null) {
-                                    self._map[key] = instance._map[key];
-                                }
-                            });
-                            return self;
-                        });
-                }
-                else {
-                    return $q.when(this);
-                }
-            }
-        };
-
-        
-
-        
-        
-        this.getAuthenticator = function() {
-            console.log('Warning: getAuthenticator is deprecated. Please use get instead.');
-        };
-
-        this.createAuthenticator = function() {
-            console.log('Warning: createAuthenticator is deprecated. Please use create instead.');
-        };
-
-        this.removeAuthenticator = function() {
-            console.log('Warning: removeAuthenticator is deprecated. Please use remove instead.');
-        };
-
-        this.getAuthenticator = function(queryMap, optionsMap) {
-            return $injector.get('UserModel')._find(UserResetPasswordModel.endpoint + '/' + this.id + '/authenticator', queryMap, optionsMap)
-                .then(function(modelInstance) {
-                    if(modelInstance) {
-                        if(modelInstance) {
-        					modelInstance._endpoint = $injector.get('UserModel').endpoint + '/' + modelInstance.id;
-        				}
-
-                        self.authenticator = modelInstance;
-                        return modelInstance;
-                    }
-                    else {
-                        // TODO: Should we set the local property name to null as well?
-                        return null;
-                    }
-                });
-        };
-
-        this.createAuthenticator = function(queryMap) {
-            return $injector.get('UserModel')._create(UserResetPasswordModel.endpoint + '/' + this.id + '/authenticator', queryMap)
-                .then(function(modelInstance) {
-                    self.authenticator = modelInstance;
-                    return modelInstance;
-                });
-        };
-
-        this.removeAuthenticator = function() {
-            return $injector.get('UserModel')._action('delete', UserResetPasswordModel.endpoint + '/' + this.id + '/authenticator')
-                .then(function(removeModelInstance) {
-                    self.authenticator = null;
-                    return removeModelInstance;
-                });
-        };
-        
-        
-        
-    };
-}]);
-
-app.factory('UserLoginTokenModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
-    var model = new FireModel('UserLoginToken', [], '/api/user-login-tokens');
-
-    
-
-    
-
-    return model;
-}]);
-
-app.factory('FireModelInstanceUserLoginToken', ['UserLoginTokenModel', '$q', '$http', '$injector', function(UserLoginTokenModel, $q, $http, $injector) {
-    return function(setMap, path, shouldBeUndefined) {
-        if(shouldBeUndefined) {
-            throw new Error('FireModelInstanceUserLoginToken only accepts two arguments now.');
-        }
-
-        this._map = setMap || null;
-        this._changes = {};
-
-        this.toJSON = function() {
-            return {
-                _map: this._map,
-                _path: path
-            };
-        };
-
-        if(this._map.id) {
-            this._endpoint = UserLoginTokenModel.endpoint + '/' + this._map.id;
-        }
-        else {
-            this._endpoint = null;
-        }
-
-        var self = this;
-    
-    	
-
-    	Object.defineProperty(this, 'id', {
-    		get: function() {
-    			if(typeof self._changes.id != 'undefined') {
-    				return self._changes.id;
-    			}
-
-    			return self._map.id;
-    		},
-
-    		set: function(value) {
-    			self._changes.id = value;
-    		}
-    	});
-    
-    	
-    	if(typeof setMap.authenticator != 'undefined' && setMap.authenticator !== null) {
-    		if(Array.isArray(setMap.authenticator)) {
-    			setMap.authenticator = setMap.authenticator.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceUser');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'authenticators');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'authenticators');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceUser');
-                if(setMap.authenticator._map) {
-    			    setMap.authenticator = new fireModelInstanceConstructor(setMap.authenticator._map, path + '/' + 'authenticators');
-                }
-                else {
-                    setMap.authenticator = new fireModelInstanceConstructor(setMap.authenticator, path + '/' + 'authenticators');
-                }
-    		}
-    	}
-    	
-
-    	Object.defineProperty(this, 'authenticator', {
-    		get: function() {
-    			if(typeof self._changes.authenticator != 'undefined') {
-    				return self._changes.authenticator;
-    			}
-
-    			return self._map.authenticator;
-    		},
-
-    		set: function(value) {
-    			self._changes.authenticator = value;
-    		}
-    	});
-    
-    	
-
-    	Object.defineProperty(this, 'token', {
-    		get: function() {
-    			if(typeof self._changes.token != 'undefined') {
-    				return self._changes.token;
-    			}
-
-    			return self._map.token;
-    		},
-
-    		set: function(value) {
-    			self._changes.token = value;
-    		}
-    	});
-    
-    	
-
-    	Object.defineProperty(this, 'createdAt', {
-    		get: function() {
-    			if(typeof self._changes.createdAt != 'undefined') {
-    				return self._changes.createdAt;
-    			}
-
-    			return self._map.createdAt;
-    		},
-
-    		set: function(value) {
-    			self._changes.createdAt = value;
-    		}
-    	});
-    
-
-    
-        
-    
-        
-    
-        
-    
-        
-        if(setMap.createdAt) {
-            setMap.createdAt = new Date(setMap.createdAt);
-        }
-        
-    
-
-
-
-        this.cancel = function() {
-            this._changes = {};
-        };
-
-        this.refresh = function(otherInstance) {
-        	this._map = otherInstance._map;
-            this._changes = {};
-
-            if(this._map.id) {
-                this._endpoint = UserLoginTokenModel.endpoint + '/' + this._map.id;
-            }
-            else {
-                this._endpoint = null;
-            }
-
-        	return this;
-        };
-
-        this.toQueryValue = function() {
-        	return this._map.id;
-        };
-
-        this.remove = function() {
-        	return UserLoginTokenModel.remove(this._map.id);
-        };
-
-        this.save = function() {
-            if(this._map === null) {
-                return UserLoginTokenModel.create(this._changes)
-                    .then(function(modelInstance) {
-                        return self.refresh(modelInstance);
-                    });
-            }
-            else {
-                var numberOfChanges = Object.keys(this._changes).length;
-                if(numberOfChanges) {
-                    var queryMap = transformQueryMap(this._changes);
-
-                    return UserLoginTokenModel._put(this._endpoint, queryMap)
-                        .then(function(instance) {
-                            self._changes = {};
-
-                            Object.keys(instance._map).forEach(function(key) {
-                                if(instance._map[key] !== null) {
-                                    self._map[key] = instance._map[key];
-                                }
-                            });
-                            return self;
-                        });
-                }
-                else {
-                    return $q.when(this);
-                }
-            }
-        };
-
-        
-
-        
-    };
-}]);
-
-app.factory('TestModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
-    var model = new FireModel('Test', [], '/api/tests');
-
-    
-
-    
-
-    return model;
-}]);
-
-app.factory('FireModelInstanceTest', ['TestModel', '$q', '$http', '$injector', function(TestModel, $q, $http, $injector) {
-    return function(setMap, path, shouldBeUndefined) {
-        if(shouldBeUndefined) {
-            throw new Error('FireModelInstanceTest only accepts two arguments now.');
-        }
-
-        this._map = setMap || null;
-        this._changes = {};
-
-        this.toJSON = function() {
-            return {
-                _map: this._map,
-                _path: path
-            };
-        };
-
-        if(this._map.id) {
-            this._endpoint = TestModel.endpoint + '/' + this._map.id;
-        }
-        else {
-            this._endpoint = null;
-        }
-
-        var self = this;
-    
-    	
-
-    	Object.defineProperty(this, 'id', {
-    		get: function() {
-    			if(typeof self._changes.id != 'undefined') {
-    				return self._changes.id;
-    			}
-
-    			return self._map.id;
-    		},
-
-    		set: function(value) {
-    			self._changes.id = value;
-    		}
-    	});
-    
-    	
-
-    	Object.defineProperty(this, 'name', {
-    		get: function() {
-    			if(typeof self._changes.name != 'undefined') {
-    				return self._changes.name;
-    			}
-
-    			return self._map.name;
-    		},
-
-    		set: function(value) {
-    			self._changes.name = value;
-    		}
-    	});
-    
-    	
-    	if(typeof setMap.sessions != 'undefined' && setMap.sessions !== null) {
-    		if(Array.isArray(setMap.sessions)) {
-    			setMap.sessions = setMap.sessions.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestSession');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'sessions');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'sessions');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestSession');
-                if(setMap.sessions._map) {
-    			    setMap.sessions = new fireModelInstanceConstructor(setMap.sessions._map, path + '/' + 'sessions');
-                }
-                else {
-                    setMap.sessions = new fireModelInstanceConstructor(setMap.sessions, path + '/' + 'sessions');
-                }
-    		}
-    	}
-    	
-
-    	Object.defineProperty(this, 'sessions', {
-    		get: function() {
-    			if(typeof self._changes.sessions != 'undefined') {
-    				return self._changes.sessions;
-    			}
-
-    			return self._map.sessions;
-    		},
-
-    		set: function(value) {
-    			self._changes.sessions = value;
-    		}
-    	});
-    
-    	
-    	if(typeof setMap.variants != 'undefined' && setMap.variants !== null) {
-    		if(Array.isArray(setMap.variants)) {
-    			setMap.variants = setMap.variants.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestVariant');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'variants');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'variants');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestVariant');
-                if(setMap.variants._map) {
-    			    setMap.variants = new fireModelInstanceConstructor(setMap.variants._map, path + '/' + 'variants');
-                }
-                else {
-                    setMap.variants = new fireModelInstanceConstructor(setMap.variants, path + '/' + 'variants');
-                }
-    		}
-    	}
-    	
-
-    	Object.defineProperty(this, 'variants', {
-    		get: function() {
-    			if(typeof self._changes.variants != 'undefined') {
-    				return self._changes.variants;
-    			}
-
-    			return self._map.variants;
-    		},
-
-    		set: function(value) {
-    			self._changes.variants = value;
-    		}
-    	});
-    
-
-    
-        
-    
-        
-    
-        
-    
-        
-    
-
-
-
-        this.cancel = function() {
-            this._changes = {};
-        };
-
-        this.refresh = function(otherInstance) {
-        	this._map = otherInstance._map;
-            this._changes = {};
-
-            if(this._map.id) {
-                this._endpoint = TestModel.endpoint + '/' + this._map.id;
-            }
-            else {
-                this._endpoint = null;
-            }
-
-        	return this;
-        };
-
-        this.toQueryValue = function() {
-        	return this._map.id;
-        };
-
-        this.remove = function() {
-        	return TestModel.remove(this._map.id);
-        };
-
-        this.save = function() {
-            if(this._map === null) {
-                return TestModel.create(this._changes)
-                    .then(function(modelInstance) {
-                        return self.refresh(modelInstance);
-                    });
-            }
-            else {
-                var numberOfChanges = Object.keys(this._changes).length;
-                if(numberOfChanges) {
-                    var queryMap = transformQueryMap(this._changes);
-
-                    return TestModel._put(this._endpoint, queryMap)
-                        .then(function(instance) {
-                            self._changes = {};
-
-                            Object.keys(instance._map).forEach(function(key) {
-                                if(instance._map[key] !== null) {
-                                    self._map[key] = instance._map[key];
-                                }
-                            });
-                            return self;
-                        });
-                }
-                else {
-                    return $q.when(this);
-                }
-            }
-        };
-
-        
-
-        
-        
-        
-        this.getSessions = function(queryMap, optionsMap) {
-        	return $injector.get('TestSessionModel')._find(TestModel.endpoint + '/' + this.id + '/sessions', queryMap, optionsMap)
-                .then(function(modelInstances) {
-                    self.sessions = modelInstances;
-                    return modelInstances;
-                })
-        };
-
-        this.createSession = function(queryMap) {
-            return $injector.get('TestSessionModel')._create(TestModel.endpoint + '/' + this.id + '/sessions', queryMap)
-                .then(function(createdModelInstance) {
-                    if(!self.sessions) {
-                        self.sessions = [];
-                    }
-
-                    // TODO: How should we sort these associations?
-                    self.sessions.push(createdModelInstance);
-                    return createdModelInstance;
-                });
-        };
-
-        this.removeSession = function(modelInstanceOrUUID) {
-            var UUID = _getUUID(modelInstanceOrUUID);
-
-            return $injector.get('TestSessionModel')._action('delete', TestModel.endpoint + '/' + this.id + '/sessions/' + UUID)
-                .then(function(removedModelInstance) {
-                    for(var i = 0, il = self.sessions.length; i < il; i++) {
-                        var modelInstance = self.sessions[i];
-
-                        if(modelInstance.id === UUID) {
-                            self.sessions.splice(i, 1);
-                            break;
-                        }
-                    }
-                    return removedModelInstance;
-                });
-        };
-
-        this.removeSessions = function(map) {
-            return $injector.get('TestSessionModel')._action('delete', TestModel.endpoint + '/' + this.id + '/sessions', TestModel._prepare(transformQueryMap(map)))
-                .then(function(removedModelInstances) {
-                    var ids = removedModelInstances.map(function(modelInstance) {
-                        return modelInstance.id;
-                    });
-
-                    self.sessions = self.sessions.filter(function(modelInstance) {
-                        return (ids.indexOf(modelInstance.id) === -1);
-                    });
-
-                    return removedModelInstances;
-                });
-        };
-
-        this.updateSessions = function(where, set) {
-            return $injector.get('TestSessionModel')._put(TestModel.endpoint + '/' + this.id + '/sessions', transformQueryMap(set), transformQueryMap(where))
-                .then(function(updatedModelInstances) {
-                    for(var i = 0, il = updatedModelInstances.length; i < il; i++) {
-                        var updatedModelInstance = updatedModelInstances[i];
-
-                        for(var j = 0, jl = self.sessions.length; j < jl; j++) {
-                            var modelInstance = self.sessions[j];
-
-                            if(modelInstance.id == updatedModelInstance.id) {
-                                Object.keys(updatedModelInstance._map).forEach(function(key) {
-                                    if(updatedModelInstance._map[key] !== null) {
-                                        modelInstance._map[key] = updatedModelInstance._map[key];
-                                    }
-                                });
-                                break;
-                            }
-                        }
-                    }
-                });
-        };
-
-        
-        
-        
-        
-        this.getVariants = function(queryMap, optionsMap) {
-        	return $injector.get('TestVariantModel')._find(TestModel.endpoint + '/' + this.id + '/variants', queryMap, optionsMap)
-                .then(function(modelInstances) {
-                    self.variants = modelInstances;
-                    return modelInstances;
-                })
-        };
-
-        this.createVariant = function(queryMap) {
-            return $injector.get('TestVariantModel')._create(TestModel.endpoint + '/' + this.id + '/variants', queryMap)
-                .then(function(createdModelInstance) {
-                    if(!self.variants) {
-                        self.variants = [];
-                    }
-
-                    // TODO: How should we sort these associations?
-                    self.variants.push(createdModelInstance);
-                    return createdModelInstance;
-                });
-        };
-
-        this.removeVariant = function(modelInstanceOrUUID) {
-            var UUID = _getUUID(modelInstanceOrUUID);
-
-            return $injector.get('TestVariantModel')._action('delete', TestModel.endpoint + '/' + this.id + '/variants/' + UUID)
-                .then(function(removedModelInstance) {
-                    for(var i = 0, il = self.variants.length; i < il; i++) {
-                        var modelInstance = self.variants[i];
-
-                        if(modelInstance.id === UUID) {
-                            self.variants.splice(i, 1);
-                            break;
-                        }
-                    }
-                    return removedModelInstance;
-                });
-        };
-
-        this.removeVariants = function(map) {
-            return $injector.get('TestVariantModel')._action('delete', TestModel.endpoint + '/' + this.id + '/variants', TestModel._prepare(transformQueryMap(map)))
-                .then(function(removedModelInstances) {
-                    var ids = removedModelInstances.map(function(modelInstance) {
-                        return modelInstance.id;
-                    });
-
-                    self.variants = self.variants.filter(function(modelInstance) {
-                        return (ids.indexOf(modelInstance.id) === -1);
-                    });
-
-                    return removedModelInstances;
-                });
-        };
-
-        this.updateVariants = function(where, set) {
-            return $injector.get('TestVariantModel')._put(TestModel.endpoint + '/' + this.id + '/variants', transformQueryMap(set), transformQueryMap(where))
-                .then(function(updatedModelInstances) {
-                    for(var i = 0, il = updatedModelInstances.length; i < il; i++) {
-                        var updatedModelInstance = updatedModelInstances[i];
-
-                        for(var j = 0, jl = self.variants.length; j < jl; j++) {
-                            var modelInstance = self.variants[j];
-
-                            if(modelInstance.id == updatedModelInstance.id) {
-                                Object.keys(updatedModelInstance._map).forEach(function(key) {
-                                    if(updatedModelInstance._map[key] !== null) {
-                                        modelInstance._map[key] = updatedModelInstance._map[key];
-                                    }
-                                });
-                                break;
-                            }
-                        }
-                    }
-                });
-        };
-
-        
-        
-    };
-}]);
-
-app.factory('TestParticipantModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
-    var model = new FireModel('TestParticipant', [], '/api/test-participants');
-
-    
-
-    
-
-    return model;
-}]);
-
-app.factory('FireModelInstanceTestParticipant', ['TestParticipantModel', '$q', '$http', '$injector', function(TestParticipantModel, $q, $http, $injector) {
-    return function(setMap, path, shouldBeUndefined) {
-        if(shouldBeUndefined) {
-            throw new Error('FireModelInstanceTestParticipant only accepts two arguments now.');
-        }
-
-        this._map = setMap || null;
-        this._changes = {};
-
-        this.toJSON = function() {
-            return {
-                _map: this._map,
-                _path: path
-            };
-        };
-
-        if(this._map.id) {
-            this._endpoint = TestParticipantModel.endpoint + '/' + this._map.id;
-        }
-        else {
-            this._endpoint = null;
-        }
-
-        var self = this;
-    
-    	
-
-    	Object.defineProperty(this, 'id', {
-    		get: function() {
-    			if(typeof self._changes.id != 'undefined') {
-    				return self._changes.id;
-    			}
-
-    			return self._map.id;
-    		},
-
-    		set: function(value) {
-    			self._changes.id = value;
-    		}
-    	});
-    
-    	
-    	if(typeof setMap.sessions != 'undefined' && setMap.sessions !== null) {
-    		if(Array.isArray(setMap.sessions)) {
-    			setMap.sessions = setMap.sessions.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestSession');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'sessions');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'sessions');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestSession');
-                if(setMap.sessions._map) {
-    			    setMap.sessions = new fireModelInstanceConstructor(setMap.sessions._map, path + '/' + 'sessions');
-                }
-                else {
-                    setMap.sessions = new fireModelInstanceConstructor(setMap.sessions, path + '/' + 'sessions');
-                }
-    		}
-    	}
-    	
-
-    	Object.defineProperty(this, 'sessions', {
-    		get: function() {
-    			if(typeof self._changes.sessions != 'undefined') {
-    				return self._changes.sessions;
-    			}
-
-    			return self._map.sessions;
-    		},
-
-    		set: function(value) {
-    			self._changes.sessions = value;
-    		}
-    	});
-    
-    	
-    	if(typeof setMap.authenticator != 'undefined' && setMap.authenticator !== null) {
-    		if(Array.isArray(setMap.authenticator)) {
-    			setMap.authenticator = setMap.authenticator.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceUser');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'authenticators');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'authenticators');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceUser');
-                if(setMap.authenticator._map) {
-    			    setMap.authenticator = new fireModelInstanceConstructor(setMap.authenticator._map, path + '/' + 'authenticators');
-                }
-                else {
-                    setMap.authenticator = new fireModelInstanceConstructor(setMap.authenticator, path + '/' + 'authenticators');
-                }
-    		}
-    	}
-    	
-
-    	Object.defineProperty(this, 'authenticator', {
-    		get: function() {
-    			if(typeof self._changes.authenticator != 'undefined') {
-    				return self._changes.authenticator;
-    			}
-
-    			return self._map.authenticator;
-    		},
-
-    		set: function(value) {
-    			self._changes.authenticator = value;
-    		}
-    	});
-    
-
-    
-        
-    
-        
-    
-        
-    
-
-
-
-        this.cancel = function() {
-            this._changes = {};
-        };
-
-        this.refresh = function(otherInstance) {
-        	this._map = otherInstance._map;
-            this._changes = {};
-
-            if(this._map.id) {
-                this._endpoint = TestParticipantModel.endpoint + '/' + this._map.id;
-            }
-            else {
-                this._endpoint = null;
-            }
-
-        	return this;
-        };
-
-        this.toQueryValue = function() {
-        	return this._map.id;
-        };
-
-        this.remove = function() {
-        	return TestParticipantModel.remove(this._map.id);
-        };
-
-        this.save = function() {
-            if(this._map === null) {
-                return TestParticipantModel.create(this._changes)
-                    .then(function(modelInstance) {
-                        return self.refresh(modelInstance);
-                    });
-            }
-            else {
-                var numberOfChanges = Object.keys(this._changes).length;
-                if(numberOfChanges) {
-                    var queryMap = transformQueryMap(this._changes);
-
-                    return TestParticipantModel._put(this._endpoint, queryMap)
-                        .then(function(instance) {
-                            self._changes = {};
-
-                            Object.keys(instance._map).forEach(function(key) {
-                                if(instance._map[key] !== null) {
-                                    self._map[key] = instance._map[key];
-                                }
-                            });
-                            return self;
-                        });
-                }
-                else {
-                    return $q.when(this);
-                }
-            }
-        };
-
-        
-
-        
-        
-        
-        this.getSessions = function(queryMap, optionsMap) {
-        	return $injector.get('TestSessionModel')._find(TestParticipantModel.endpoint + '/' + this.id + '/sessions', queryMap, optionsMap)
-                .then(function(modelInstances) {
-                    self.sessions = modelInstances;
-                    return modelInstances;
-                })
-        };
-
-        this.createSession = function(queryMap) {
-            return $injector.get('TestSessionModel')._create(TestParticipantModel.endpoint + '/' + this.id + '/sessions', queryMap)
-                .then(function(createdModelInstance) {
-                    if(!self.sessions) {
-                        self.sessions = [];
-                    }
-
-                    // TODO: How should we sort these associations?
-                    self.sessions.push(createdModelInstance);
-                    return createdModelInstance;
-                });
-        };
-
-        this.removeSession = function(modelInstanceOrUUID) {
-            var UUID = _getUUID(modelInstanceOrUUID);
-
-            return $injector.get('TestSessionModel')._action('delete', TestParticipantModel.endpoint + '/' + this.id + '/sessions/' + UUID)
-                .then(function(removedModelInstance) {
-                    for(var i = 0, il = self.sessions.length; i < il; i++) {
-                        var modelInstance = self.sessions[i];
-
-                        if(modelInstance.id === UUID) {
-                            self.sessions.splice(i, 1);
-                            break;
-                        }
-                    }
-                    return removedModelInstance;
-                });
-        };
-
-        this.removeSessions = function(map) {
-            return $injector.get('TestSessionModel')._action('delete', TestParticipantModel.endpoint + '/' + this.id + '/sessions', TestParticipantModel._prepare(transformQueryMap(map)))
-                .then(function(removedModelInstances) {
-                    var ids = removedModelInstances.map(function(modelInstance) {
-                        return modelInstance.id;
-                    });
-
-                    self.sessions = self.sessions.filter(function(modelInstance) {
-                        return (ids.indexOf(modelInstance.id) === -1);
-                    });
-
-                    return removedModelInstances;
-                });
-        };
-
-        this.updateSessions = function(where, set) {
-            return $injector.get('TestSessionModel')._put(TestParticipantModel.endpoint + '/' + this.id + '/sessions', transformQueryMap(set), transformQueryMap(where))
-                .then(function(updatedModelInstances) {
-                    for(var i = 0, il = updatedModelInstances.length; i < il; i++) {
-                        var updatedModelInstance = updatedModelInstances[i];
-
-                        for(var j = 0, jl = self.sessions.length; j < jl; j++) {
-                            var modelInstance = self.sessions[j];
-
-                            if(modelInstance.id == updatedModelInstance.id) {
-                                Object.keys(updatedModelInstance._map).forEach(function(key) {
-                                    if(updatedModelInstance._map[key] !== null) {
-                                        modelInstance._map[key] = updatedModelInstance._map[key];
-                                    }
-                                });
-                                break;
-                            }
-                        }
-                    }
-                });
-        };
-
-        
-        
-        
-        this.getAuthenticator = function() {
-            console.log('Warning: getAuthenticator is deprecated. Please use get instead.');
-        };
-
-        this.createAuthenticator = function() {
-            console.log('Warning: createAuthenticator is deprecated. Please use create instead.');
-        };
-
-        this.removeAuthenticator = function() {
-            console.log('Warning: removeAuthenticator is deprecated. Please use remove instead.');
-        };
-
-        this.getAuthenticator = function(queryMap, optionsMap) {
-            return $injector.get('UserModel')._find(TestParticipantModel.endpoint + '/' + this.id + '/authenticator', queryMap, optionsMap)
-                .then(function(modelInstance) {
-                    if(modelInstance) {
-                        if(modelInstance) {
-        					modelInstance._endpoint = $injector.get('UserModel').endpoint + '/' + modelInstance.id;
-        				}
-
-                        self.authenticator = modelInstance;
-                        return modelInstance;
-                    }
-                    else {
-                        // TODO: Should we set the local property name to null as well?
-                        return null;
-                    }
-                });
-        };
-
-        this.createAuthenticator = function(queryMap) {
-            return $injector.get('UserModel')._create(TestParticipantModel.endpoint + '/' + this.id + '/authenticator', queryMap)
-                .then(function(modelInstance) {
-                    self.authenticator = modelInstance;
-                    return modelInstance;
-                });
-        };
-
-        this.removeAuthenticator = function() {
-            return $injector.get('UserModel')._action('delete', TestParticipantModel.endpoint + '/' + this.id + '/authenticator')
-                .then(function(removeModelInstance) {
-                    self.authenticator = null;
-                    return removeModelInstance;
-                });
-        };
-        
-        
-        
-    };
-}]);
-
-app.factory('TestSessionModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
-    var model = new FireModel('TestSession', [], '/api/test-sessions');
-
-    
-
-    
-
-    return model;
-}]);
-
-app.factory('FireModelInstanceTestSession', ['TestSessionModel', '$q', '$http', '$injector', function(TestSessionModel, $q, $http, $injector) {
-    return function(setMap, path, shouldBeUndefined) {
-        if(shouldBeUndefined) {
-            throw new Error('FireModelInstanceTestSession only accepts two arguments now.');
-        }
-
-        this._map = setMap || null;
-        this._changes = {};
-
-        this.toJSON = function() {
-            return {
-                _map: this._map,
-                _path: path
-            };
-        };
-
-        if(this._map.id) {
-            this._endpoint = TestSessionModel.endpoint + '/' + this._map.id;
-        }
-        else {
-            this._endpoint = null;
-        }
-
-        var self = this;
-    
-    	
-
-    	Object.defineProperty(this, 'id', {
-    		get: function() {
-    			if(typeof self._changes.id != 'undefined') {
-    				return self._changes.id;
-    			}
-
-    			return self._map.id;
-    		},
-
-    		set: function(value) {
-    			self._changes.id = value;
-    		}
-    	});
-    
-    	
-    	if(typeof setMap.test != 'undefined' && setMap.test !== null) {
-    		if(Array.isArray(setMap.test)) {
-    			setMap.test = setMap.test.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceTest');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'tests');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'tests');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceTest');
-                if(setMap.test._map) {
-    			    setMap.test = new fireModelInstanceConstructor(setMap.test._map, path + '/' + 'tests');
-                }
-                else {
-                    setMap.test = new fireModelInstanceConstructor(setMap.test, path + '/' + 'tests');
-                }
-    		}
-    	}
-    	
-
-    	Object.defineProperty(this, 'test', {
-    		get: function() {
-    			if(typeof self._changes.test != 'undefined') {
-    				return self._changes.test;
-    			}
-
-    			return self._map.test;
-    		},
-
-    		set: function(value) {
-    			self._changes.test = value;
-    		}
-    	});
-    
-    	
-    	if(typeof setMap.participant != 'undefined' && setMap.participant !== null) {
-    		if(Array.isArray(setMap.participant)) {
-    			setMap.participant = setMap.participant.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestParticipant');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'participants');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'participants');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceTestParticipant');
-                if(setMap.participant._map) {
-    			    setMap.participant = new fireModelInstanceConstructor(setMap.participant._map, path + '/' + 'participants');
-                }
-                else {
-                    setMap.participant = new fireModelInstanceConstructor(setMap.participant, path + '/' + 'participants');
-                }
-    		}
-    	}
-    	
-
-    	Object.defineProperty(this, 'participant', {
-    		get: function() {
-    			if(typeof self._changes.participant != 'undefined') {
-    				return self._changes.participant;
-    			}
-
-    			return self._map.participant;
-    		},
-
-    		set: function(value) {
-    			self._changes.participant = value;
-    		}
-    	});
-    
-    	
-
-    	Object.defineProperty(this, 'variant', {
-    		get: function() {
-    			if(typeof self._changes.variant != 'undefined') {
-    				return self._changes.variant;
-    			}
-
-    			return self._map.variant;
-    		},
-
-    		set: function(value) {
-    			self._changes.variant = value;
-    		}
-    	});
-    
-    	
-
-    	Object.defineProperty(this, 'createdAt', {
-    		get: function() {
-    			if(typeof self._changes.createdAt != 'undefined') {
-    				return self._changes.createdAt;
-    			}
-
-    			return self._map.createdAt;
-    		},
-
-    		set: function(value) {
-    			self._changes.createdAt = value;
-    		}
-    	});
-    
-
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-        if(setMap.createdAt) {
-            setMap.createdAt = new Date(setMap.createdAt);
-        }
-        
-    
-
-
-
-        this.cancel = function() {
-            this._changes = {};
-        };
-
-        this.refresh = function(otherInstance) {
-        	this._map = otherInstance._map;
-            this._changes = {};
-
-            if(this._map.id) {
-                this._endpoint = TestSessionModel.endpoint + '/' + this._map.id;
-            }
-            else {
-                this._endpoint = null;
-            }
-
-        	return this;
-        };
-
-        this.toQueryValue = function() {
-        	return this._map.id;
-        };
-
-        this.remove = function() {
-        	return TestSessionModel.remove(this._map.id);
-        };
-
-        this.save = function() {
-            if(this._map === null) {
-                return TestSessionModel.create(this._changes)
-                    .then(function(modelInstance) {
-                        return self.refresh(modelInstance);
-                    });
-            }
-            else {
-                var numberOfChanges = Object.keys(this._changes).length;
-                if(numberOfChanges) {
-                    var queryMap = transformQueryMap(this._changes);
-
-                    return TestSessionModel._put(this._endpoint, queryMap)
-                        .then(function(instance) {
-                            self._changes = {};
-
-                            Object.keys(instance._map).forEach(function(key) {
-                                if(instance._map[key] !== null) {
-                                    self._map[key] = instance._map[key];
-                                }
-                            });
-                            return self;
-                        });
-                }
-                else {
-                    return $q.when(this);
-                }
-            }
-        };
-
-        
-
-        
-        
-        this.getTest = function() {
-            console.log('Warning: getTest is deprecated. Please use get instead.');
-        };
-
-        this.createTest = function() {
-            console.log('Warning: createTest is deprecated. Please use create instead.');
-        };
-
-        this.removeTest = function() {
-            console.log('Warning: removeTest is deprecated. Please use remove instead.');
-        };
-
-        this.getTest = function(queryMap, optionsMap) {
-            return $injector.get('TestModel')._find(TestSessionModel.endpoint + '/' + this.id + '/test', queryMap, optionsMap)
-                .then(function(modelInstance) {
-                    if(modelInstance) {
-                        if(modelInstance) {
-        					modelInstance._endpoint = $injector.get('TestModel').endpoint + '/' + modelInstance.id;
-        				}
-
-                        self.test = modelInstance;
-                        return modelInstance;
-                    }
-                    else {
-                        // TODO: Should we set the local property name to null as well?
-                        return null;
-                    }
-                });
-        };
-
-        this.createTest = function(queryMap) {
-            return $injector.get('TestModel')._create(TestSessionModel.endpoint + '/' + this.id + '/test', queryMap)
-                .then(function(modelInstance) {
-                    self.test = modelInstance;
-                    return modelInstance;
-                });
-        };
-
-        this.removeTest = function() {
-            return $injector.get('TestModel')._action('delete', TestSessionModel.endpoint + '/' + this.id + '/test')
-                .then(function(removeModelInstance) {
-                    self.test = null;
-                    return removeModelInstance;
-                });
-        };
-        
-        
-        
-        
-        this.getParticipant = function() {
-            console.log('Warning: getParticipant is deprecated. Please use get instead.');
-        };
-
-        this.createParticipant = function() {
-            console.log('Warning: createParticipant is deprecated. Please use create instead.');
-        };
-
-        this.removeParticipant = function() {
-            console.log('Warning: removeParticipant is deprecated. Please use remove instead.');
-        };
-
-        this.getParticipant = function(queryMap, optionsMap) {
-            return $injector.get('TestParticipantModel')._find(TestSessionModel.endpoint + '/' + this.id + '/participant', queryMap, optionsMap)
-                .then(function(modelInstance) {
-                    if(modelInstance) {
-                        if(modelInstance) {
-        					modelInstance._endpoint = $injector.get('TestParticipantModel').endpoint + '/' + modelInstance.id;
-        				}
-
-                        self.participant = modelInstance;
-                        return modelInstance;
-                    }
-                    else {
-                        // TODO: Should we set the local property name to null as well?
-                        return null;
-                    }
-                });
-        };
-
-        this.createParticipant = function(queryMap) {
-            return $injector.get('TestParticipantModel')._create(TestSessionModel.endpoint + '/' + this.id + '/participant', queryMap)
-                .then(function(modelInstance) {
-                    self.participant = modelInstance;
-                    return modelInstance;
-                });
-        };
-
-        this.removeParticipant = function() {
-            return $injector.get('TestParticipantModel')._action('delete', TestSessionModel.endpoint + '/' + this.id + '/participant')
-                .then(function(removeModelInstance) {
-                    self.participant = null;
-                    return removeModelInstance;
-                });
-        };
-        
-        
-        
-    };
-}]);
-
-app.factory('TestVariantModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
-    var model = new FireModel('TestVariant', [], '/api/test-variants');
-
-    
-
-    
-
-    return model;
-}]);
-
-app.factory('FireModelInstanceTestVariant', ['TestVariantModel', '$q', '$http', '$injector', function(TestVariantModel, $q, $http, $injector) {
-    return function(setMap, path, shouldBeUndefined) {
-        if(shouldBeUndefined) {
-            throw new Error('FireModelInstanceTestVariant only accepts two arguments now.');
-        }
-
-        this._map = setMap || null;
-        this._changes = {};
-
-        this.toJSON = function() {
-            return {
-                _map: this._map,
-                _path: path
-            };
-        };
-
-        if(this._map.id) {
-            this._endpoint = TestVariantModel.endpoint + '/' + this._map.id;
-        }
-        else {
-            this._endpoint = null;
-        }
-
-        var self = this;
-    
-    	
-
-    	Object.defineProperty(this, 'id', {
-    		get: function() {
-    			if(typeof self._changes.id != 'undefined') {
-    				return self._changes.id;
-    			}
-
-    			return self._map.id;
-    		},
-
-    		set: function(value) {
-    			self._changes.id = value;
-    		}
-    	});
-    
-    	
-
-    	Object.defineProperty(this, 'name', {
-    		get: function() {
-    			if(typeof self._changes.name != 'undefined') {
-    				return self._changes.name;
-    			}
-
-    			return self._map.name;
-    		},
-
-    		set: function(value) {
-    			self._changes.name = value;
-    		}
-    	});
-    
-    	
-
-    	Object.defineProperty(this, 'numberOfParticipants', {
-    		get: function() {
-    			if(typeof self._changes.numberOfParticipants != 'undefined') {
-    				return self._changes.numberOfParticipants;
-    			}
-
-    			return self._map.numberOfParticipants;
-    		},
-
-    		set: function(value) {
-    			self._changes.numberOfParticipants = value;
-    		}
-    	});
-    
-    	
-    	if(typeof setMap.test != 'undefined' && setMap.test !== null) {
-    		if(Array.isArray(setMap.test)) {
-    			setMap.test = setMap.test.map(function(object) {
-                    var fireModelInstanceConstructor = $injector.get('FireModelInstanceTest');
-                    if(object._map) {
-                        return new fireModelInstanceConstructor(object._map, path + '/' + 'tests');
-                    }
-                    else {
-                        return new fireModelInstanceConstructor(object, path + '/' + 'tests');
-                    }
-    			});
-    		}
-    		else {
-                var fireModelInstanceConstructor = $injector.get('FireModelInstanceTest');
-                if(setMap.test._map) {
-    			    setMap.test = new fireModelInstanceConstructor(setMap.test._map, path + '/' + 'tests');
-                }
-                else {
-                    setMap.test = new fireModelInstanceConstructor(setMap.test, path + '/' + 'tests');
-                }
-    		}
-    	}
-    	
-
-    	Object.defineProperty(this, 'test', {
-    		get: function() {
-    			if(typeof self._changes.test != 'undefined') {
-    				return self._changes.test;
-    			}
-
-    			return self._map.test;
-    		},
-
-    		set: function(value) {
-    			self._changes.test = value;
-    		}
-    	});
-    
-
-    
-        
-    
-        
-    
-        
-    
-        
-    
-
-
-
-        this.cancel = function() {
-            this._changes = {};
-        };
-
-        this.refresh = function(otherInstance) {
-        	this._map = otherInstance._map;
-            this._changes = {};
-
-            if(this._map.id) {
-                this._endpoint = TestVariantModel.endpoint + '/' + this._map.id;
-            }
-            else {
-                this._endpoint = null;
-            }
-
-        	return this;
-        };
-
-        this.toQueryValue = function() {
-        	return this._map.id;
-        };
-
-        this.remove = function() {
-        	return TestVariantModel.remove(this._map.id);
-        };
-
-        this.save = function() {
-            if(this._map === null) {
-                return TestVariantModel.create(this._changes)
-                    .then(function(modelInstance) {
-                        return self.refresh(modelInstance);
-                    });
-            }
-            else {
-                var numberOfChanges = Object.keys(this._changes).length;
-                if(numberOfChanges) {
-                    var queryMap = transformQueryMap(this._changes);
-
-                    return TestVariantModel._put(this._endpoint, queryMap)
-                        .then(function(instance) {
-                            self._changes = {};
-
-                            Object.keys(instance._map).forEach(function(key) {
-                                if(instance._map[key] !== null) {
-                                    self._map[key] = instance._map[key];
-                                }
-                            });
-                            return self;
-                        });
-                }
-                else {
-                    return $q.when(this);
-                }
-            }
-        };
-
-        
-
-        
-        
-        this.getTest = function() {
-            console.log('Warning: getTest is deprecated. Please use get instead.');
-        };
-
-        this.createTest = function() {
-            console.log('Warning: createTest is deprecated. Please use create instead.');
-        };
-
-        this.removeTest = function() {
-            console.log('Warning: removeTest is deprecated. Please use remove instead.');
-        };
-
-        this.getTest = function(queryMap, optionsMap) {
-            return $injector.get('TestModel')._find(TestVariantModel.endpoint + '/' + this.id + '/test', queryMap, optionsMap)
-                .then(function(modelInstance) {
-                    if(modelInstance) {
-                        if(modelInstance) {
-        					modelInstance._endpoint = $injector.get('TestModel').endpoint + '/' + modelInstance.id;
-        				}
-
-                        self.test = modelInstance;
-                        return modelInstance;
-                    }
-                    else {
-                        // TODO: Should we set the local property name to null as well?
-                        return null;
-                    }
-                });
-        };
-
-        this.createTest = function(queryMap) {
-            return $injector.get('TestModel')._create(TestVariantModel.endpoint + '/' + this.id + '/test', queryMap)
-                .then(function(modelInstance) {
-                    self.test = modelInstance;
-                    return modelInstance;
-                });
-        };
-
-        this.removeTest = function() {
-            return $injector.get('TestModel')._action('delete', TestVariantModel.endpoint + '/' + this.id + '/test')
-                .then(function(removeModelInstance) {
-                    self.test = null;
-                    return removeModelInstance;
-                });
-        };
-        
-        
-        
-    };
-}]);
-
-function unwrap(promise, initialValue) {
-    var value = initialValue;
-
-    promise.then(function(newValue) {
-        angular.copy(newValue, value);
-    });
-
-    return value;
-};
 
 app.service('fire', [function() {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
-    this.unwrap = unwrap;
-
     this.isServer = function() {
         return false;
     };
@@ -3499,13 +1416,7 @@ app.provider('TestsService', [function() {
 	this.$get = function() {
 		return {
 			participate: function(test, variant) {
-				if(_delegate === null) {
-					throw new Error('Please set the TestsService.delegate');
-				}
-				else if(typeof _delegate != 'function') {
-					throw new Error('TestsService#delegate must be a function.');
-				}
-				else {
+				if(_delegate && typeof _delegate == 'function') {
 					_delegate(test, variant);
 				}
 			}
@@ -45771,4 +43682,4 @@ return jQuery;
 
 }));
 
-},{}]},{},[7,5,1]);
+},{}]},{},[7,5,2,8,1]);

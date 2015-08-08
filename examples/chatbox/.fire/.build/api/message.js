@@ -2,8 +2,7 @@
 
 var Q = require('q');
 
-var fire = require('fire');
-var app = fire.app('chatbox');
+var app = require('fire')('chatbox');
 
 var http = require('http');
 
@@ -98,6 +97,7 @@ function findAuthenticator(authenticatorModel, request) {
 
 
 
+
 app.post('/api/messages', function(app, response, request, MessageModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -176,6 +176,48 @@ app.get('/api/messages/_count', function(request, response, app,  MessageModel, 
 						throw unauthenticatedError(authenticator);
 					}
 				});
+		});
+});
+
+app.search('/api/messages', function(request, response, app,  MessageModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+			var searchText = whereMap._search;
+			if(typeof whereMap._search != 'undefined') {
+				delete whereMap._search;
+			}
+
+			if(typeof whereMap.$options != 'undefined') {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(MessageModel.options.automaticPropertyName) {
+				whereMap[MessageModel.options.automaticPropertyName] = authenticator;
+			}
+
+			if(!searchText || searchText.length === 0) {
+				throw badRequestError();
+			}
+			else {
+				var accessControl = MessageModel.getAccessControl();
+				return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+					.then(function(canRead) {
+						if(canRead) {
+							if(typeof canRead == 'object') {
+								whereMap = merge(whereMap, canRead);
+							}
+
+							return MessageModel.search(searchText, whereMap, optionsMap);
+						}
+						else {
+							throw unauthenticatedError(authenticator);
+						}
+					});
+			}
 		});
 });
 

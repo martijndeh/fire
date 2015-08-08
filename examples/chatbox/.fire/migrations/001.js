@@ -20,7 +20,7 @@ Migration.prototype.up = function() {
 	});
 	this.models.createModel('Message', {
 		id: [this.UUID, this.CanUpdate(false)],
-		user: [this.BelongsTo(this.models.User), this.Automatic, this.AutoFetch(['name', 'avatarUrl'])],
+		user: [this.BelongsTo(this.models.User), this.AutoFetch(['name', 'avatarUrl', 'id'])],
 		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')],
 		text: [this.String, this.Required]
 	});
@@ -34,13 +34,6 @@ Migration.prototype.up = function() {
 		authenticator: [this.BelongsTo(this.models.User), this.Required],
 		token: [this.String, this.Unique, this.Default(function noop() {}), this.Required, this.CanUpdate(false)],
 		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP'), this.CanUpdate(false)]
-	});
-	this.models.createModel('Schema', {
-		id: [this.UUID, this.CanUpdate(false)],
-		version: [this.Integer],
-		app: [this.String],
-		checksum: [this.String],
-		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
 	});
 	this.models.createModel('ClockTaskResult', {
 		id: [this.UUID, this.CanUpdate(false)],
@@ -77,6 +70,63 @@ Migration.prototype.up = function() {
 		numberOfParticipants: [this.Integer, this.Required],
 		test: [this.BelongsTo(this.models.Test), this.Required]
 	});
+	this.models.createModel('Schema', {
+		id: [this.UUID, this.CanUpdate(false)],
+		version: [this.Integer],
+		app: [this.String],
+		checksum: [this.String],
+		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
+	});
+	this.models._sql('007a8483eda40e0ae33c2b39f4e7beaf', [
+		'CREATE OR REPLACE FUNCTION publishUser() RETURNS trigger AS $$',
+		'DECLARE',
+		'    payload TEXT;',
+		'BEGIN',
+		'	IF TG_OP = \'INSERT\' OR TG_OP = \'UPDATE\' THEN',
+		'        SELECT INTO payload json_build_object(\'type\', TG_OP, \'row\', row_to_json(NEW))::text;',
+		'        IF octet_length(payload) < 8000 THEN',
+		'		      PERFORM pg_notify(\'User\', payload);',
+		'        END IF;',
+		'        RETURN NEW;',
+		'	ELSE',
+		'        SELECT INTO payload json_build_object(\'type\', TG_OP, \'row\', row_to_json(OLD))::text;',
+		'        IF octet_length(payload) < 8000 THEN',
+		'    		PERFORM pg_notify(\'User\', payload);',
+		'        END IF;',
+		'		RETURN OLD;',
+		'	END IF;',
+		'END;',
+		'$$ LANGUAGE plpgsql;',
+		'',
+		'CREATE TRIGGER users_notify_update AFTER UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE publishUser();',
+		'CREATE TRIGGER users_notify_insert AFTER INSERT ON users FOR EACH ROW EXECUTE PROCEDURE publishUser();',
+		'CREATE TRIGGER users_notify_delete AFTER DELETE ON users FOR EACH ROW EXECUTE PROCEDURE publishUser();'
+	].join('\n'));
+	this.models._sql('f8329ff520befe4138fcd338ea36ea5b', [
+		'CREATE OR REPLACE FUNCTION publishMessage() RETURNS trigger AS $$',
+		'DECLARE',
+		'    payload TEXT;',
+		'BEGIN',
+		'	IF TG_OP = \'INSERT\' OR TG_OP = \'UPDATE\' THEN',
+		'        SELECT INTO payload json_build_object(\'type\', TG_OP, \'row\', row_to_json(NEW))::text;',
+		'        IF octet_length(payload) < 8000 THEN',
+		'		      PERFORM pg_notify(\'Message\', payload);',
+		'        END IF;',
+		'        RETURN NEW;',
+		'	ELSE',
+		'        SELECT INTO payload json_build_object(\'type\', TG_OP, \'row\', row_to_json(OLD))::text;',
+		'        IF octet_length(payload) < 8000 THEN',
+		'    		PERFORM pg_notify(\'Message\', payload);',
+		'        END IF;',
+		'		RETURN OLD;',
+		'	END IF;',
+		'END;',
+		'$$ LANGUAGE plpgsql;',
+		'',
+		'CREATE TRIGGER messages_notify_update AFTER UPDATE ON messages FOR EACH ROW EXECUTE PROCEDURE publishMessage();',
+		'CREATE TRIGGER messages_notify_insert AFTER INSERT ON messages FOR EACH ROW EXECUTE PROCEDURE publishMessage();',
+		'CREATE TRIGGER messages_notify_delete AFTER DELETE ON messages FOR EACH ROW EXECUTE PROCEDURE publishMessage();'
+	].join('\n'));
 
 };
 
@@ -85,12 +135,22 @@ Migration.prototype.down = function() {
 	this.models.destroyModel('Message');
 	this.models.destroyModel('UserResetPassword');
 	this.models.destroyModel('UserLoginToken');
-	this.models.destroyModel('Schema');
 	this.models.destroyModel('ClockTaskResult');
 	this.models.destroyModel('TriggerResult');
 	this.models.destroyModel('Test');
 	this.models.destroyModel('TestParticipant');
 	this.models.destroyModel('TestSession');
 	this.models.destroyModel('TestVariant');
+	this.models.destroyModel('Schema');
+	this.models._sql('007a8483eda40e0ae33c2b39f4e7beaf', [
+		'DROP TRIGGER users_notify_update ON users;',
+		'DROP TRIGGER users_notify_insert ON users;',
+		'DROP TRIGGER users_notify_delete ON users;'
+	].join('\n'));
+	this.models._sql('f8329ff520befe4138fcd338ea36ea5b', [
+		'DROP TRIGGER messages_notify_update ON messages;',
+		'DROP TRIGGER messages_notify_insert ON messages;',
+		'DROP TRIGGER messages_notify_delete ON messages;'
+	].join('\n'));
 
 };

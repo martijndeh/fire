@@ -3,8 +3,7 @@
 /**
  * Let's initialize our app.
  */
-var fire = require('fire');
-var app = fire.app('search', {
+var app = require('fire')('search', {
 	modules: ['angular-route'],
 
 	// We pass the NODE_ENV to the config so it's available in the jade templates.
@@ -14,11 +13,9 @@ var app = fire.app('search', {
 var fs = require('fs');
 
 /**
- * Let's load all the cities in the datastore.
- *
- * We do this in the run stage. This is not an elegant solution. A more elegant solution would be to create a one-off task.
+ * Let's load all the cities in the datastore. We add a task to the release stage.
  */
-app.configure(function(CityModel, $q) {
+app.release(function cities(CityModel, $q) {
 	var data = fs.readFileSync('cities.txt', {encoding: 'utf8'});
 	var cityNames = data.split('\n');
 	var result = $q.when(true);
@@ -68,5 +65,3 @@ app.controller('/', function StartController($scope, CityModel) {
 			});
 	};
 });
-
-fire.start();

@@ -1,12 +1,13 @@
 {
   "name": "search",
   "scripts": {
-    "postinstall": "node_modules/.bin/grunt build release"
+    "start": "node_modules/.bin/fire run",
+    "postinstall": "node_modules/.bin/fire build release"
   },
   "dependencies": {
     "angular": "^1.4.3",
     "angular-route": "^1.4.3",
-    "fire": "*",
+    "fire": "file:../..",
     "grunt": "^0.4.5",
     "grunt-browserify": "^3.8.0",
     "grunt-cli": "^0.1.13",

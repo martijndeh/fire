@@ -1,14 +1,15 @@
 'use strict';
 
-var fire = require('fire');
-
 /**
  * This is Chatbox. A Node on Fire example app to showcase the stream functionality.
  *
- * Chatbox is a simple application.
+ * We include a couple of modules: angular-route and angular-moment. And we require an additional module: jquery. This is automatically added to the bundle in the build stage.
+ *
+ * We can also pass additional key-value pairs to the settings object. These becomes available as variables in your templates.
  */
-var app = fire.app('chatbox', {
+var app = require('fire')('chatbox', {
 	modules: ['angular-route', 'angular-moment'],
+	require: ['node_modules/jquery/dist/jquery.js'],
 	NODE_ENV: process.env.NODE_ENV
 });
 
@@ -72,6 +73,9 @@ function Message(UserModel) {
 }
 app.model(Message);
 
+/**
+ * Everyone can read all messages, and users can only create their own messages.
+ */
 Message.prototype.accessControl = function() {
 	return {
 		canRead: function() {
@@ -87,12 +91,15 @@ Message.prototype.accessControl = function() {
 };
 
 /**
- * ...
+ * We make sure the message's user is set to the current user.
  */
 Message.prototype.beforeCreate = function(authenticator) {
 	this.user = authenticator;
 };
 
+/**
+ * The start controller which creates a stream of messages.
+ */
 function StartController($scope, user, MessageModel, UserModel, $window) {
 	$scope.user = user;
 	$scope.messageStream = MessageModel.stream({}, {limit: 30, orderBy:{createdAt: -1}});
@@ -132,8 +139,19 @@ StartController.prototype.resolve = function() {
 	};
 };
 
-app.template('view', '<!DOCTYPE html><html ng-app="default"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="fragment" content="!"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>Chatbox</title><link rel="stylesheet" href="/styles/default.css"/></head><body><div class="view" ng-view></div></body><script src="/scripts/bundle.js"></script></html>');
+/**
+ *
+ */
+app.directive(function autoFocus() {
+    var $ = require('jquery');
+    return function(scope, element) {
+        $(element).focus();
+    };
+});
 
+/**
+ * Create the template of the StartController. This would be so much nicer with ES6 template strings (using the backtick operator).
+ */
 app.template('start', [
 	'<div ng-if="!user">',
 		'<form ng-submit="createUser(email, name, password)">',
@@ -164,4 +182,4 @@ app.template('start', [
 	'</form>'
 ].join(''));
 
-fire.start();
+app.template('view', '<!DOCTYPE html><html ng-app="chatbox"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="fragment" content="!"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>Chatbox</title><link rel="stylesheet" href="/styles/default.css"/></head><body><div class="view" ng-view></div></body><script src="/scripts/bundle.js"></script></html>');
