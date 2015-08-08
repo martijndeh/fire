@@ -67,7 +67,7 @@ describe('access control', function() {
 						result = result.then(function() {
 							var writeStream = fs.createWriteStream(path.join(__dirname, '..', 'temp', model.getName().toLowerCase() + '.js'));
 
-							return app.API.generateModelController(model, writeStream)
+							return app.APIBuild.generateModelController(model, writeStream)
 								.then(function() {
 									modules.push(writeStream.path);
 

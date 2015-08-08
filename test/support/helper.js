@@ -2,7 +2,7 @@
 'use strict';
 
 var Q = require('q');
-var fire = require('./../..');
+var fire = require('./../../lib/firestarter');
 var fs = require('fs');
 var path = require('path');
 
@@ -120,7 +120,7 @@ Helper.prototype.beforeEach = function(options) {
                         result = result.then(function() {
                             var writeStream = fs.createWriteStream(path.join(__dirname, '..', '..', 'temp', model.getName().toLowerCase() + '.js'));
 
-                            return self.app.API.generateModelController(model, writeStream)
+                            return self.app.APIBuild.generateModelController(model, writeStream)
                                 .then(function() {
                                     self.modules.push(writeStream.path);
 
@@ -172,7 +172,7 @@ Helper.prototype.afterEach = function() {
             .then(function() {
                 return (self.modules && self.modules.forEach(function(modulePath) {
                     delete require.cache[modulePath];
-                    //fs.unlinkSync(modulePath);
+                    fs.unlinkSync(modulePath);
                 }));
             })
             .then(function() {
