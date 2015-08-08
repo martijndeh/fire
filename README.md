@@ -1,10 +1,17 @@
+# Node on Fire: an isomorphic JavaScript framework :fire:
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
-## Node on Fire :fire:
+[![License Badge](https://img.shields.io/github/license/martijndeh/fire.svg)](https://github.com/martijndeh/fire/blob/master/LICENSE)
+
+- Website: [nodeonfire.org](http://nodeonfire.org/)
+- Documentation: [nodeonfire.org/documentation](http://nodeonfire.org/documentation)
+
+![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-logo.png)
+
 An isomorphic JavaScript framework built on top of [Node.js](https://nodejs.org), [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [Express](http://expressjs.com/), [Knex.js](http://knexjs.org/) and more.
 
 With Node on Fire you write apps faster than ever, completely in JavaScript, backed by solid technologies such as PostgreSQL and AngularJS.
 
-Node on Fire includes a list of amazing modules and features to help you write apps faster:
+Node on Fire includes a list of modules and features to help you write apps faster:
 
 ### Dependency injection
 Angular's dependency injection is great. That's why, in Node on Fire, that dependency injection is also available in the back-end.
@@ -177,13 +184,19 @@ $ cd helloworld/
 $ fire run
 ```
 
-### Documentation
+### Examples
 
-For additional reading and documentation please visit http://nodeonfire.org/.
+We've created several example project which illustrate the different features of Node on Fire. It's also a good reference to use when starting your first Node on Fire app.
+
+http://nodeonfire.org/examples
 
 ### Beta releases
 
 From version `0.41.0` and later, every odd numbered minor release is a beta release. Every even numbered minor release is considered a stable release.
+
+### Stay up-to-date
+
+Sign up for our newsletter at [nodeonfire.org](http://nodeonfire.org) and we'll occasionally send you updates, tips and other news. No spam.
 
 ### Questions
 

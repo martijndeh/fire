@@ -1,7 +1,6 @@
 'use strict';
 
-var fire = require('fire');
-var app = fire.app('todomvc');
+var app = require('fire')('todomvc');
 
 function TodoController($scope, list, $routeParams) {
 	$scope.status = $routeParams.status || '';

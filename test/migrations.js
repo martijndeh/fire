@@ -25,7 +25,7 @@ describe('migrations', function() {
 
     beforeEach(function(done) {
 
-        app = fire.app('migrations', {});
+        app = fire('migrations', {});
 
         app.modules.forEach(function(module_) {
             if(module_.migrate) {
@@ -40,7 +40,7 @@ describe('migrations', function() {
                 migrations = new Migrations(app, models);
                 migrations.setup(null)
                     .then(function() {
-                        return models.Schema.exists()
+                        return models.Schema.isCreated()
                             .then(function(exists) {
                                 return !exists && models.Schema.setup();
                             });

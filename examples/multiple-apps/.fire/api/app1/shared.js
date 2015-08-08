@@ -2,8 +2,7 @@
 
 var Q = require('q');
 
-var fire = require('fire');
-var app = fire.app('nodeonfire.org');
+var app = require('fire')('nodeonfire.org');
 
 function merge(dest, source) {
 	Object.keys(source).forEach(function(key) {
@@ -288,11 +287,3 @@ app.delete('/api/shareds/:id', function(request, response, app,  SharedModel) {
 			});
 		});
 });
-
-
-
-
-
-
-
-

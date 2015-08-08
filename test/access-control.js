@@ -15,13 +15,12 @@ describe('access control', function() {
 	var modules = null;
 
 	beforeEach(function(done) {
-		app = fire.app('accessControlTest', {type: 'angular'});
+		app = fire('accessControlTest', {type: 'angular'});
 
-		if(createModels) {
-			createModels();
-		}
-
-		fire.start()
+		return Q.when(createModels && createModels())
+			.then(function() {
+				return fire.start();
+			})
 			.then(function() {
 				app.modules.forEach(function(module_) {
 					if(module_.migrate) {
@@ -34,7 +33,7 @@ describe('access control', function() {
 
 				app.models.forEach(function(model) {
 		            result = result.then(function() {
-		                return model.exists()
+		                return model.isCreated()
 		                	.then(function(exists) {
 		                    	if(!exists) {
 		                        	return model.setup();
@@ -63,11 +62,11 @@ describe('access control', function() {
 				modules = [];
 
 				app.models.forEach(function(model) {
-					if(!model.disableAutomaticModelController) {
+					if(!model.isPrivate) {
 						result = result.then(function() {
 							var writeStream = fs.createWriteStream(path.join(__dirname, '..', 'temp', model.getName().toLowerCase() + '.js'));
 
-							return app.API.generateModelController(model, writeStream)
+							return app.APIBuild.generateModelController(model, writeStream)
 								.then(function() {
 									modules.push(writeStream.path);
 
@@ -98,13 +97,10 @@ describe('access control', function() {
 
         app.models.forEach(function(model) {
             result = result.then(function() {
-                return model.exists()
+                return model.isCreated && model.isCreated()
 					.then(function(exists) {
 	                    if(exists) {
 	                        return model.forceDestroy();
-	                    }
-	                    else {
-	                        return Q.when(true);
 	                    }
 	                })
 					.then(function() {
@@ -131,6 +127,9 @@ describe('access control', function() {
         	.then(function() {
             	done();
         	})
+			.catch(function(error) {
+				done(error);
+			})
         	.done();
 	});
 

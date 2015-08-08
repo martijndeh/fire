@@ -4,7 +4,7 @@ node_js:
 services:
   - rabbitmq
 addons:
-  postgresql: "9.3"
+  postgresql: "9.4"
 before_script:
   - psql -c 'create database fire;' -U postgres
   - psql -d fire -c 'create extension "uuid-ossp";' -U postgres

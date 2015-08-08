@@ -2,8 +2,7 @@
 
 var Q = require('q');
 
-var fire = require('./..');
-var app = fire.app('test');
+var app = require('./..')('test');
 
 var http = require('http');
 
@@ -93,6 +92,7 @@ function findAuthenticator(authenticatorModel, request) {
 
 	return authenticatorModel.findOne({accessToken: request.session.at});
 }
+
 
 app.get('/api/users/me', function(request, UserModel, UserLoginTokenModel) {
 	return findAuthenticator(UserModel, request)
@@ -239,6 +239,82 @@ app.post('/api/users', function(app, response, request, UserModel) {
 						throw unauthenticatedError(authenticator);
 					}
 				});
+		});
+});
+
+app.get('/api/users/_count', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var propertyName = null;
+
+
+
+			if(whereMap.$options) {
+				propertyName = whereMap.$options.propertyName;
+				delete whereMap.$options;
+			}
+
+			if(UserModel.options.automaticPropertyName) {
+				whereMap[UserModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var accessControl = UserModel.getAccessControl();
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
+
+						return UserModel.count(propertyName, whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.search('/api/users', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+			var searchText = whereMap._search;
+			if(typeof whereMap._search != 'undefined') {
+				delete whereMap._search;
+			}
+
+			if(typeof whereMap.$options != 'undefined') {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(UserModel.options.automaticPropertyName) {
+				whereMap[UserModel.options.automaticPropertyName] = authenticator;
+			}
+
+			if(!searchText || searchText.length === 0) {
+				throw badRequestError();
+			}
+			else {
+				var accessControl = UserModel.getAccessControl();
+				return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+					.then(function(canRead) {
+						if(canRead) {
+							if(typeof canRead == 'object') {
+								whereMap = merge(whereMap, canRead);
+							}
+
+							return UserModel.search(searchText, whereMap, optionsMap);
+						}
+						else {
+							throw unauthenticatedError(authenticator);
+						}
+					});
+			}
 		});
 });
 
@@ -401,6 +477,12 @@ app.delete('/api/users', function(request, response, app,  UserModel) {
 				whereMap[UserModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = UserModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canDelete) {
@@ -409,7 +491,7 @@ app.delete('/api/users', function(request, response, app,  UserModel) {
 							whereMap = merge(whereMap, canDelete);
 						}
 
-						return UserModel.remove(whereMap);
+						return UserModel.remove(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -427,6 +509,12 @@ app.delete('/api/users/:id', function(request, response, app,  UserModel) {
 				whereMap[UserModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = UserModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 			.then(function(canDelete) {
@@ -435,7 +523,7 @@ app.delete('/api/users/:id', function(request, response, app,  UserModel) {
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					return UserModel.removeOne(whereMap);
+					return UserModel.removeOne(whereMap, optionsMap);
 				}
 				else {
 					throw unauthenticatedError(authenticator);
@@ -613,7 +701,7 @@ app.put('/api/users/:id/password-reset', function(request, response, app,  UserM
 
 			if(associatedModel.options.automaticPropertyName) {
 				if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
-					error = new Error('Cannot set automatic property manually.');
+					var error = new Error('Cannot set automatic property manually.');
 					error.status = 400;
 					throw error;
 				}
@@ -627,7 +715,6 @@ app.put('/api/users/:id/password-reset', function(request, response, app,  UserM
 					if(canUpdate) {
 						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), association.options.relationshipVia.model))
 							.then(function(canUpdateProperties) {
-								var error;
 								if(canUpdateProperties) {
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);
@@ -826,7 +913,7 @@ app.put('/api/users/:id/container', function(request, response, app,  UserModel)
 
 			if(associatedModel.options.automaticPropertyName) {
 				if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
-					error = new Error('Cannot set automatic property manually.');
+					var error = new Error('Cannot set automatic property manually.');
 					error.status = 400;
 					throw error;
 				}
@@ -840,7 +927,210 @@ app.put('/api/users/:id/container', function(request, response, app,  UserModel)
 					if(canUpdate) {
 						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), association.options.relationshipVia.model))
 							.then(function(canUpdateProperties) {
-								var error;
+								if(canUpdateProperties) {
+									if(typeof canUpdate == 'object') {
+										whereMap = merge(whereMap, canUpdate);
+									}
+
+									return associatedModel.updateOne(whereMap, request.body || {});
+								}
+								else {
+									throw badRequestError();
+								}
+							});
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+
+
+
+
+
+
+
+
+app.post('/api/users/:id/test-participant', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var property = UserModel.getProperty('testParticipant');
+			return Q.all([
+				typeof property.options.canCreate != 'undefined' ? app.injector.call(property.options.canCreate, {request: request, response: response, authenticator: authenticator}) : true,
+				authenticator
+			]);
+		})
+		.spread(function(canCreate, authenticator) {
+			if(typeof canCreate == 'object') {
+				throw new Error('PropertyTypes#CanCreate does not support returning an object. Either return true or false. AccessControl#CanCreate supports returning objects.');
+			}
+
+			if(canCreate !== true) {
+				throw unauthenticatedError(authenticator);
+			}
+			else {
+				return authenticator;
+			}
+		})
+		.then(function(authenticator) {
+			var property = UserModel.getProperty('testParticipant');
+			var associatedModel = property.getAssociatedModel();
+
+			var accessControl = associatedModel.getAccessControl();
+			return Q.when(accessControl.canCreate({authenticator: authenticator, request: request, response: response}))
+				.then(function(canCreate) {
+					if(canCreate) {
+						var createMap = request.body || {};
+
+						if(typeof canCreate == 'object') {
+							createMap = merge(createMap, canCreate);
+						}
+
+						createMap[property.options.hasOne || property.options.belongsTo] = request.params.id;
+
+						if(associatedModel.options.automaticPropertyName) {
+							// This is definitely a bad request if the user tries to set the automatic property manually.
+							if(createMap[associatedModel.options.automaticPropertyName] && createMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
+								var error = new Error('Cannot set automatic property manually.');
+								error.status = 400;
+								throw error;
+							}
+
+							createMap[associatedModel.options.automaticPropertyName] = authenticator;
+						}
+
+						if(_canSetProperties(Object.keys(createMap), associatedModel)) {
+							return associatedModel.create(createMap, {authenticator: authenticator, request: request, response: response});
+						}
+						else {
+							throw badRequestError();
+						}
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.get('/api/users/:id/test-participant', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var association = UserModel.getProperty('testParticipant');
+			var associatedModel = association.options.relationshipVia.model;
+
+			var whereMap = request.query || {};
+			var optionsMap = {};
+
+			if(whereMap.$options) {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+
+			whereMap[association.options.relationshipVia.name] = request.params.id;
+
+			if(associatedModel.options.automaticPropertyName) {
+				if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
+					var error = new Error('Cannot set automatic property manually.');
+					error.status = 400;
+					throw error;
+				}
+
+				whereMap[associatedModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var accessControl = associatedModel.getAccessControl();
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
+
+						return associatedModel.findOne(whereMap, optionsMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.delete('/api/users/:id/test-participant', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var association = UserModel.getProperty('testParticipant');
+			var associatedModel = association.getAssociatedModel();
+
+			var accessControl = associatedModel.getAccessControl();
+			return Q.all([accessControl.canDelete({authenticator: authenticator, request: request, response: response}), authenticator]);
+		})
+		.spread(function(canDelete, authenticator) {
+			if(canDelete) {
+				var removeMap = request.query || {};
+
+				if(typeof canDelete == 'object') {
+					removeMap = merge(removeMap, canDelete);
+				}
+
+				var association = UserModel.getProperty('testParticipant');
+				var associatedModel = association.getAssociatedModel();
+
+				removeMap[association.options.hasOne || association.options.belongsTo] = request.params.id;
+
+				if(associatedModel.options.automaticPropertyName) {
+					// This is definitely a bad request if the user tries to set the automatic property manually.
+					if(removeMap[associatedModel.options.automaticPropertyName] && removeMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
+						throw badRequestError();
+					}
+
+					removeMap[associatedModel.options.automaticPropertyName] = authenticator;
+				}
+
+				var optionsMap = {};
+
+				if(removeMap.$options) {
+					optionsMap = removeMap.$options;
+					delete removeMap.$options;
+				}
+
+				return associatedModel.removeOne(removeMap, optionsMap);
+			}
+			else {
+				throw unauthenticatedError(authenticator);
+			}
+		});
+});
+
+app.put('/api/users/:id/test-participant', function(request, response, app,  UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var association = UserModel.getProperty('testParticipant');
+			var associatedModel = association.getAssociatedModel();
+
+			var whereMap = request.query || {};
+
+			whereMap[association.options.hasOne || association.options.belongsTo] = request.params.id;
+
+			if(associatedModel.options.automaticPropertyName) {
+				if(whereMap[associatedModel.options.automaticPropertyName] && whereMap[associatedModel.options.automaticPropertyName] != authenticator.id) {
+					var error = new Error('Cannot set automatic property manually.');
+					error.status = 400;
+					throw error;
+				}
+
+				whereMap[associatedModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var accessControl = associatedModel.getAccessControl();
+			return Q.when(accessControl.canUpdate({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canUpdate) {
+					if(canUpdate) {
+						return Q.when(_canUpdateProperties(Object.keys(request.body || {}), association.options.relationshipVia.model))
+							.then(function(canUpdateProperties) {
 								if(canUpdateProperties) {
 									if(typeof canUpdate == 'object') {
 										whereMap = merge(whereMap, canUpdate);

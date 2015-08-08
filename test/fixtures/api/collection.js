@@ -2,8 +2,7 @@
 
 var Q = require('q');
 
-var fire = require('./..');
-var app = fire.app('test');
+var app = require('./..')('test');
 
 var http = require('http');
 
@@ -98,6 +97,7 @@ function findAuthenticator(authenticatorModel, request) {
 
 
 
+
 app.post('/api/collections', function(app, response, request, CollectionModel, UserModel) {
 	return findAuthenticator(UserModel, request)
 		.then(function(authenticator) {
@@ -142,6 +142,82 @@ app.post('/api/collections', function(app, response, request, CollectionModel, U
 						throw unauthenticatedError(authenticator);
 					}
 				});
+		});
+});
+
+app.get('/api/collections/_count', function(request, response, app,  CollectionModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var propertyName = null;
+
+
+
+			if(whereMap.$options) {
+				propertyName = whereMap.$options.propertyName;
+				delete whereMap.$options;
+			}
+
+			if(CollectionModel.options.automaticPropertyName) {
+				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var accessControl = CollectionModel.getAccessControl();
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
+
+						return CollectionModel.count(propertyName, whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.search('/api/collections', function(request, response, app,  CollectionModel, UserModel) {
+	return findAuthenticator(UserModel, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+			var searchText = whereMap._search;
+			if(typeof whereMap._search != 'undefined') {
+				delete whereMap._search;
+			}
+
+			if(typeof whereMap.$options != 'undefined') {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(CollectionModel.options.automaticPropertyName) {
+				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
+			}
+
+			if(!searchText || searchText.length === 0) {
+				throw badRequestError();
+			}
+			else {
+				var accessControl = CollectionModel.getAccessControl();
+				return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+					.then(function(canRead) {
+						if(canRead) {
+							if(typeof canRead == 'object') {
+								whereMap = merge(whereMap, canRead);
+							}
+
+							return CollectionModel.search(searchText, whereMap, optionsMap);
+						}
+						else {
+							throw unauthenticatedError(authenticator);
+						}
+					});
+			}
 		});
 });
 
@@ -304,6 +380,12 @@ app.delete('/api/collections', function(request, response, app,  CollectionModel
 				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = CollectionModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 				.then(function(canDelete) {
@@ -312,7 +394,7 @@ app.delete('/api/collections', function(request, response, app,  CollectionModel
 							whereMap = merge(whereMap, canDelete);
 						}
 
-						return CollectionModel.remove(whereMap);
+						return CollectionModel.remove(whereMap, optionsMap);
 					}
 					else {
 						throw unauthenticatedError(authenticator);
@@ -330,6 +412,12 @@ app.delete('/api/collections/:id', function(request, response, app,  CollectionM
 				whereMap[CollectionModel.options.automaticPropertyName] = authenticator;
 			}
 
+			var optionsMap = null;
+			if(whereMap.$options) {
+                optionsMap = whereMap.$options;
+                delete whereMap.$options;
+            }
+
 			var accessControl = CollectionModel.getAccessControl();
 			return Q.when(accessControl.canDelete({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
 			.then(function(canDelete) {
@@ -338,7 +426,7 @@ app.delete('/api/collections/:id', function(request, response, app,  CollectionM
 						whereMap = merge(whereMap, canDelete);
 					}
 
-					return CollectionModel.removeOne(whereMap);
+					return CollectionModel.removeOne(whereMap, optionsMap);
 				}
 				else {
 					throw unauthenticatedError(authenticator);

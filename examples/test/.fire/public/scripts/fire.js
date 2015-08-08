@@ -3,7 +3,7 @@
 /* jshint undef: true, unused: true */
 /* global angular */
 
-var app = angular.module('default', ['ngRoute']);
+var app = angular.module('default', ['angular-route']);
 
 
 app.config(['TestsServiceProvider', function(TestsServiceProvider) {
@@ -288,7 +288,7 @@ FireModel.prototype.getOne = function(fields) {
 function FireModelInstanceTest(setMap, model, path) {
 	var self = this;
 
-	
+
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
@@ -304,7 +304,7 @@ function FireModelInstanceTest(setMap, model, path) {
 		}
 	});
 
-	
+
 
 	Object.defineProperty(this, 'name', {
 		get: function() {
@@ -320,7 +320,7 @@ function FireModelInstanceTest(setMap, model, path) {
 		}
 	});
 
-	
+
 	if(typeof setMap.sessions != 'undefined' && setMap.sessions !== null) {
 		if(Array.isArray(setMap.sessions)) {
 			setMap.sessions = setMap.sessions.map(function(object) {
@@ -331,7 +331,7 @@ function FireModelInstanceTest(setMap, model, path) {
 			setMap.sessions = new FireModelInstanceTestSession(setMap.sessions, model.models.TestSession, path + '/' + 'sessions');
 		}
 	}
-	
+
 
 	Object.defineProperty(this, 'sessions', {
 		get: function() {
@@ -347,7 +347,7 @@ function FireModelInstanceTest(setMap, model, path) {
 		}
 	});
 
-	
+
 	if(typeof setMap.variants != 'undefined' && setMap.variants !== null) {
 		if(Array.isArray(setMap.variants)) {
 			setMap.variants = setMap.variants.map(function(object) {
@@ -358,7 +358,7 @@ function FireModelInstanceTest(setMap, model, path) {
 			setMap.variants = new FireModelInstanceTestVariant(setMap.variants, model.models.TestVariant, path + '/' + 'variants');
 		}
 	}
-	
+
 
 	Object.defineProperty(this, 'variants', {
 		get: function() {
@@ -531,7 +531,7 @@ app.factory('TestModel', ['$http', '$q', 'FireModels', function($http, $q, FireM
 function FireModelInstanceTestParticipant(setMap, model, path) {
 	var self = this;
 
-	
+
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
@@ -547,7 +547,7 @@ function FireModelInstanceTestParticipant(setMap, model, path) {
 		}
 	});
 
-	
+
 	if(typeof setMap.sessions != 'undefined' && setMap.sessions !== null) {
 		if(Array.isArray(setMap.sessions)) {
 			setMap.sessions = setMap.sessions.map(function(object) {
@@ -558,7 +558,7 @@ function FireModelInstanceTestParticipant(setMap, model, path) {
 			setMap.sessions = new FireModelInstanceTestSession(setMap.sessions, model.models.TestSession, path + '/' + 'sessions');
 		}
 	}
-	
+
 
 	Object.defineProperty(this, 'sessions', {
 		get: function() {
@@ -670,7 +670,7 @@ app.factory('TestParticipantModel', ['$http', '$q', 'FireModels', function($http
 function FireModelInstanceTestSession(setMap, model, path) {
 	var self = this;
 
-	
+
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
@@ -686,7 +686,7 @@ function FireModelInstanceTestSession(setMap, model, path) {
 		}
 	});
 
-	
+
 	if(typeof setMap.test != 'undefined' && setMap.test !== null) {
 		if(Array.isArray(setMap.test)) {
 			setMap.test = setMap.test.map(function(object) {
@@ -697,7 +697,7 @@ function FireModelInstanceTestSession(setMap, model, path) {
 			setMap.test = new FireModelInstanceTest(setMap.test, model.models.Test, path + '/' + 'tests');
 		}
 	}
-	
+
 
 	Object.defineProperty(this, 'test', {
 		get: function() {
@@ -713,7 +713,7 @@ function FireModelInstanceTestSession(setMap, model, path) {
 		}
 	});
 
-	
+
 	if(typeof setMap.participant != 'undefined' && setMap.participant !== null) {
 		if(Array.isArray(setMap.participant)) {
 			setMap.participant = setMap.participant.map(function(object) {
@@ -724,7 +724,7 @@ function FireModelInstanceTestSession(setMap, model, path) {
 			setMap.participant = new FireModelInstanceTestParticipant(setMap.participant, model.models.TestParticipant, path + '/' + 'participants');
 		}
 	}
-	
+
 
 	Object.defineProperty(this, 'participant', {
 		get: function() {
@@ -740,7 +740,7 @@ function FireModelInstanceTestSession(setMap, model, path) {
 		}
 	});
 
-	
+
 
 	Object.defineProperty(this, 'variant', {
 		get: function() {
@@ -756,7 +756,7 @@ function FireModelInstanceTestSession(setMap, model, path) {
 		}
 	});
 
-	
+
 
 	Object.defineProperty(this, 'createdAt', {
 		get: function() {
@@ -879,7 +879,7 @@ app.factory('TestSessionModel', ['$http', '$q', 'FireModels', function($http, $q
 function FireModelInstanceTestVariant(setMap, model, path) {
 	var self = this;
 
-	
+
 
 	Object.defineProperty(this, 'id', {
 		get: function() {
@@ -895,7 +895,7 @@ function FireModelInstanceTestVariant(setMap, model, path) {
 		}
 	});
 
-	
+
 
 	Object.defineProperty(this, 'name', {
 		get: function() {
@@ -911,7 +911,7 @@ function FireModelInstanceTestVariant(setMap, model, path) {
 		}
 	});
 
-	
+
 
 	Object.defineProperty(this, 'numberOfParticipants', {
 		get: function() {
@@ -927,7 +927,7 @@ function FireModelInstanceTestVariant(setMap, model, path) {
 		}
 	});
 
-	
+
 	if(typeof setMap.test != 'undefined' && setMap.test !== null) {
 		if(Array.isArray(setMap.test)) {
 			setMap.test = setMap.test.map(function(object) {
@@ -938,7 +938,7 @@ function FireModelInstanceTestVariant(setMap, model, path) {
 			setMap.test = new FireModelInstanceTest(setMap.test, model.models.Test, path + '/' + 'tests');
 		}
 	}
-	
+
 
 	Object.defineProperty(this, 'test', {
 		get: function() {
@@ -1024,15 +1024,15 @@ app.factory('TestVariantModel', ['$http', '$q', 'FireModels', function($http, $q
 
 
 app.service('FireModels', ['$http', '$q', function($http, $q) {
-	
+
 	this.Test = new FireModelTest($http, $q, this);
-	
+
 	this.TestParticipant = new FireModelTestParticipant($http, $q, this);
-	
+
 	this.TestSession = new FireModelTestSession($http, $q, this);
-	
+
 	this.TestVariant = new FireModelTestVariant($http, $q, this);
-	
+
 }]);
 function unwrap(promise, initialValue) {
     var value = initialValue;
@@ -1070,11 +1070,11 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         templateUrl: '/templates/start.html',
         controller: 'StartController',
         resolve: {
-        
+
             TextOfButtonTest: ['TextOfButtonTest', function(TextOfButtonTest) {
                 return TextOfButtonTest.participate();
             }],
-        
+
         }
     });
 
@@ -1296,4 +1296,3 @@ app.service('TextOfButtonTest', ['$q', '$http', '_StorageService', 'TestsService
 		}
 	};
 }]);
-

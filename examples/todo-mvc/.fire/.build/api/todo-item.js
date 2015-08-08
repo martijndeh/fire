@@ -2,8 +2,9 @@
 
 var Q = require('q');
 
-var fire = require('fire');
-var app = fire.app('todomvc');
+var app = require('fire')('todomvc');
+
+var http = require('http');
 
 var http = require('http');
 
@@ -98,6 +99,7 @@ function findAuthenticator(authenticatorModel, request) {
 
 
 
+
 app.post('/api/todo-items', function(app, response, request, TodoItemModel) {
 	return findAuthenticator(null, request)
 		.then(function(authenticator) {
@@ -125,14 +127,14 @@ app.post('/api/todo-items', function(app, response, request, TodoItemModel) {
 						};
 
 						if(Array.isArray(request.body)) {
-							
+
 
 							var createMaps = request.body.map(function(createMap) {
 								return checkCreateMap(createMap);
 							});
 
 							return TodoItemModel.create(createMaps, {authenticator: authenticator, request: request, response: response});
-							
+
 						}
 						else {
 							return TodoItemModel.create(checkCreateMap(request.body || {}), {authenticator: authenticator, request: request, response: response});
@@ -142,6 +144,82 @@ app.post('/api/todo-items', function(app, response, request, TodoItemModel) {
 						throw unauthenticatedError(authenticator);
 					}
 				});
+		});
+});
+
+app.get('/api/todo-items/_count', function(request, response, app,  TodoItemModel) {
+	return findAuthenticator(null, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var propertyName = null;
+
+
+
+			if(whereMap.$options) {
+				propertyName = whereMap.$options.propertyName;
+				delete whereMap.$options;
+			}
+
+			if(TodoItemModel.options.automaticPropertyName) {
+				whereMap[TodoItemModel.options.automaticPropertyName] = authenticator;
+			}
+
+			var accessControl = TodoItemModel.getAccessControl();
+			return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+				.then(function(canRead) {
+					if(canRead) {
+						if(typeof canRead == 'object') {
+							whereMap = merge(whereMap, canRead);
+						}
+
+						return TodoItemModel.count(propertyName, whereMap);
+					}
+					else {
+						throw unauthenticatedError(authenticator);
+					}
+				});
+		});
+});
+
+app.search('/api/todo-items', function(request, response, app,  TodoItemModel) {
+	return findAuthenticator(null, request)
+		.then(function(authenticator) {
+			var whereMap = request.query || {};
+			var optionsMap = {};
+			var searchText = whereMap._search;
+			if(typeof whereMap._search != 'undefined') {
+				delete whereMap._search;
+			}
+
+			if(typeof whereMap.$options != 'undefined') {
+				optionsMap = whereMap.$options;
+				delete whereMap.$options;
+			}
+			optionsMap.isShallow = true;
+
+			if(TodoItemModel.options.automaticPropertyName) {
+				whereMap[TodoItemModel.options.automaticPropertyName] = authenticator;
+			}
+
+			if(!searchText || searchText.length === 0) {
+				throw badRequestError();
+			}
+			else {
+				var accessControl = TodoItemModel.getAccessControl();
+				return Q.when(accessControl.canRead({authenticator: authenticator, request: request, response: response, whereMap: whereMap}))
+					.then(function(canRead) {
+						if(canRead) {
+							if(typeof canRead == 'object') {
+								whereMap = merge(whereMap, canRead);
+							}
+
+							return TodoItemModel.search(searchText, whereMap, optionsMap);
+						}
+						else {
+							throw unauthenticatedError(authenticator);
+						}
+					});
+			}
 		});
 });
 
@@ -560,19 +638,3 @@ app.put('/api/todo-items/:id/list', function(request, response, app,  TodoItemMo
 				});
 		});
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

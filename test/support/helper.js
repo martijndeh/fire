@@ -40,7 +40,7 @@ Helper.prototype.test = function(name, callback) {
 Helper.prototype.beforeEach = function(options) {
     var self = this;
     return function(done) {
-        self.app = fire.app('test', options || {type: 'angular'});
+        self.app = fire('test', options || {type: 'angular'});
 
         return (self.setup ? Q.when(self.setup(self.app)) : Q.when(true))
             .then(function() {
@@ -79,6 +79,18 @@ Helper.prototype.beforeEach = function(options) {
                 return result;
             })
             .then(function() {
+                var result = Q.when(true);
+
+                // Execute all queries configured through App#sql.
+                Object.keys(self.app.models._sqlMap).forEach(function(hash) {
+                    result = result.then(function() {
+                        return self.app.models.execute(self.app.models._sqlMap[hash][0]);
+                    });
+                });
+
+                return result;
+            })
+            .then(function() {
                 return self.app.tests.createTests();
             })
             .then(function() {
@@ -104,11 +116,11 @@ Helper.prototype.beforeEach = function(options) {
                 self.modules = [];
 
                 self.app.models.forEach(function(model) {
-                    if(!model.disableAutomaticModelController) {
+                    if(!model.isPrivate) {
                         result = result.then(function() {
                             var writeStream = fs.createWriteStream(path.join(__dirname, '..', '..', 'temp', model.getName().toLowerCase() + '.js'));
 
-                            return self.app.API.generateModelController(model, writeStream)
+                            return self.app.APIBuild.generateModelController(model, writeStream)
                                 .then(function() {
                                     self.modules.push(writeStream.path);
 
@@ -142,7 +154,7 @@ Helper.prototype.afterEach = function() {
 
         self.app.models.forEach(function(model) {
             result = result.then(function() {
-                return model.exists().then(function(exists) {
+                return model.isCreated().then(function(exists) {
                     if(exists) {
                         return model.forceDestroy();
                     }
@@ -160,7 +172,7 @@ Helper.prototype.afterEach = function() {
             .then(function() {
                 return (self.modules && self.modules.forEach(function(modulePath) {
                     delete require.cache[modulePath];
-                    //fs.unlinkSync(modulePath);
+                    fs.unlinkSync(modulePath);
                 }));
             })
             .then(function() {

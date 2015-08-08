@@ -15,7 +15,7 @@ describe('bridge', function() {
 	var bridge = null;
 
 	beforeEach(function(done) {
-		app = fire.app('example', {disabled: true});
+		app = fire('example', {disabled: true});
 		bridge = app.bridge;
 
 		fire.start()
@@ -154,13 +154,7 @@ describe('bridge', function() {
 			highWaterMark: 65536
 		});
 
-		return app.models.setup()
-			.then(function() {
-				return app.controllers.setup();
-			})
-			.then(function() {
-				return bridge.generate(writeStream);
-			})
+		return bridge.generate(writeStream)
 			.then(function() {
 				if(write) {
 					fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/model-methods.js'), writeStream.toString());
@@ -191,13 +185,7 @@ describe('bridge', function() {
 			highWaterMark: 65536
 		});
 
-		app.models.setup()
-			.then(function() {
-				return app.controllers.setup();
-			})
-			.then(function() {
-				return bridge.generate(writeStream);
-			})
+		return bridge.generate(writeStream)
 			.then(function() {
 				if(write) {
 					fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/angular-methods.js'), writeStream.toString());
@@ -205,42 +193,6 @@ describe('bridge', function() {
 
 				assert.equal(writeStream.toString().length > 0, true);
 				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/angular-methods.js')).toString());
-
-				done();
-			})
-			.done();
-	});
-
-	it('can export inline template', function(done) {
-		app.template('test', '<h1>Test template.</h1>');
-
-		function TestController() {
-
-		}
-		app.controller(TestController);
-
-		TestController.prototype.view = function() {
-			return this.template('test');
-		};
-
-		var writeStream = new streams.WritableStream({
-			highWaterMark: 65536
-		});
-
-		app.models.setup()
-			.then(function() {
-				return app.controllers.setup();
-			})
-			.then(function() {
-				return bridge.generate(writeStream);
-			})
-			.then(function() {
-				if(write) {
-					fs.writeFileSync(path.join(__dirname, 'fixtures/bridge/inline-templates.js'), writeStream.toString());
-				}
-
-				assert.equal(writeStream.toString().length > 0, true);
-				assert.equal(writeStream.toString(), fs.readFileSync(path.join(__dirname, 'fixtures/bridge/inline-templates.js')).toString());
 
 				done();
 			})

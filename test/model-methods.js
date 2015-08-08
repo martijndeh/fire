@@ -15,7 +15,7 @@ describe('model methods', function() {
     var app = null;
 
     beforeEach(function(done) {
-        app = fire.app('methods', {});
+        app = fire('methods', {});
         fire.start()
             .then(function() {
                 models = app.models;
@@ -34,7 +34,7 @@ describe('model methods', function() {
 
         models.forEach(function(model) {
             result = result.then(function() {
-                return model.exists().then(function(exists) {
+                return model.isCreated().then(function(exists) {
                     if(exists) {
                         return model.forceDestroy();
                     }

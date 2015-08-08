@@ -1,43 +1,39 @@
 'use strict';
 
 /**
- * Require Node on Fire.
+ * Create our app—with the angular-route module.
  */
-var fire = require('fire');
-
-/**
- * Create our app—with the ngRoute module.
- */
-var app = fire.app('nodeonfire.org', {
-	modules: ['ngRoute']
+var app = require('fire')('nodeonfire.org', {
+	modules: ['angular-route'],
+	NODE_ENV: process.env.NODE_ENV
 });
 
 /**
- * This is an isomorphic service. It can either be run on the client- or the server-side. Using the fire service we can check which side we're running on.
+ * This is an isomorphic service. It can either be run on the client- or the server-side. Simply inject it using the dependency injection.
+ *
+ * Using the fire service we check which side we're running on.
  */
-app.service(function MyService(fire) { //jshint ignore:line
-	this.log = function() {
+app.service(function MyService(fire) {
+	this.log = function(location) {
 		if(fire.isServer()) {
-			console.log('This is the server.');
+			console.log(location + ' on the server.');
 		}
 		else if(fire.isClient()) {
-			console.log('This is the client.');
+			console.log(location + ' on the client.');
 		}
 	};
 });
 
 /**
- * This is run on the back-end side in the run stage.
+ * This is run on the back-end and the front-end side.
  */
-app.configure(function(MyService) {
-	MyService.log();
+app.run(function(MyService) {
+	MyService.log('Run');
 });
 
 /**
  * This is a client-side controller, which injects the isomorphic MyService.
  */
 app.controller('/', function StartController(MyService) {
-	MyService.log();
+	MyService.log('Controller');
 });
-
-fire.start();

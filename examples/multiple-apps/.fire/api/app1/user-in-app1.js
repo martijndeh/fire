@@ -3,7 +3,7 @@
 var Q = require('q');
 
 var fire = require('fire');
-var app = fire.app('nodeonfire.org');
+var app = fire('nodeonfire.org');
 
 function merge(dest, source) {
 	Object.keys(source).forEach(function(key) {
@@ -288,11 +288,3 @@ app.delete('/api/user-in-app1s/:id', function(request, response, app,  UserInApp
 			});
 		});
 });
-
-
-
-
-
-
-
-

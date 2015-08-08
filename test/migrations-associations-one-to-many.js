@@ -24,7 +24,7 @@ describe('migrations-associations-one-to-many', function() {
     });
 
     beforeEach(function() {
-        app = fire.app('migrations', {});
+        app = fire('migrations', {});
 
         app.modules.forEach(function(module_) {
             if(module_.migrate) {
@@ -39,7 +39,7 @@ describe('migrations-associations-one-to-many', function() {
                 migrations = new Migrations(app, models);
                 return migrations.setup(null)
                     .then(function() {
-                        return models.Schema.exists()
+                        return models.Schema.isCreated()
                             .then(function(exists) {
                                 return !exists && models.Schema.setup();
                             });

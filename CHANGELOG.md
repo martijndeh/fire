@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.44.0
+
+### Breaking changes
+- Removes the dependency of bower. Please use npm and browserify in your projects.
+- Removes the dependency of Grunt. You can still implement Grunt if you prefer. Or any other task runner like Gulp.
+- Changes syntax to create an app from `fire.app('myapp', {})` (old style) to `require('fire')('myapp', {})` (new style). This to avoid polluting the scope with the fire variable.
+- Requires Postgres version 9.4 because of some new features (full text search and real-time streaming).
+- Changes default app name from `default` to your app's actual name.
+- Deprecates old-style routes on controllers. Please use the Middleware module.
+- Renames App#configure to App#run.
+- Changes App#run to run on both back-end and front-end.
+- Changes Postgres publish procedure to check if payload is > 8000 bytes. If so, notify could fail and prevent the original action from performing.
+
+### Bug fixes
+- Fixes Model#findOne sometimes not returning null throwing an error.
+
+### Improvements
+- Rewrites migrations to be more performant and stable.
+- Rewrites middleware to be easier to maintain.
+- Splits API module in serve and build side.
+- Fixes adding knex statement in where.
+- Reduces file size of generates client-side code.
+
+### New features
+- Adds real-time streaming module (Model#stream). See the real-time chat example project.
+- Adds full-text search module (Model#search). See the search example project.
+- Adds App#sql to manage SQL statements.
+- Implements isomorphic Model#count.
+- Implements isomorphic Model#exists.
+
 ## 0.42.5
 
 ### Bug fixes

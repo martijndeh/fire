@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "./node_modules/grunt-cli/bin/grunt build release"
+    "start": "node_modules/.bin/fire run",
+    "postinstall": "node_modules/.bin/fire build release"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fire": "^0.42.5",
-    "grunt-cli": "^0.1.13"
+    "angular": "^1.4.3",
+    "angular-route": "^1.4.3",
+    "fire": "file:../.."
   }
 }
