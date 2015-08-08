@@ -2,8 +2,7 @@
 
 var Q = require('q');
 
-var fire = require('./..');
-var app = fire.app('test');
+var app = require('./..')('test');
 
 var http = require('http');
 

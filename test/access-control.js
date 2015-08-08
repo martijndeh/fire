@@ -15,14 +15,18 @@ describe('access control', function() {
 	var modules = null;
 
 	beforeEach(function(done) {
-		app = fire.app('accessControlTest', {type: 'angular'});
+		console.log('beforeEach');
 
-		if(createModels) {
-			createModels();
-		}
+		app = fire('accessControlTest', {type: 'angular'});
 
-		fire.start()
+		return Q.when(createModels && createModels())
 			.then(function() {
+				console.log('going to statrt');
+				return fire.start();
+			})
+			.then(function() {
+				console.log('here!');
+
 				app.modules.forEach(function(module_) {
 					if(module_.migrate) {
 						module_.migrate(app.models);
@@ -98,13 +102,10 @@ describe('access control', function() {
 
         app.models.forEach(function(model) {
             result = result.then(function() {
-                return model.isCreated()
+                return model.isCreated && model.isCreated()
 					.then(function(exists) {
 	                    if(exists) {
 	                        return model.forceDestroy();
-	                    }
-	                    else {
-	                        return Q.when(true);
 	                    }
 	                })
 					.then(function() {
@@ -131,6 +132,9 @@ describe('access control', function() {
         	.then(function() {
             	done();
         	})
+			.catch(function(error) {
+				done(error);
+			})
         	.done();
 	});
 
@@ -185,6 +189,8 @@ describe('access control', function() {
 		});
 
 		beforeEach(function(done) {
+			console.log('before each!');
+
 			app.models.User.create({name: 'Martijn', password: 'test'})
 				.then(function() {
 					agent = request.agent(app.HTTPServer.express);

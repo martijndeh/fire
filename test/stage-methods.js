@@ -24,7 +24,10 @@ describe('stage methods', function() {
 		assert.notEqual(typeof helper.app.run, 'undefined');
 	});
 
-	it('can execute build method', function() {
+	it('can execute build methods', function() {
+		// TODO: What to do with the slow uglify method?
+		this.timeout(10000);
+
 		var called = false;
 
 		helper.app.build(function test() {
@@ -44,6 +47,7 @@ describe('stage methods', function() {
 			called = true;
 		});
 
+		helper.app.stageMethods.disable('build:uglify');
 		helper.app.stageMethods.disable('build:test');
 
 		return helper.app.stageMethods.build()

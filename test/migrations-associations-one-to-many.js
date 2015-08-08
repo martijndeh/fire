@@ -24,7 +24,7 @@ describe('migrations-associations-one-to-many', function() {
     });
 
     beforeEach(function() {
-        app = fire.app('migrations', {});
+        app = fire('migrations', {});
 
         app.modules.forEach(function(module_) {
             if(module_.migrate) {

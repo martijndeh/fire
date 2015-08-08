@@ -44,17 +44,17 @@ describe('api generate model controllers', function() {
 			app.model(Container);
 		};
 
-		app = fire.app('test', {disabled: true});
+		app = fire('test', {disabled: true});
 
 		return Q.when(setup(app))
-			.then(function() {
-				return app.models.setup();
-			})
 			.then(function() {
 				return fire.start();
 			})
 			.then(function() {
 				done();
+			})
+			.catch(function(error) {
+				done(error);
 			})
 			.done();
 	});
@@ -83,7 +83,7 @@ describe('api generate model controllers', function() {
 
 	it('write authenticator model controller', function(done) {
 		var writeStream = new streams.WritableStream({
-			highWaterMark: 32768
+			highWaterMark: 65536
 		});
 
 		return app.APIBuild.generateModelController(app.models.User, writeStream)
@@ -103,7 +103,7 @@ describe('api generate model controllers', function() {
 
 	it('write has method in model controller', function(done) {
 		var writeStream = new streams.WritableStream({
-			highWaterMark: 32768
+			highWaterMark: 65536
 		});
 
 		return app.APIBuild.generateModelController(app.models.Collection, writeStream)
@@ -123,7 +123,7 @@ describe('api generate model controllers', function() {
 
 	it('write associations in model controller', function(done) {
 		var writeStream = new streams.WritableStream({
-			highWaterMark: 32768
+			highWaterMark: 65536
 		});
 
 		return app.APIBuild.generateModelController(app.models.Container, writeStream)

@@ -2,7 +2,7 @@
 'use strict';
 
 var Q = require('q');
-var fire = require('./../../lib/firestarter');
+var fire = require('./../..');
 var fs = require('fs');
 var path = require('path');
 
@@ -40,7 +40,7 @@ Helper.prototype.test = function(name, callback) {
 Helper.prototype.beforeEach = function(options) {
     var self = this;
     return function(done) {
-        self.app = fire.app('test', options || {type: 'angular'});
+        self.app = fire('test', options || {type: 'angular'});
 
         return (self.setup ? Q.when(self.setup(self.app)) : Q.when(true))
             .then(function() {

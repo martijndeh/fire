@@ -8,19 +8,19 @@ describe('app', function() {
 	beforeEach(helper.beforeEach());
 	afterEach(helper.afterEach());
 
-	describe('configure', function() {
+	describe('run', function() {
 		var called = false;
 
 		before(function() {
 			helper.setup = function() {
-				helper.app.configure(function() {
+				helper.app.run(function() {
 					called = true;
 				});
 			};
 			helper.createModels = null;
 		});
 
-		it('can configure app', function(done) {
+		it('can run app', function(done) {
 			assert.equal(called, true);
 			done();
 		});

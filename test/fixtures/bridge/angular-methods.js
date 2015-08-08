@@ -730,7 +730,10 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '_djb2Has
         				}
 
         				return modelInstance;
-        			});
+        			})
+                    .catch(function() {
+                        return null;
+                    });
         	}
         	else {
         		var optionsMap = options || {};
@@ -767,7 +770,7 @@ app.factory('FireModel', ['$http', '$q', '$injector', '_CacheService', '_djb2Has
     };
 }]);
 
-app.service('FireModelInstance', ['$injector', function($injector) {
+app.service('FireModelInstance', ['$injector', '$q', function($injector, $q) {
     this.construct = function(modelInstance, setMap, path, model) {
         modelInstance._model = model;
         modelInstance._path = path;
@@ -1002,28 +1005,7 @@ app.service('FireModelInstance', ['$injector', function($injector) {
 }]);
 
 
-function unwrap(promise, initialValue) {
-    var value = initialValue;
-
-    promise.then(function(newValue) {
-        angular.copy(newValue, value);
-    });
-
-    return value;
-};
-
 app.service('fire', [function() {
-    function unwrap(promise, initialValue) {
-        var value = initialValue;
-
-        promise.then(function(newValue) {
-            angular.copy(newValue, value);
-        });
-
-        return value;
-    };
-    this.unwrap = unwrap;
-
     this.isServer = function() {
         return false;
     };
@@ -1081,13 +1063,7 @@ app.provider('TestsService', [function() {
 	this.$get = function() {
 		return {
 			participate: function(test, variant) {
-				if(_delegate === null) {
-					throw new Error('Please set the TestsService.delegate');
-				}
-				else if(typeof _delegate != 'function') {
-					throw new Error('TestsService#delegate must be a function.');
-				}
-				else {
+				if(_delegate && typeof _delegate == 'function') {
 					_delegate(test, variant);
 				}
 			}

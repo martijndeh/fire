@@ -1,7 +1,6 @@
 'use strict';
 
-var fire = require('fire');
-var app = fire.app('{{name}}', {
+var app = require('fire')('{{name}}', {
 	modules: ['angular-route'],
 	NODE_ENV: process.env.NODE_ENV
 });

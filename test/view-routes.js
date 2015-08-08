@@ -14,7 +14,7 @@ describe('view routes', function() {
     });
 
     before(function(done) {
-        app = fire.app('routes', {});
+        app = fire('routes', {});
 
         // Let's create some controllers
         function TestController() {}
@@ -58,15 +58,6 @@ describe('view routes', function() {
             });
     });
 
-    it('can find /user', function(done) {
-        request(app.HTTPServer.express)
-            .get('/user')
-            .expect(200, function(error, response) {
-                assert.equal(response.text, DEFAULT_HTML);
-                done(error);
-            });
-    });
-
     it('can find test1 template', function(done) {
         request(app.HTTPServer.express)
             .get('/templates/test1.html')
@@ -96,7 +87,7 @@ describe('view routes', function() {
 
     it('can find custom page', function(done) {
         request(app.HTTPServer.express)
-            .get('/test')
+            .get('/test2')
             .expect(200, function(error, response) {
                 assert.equal(response.text, 'test4');
                 done(error);

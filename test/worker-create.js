@@ -28,7 +28,7 @@ describe('workers', function() {
 				called++;
 			};
 
-			var app2 = fire.app('test', 'another-app', {});
+			var app2 = fire('test', 'another-app', {});
 			function AnotherWorker() {
 
 			}
