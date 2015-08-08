@@ -25,14 +25,21 @@ describe('stage methods', function() {
 	});
 
 	it('can execute build methods', function() {
-		// TODO: What to do with the slow uglify method?
-		this.timeout(10000);
-
 		var called = false;
 
 		helper.app.build(function test() {
 			called = true;
 		});
+
+		helper.app.stageMethods.disable('build:uglify');
+		helper.app.stageMethods.disable('build:less');
+		helper.app.stageMethods.disable('build:templates');
+		helper.app.stageMethods.disable('build:browserify');
+		helper.app.stageMethods.disable('build:api');
+		helper.app.stageMethods.disable('build:scripts');
+		helper.app.stageMethods.disable('build:migrations');
+		helper.app.stageMethods.disable('build:procfile');
+		helper.app.stageMethods.disable('build:version');
 
 		return helper.app.stageMethods.build()
 			.then(function() {
@@ -48,6 +55,15 @@ describe('stage methods', function() {
 		});
 
 		helper.app.stageMethods.disable('build:uglify');
+		helper.app.stageMethods.disable('build:less');
+		helper.app.stageMethods.disable('build:templates');
+		helper.app.stageMethods.disable('build:browserify');
+		helper.app.stageMethods.disable('build:api');
+		helper.app.stageMethods.disable('build:scripts');
+		helper.app.stageMethods.disable('build:migrations');
+		helper.app.stageMethods.disable('build:procfile');
+		helper.app.stageMethods.disable('build:version');
+
 		helper.app.stageMethods.disable('build:test');
 
 		return helper.app.stageMethods.build()

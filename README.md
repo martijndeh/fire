@@ -5,7 +5,7 @@
 - Website: [nodeonfire.org](http://nodeonfire.org/)
 - Documentation: [nodeonfire.org/documentation](http://nodeonfire.org/documentation)
 
-![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-github-logo.png)
+[![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-github-logo.png)](http://nodeonfire.org/)
 
 An isomorphic JavaScript framework built on top of [Node.js](https://nodejs.org), [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [Express](http://expressjs.com/), [Knex.js](http://knexjs.org/) and more.
 
