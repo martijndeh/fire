@@ -1,24 +1,25 @@
 {
   "name": "fire",
-  "description": "An isomorphic JavaScript framework built on top of [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [express](http://expressjs.com/) and more.",
+  "description": "An isomorphic JavaScript framework built on top of [AngularJS](https://angularjs.org/) and [PostgreSQL](http://www.postgresql.org/). Includes ORM, automatic REST API, and more.",
   "keywords": [
-    "models",
-    "isomorphic",
-    "web",
-    "rest",
     "orm",
     "postgres",
     "express",
-    "api"
+    "api",
+    "isomorphic",
+    "angularjs",
+    "meteor",
+    "sails"
   ],
   "bin": {
     "fire": "./bin/cli.js"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/martijndeh/fire.git"
   },
-  "version": "0.43.7",
+  "version": "0.45.0",
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "main": "index.js",
   "devDependencies": {
@@ -40,7 +41,7 @@
     "amqplib": "^0.3.2",
     "body": "^5.0.0",
     "body-parser": "^1.2.0",
-    "bower": "^1.4.1",
+    "browserify": "^11.0.1",
     "cookie-session": "^1.1.0",
     "cookies": "^0.5.0",
     "cron": "^1.0.5",
@@ -49,14 +50,18 @@
     "express": "^4.12.3",
     "foreman": "^1.3.0",
     "inflection": "^1.3.5",
+    "jade": "^1.11.0",
     "knex": "^0.7.6",
+    "less": "^2.5.1",
     "merge": "^1.2.0",
     "methods": "^1.1.1",
     "minimist": "^1.1.1",
+    "mkdirp": "^0.5.1",
     "mu2": "^0.5.20",
     "node-uuid": "^1.4.3",
     "pg": "^4.3.0",
     "q": "^1.4.0",
+    "uglify-js": "^2.4.24",
     "ws": "^0.7.2"
   }
 }
