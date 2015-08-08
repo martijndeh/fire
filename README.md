@@ -5,7 +5,7 @@
 - Website: [nodeonfire.org](http://nodeonfire.org/)
 - Documentation: [nodeonfire.org/documentation](http://nodeonfire.org/documentation)
 
-![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-logo.png)
+![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-github-logo.png)
 
 An isomorphic JavaScript framework built on top of [Node.js](https://nodejs.org), [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [Express](http://expressjs.com/), [Knex.js](http://knexjs.org/) and more.
 
@@ -189,6 +189,10 @@ $ fire run
 We've created several example project which illustrate the different features of Node on Fire. It's also a good reference to use when starting your first Node on Fire app.
 
 http://nodeonfire.org/examples
+
+### Contribute
+
+Do you want to contribute? Great! We can always use some help. Reach out to us or go ahead and work on a rate limiting module, a `fire watch` feature or something else.
 
 ### Beta releases
 
