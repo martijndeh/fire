@@ -1,4 +1,6 @@
 # Node on Fire: an isomorphic JavaScript framework :fire:
+
+[![Join the chat at https://gitter.im/martijndeh/fire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/martijndeh/fire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
 [![License Badge](https://img.shields.io/github/license/martijndeh/fire.svg)](https://github.com/martijndeh/fire/blob/master/LICENSE)
 
