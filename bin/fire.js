@@ -10,6 +10,7 @@ var dotenv = require('dotenv-save');
 var pg = require('pg');
 var debug = require('debug')('fire:cli');
 var watch = require('watch');
+var copyDir = require('copy-dir');
 
 pg.defaults.poolIdleTimeout = 500;
 
@@ -83,39 +84,81 @@ function runCommand(command, params, cwd) {
 	return defer.promise;
 }
 
-function createApp(name) {
-	if(!name) {
-		console.log('Please specify an app name.');
-		return;
-	}
+function createExampleApp(name) {
+	var examplesPath = path.join(__dirname, '..', 'examples', name);
+	var destPath = path.join(process.cwd(), name);
 
-	var postfix = '';
-	if(process.platform == 'win32') {
-		postfix = '.cmd';
-	}
+	console.log('Creating example app `' + name + '` in `' + destPath + '`');
 
-	return mkdir(name)
+	Q.when(true)
 		.then(function() {
-			return mkdir(path.join(name, 'templates'));
+			return copyDir.sync(examplesPath, destPath);
 		})
 		.then(function() {
-			return Q.all([
-				template('skeleton/index-js.template', name + '/index.js', {name: name}),
-				template('skeleton/package-json.template', name + '/package.json', {name: name}),
-				template('skeleton/env.template', name + '/.env', {sessionKey: crypto.randomBytes(127).toString('base64')}),
-				template('skeleton/package-json.template', name + '/package.json', {name: name}),
-				template('skeleton/view-jade.template', name + '/templates/view.jade', {}),
-				template('skeleton/start-jade.template', name + '/templates/start.jade', {})
-			]);
+			console.log('Created example app `' + name + '` in `' + destPath + '`');
 		})
-		.then(function() {
-			return runCommand('npm' + postfix, ['install'], path.join(process.cwd(), name));
-		})
-		.then(function() {
-			console.log(' ');
-			console.log('	Created app `' + name + '`. `cd ' + name + '` and run `fire run`.');
-			console.log(' ');
+		.catch(function(error) {
+			if(error.code == 'EEXIST') {
+				console.log('Folder already exists. Cannot create `' + destPath + '`.');
+			}
+			else if(error.message == 'from file not exists.') {
+				console.log('Example app does not exist. Please choose from one of the following:');
+				console.log('');
+
+				var examples = fs.readdirSync(path.join(__dirname, '..', 'examples'));
+				examples.forEach(function(example) {
+					if(example[0] != '.') {
+						console.log(' ' + example);
+					}
+				});
+				console.log('');
+				console.log('For example: fire apps:create --example chatbox');
+				console.log('');
+			}
+			else {
+				console.log(error);
+			}
 		});
+}
+
+function createApp(name) {
+	if(argv.example) {
+		createExampleApp(argv.example);
+	}
+	else {
+		if(!name) {
+			console.log('Please specify an app name.');
+			return;
+		}
+
+		var postfix = '';
+		if(process.platform == 'win32') {
+			postfix = '.cmd';
+		}
+
+		return mkdir(name)
+			.then(function() {
+				return mkdir(path.join(name, 'templates'));
+			})
+			.then(function() {
+				return Q.all([
+					template('skeleton/index-js.template', name + '/index.js', {name: name}),
+					template('skeleton/package-json.template', name + '/package.json', {name: name}),
+					template('skeleton/env.template', name + '/.env', {sessionKey: crypto.randomBytes(127).toString('base64')}),
+					template('skeleton/package-json.template', name + '/package.json', {name: name}),
+					template('skeleton/view-jade.template', name + '/templates/view.jade', {}),
+					template('skeleton/start-jade.template', name + '/templates/start.jade', {})
+				]);
+			})
+			.then(function() {
+				return runCommand('npm' + postfix, ['install'], path.join(process.cwd(), name));
+			})
+			.then(function() {
+				console.log(' ');
+				console.log('	Created app `' + name + '`. `cd ' + name + '` and run `fire run`.');
+				console.log(' ');
+			});
+	}
 }
 
 function _createDatabase(datastore, name, count) {
@@ -527,6 +570,7 @@ function CLI(tasks) {
 			'config:set KEY=VALUE ...': 'sets the local config KEY to VALUE',
 
 			'apps:create APP': 'creates a new app named APP',
+			'apps:create --example APP': 'creates one of the example apps',
 
 			'datastore:create': 'creates a new local database, installs the uuid-ossp extension and sets the DATABASE_URL locally',
 			'datastore:open': 'opens the current local database configured in DATABASE_URL',

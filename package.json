@@ -44,6 +44,7 @@
     "browserify": "^11.0.1",
     "cookie-session": "^1.1.0",
     "cookies": "^0.5.0",
+    "copy-dir": "0.0.7",
     "cron": "^1.0.5",
     "debug": "^0.8.0",
     "dotenv-save": "^1.2.0",
