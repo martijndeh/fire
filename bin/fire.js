@@ -222,7 +222,9 @@ function unloadModules(basePath, index) {
 	});
 }
 
-function loadApp(basePath, stage) {
+function getApp(stage) {
+	var basePath = process.cwd();
+
 	debug('loadApp ' + basePath + ' ' + stage);
 
 	var packageJSON = require(path.join(basePath, 'package.json'));
@@ -234,6 +236,7 @@ function loadApp(basePath, stage) {
 	var firePath = path.join(basePath, 'node_modules', 'fire');
 
 	var firestarter = require(firePath)._getFirestarter();
+	firestarter._isStarting = false;
 	firestarter.stage = stage;
 	firestarter.disabled = true;
 	firestarter.appsContainerMap = {};
@@ -249,17 +252,12 @@ function loadApp(basePath, stage) {
 	}
 
 	var appContainer = firestarter.appsContainerMap[appContainerIds[0]];
-	return appContainer.getActiveApp();
-}
+	var app = appContainer.getActiveApp();
 
-function getApp(stage) {
-	var basePath = process.cwd();
-	var app = loadApp(basePath, stage);
-	var defer = Q.defer();
-	setImmediate(function() {
-		defer.resolve(app);
-	});
-	return defer.promise;
+	return firestarter.start()
+		.then(function() {
+			return app;
+		});
 }
 
 function CLI(tasks) {
@@ -319,6 +317,8 @@ function CLI(tasks) {
 	var _doServe = function() {
 		var runProcess = null;
 		var isBuilding = false;
+		var buildAgain = false;
+		var timer = null;
 
 		var _run = function() {
 			var _execute = function(cmd) {
@@ -340,35 +340,72 @@ function CLI(tasks) {
 
 				// We're using (node-)foreman to run our app which explicitly listens to SIGINT to kill all of it's child processes.
 				runProcess.kill('SIGINT');
+				runProcess = null;
 			}
 			else {
 				runProcess = _execute(path.join('node_modules', 'fire', 'node_modules', '.bin', 'nf'), ['start']);
 			}
+
+			process.once('close', function() {
+				if(runProcess) {
+					runProcess.kill('SIGINT');
+					runProcess = null;
+				}
+			});
 		};
 
 		debug('Watching for changes on: ' + process.cwd());
 
-		watch.createMonitor(process.cwd(), {ignoreDirectoryPattern: new RegExp('/.fire/')}, function(monitor) {
-			var _filesChanged = function(file) {
-				// Now, build everything. After the build, decide if we want to re-start.
-				console.log('A file changed. Building.');
-				console.log(file);
-				console.log('Is building: ' + isBuilding);
+		var _buildRestart = function() {
+			debug('Starting build and restart');
 
-				isBuilding = true;
+			// Now, build everything. After the build, decide if we want to re-start.
+			isBuilding = true;
 
-				_doBuild()
-					.then(function() {
+			_doBuild()
+				.then(function() {
+					if(buildAgain) {
+						debug('Another change, rebuilding');
+
+						buildAgain = false;
+						_buildRestart();
+					}
+					else {
+						debug('Restart');
+
 						isBuilding = false;
 						return _run();
-					})
-					.done();
+					}
+				})
+				.done();
+		};
+
+		watch.createMonitor(process.cwd(), {}, function(monitor) {
+			var _filesChanged = function(file) {
+				if(file.indexOf('/.fire/') == -1) {
+					debug('File changed: `' + file + '`');
+
+					if(isBuilding) {
+						debug('Already building.');
+
+						buildAgain = true;
+					}
+					else {
+						debug('Setting timeout');
+
+						if(timer) {
+							clearTimeout(timer);
+						}
+
+						timer = setTimeout(_buildRestart, 250);
+					}
+				}
 			};
 			monitor.on('created', _filesChanged);
 			monitor.on('changed', _filesChanged);
 			monitor.on('removed', _filesChanged);
 		});
-		_run();
+		_buildRestart();
 	};
 
 	var _doConfig = function(action) {
@@ -483,7 +520,7 @@ function CLI(tasks) {
 
 			'run': 'starts all processes of your app',
 
-			'serve': 'runs your app, builds on changes to files and restarts',
+			'serve': 'runs your app, builds on changes, restarts and refreshes',
 
 			'config': 'shows all local config key-value pairs (stored in .env)',
 			'config:get KEY': 'shows the local config value of KEY',

@@ -182,7 +182,7 @@ $ fire apps:create helloworld
 Run your app:
 ```
 $ cd helloworld/
-$ fire run
+$ fire serve
 ```
 
 ### Examples

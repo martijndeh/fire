@@ -151,6 +151,8 @@ app.directive(function autoFocus() {
 
 /**
  * Create the template of the StartController. This would be so much nicer with ES6 template strings (using the backtick operator).
+ *
+ * It's possible to include inline templates, like below, but obviously not ideal. You can also add templates to the `templates/` dir.
  */
 app.template('start', [
 	'<div ng-if="!user">',
