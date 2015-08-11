@@ -9,6 +9,7 @@ var spawn = require('child_process').spawn;
 var dotenv = require('dotenv-save');
 var pg = require('pg');
 var debug = require('debug')('fire:cli');
+var watch = require('watch');
 
 pg.defaults.poolIdleTimeout = 500;
 
@@ -261,74 +262,120 @@ function getApp(stage) {
 	return defer.promise;
 }
 
-if(argv._.length) {
-	var tasks = argv._;
-	var _runTask = function(firstTask) {
-		var topic, task, parameter;
-		var parts = firstTask.split(':');
+function CLI(tasks) {
+	var _doRun = function() {
+		var _execute = function(cmd) {
+			var postfix = '';
+			if(process.platform == 'win32') {
+				postfix = '.cmd';
+			}
 
-		if(parts.length) {
-			topic = parts[0];
+			return spawn(cmd + postfix, ['start'], {stdio: 'inherit'});
+		};
+
+		return _execute(path.join('node_modules', 'fire', 'node_modules', '.bin', 'nf'), ['start']);
+	};
+
+	var _doBuild = function(action, parameter) {
+		return getApp('build')
+			.then(function(app) {
+				return app.injector
+					.call(function(stageMethods) {
+						return stageMethods.build(action, parameter);
+					})
+					.finally(function() {
+						return app.stop();
+					});
+			});
+	};
+
+	var _doRelease = function(action, parameter) {
+		return getApp('release')
+			.then(function(app) {
+				return app.injector
+					.call(function(stageMethods) {
+						return stageMethods.release(action, parameter);
+					})
+					.finally(function() {
+						return app.stop();
+					});
+			});
+	};
+
+	var _doApp = function() {
+		return createApp(tasks.shift() || '');
+	};
+
+	var _doDatastore = function(action) {
+		if(action == 'create' || !action) {
+			return createDatastore(tasks.shift());
 		}
-
-		if(parts.length > 1) {
-			task = parts[1];
+		else if(action == 'open') {
+			var config = dotenv._load(dotenv.options({}));
+			return runCommand('psql', [config.DATABASE_URL.value]);
 		}
+	};
 
-		if(parts.length > 2) {
-			parameter = parts[2];
-		}
+	var _doServe = function() {
+		var runProcess = null;
+		var isBuilding = false;
 
-		debug('Execute ' + topic + ':' + task + ':' + parameter);
-
-		if(topic == 'run') {
+		var _run = function() {
 			var _execute = function(cmd) {
-		        var postfix = '';
+				var postfix = '';
 				if(process.platform == 'win32') {
 					postfix = '.cmd';
 				}
 
-		        return spawn(cmd + postfix, ['start'], {stdio: 'inherit'});
-		    };
+				return spawn(cmd + postfix, ['start'], {stdio: 'inherit'});
+			};
 
-	        return _execute(path.join('node_modules', 'fire', 'node_modules', '.bin', 'nf'), ['start']);
-		}
-		else if(topic == 'build') {
-			return getApp('build')
-				.then(function(app) {
-					return app.injector
-						.call(function(stageMethods) {
-							return stageMethods.build(task, parameter);
-						})
-						.finally(function() {
-							return app.stop();
-						});
+			if(runProcess) {
+				debug('Killing existing run process.');
+
+				runProcess.once('close', function() {
+					runProcess = null;
+					_run();
 				});
-		}
-		else if(topic == 'release') {
-			return getApp('release')
-				.then(function(app) {
-					return app.injector
-						.call(function(stageMethods) {
-							return stageMethods.release(task, parameter);
-						})
-						.finally(function() {
-							return app.stop();
-						});
-				});
-		}
-		else if((topic == 'app' || topic == 'apps') && (!task || task == 'create')) {
-			return createApp(argv._[1] || '');
-		}
-		else if(topic == 'datastore' && (!task || task == 'create')) {
-			return createDatastore(tasks.shift());
-		}
-		else if(topic == 'datastore' && task == 'open') {
-			
-		}
-		else if(topic == 'config' && topic == 'get') {
+
+				// We're using (node-)foreman to run our app which explicitly listens to SIGINT to kill all of it's child processes.
+				runProcess.kill('SIGINT');
+			}
+			else {
+				runProcess = _execute(path.join('node_modules', 'fire', 'node_modules', '.bin', 'nf'), ['start']);
+			}
+		};
+
+		debug('Watching for changes on: ' + process.cwd());
+
+		watch.createMonitor(process.cwd(), {ignoreDirectoryPattern: new RegExp('/.fire/')}, function(monitor) {
+			var _filesChanged = function(file) {
+				// Now, build everything. After the build, decide if we want to re-start.
+				console.log('A file changed. Building.');
+				console.log(file);
+				console.log('Is building: ' + isBuilding);
+
+				isBuilding = true;
+
+				_doBuild()
+					.then(function() {
+						isBuilding = false;
+						return _run();
+					})
+					.done();
+			};
+			monitor.on('created', _filesChanged);
+			monitor.on('changed', _filesChanged);
+			monitor.on('removed', _filesChanged);
+		});
+		_run();
+	};
+
+	var _doConfig = function(action) {
+		var config = {};
+		if(action == 'get') {
 			if(tasks.length) {
-				var config = dotenv._load(dotenv.options({}));
+				config = dotenv._load(dotenv.options({}));
 				var configKey = tasks.splice(0, 1)[0];
 				if(config[configKey]) {
 					console.log(config[configKey].value);
@@ -341,17 +388,16 @@ if(argv._.length) {
 				console.log('Please specify which config to get e.g. fire config:get KEY.');
 			}
 		}
-		else if(topic == 'config' && task == 'set') {
+		else if(action == 'set') {
 			if(tasks.length) {
-				var configMap = {};
-
+				var newConfig = {};
 				var index = 0;
 				while(tasks.length > index) {
 					var keyValue = tasks[index];
 					var pair = keyValue.split('=');
 
 					if(pair.length == 2) {
-						configMap[pair[0]] = pair[1];
+						newConfig[pair[0]] = pair[1];
 
 						dotenv.set(pair[0], pair[1]);
 					}
@@ -363,7 +409,7 @@ if(argv._.length) {
 				}
 				tasks = [];
 
-				var length = Object.keys(configMap)
+				var newConfigLength = Object.keys(newConfig)
 					.map(function(key) {
 						return key.length;
 					})
@@ -376,16 +422,16 @@ if(argv._.length) {
 						}
 					}, 0);
 
-				Object.keys(configMap).forEach(function(key) {
-					console.log(key + ': ' + space(length - key.length) + configMap[key]);
+				Object.keys(newConfig).forEach(function(key) {
+					console.log(key + ': ' + space(newConfigLength - key.length) + newConfig[key]);
 				});
 			}
 			else {
 				console.log('Please specify which config key-value to set e.g. fire config:set KEY=value');
 			}
 		}
-		else if(topic == 'config' && !task) {
-	        var config = dotenv._load(dotenv.options({}));
+		else if(!action) {
+	        config = dotenv._load(dotenv.options({}));
 
 			var length = Object.keys(config)
 				.map(function(key) {
@@ -404,31 +450,122 @@ if(argv._.length) {
 				console.log(key + ': ' + space(length - key.length) + config[key].value);
 			});
 		}
+	};
+
+	var _showHelp = function() {
+		var _show = function(message) {
+			return message + space(32 - message.length);
+		};
+
+		console.log([
+			'Usage: fire TOPIC[:ACTION[:PARAMETER]] ...',
+			'',
+			'List of topics and actions:',
+			''
+		].join('\n'));
+
+		var meta = {
+			'build': 'builds migrations, templates, and all other static assets',
+			'build:version': 'sets the Node on Fire version in .fire/VERSION',
+			'build:procfile': 'generates the Procfile with all processes',
+			'build:templates': 'compiles all Jade templates in templates/',
+			'build:less': 'compiles styles/default.less',
+			'build:migrations': 'generates migrations based on model changes',
+			'build:browserify': 'generates one bundle.js from all scripts',
+			'build:scripts': 'generates all client-side javascript',
+			'build:uglify': 'uglifies the bundle.js',
+			'build:api': 'generates rest http api',
+
+			'release': 'applies datastore migrations and creates A/B tests',
+			'release:tests': 'prepares A/B tests',
+			'release:migrate': 'applies all datastore migrations',
+			'release:migrate:VERSION': 'applies datastore migrations, either up or down, till VERSION',
+
+			'run': 'starts all processes of your app',
+
+			'serve': 'runs your app, builds on changes to files and restarts',
+
+			'config': 'shows all local config key-value pairs (stored in .env)',
+			'config:get KEY': 'shows the local config value of KEY',
+			'config:set KEY=VALUE ...': 'sets the local config KEY to VALUE',
+
+			'apps:create APP': 'creates a new app named APP',
+
+			'datastore:create': 'creates a new local database, installs the uuid-ossp extension and sets the DATABASE_URL locally',
+			'datastore:open': 'opens the current local database configured in DATABASE_URL',
+
+			'help': 'shows this help'
+		};
+
+		console.log(Object.keys(meta).sort().map(function(key) {
+			return [space(2), _show(key), '# ', meta[key]].join('');
+		}).join('\n'));
+		console.log('');
+	};
+
+	var _runTask = function(task) {
+		var topic, action, parameter;
+		var parts = task.split(':');
+
+		if(parts.length) {
+			topic = parts[0];
+		}
+
+		if(parts.length > 1) {
+			action = parts[1];
+		}
+
+		if(parts.length > 2) {
+			parameter = parts[2];
+		}
+
+		debug('Execute ' + topic + ':' + action + ':' + parameter);
+
+		if(topic == 'run') {
+			return _doRun(action, parameter);
+		}
+		else if(topic == 'build') {
+			return _doBuild(action, parameter);
+		}
+		else if(topic == 'release') {
+			return _doRelease(action, parameter);
+		}
+		else if((topic == 'app' || topic == 'apps')) {
+			return _doApp(action, parameter);
+		}
+		else if(topic == 'datastore' || topic == 'pg') {
+			return _doDatastore(action, parameter);
+		}
+		else if(topic == 'serve') {
+			return _doServe();
+		}
+		else if(topic == 'config') {
+			return _doConfig(action, parameter);
+		}
+		else if(topic == 'help') {
+			return _showHelp();
+		}
 		else {
-			console.log('Unknown task `' + firstTask + '`.');
+			console.log('Unknown topic `' + topic + '`.');
 		}
 	};
 
 	var _run = function() {
-		var firstTask = tasks.shift();
-		if(firstTask) {
-			return Q.when(_runTask(firstTask))
+		var task = tasks.shift();
+		if(task) {
+			return Q.when(_runTask(task))
 				.then(function() {
 					return _run();
 				});
 		}
 	};
 
-	_run()
-		.then(function() {
-			debug('Finished!');
-		})
-		.catch(function(error) {
-			console.log(error);
-			console.log(error.stack);
-		})
-		.done();
+	if(tasks.length) {
+		_run();
+	}
+	else {
+		_showHelp();
+	}
 }
-else {
-	// show help
-}
+
+new CLI(argv._);
