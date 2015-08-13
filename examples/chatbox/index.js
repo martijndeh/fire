@@ -102,7 +102,7 @@ Message.prototype.beforeCreate = function(authenticator) {
  */
 function StartController($scope, user, MessageModel, UserModel, $window) {
 	$scope.user = user;
-	$scope.messageStream = MessageModel.stream({}, {limit: 30, orderBy:{createdAt: -1}});
+	$scope.messageStream = MessageModel.stream({}, {orderBy:{createdAt: 1}});
 
 	$scope.createMessage = function(text) {
 		if(!$scope.user) {
@@ -111,6 +111,7 @@ function StartController($scope, user, MessageModel, UserModel, $window) {
 		else {
 			return MessageModel.create({text: text})
 				.then(function() {
+					$scope.text = '';
 					$scope.chatForm.$setPristine();
 				})
 				.catch(function() {
@@ -125,7 +126,7 @@ function StartController($scope, user, MessageModel, UserModel, $window) {
 				$scope.user = user;
 			})
 			.catch(function() {
-				$window.alert('Oi, some things went wrong. Can you try that again?');
+				$window.alert('This email is already in use. Do you want to login instead?');
 			});
 	};
 }
@@ -149,39 +150,14 @@ app.directive(function autoFocus() {
     };
 });
 
-/**
- * Create the template of the StartController. This would be so much nicer with ES6 template strings (using the backtick operator).
- *
- * It's possible to include inline templates, like below, but obviously not ideal. You can also add templates to the `templates/` dir.
- */
-app.template('start', [
-	'<div ng-if="!user">',
-		'<form ng-submit="createUser(email, name, password)">',
-			'<input type="email" ng-model="email" placeholder="Enter your email..."/>',
-			'<input type="text" ng-model="name" placeholder="Pick a name..."/>',
-			'<input type="password" ng-model="password" placeholder="Choose a password..."/>',
-			'<button type="submit">Create account</button>',
-		'</form>',
-	'</div>',
-	'',
-	'<ul class="messages">',
-		'<li class="message" ng-repeat="message in messageStream.results">',
-			'<div class="avatar">',
-				'<img ng-src="{{message.user.avatarUrl}}?s=36"/>',
-			'</div>',
-			'',
-			'<div class="contents">',
-				'<span class="name">{{message.user.name}}</span>',
-				'<span class="date">{{message.createdAt | amDateFormat:\'h:mm A\'}}</span>',
-				'<p>{{message.text}}</p>',
-			'</div>',
-		'</li>',
-	'</ul>',
-	'',
-	'<form class="chat" name="chatForm" ng-submit="createMessage(text)">',
-		'<input auto-focus type="text" ng-model="text"/>',
-		'<button type="submit">Send</button>',
-	'</form>'
-].join(''));
-
-app.template('view', '<!DOCTYPE html><html ng-app="chatbox"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="fragment" content="!"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>Chatbox</title><link rel="stylesheet" href="/styles/default.css"/></head><body><div class="view" ng-view></div></body><script src="/scripts/bundle.js"></script></html>');
+app.directive(function autoScroll() {
+	var $ = require('jquery');
+	return {
+		restrict: 'A',
+		link: function(scope, element, attributes) {
+			scope.$watch(attributes.autoScroll, function() {
+				$(element).scrollTop($(element).prop('scrollHeight'));
+			});
+		}
+	};
+});

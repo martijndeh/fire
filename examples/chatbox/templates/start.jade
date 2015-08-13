@@ -1,0 +1,25 @@
+ul.messages(auto-scroll="messageStream.results")
+    li.message(ng-repeat="message in messageStream.results")
+        div.avatar
+            img(ng-src="{{message.user.avatarUrl}}?s=36")
+        
+        div.contents
+            span.name {{message.user.name}}
+            span.date {{message.createdAt | amDateFormat:'dddd, MMM Do h:mm A'}}
+            p {{message.text}}
+            
+    li.sign-up(ng-if="!user")
+        form(ng-submit="createUser(email, name, password)")
+            label(for="email") Email address
+            input(type="email" ng-model="email" placeholder="Enter your email...")
+            label(for="name") Name
+            input(type="text" id="name" ng-model="name" placeholder="Pick a name...")
+            label(for="password")
+            input(type="password" id="password" ng-model="password" placeholder="Choose a password...")
+            
+            button(type="submit") Create account
+
+form.chat(name="chatForm" ng-submit="createMessage(text)")
+    div.chat-container
+        input(auto-focus type="text" ng-model="text")
+    button(type="submit") Send
