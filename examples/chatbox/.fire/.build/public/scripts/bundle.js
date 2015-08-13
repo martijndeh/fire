@@ -10,11 +10,23 @@ app.directive('autoFocus', [function() {
     };
 }]);
 
+app.directive('autoScroll', [function() {
+	var $ = require('jquery');
+	return {
+		restrict: 'A',
+		link: function(scope, element, attributes) {
+			scope.$watch(attributes.autoScroll, function() {
+				$(element).scrollTop($(element).prop('scrollHeight'));
+			});
+		}
+	};
+}]);
+
 
 
 app.controller('StartController', ['$scope', 'user', 'MessageModel', 'UserModel', '$window', function($scope, user, MessageModel, UserModel, $window) {
 	$scope.user = user;
-	$scope.messageStream = MessageModel.stream({}, {limit: 30, orderBy:{createdAt: -1}});
+	$scope.messageStream = MessageModel.stream({}, {orderBy:{createdAt: 1}});
 
 	$scope.createMessage = function(text) {
 		if(!$scope.user) {
@@ -23,6 +35,7 @@ app.controller('StartController', ['$scope', 'user', 'MessageModel', 'UserModel'
 		else {
 			return MessageModel.create({text: text})
 				.then(function() {
+					$scope.text = '';
 					$scope.chatForm.$setPristine();
 				})
 				.catch(function() {
@@ -37,7 +50,7 @@ app.controller('StartController', ['$scope', 'user', 'MessageModel', 'UserModel'
 				$scope.user = user;
 			})
 			.catch(function() {
-				$window.alert('Oi, some things went wrong. Can you try that again?');
+				$window.alert('This email is already in use. Do you want to login instead?');
 			});
 	};
 }]);
@@ -394,6 +407,7 @@ app.service('FireStreamService', ['FireSocketService', 'FireUUID', function(Fire
             var stream = streams[messageMap.id];
             if(stream) {
                 var modelInstances = stream._model.parseResult(messageMap.result);
+
                 stream.results = stream.results.concat(modelInstances);
 
                 if(stream.isLoading) {
@@ -1425,6 +1439,35 @@ app.provider('TestsService', [function() {
 }]);
 
 
+app.run(['$location', '$window', '$log', function($location, $window, $log) {
+    var reload = false;
+    var _connect = function() {
+        var connected = false;
+
+        var socket = new WebSocket('ws://' + $location.host() + ($location.port() ? ':' + $location.port() : ''));
+        socket.onopen = function() {
+            connected = true;
+
+            if(reload) {
+                $log.info('Reconnected. Reloading now.');
+                
+                $window.location.reload();
+            }
+        };
+
+        socket.onclose = function() {
+            if(connected) {
+                $log.warn('Lost connection. Trying to reconnect.');
+            }
+
+            reload = true;
+
+            setTimeout(_connect, 1000);
+        };
+    };
+
+    _connect();
+}]);
 
 },{"angular":7,"angular-moment":2,"angular-route":5,"jquery":8}],2:[function(require,module,exports){
 /* angular-moment.js / v0.10.1 / (c) 2013, 2014, 2015 Uri Shaked / MIT Licence */
