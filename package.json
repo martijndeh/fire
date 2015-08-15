@@ -1,12 +1,12 @@
 {
   "name": "fire",
-  "description": "An isomorphic JavaScript framework built on top of [AngularJS](https://angularjs.org/) and [PostgreSQL](http://www.postgresql.org/). Includes ORM, automatic REST API, and more.",
+  "description": "Write apps blazingly fast. A full-stack universal JavaScript framework. Uses [AngularJS](https://angularjs.org/) and [PostgreSQL](http://www.postgresql.org/). Includes ORM, automatic REST API, and more.",
   "keywords": [
     "orm",
     "postgres",
     "express",
     "api",
-    "isomorphic",
+    "universal",
     "angularjs",
     "meteor",
     "sails"
