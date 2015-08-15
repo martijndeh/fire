@@ -1,6 +1,6 @@
 {
   "name": "fire",
-  "description": "An isomorphic JavaScript framework built on top of [AngularJS](https://angularjs.org/) and [PostgreSQL](http://www.postgresql.org/). Includes ORM, automatic REST API, and more.",
+  "description": "Write apps blazingly fast. A universal JavaScript framework built on top of [AngularJS](https://angularjs.org/) and [PostgreSQL](http://www.postgresql.org/). Includes ORM, automatic REST API, and more.",
   "keywords": [
     "orm",
     "postgres",
