@@ -35,6 +35,16 @@ exports = module.exports = function(grunt) {
 				dest: 'examples.html',
 				ext: '.html'
 			},
+			'examples/real-time-chat': {
+				options: {
+					templates: './templates/*.html'
+				},
+				expand: false,
+				cwd: './',
+				src: 'site/examples/real-time-chat.html',
+				dest: 'examples/real-time-chat.html',
+				ext: '.html'
+			},
 			'getting-started': {
 				options: {
 					templates: './templates/*.html'

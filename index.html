@@ -3,7 +3,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL."/>
-	<title>A full-stack isomorphic JavaScript framework built on top of Node.js, AngularJS and PostgreSQL | Node on Fire</title>
+	<title>Write apps blazingly fast. A full-stack universal JavaScript framework built on top of Node.js, AngularJS and PostgreSQL | Node on Fire</title>
 	<link rel="stylesheet" href="/styles/default.min.css"/>
 	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="/scripts/highlight.min.js"></script>
@@ -25,7 +25,8 @@
 <div class="row header index fire-gradient">
     <div class="logo col-md-10 col-md-offset-1">
         <img src="/images/node-on-fire-icon-white.png"/><br/>
-        <span class="h1">A full-stack isomorphic JavaScript framework.</span>
+        <h1>Write apps blazingly fast</h1>
+        <h2>with Node on Fire</h2>
     </div>
 
     <div class="col-md-10 col-md-offset-1 buttons">
@@ -55,6 +56,7 @@
     </div>
 </div>
 
+
 <!--div class="row introducing">
     <div class="col-md-5 col-md-offset-1 desc">
         <h1>Introducing Node on Fire</h1>
@@ -73,7 +75,7 @@
 <div class="row desc features">
     <div class="col-md-6 col-md-offset-3">
         <h1>Features</h1>
-        <p>An open-source Node.js framework with a rich set of features: a powerful ORM, datastore migrations, isomorphic services, real-time streams, full-text search, cron-like schedulers, one-off tasks and more.</p>
+        <p>An open-source Node.js framework with a rich set of features: a powerful ORM, datastore migrations, universal services, real-time streams, full-text search, cron-like schedulers, one-off tasks and more.</p>
     </div>
 </div>
 
@@ -108,7 +110,7 @@
 
 <div class="row desc">
     <div class="col-md-5 col-md-offset-1">
-        <h2>Isomorphic services</h2>
+        <h2>Universal services</h2>
         <p>When you create a service, it's available on both the front- and the back-end. This makes it easy to re-use code in your UI but also in your back-end logic.</p>
 
         <pre><code class="javascript">// This creates a GET route and returns 123 from MyService (in the back-end).
@@ -121,7 +123,7 @@ app.controller('/', function MyController(MyService, $scope) {
     $scope.value = MyService.getValue();
 });
 
-// This is an isomorphic service, available in both the front- and the back-end.
+// This is an universal service, available in both the front- and the back-end.
 app.service(function MyService() {
     this.getValue = function() {
         return 123;
@@ -132,7 +134,7 @@ app.service(function MyService() {
     <div class="col-md-5">
         <h2>Full-text search</h2>
 
-        <p>It's trivial to leverage PostgreSQL's powerfull full-text search. With just a few lines you create a search column, keep it up-to-date, create an API endpoint and an isomorphic <code>Model#search</code> method.</p>
+        <p>It's trivial to leverage PostgreSQL's powerfull full-text search. With just a few lines you create a search column, keep it up-to-date, create an API endpoint and an universal <code>Model#search</code> method.</p>
 
         <pre><code class="javascript">$scope.searchCities = function(query) {
     return CityModel.search(query, {}, {limit: 20});

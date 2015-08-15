@@ -2800,9 +2800,24 @@ app.controller(AccountController);</code></pre><p>This method is only available 
     
     
     <div class="description">
-        <p>Creates a stream on this model.</p>
-<p>Finds and returns all model instances matching <code>whereMap</code>. This method does a regular <a href="Model.html#find">Model#find</a> and returns a stream with these model instances, but when new model instances get created which match <code>whereMap</code> these instances will automatically be added to the stream.</p>
-<p>This method is available on the front-end. This method is not yet available on the back-end.</p>
+        <p>Creates and returns a <code>StreamInstance</code> on this model.</p>
+<p>A stream finds and returns all model instances matching <code>whereMap</code>. A stream finds model instances similar to <a href="Model.html#find">Model#find</a> and adds the model instances to the stream. But when new model instances get created, or updated, which match <code>whereMap</code> these new or updated model instances will be added to the stream.</p>
+<pre class="prettyprint source"><code>var stream = ItemModel.stream({karma: {$gt: 10}});
+
+// Adds an event listener to the changed event. Added and removed are two more events which can be useful. close is the last event which gets emitted once the stream gets closed.
+var off = stream.on('changed', function(item) {
+    // item was just added to the stream
+});
+
+// If we want to unregister the event listener, we can call off().
+// stream.isLoading indicates whether the initial set of model instances have been loaded.
+// stream.error if an error occured while loading.
+// stream.results the array of model instances.
+
+$scope.$on('$destroy', function() {
+    // Closes the stream and removes all event listeners.
+    stream.close();
+});</code></pre><p>This method is available on the front-end. This method is not yet available on the back-end.</p>
     </div>
     
 
@@ -2853,7 +2868,7 @@ app.controller(AccountController);</code></pre><p>This method is only available 
 
             
 
-            <td class="description last"><p>The where</p></td>
+            <td class="description last"><p>The where map. See <a href="Model.html#find">Model#find</a>.</p></td>
         </tr>
 
 	
