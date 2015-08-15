@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.44.1
+
+### Bug fixes
+- Fixes issue where newly created apps would fail to run.
+
 ## 0.44.0
 
 ### Breaking changes

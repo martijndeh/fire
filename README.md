@@ -1,4 +1,4 @@
-# Node on Fire: an isomorphic JavaScript framework :fire:
+# Write apps blazingly fast: Node on Fire
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
 [![License Badge](https://img.shields.io/github/license/martijndeh/fire.svg)](https://github.com/martijndeh/fire/blob/master/LICENSE)
 
@@ -7,7 +7,7 @@
 
 [![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-github-logo.png)](http://nodeonfire.org/)
 
-An isomorphic JavaScript framework built on top of [Node.js](https://nodejs.org), [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [Express](http://expressjs.com/), [Knex.js](http://knexjs.org/) and more.
+An universal JavaScript framework built on top of [Node.js](https://nodejs.org), [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [Express](http://expressjs.com/), [Knex.js](http://knexjs.org/) and more.
 
 With Node on Fire you write apps faster than ever, completely in JavaScript, backed by solid technologies such as PostgreSQL and AngularJS.
 
@@ -26,7 +26,7 @@ app.post('/api/users', function(UserModel, request) {
 });
 ```
 
-### Isomorphic services
+### Universal services
 When you create a service, it's available on both the front- and the back-end. This makes it easy to re-use code in your UI but also in your back-end logic.
 ```js
 // This creates a GET route and returns 123 from MyService (in the back-end).
@@ -39,7 +39,7 @@ app.controller('/', function MyController(MyService, $scope) {
     $scope.value = MyService.getValue();
 });
 
-// This is an isomorphic service, available in both the front- and the back-end.
+// This is an universal service, available in both the front- and the back-end.
 app.service(function MyService() {
     this.getValue = function() {
         return 123;
