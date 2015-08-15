@@ -8,5 +8,3 @@ var app = require('fire')('{{name}}', {
 app.controller('/', function StartController() {
 
 });
-
-fire.start();
