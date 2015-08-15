@@ -1097,9 +1097,9 @@ app.service('FireModelInstance', ['$injector', '$q', function($injector, $q) {
 app.factory('TodoItemModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
     var model = new FireModel('TodoItem', ['TodoList'], '/api/todo-items');
 
-    
 
-    
+
+
 
     return model;
 }]);
@@ -1109,55 +1109,55 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
         FireModelInstance.construct(this, setMap, path, TodoItemModel);
 
         var self = this;
-    
-    	
+
+
 
     	FireModelInstance.parseProperty(this, 'id');
-    
-    	
+
+
     	FireModelInstance.parseAssociation(this, 'list', 'lists', 'TodoList');
-    	
+
 
     	FireModelInstance.parseProperty(this, 'list');
-    
-    	
+
+
 
     	FireModelInstance.parseProperty(this, 'name');
-    
-    	
+
+
 
     	FireModelInstance.parseProperty(this, 'completed');
-    
-    	
+
+
 
     	FireModelInstance.parseProperty(this, 'createdAt');
-    
 
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
+
+
+
+
+
+
+
+
+
+
+
         if(setMap.createdAt) {
             setMap.createdAt = new Date(setMap.createdAt);
         }
-        
-    
 
 
 
 
 
 
-        
+
+
+
         FireModelInstance.createOneToOneMethods(this, 'TodoList', 'list', 'list', 'List');
-        
-        
+
+
 
     };
 }]);
@@ -1165,9 +1165,9 @@ app.factory('FireModelInstanceTodoItem', ['TodoItemModel', '$q', '$http', '$inje
 app.factory('TodoListModel', ['$http', '$q', 'FireModel', '$injector', '$route', '$routeParams', '$location', function($http, $q, FireModel, $injector, $route, $routeParams, $location) {
     var model = new FireModel('TodoList', ['TodoItem'], '/api/todo-lists');
 
-    
 
-    
+
+
     model.getCurrentList = function() {
         var TodoItemModel = $injector.get('TodoItemModel');
 var _StorageService = $injector.get('_StorageService');
@@ -1194,7 +1194,7 @@ var TodoListModel = $injector.get('TodoListModel');
 		}
 	}.bind(this))();
     };
-    
+
 
     return model;
 }]);
@@ -1204,33 +1204,33 @@ app.factory('FireModelInstanceTodoList', ['TodoListModel', '$q', '$http', '$inje
         FireModelInstance.construct(this, setMap, path, TodoListModel);
 
         var self = this;
-    
-    	
+
+
 
     	FireModelInstance.parseProperty(this, 'id');
-    
-    	
+
+
     	FireModelInstance.parseAssociation(this, 'items', 'items', 'TodoItem');
-    	
+
 
     	FireModelInstance.parseProperty(this, 'items');
-    
-    	
+
+
 
     	FireModelInstance.parseProperty(this, 'createdAt');
-    
 
-    
-        
-    
-        
-    
-        
+
+
+
+
+
+
+
         if(setMap.createdAt) {
             setMap.createdAt = new Date(setMap.createdAt);
         }
-        
-    
+
+
 
 
 
@@ -1264,10 +1264,10 @@ var TodoListModel = $injector.get('TodoListModel');
 
 
 
-        
-        
+
+
         FireModelInstance.createXToManyMethods(this, 'TodoItem', 'items', 'items', 'Item', 'Items');
-        
+
 
     };
 }]);
@@ -1293,12 +1293,12 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         templateUrl: '/templates/todo.html',
         controller: 'TodoController',
         resolve: {
-        
-        
+
+
             list: ['TodoListModel', function(TodoListModel) {
 			return TodoListModel.getCurrentList();
 		}],
-        
+
         }
     });
 
@@ -1306,12 +1306,12 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         templateUrl: '/templates/todo.html',
         controller: 'TodoController',
         resolve: {
-        
-        
+
+
             list: ['TodoListModel', function(TodoListModel) {
 			return TodoListModel.getCurrentList();
 		}],
-        
+
         }
     });
 
@@ -1378,7 +1378,7 @@ app.run(['$location', '$window', '$log', function($location, $window, $log) {
 
             if(reload) {
                 $log.info('Reconnected. Reloading now.');
-                
+
                 $window.location.reload();
             }
         };

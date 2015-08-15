@@ -15,18 +15,13 @@ describe('access control', function() {
 	var modules = null;
 
 	beforeEach(function(done) {
-		console.log('beforeEach');
-
 		app = fire('accessControlTest', {type: 'angular'});
 
 		return Q.when(createModels && createModels())
 			.then(function() {
-				console.log('going to statrt');
 				return fire.start();
 			})
 			.then(function() {
-				console.log('here!');
-
 				app.modules.forEach(function(module_) {
 					if(module_.migrate) {
 						module_.migrate(app.models);
@@ -189,8 +184,6 @@ describe('access control', function() {
 		});
 
 		beforeEach(function(done) {
-			console.log('before each!');
-
 			app.models.User.create({name: 'Martijn', password: 'test'})
 				.then(function() {
 					agent = request.agent(app.HTTPServer.express);
