@@ -1,0 +1,12 @@
+h1 Karma
+h3 Good (karma &gt;= 10)
+div(ng-repeat="item in goodItems.results")
+    h4 {{item.name}} ({{item.karma}})
+    button(ng-click="item.increaseKarma()") +
+    button(ng-click="item.decreaseKarma()") -
+
+h3 Bad (karma &lt; 10)
+div(ng-repeat="item in badItems.results")
+    h4 {{item.name}} ({{item.karma}})
+    button(ng-click="item.increaseKarma()") +
+    button(ng-click="item.decreaseKarma()") -
