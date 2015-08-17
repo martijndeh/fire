@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.46.0
+
+### New features
+- Implements `fire watch`
+
 ## 0.44.2
 
 ### Improvements
