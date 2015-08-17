@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.44.2
+
+### Improvements
+- Removes deprecated warning in fire#app.
+
 ## 0.44.1
 
 ### Bug fixes
