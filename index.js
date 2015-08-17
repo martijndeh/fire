@@ -25,6 +25,7 @@ function getApp(id, name, settings) {
  * For backwards compatibility reasons we're defining the methods also defined in `fire`.
  */
 getApp.app = function(appId, appName, appSettings) {
+    /*
     console.log([
         '`Fire#app` has been deprecated. `require(\'fire\')` now returns the `Fire#app` method directly. This is how you can create and initialize your app:',
         '',
@@ -34,7 +35,8 @@ getApp.app = function(appId, appName, appSettings) {
         '',
         '`Fire#start` has also been deprecated. Instead, it\'s invoked after you\'ve initialized your app automatically. So you can remove another line of code. :-)'
     ].join('\n'));
-
+    */
+    
     return firestarter.app(appId, appName, appSettings);
 };
 
