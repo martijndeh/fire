@@ -1,14 +1,15 @@
-# Node on Fire: write apps blazingly fast :fire:
+[![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-github-logo.png)](http://nodeonfire.org/)
+
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
+[![NPM Downloads](https://img.shields.io/npm/dm/fire.svg)](https://npmjs.com/package/fire)
+[![NPM Version](https://img.shields.io/npm/v/fire.svg)](https://npmjs.com/package/fire)
 [![License Badge](https://img.shields.io/github/license/martijndeh/fire.svg)](https://github.com/martijndeh/fire/blob/master/LICENSE)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/martijndeh/fire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 - Website: [nodeonfire.org](http://nodeonfire.org/)
 - Documentation: [nodeonfire.org/documentation](http://nodeonfire.org/documentation)
 
-[![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-github-logo.png)](http://nodeonfire.org/)
-
-A universal JavaScript framework built on top of [Node.js](https://nodejs.org), [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [Express](http://expressjs.com/), [Knex.js](http://knexjs.org/) and more.
+__Write apps blazingly fast__. A universal JavaScript framework built on top of [Node.js](https://nodejs.org), [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [Express](http://expressjs.com/), [Knex.js](http://knexjs.org/) and more.
 
 With Node on Fire you write apps faster than ever, completely in JavaScript, backed by solid technologies such as PostgreSQL and AngularJS.
 
