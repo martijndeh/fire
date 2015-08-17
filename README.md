@@ -1,6 +1,7 @@
 # Write apps blazingly fast: Node on Fire
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
 [![License Badge](https://img.shields.io/github/license/martijndeh/fire.svg)](https://github.com/martijndeh/fire/blob/master/LICENSE)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/martijndeh/fire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 - Website: [nodeonfire.org](http://nodeonfire.org/)
 - Documentation: [nodeonfire.org/documentation](http://nodeonfire.org/documentation)
@@ -181,7 +182,7 @@ $ fire apps:create helloworld
 Run your app:
 ```
 $ cd helloworld/
-$ fire run
+$ fire serve
 ```
 
 ### Examples

@@ -6,8 +6,6 @@ var app = require('fire')('todomvc');
 
 var http = require('http');
 
-var http = require('http');
-
 function merge(dest, source) {
 	Object.keys(source).forEach(function(key) {
 		dest[key] = source[key];
@@ -127,14 +125,14 @@ app.post('/api/todo-items', function(app, response, request, TodoItemModel) {
 						};
 
 						if(Array.isArray(request.body)) {
-
+							
 
 							var createMaps = request.body.map(function(createMap) {
 								return checkCreateMap(createMap);
 							});
 
 							return TodoItemModel.create(createMaps, {authenticator: authenticator, request: request, response: response});
-
+							
 						}
 						else {
 							return TodoItemModel.create(checkCreateMap(request.body || {}), {authenticator: authenticator, request: request, response: response});
@@ -638,3 +636,19 @@ app.put('/api/todo-items/:id/list', function(request, response, app,  TodoItemMo
 				});
 		});
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
