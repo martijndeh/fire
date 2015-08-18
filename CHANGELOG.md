@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.46.1
+
+### Bug fixes
+- Fixes npm postinstall script in new projects.
+- Fixes fire serve in new projects.
+
 ## 0.46.0
 
 ### New features
