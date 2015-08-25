@@ -4,7 +4,7 @@
 var helper = require('./support/helper');
 var assert = require('assert');
 
-describe('isomorphic', function() {
+describe('universal', function() {
 	var called;
 
 	beforeEach(helper.beforeEach());

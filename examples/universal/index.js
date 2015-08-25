@@ -9,7 +9,7 @@ var app = require('fire')('nodeonfire.org', {
 });
 
 /**
- * This is an isomorphic service. It can either be run on the client- or the server-side. Simply inject it using the dependency injection.
+ * This is a universal service. It can either be run on the client- or the server-side. Simply inject it using the dependency injection.
  *
  * Using the fire service we check which side we're running on.
  */
@@ -32,7 +32,7 @@ app.run(function(MyService) {
 });
 
 /**
- * This is a client-side controller, which injects the isomorphic MyService.
+ * This is a client-side controller, which injects the universal MyService.
  */
 app.controller('/', function StartController(MyService) {
 	MyService.log('Controller');
