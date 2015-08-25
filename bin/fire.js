@@ -642,7 +642,8 @@ function CLI(tasks) {
 	};
 
 	if(tasks.length) {
-		_run();
+		_run()
+			.done();
 	}
 	else {
 		_showHelp();
