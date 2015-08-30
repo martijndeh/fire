@@ -9,4 +9,4 @@ before_script:
   - psql -c 'create database fire;' -U postgres
   - psql -d fire -c 'create extension "uuid-ossp";' -U postgres
 env:
-  - DATABASE_URL=postgres://postgres@localhost/fire BROKER_URL=amqp://localhost DEBUG=fire:* NODE_APP=default
+  - DATABASE_URL=postgres://postgres@localhost/fire BROKER_URL=amqp://localhost DEBUG=fire:* NODE_APP=default WEB_SOCKET_PORT=8765

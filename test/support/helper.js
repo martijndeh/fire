@@ -152,18 +152,20 @@ Helper.prototype.afterEach = function() {
     return function(done) {
         var result = Q.when(true);
 
-        self.app.models.forEach(function(model) {
-            result = result.then(function() {
-                return model.isCreated().then(function(exists) {
-                    if(exists) {
-                        return model.forceDestroy();
-                    }
-                    else {
-                        return Q.when(true);
-                    }
+        if(self.app) {
+            self.app.models.forEach(function(model) {
+                result = result.then(function() {
+                    return model.isCreated().then(function(exists) {
+                        if(exists) {
+                            return model.forceDestroy();
+                        }
+                        else {
+                            return Q.when(true);
+                        }
+                    });
                 });
             });
-        });
+        }
 
         result
             .then(function() {
