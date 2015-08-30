@@ -531,6 +531,7 @@ function CLI(tasks) {
 			'datastore:create': 'creates a new local database, installs the uuid-ossp extension and sets the DATABASE_URL locally',
 			'datastore:open': 'opens the current local database configured in DATABASE_URL',
 
+			'version': 'shows the version of Node on Fire of this CLI',
 			'help': 'shows this help'
 		};
 
@@ -538,6 +539,11 @@ function CLI(tasks) {
 			return [space(2), _show(key), '# ', meta[key]].join('');
 		}).join('\n'));
 		console.log('');
+	};
+
+	var _showVersion = function() {
+		var packageJSON = require(path.join(__dirname, '..', 'package.json'));
+		console.log(packageJSON.version);
 	};
 
 	var _runTask = function(task) {
@@ -578,6 +584,9 @@ function CLI(tasks) {
 		}
 		else if(topic == 'config') {
 			return _doConfig(action, parameter);
+		}
+		else if(topic == 'version') {
+			return _showVersion();
 		}
 		else if(topic == 'help') {
 			return _showHelp();
