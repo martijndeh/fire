@@ -53,6 +53,7 @@
     "jade": "^1.11.0",
     "knex": "^0.7.6",
     "less": "^2.5.1",
+    "less-plugin-autoprefix": "^1.4.2",
     "merge": "^1.2.0",
     "methods": "^1.1.1",
     "minimist": "^1.1.1",
