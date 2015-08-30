@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.46.2
+
+### Improvements
+- Changes Model#count to work without arguments.
+- Implement BigInt and SmallInt (@van-nguyen).
+- Implements version topic in CLI.
+
 ## 0.46.1
 
 ### Bug fixes
