@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.46.4
+
+### Bug fixes
+- Fixes issue where less build fails is less config is undefined.
+
 ## 0.46.3
 
 ### Bug fixes
