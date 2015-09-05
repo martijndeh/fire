@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.46.3
+
+### Bug fixes
+- Fixes issue where sometimes a virtual property would be created when using PropertyTypes#Transform.
+
 ## 0.46.2
 
 ### Improvements
