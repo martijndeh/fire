@@ -13,17 +13,14 @@ results
 
 npm-debug.log
 node_modules
-notes.md
-coverage.html
+coverage
 .DS_Store
-bower_components
-docs
-docs-template
-temp
-run-test.js
-websockets-test
 .fire
-**/.fire/.build
-**/.env
-**/Procfile
-.idea
+.build
+.env
+lib
+node_modules
+coverage
+.build
+TODO.md
+test.js

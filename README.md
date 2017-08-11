@@ -1,208 +1,93 @@
-# Write apps blazingly fast: Node on Fire
+# The fastest way to build your minimal viable product.
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
+[![Coverage Status](https://coveralls.io/repos/martijndeh/lego/badge.svg?branch=master&service=github)](https://coveralls.io/github/martijndeh/lego?branch=master)
 [![License Badge](https://img.shields.io/github/license/martijndeh/fire.svg)](https://github.com/martijndeh/fire/blob/master/LICENSE)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/martijndeh/fire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-- Website: [nodeonfire.org](http://nodeonfire.org/)
-- Documentation: [nodeonfire.org/documentation](http://nodeonfire.org/documentation)
+[nodeonfire.org](http://nodeonfire.org/)
 
 [![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-github-logo.png)](http://nodeonfire.org/)
 
-An universal JavaScript framework built on top of [Node.js](https://nodejs.org), [AngularJS](https://angularjs.org/), [PostgreSQL](http://www.postgresql.org/), [Express](http://expressjs.com/), [Knex.js](http://knexjs.org/) and more.
+The fastest way to build your minimal viable product. Using React, MobX, Koa and Postgres. **Under active development.**
 
-With Node on Fire you write apps faster than ever, completely in JavaScript, backed by solid technologies such as PostgreSQL and AngularJS.
-
-Node on Fire includes a list of modules and features to help you write apps faster:
-
-### Dependency injection
-Angular's dependency injection is great. That's why, in Node on Fire, that dependency injection is also available in the back-end.
-
-You can even use the simpler [implicit annotation](https://docs.angularjs.org/guide/di#implicit-annotation) because Node on Fire seamlessly replaces implicit annotations with inline array notations in the build phase.
 ```js
-app.post('/api/users', function(UserModel, request) {
-    return UserModel.create(request.body)
-        .then(function(user) {
-            return user;
-        });
-});
-```
+import React from 'react';
+import {
+    component,
+    service,
+} from 'fire';
 
-### Universal services
-When you create a service, it's available on both the front- and the back-end. This makes it easy to re-use code in your UI but also in your back-end logic.
-```js
-// This creates a GET route and returns 123 from MyService (in the back-end).
-app.get('/api/value', function(MyService) {
-    return MyService.getValue();
-});
-
-// This creates a controller and sets the scope's value to 123 from MyService (in the front-end).
-app.controller('/', function MyController(MyService, $scope) {
-    $scope.value = MyService.getValue();
-});
-
-// This is an universal service, available in both the front- and the back-end.
-app.service(function MyService() {
-    this.getValue = function() {
-        return 123;
-    };
-});
-```
-
-### Data model (ORM)
-It's easy to declare your data model and all associations (one-to-one, one-to-many and many-to-many).
-```js
-app.model(function TodoItem(TodoListModel) {
-	this.list = [this.BelongsTo(TodoListModel), this.Required];
-	this.name = [this.String, this.Required];
-	this.completed = [this.Boolean, this.Required, this.Default(false)];
-	this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
-});
-
-app.model(function TodoList(TodoItemModel) {
-	this.items = [this.HasMany(TodoItemModel), this.AutoFetch];
-	this.createdAt = [this.DateTime, this.Default('CURRENT_TIMESTAMP')];
-});
-```
-
-### Migrations
-All changes to your data model are applied through migrations. This makes it super easy to share your data model. You do not need to write migrations yourself, instead, migrations are generated automatically based on the changes of your models.
-```js
-Migration.prototype.up = function() {
-	this.models.createModel('TodoItem', {
-		id: [this.UUID, this.CanUpdate(false)],
-		list: [this.BelongsTo(this.models.TodoList), this.Required],
-		name: [this.String, this.Required],
-		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
-	});
-
-	this.models.createModel('TodoList', {
-		id: [this.UUID, this.CanUpdate(false)],
-		items: [this.HasMany(this.models.TodoItem)],
-		createdAt: [this.DateTime, this.Default('CURRENT_TIMESTAMP')]
-	});
-};
-
-Migration.prototype.down = function() {
-	this.models.destroyModel('TodoItem');
-	this.models.destroyModel('TodoList');
-};
-```
-
-### Integrated A/B testing
-It's trivial to create A/B tests. Tests work with your existing analytics service e.g. Mixpanel.
-```js
-function StartController(textOfButtonTest, $scope) {
-    if(textOfButtonTest == 'A') {
-        $scope.buttonText = 'Register for FREE';
+@service
+class MyService {
+    loadItems() {
+        return [
+            `Item #1`,
+            `Item #2`,
+            `Item #3`,
+        ];
     }
-    else {
-        $scope.buttonText = 'Register now';
-    };
 }
-app.controller('/', StartController);
 
-StartController.prototype.resolve = function() {
-    return {
-        textOfButtonTest: function() {
-            return TextOfButtonTest.participate();
-        }
-    };
-};
+@inject(MyService, `myService`)
+@store
+class MyStore {
+    items = [];
+
+    loadItems() {
+        this.items = await this.myService.loadItems();
+    }
+}
+
+@inject(MyStore, `myStore`)
+@component('/')
+class App extends React.Component {
+    componentDidMount() {
+        this.props.myStore.loadItems();
+    }
+
+	render() {
+        const {
+            items,
+        } = this.props.myStore;
+
+		return (
+            <div>
+			     <h1>Hello, world!</h1>
+
+                 {items.map((item) => <p>{item}</p>)}
+             </div>
+		);
+	}
+}
 ```
 
-### Workers and queues
-Workers execute background tasks to off-load intensive tasks from the web process. It is super easy to create workers.
+Node on Fire reduces boilerplate and improves developer productivity significantly. The idea is to
+give you everything you need until your first 100,000 users.
 
-```js
-app.worker(function MailWorker() {
-    this.sendResetPasswordMail = function(user, resetPassword) {
-    	var defer = Q.defer();
+## API
 
-    	mandrill('/messages/send', {
-    		message: {
-    			to: [{
-    				email: user.email,
-    				name: user.name
-    			}],
-    			...
-    		}
-    	}, defer.makeNodeResolver());
+- `@component(path)` add the target `React.Component` to a route on `path`.
+- `@service` creates a back-end service which is invokable on the client and server-side. On the client-side, the service is transparently invoked over HTTP.
+- `@inject(Class, propertyName)` injects an instance of `Class` in the target. In case the target is `React.Component`, the instance is added to the `props`, otherwise it's added as a property.
+- `@store` creates a basic MobX store: all properties are set as observables, getter functions as computed, and functions as actions.
 
-    	return defer.promise;
-    };
-});
-```
-It's easy to queue a background task from a web process which the worker executes in a worker process.
-```js
-app.post('/api/forgot-password', function(request, MailWorker, UserModel) {
-    return UserModel
-        .getMe(request)
-        .then(function(user) {
-            return MailWorker.sendResetPassword(user, user.resetPassword);
-        });
-});
-```
+## API (in development)
+- `@style` adds a stylesheet to a `React.Component` a la JSS. The stylesheet is added to the `classes` on the `props` object.
+- `@computed`
+- `@action`
+- `@observer`
+- `@model` creates a model.
+- `@worker` adds a worker process and allows to execute tasks over a message queue.
+- `@experiment` defines an experiment and participates the user to the experiment.
+- `@public` marks a function as public meaning it's invokable. In `development` everything should be public, but in production, everything is protected by default.
+- `@protected(authFunction)` adds `authFunction` which should check the access
 
-### Smart caching
-To make your app feel even more snappy, Node on Fire utilizes smart caching. Node on Fire instantly shows a result if a cache is available, and quickly replaces it with a fresh version from your back-end.
+## Help wanted!
 
-Node on Fire automatically purges any cache when a related model gets created or updated.
+Do you want to contribute? Getting started is easy and you can always reach out to [@martijndeh](https://twitter.com/martijndeh). You could work on the following bits:
 
-```js
-// retrieve a recipe
-RecipeModel.findOne({id: $route.params.id}, {autoReload: true, cache: 1000 * 60 * 5})
-    .then(function(recipes) {
-        // recipes
-    });
-```
-
-### Config management
-All your config is stored in the `.env` file (this file shouldn't be tracked in version control), but you can use the `fire` command line interface to manage the config. You can e.g. set `NODE_ENV` to `production` by invoking `fire config:set NODE_ENV=production` or view your config by invoking `fire config`.
-```
-$ fire config
-DEBUG:
-NODE_ENV:     development
-SESSION_KEYS: XI4frrvs+z1JU9auFEmOIAtM...FL3di8Eysw==
-DATABASE_URL: postgres://martijndeh@127.0.0.1/todomvc
-```
-
-## Next steps
-
-### Getting started
-Install Node on Fire globally:
-```
-$ npm install -g fire
-```
-
-Create your first app:
-```
-$ fire apps:create helloworld
-```
-
-Run your app:
-```
-$ cd helloworld/
-$ fire serve
-```
-
-### Examples
-
-We've created several example project which illustrate the different features of Node on Fire. It's also a good reference to use when starting your first Node on Fire app.
-
-http://nodeonfire.org/examples
-
-### Contribute
-
-Do you want to contribute? Great! We can always use some help. Reach out to us or go ahead and work on a rate limiting module, a `fire watch` feature or something else.
-
-### Beta releases
-
-From version `0.41.0` and later, every odd numbered minor release is a beta release. Every even numbered minor release is considered a stable release.
-
-### Stay up-to-date
-
-Sign up for our newsletter at [nodeonfire.org](http://nodeonfire.org) and we'll occasionally send you updates, tips and other news. No spam.
-
-### Questions
-
-Open an issue over at GitHub or send a tweet to [@nodeonfire](http://twitter.com/nodeonfire).
+- Make sure the `fire start` watches changes and refresh both the client- and server-side of things.
+- Start the `@style` decorator which ideally is a wrapper around http://cssinjs.org.
+- Implement server side rendering!
+- Create the `@experiment` decorator which could work with https://github.com/martijndeh/musketeer.
+- Create a `@worker` which runs on the server and can execute tasks in a different process other than the web. E.g. so we can send mails on another process. It should be as transparent as `@service`.
+- Come up with other cool stuff. :)

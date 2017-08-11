@@ -1,0 +1,13 @@
+{
+    "presets": [
+        "flow",
+        "env",
+        "react",
+        "stage-3",
+        "stage-2"
+    ],
+    "plugins": [
+        "transform-decorators-legacy",
+        "transform-runtime"
+    ],
+}

@@ -1,0 +1,19 @@
+{
+  "name": "fire-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "fire": "./bin/fire.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "fire": "file:../firestarter",
+    "fire-webpack": "file:../fire-webpack",
+    "minimist": "^1.2.0"
+  }
+}

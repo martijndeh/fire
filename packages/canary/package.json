@@ -1,0 +1,19 @@
+{
+  "name": "canary",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "fire start",
+    "build": "fire build"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "fire": "file:../firestarter",
+    "react": "^15.6.1"
+  },
+  "devDependencies": {
+    "fire-cli": "file:../fire-cli"
+  }
+}
