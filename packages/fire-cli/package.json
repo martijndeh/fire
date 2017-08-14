@@ -1,6 +1,6 @@
 {
   "name": "fire-cli",
-  "version": "1.0.0",
+  "version": "0.48.0",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -12,8 +12,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "fire": "1.0.0",
-    "fire-webpack": "1.0.0",
+    "fire": "^0.48.0",
+    "fire-webpack": "^0.48.0",
     "minimist": "^1.2.0",
     "rimraf": "^2.6.1"
   }

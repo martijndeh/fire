@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-transform-strip-classes",
-  "version": "1.0.0",
+  "version": "0.48.0",
   "description": "",
   "main": "index.js",
   "scripts": {

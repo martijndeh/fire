@@ -1,6 +1,6 @@
 {
   "name": "fire-canary",
-  "version": "1.0.0",
+  "version": "0.48.0",
   "description": "",
   "main": "src/index.js",
   "scripts": {
@@ -10,10 +10,10 @@
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "license": "MIT",
   "dependencies": {
-    "fire": "1.0.0",
+    "fire": "^0.48.0",
     "react": "^15.6.1"
   },
   "devDependencies": {
-    "fire-cli": "1.0.0"
+    "fire-cli": "^0.48.0"
   }
 }
