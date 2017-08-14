@@ -5,9 +5,12 @@
 
 [nodeonfire.org](http://nodeonfire.org/)
 
+---
 [![Node on Fire Logo](http://nodeonfire.org/images/node-on-fire-github-logo.png)](http://nodeonfire.org/)
 
 The fastest way to build your minimal viable product. Using React, MobX, Koa and Postgres. **Under active development.**
+
+---
 
 ```js
 import React from 'react';
@@ -44,19 +47,19 @@ class App extends React.Component {
         this.props.myStore.loadItems();
     }
 
-	render() {
+    render() {
         const {
             items,
         } = this.props.myStore;
 
-		return (
+        return (
             <div>
-			     <h1>Hello, world!</h1>
+                 <h1>Hello, world!</h1>
 
                  {items.map((item) => <p>{item}</p>)}
              </div>
-		);
-	}
+        );
+    }
 }
 ```
 
@@ -78,8 +81,10 @@ give you everything you need until your first 100,000 users.
 - `@model` creates a model.
 - `@worker` adds a worker process and allows to execute tasks over a message queue.
 - `@experiment` defines an experiment and participates the user to the experiment.
-- `@public` marks a function as public meaning it's invokable. In `development` everything should be public, but in production, everything is protected by default.
-- `@protected(authFunction)` adds `authFunction` which should check the access
+- `@login`.
+- `@logout`.
+- `@exposed` marks a function as public meaning it's invokable. In `development` everything should be public, but in production, everything is protected by default.
+- `@guarded(authFunction)` adds `authFunction` which should check the access.
 
 ## Help wanted!
 

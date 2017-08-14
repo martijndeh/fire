@@ -3,6 +3,7 @@ import { createClientCompiler } from 'fire-webpack';
 import webpackMiddleware from 'koa-webpack';
 import bodyParser from 'koa-bodyparser';
 import { getServiceNames, getService } from '../service/index.js';
+import callServerService from '../service/server-service.js';
 
 export default function createServer(entry) {
     const app = new Koa();
@@ -12,26 +13,24 @@ export default function createServer(entry) {
     app.use(bodyParser());
     app.use(async (context, next) => {
         if (context.path === `/_api`) {
-            const [
-                serviceName,
-                methodName,
-            ] = context.request.query.method.split(`.`);
-
-            // TODO: There should be some sort of check to see if executing this service method is
-            // allowed.
-
-            const Service = getService(serviceName);
-            const service = new Service();
-
             try {
-                const args = context.request.body;
-                const json = service[methodName](...args);
+                const [
+                    serviceName,
+                    methodName,
+                ] = context.request.query.method.split(`.`);
 
-                context.type = `json`;
-                context.body = JSON.stringify(json);
+                // TODO: If context.request.body is not an array, exit.
+
+                // TODO: There should be some sort of check to see if executing this service method is
+                // allowed.
+                const Service = getService(serviceName);
+
+                await callServerService(Service, methodName, context);
             }
             catch (e) {
-                // TODO: Error!
+                context.type = `json`;
+                context.body = JSON.stringify({ error: true });
+                context.status = e.status || 500;
             }
         }
         else {

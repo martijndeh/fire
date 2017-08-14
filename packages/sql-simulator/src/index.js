@@ -55,11 +55,11 @@ export default class Simulator {
     }
 
     getUntil(excludeTokens) {
-        const regexp = new RegExp(`^(.*?)\\s*(:?!${excludeTokens.map((token) => escapeRegExp(token)).join(`|`)})`, `i`);
+        const regexp = new RegExp(`^(.*?)\\s*(:?!${excludeTokens.map((token) => escapeRegExp(token)).join(`|`)}|$)`, `i`);
         const result =  this.findByRegExp(regexp);
 
         if (!result) {
-            throw new Error(`Could not find getUntil.`);
+            throw new Error(`Could not find one of ${excludeTokens}. Current input is ${this.input}`);
         }
 
         return result;
@@ -271,8 +271,10 @@ export default class Simulator {
                                 const newColumnname = this.getIdentifier();
 
                                 const table = this.tables[tableName];
-                                const column = table.columns.find((column) => column.name === columnName);
+                                const column = table.columns[columnName];
                                 column.name = newColumnname;
+                                table.columns[newColumnname] = column;
+                                delete table.columns[columnName];
                             });
                     });
             },
@@ -300,12 +302,13 @@ export default class Simulator {
                         });
 
                         this.ifToken(
+                            // TODO: Isn't it possible to add a REFERENCES here?
                             [`UNIQUE`, `PRIMARY KEY`],
                             (token) => {
                                 this.scope(() => {
                                     const columnName = this.getIdentifier();
 
-                                    const column = this.tables[tableName].columns.find((column) => column.name === columnName);
+                                    const column = this.tables[tableName].columns[columnName];
                                     if (token.toLowerCase() === `unique`) {
                                         column.constraints.unique = {};
                                     }
@@ -319,7 +322,7 @@ export default class Simulator {
                             () => {
                                 const column = this.getColumn();
 
-                                this.tables[tableName].columns.push(column);
+                                this.tables[tableName].columns[column.name] = column;
                             });
                     },
 
@@ -336,16 +339,14 @@ export default class Simulator {
 
                         });
 
-                        const columns = this.tables[tableName].columns;
-
-                        this.tables[tableName].columns = columns.filter((column) => column.name !== columnName);
+                        delete this.tables[tableName].columns[columnName];
                     },
 
                     ALTER: () => {
                         this.optionalToken([`COLUMN`]);
 
                         const columnName = this.getIdentifier();
-                        const column = this.tables[tableName].columns.find((column) => column.name);
+                        const column = this.tables[tableName].columns[columnName];
 
                         this.switchToken({
                             'SET DATA TYPE': () => {
@@ -431,6 +432,9 @@ export default class Simulator {
                     constraint.expression = this.getExpression();
 
                     column.constraints.default = constraint;
+
+                    console.log(`Default is here!`);
+                    console.log(constraint.expression);
                 },
 
                 UNIQUE: () => {
@@ -502,10 +506,11 @@ export default class Simulator {
                 },
 
                 REFERENCES: () => {
-                    constraint.referenceTableName = this.getIdentifier();
+                    constraint.tableName = this.getIdentifier();
 
                     this.scope(() => {
-                        constraint.referenceColumnName = this.getIdentifier();
+                        // TODO: What is this in a scope? Is it possible to repeat column names here?
+                        constraint.columnName = this.getIdentifier();
                     });
 
                     this.ifToken([`MATCH`], () => {
@@ -547,7 +552,7 @@ export default class Simulator {
     simulateCreateTable() {
         const table = {
             name: null,
-            columns: [],
+            columns: {},
         };
 
         // TODO: It's Global or local, temporary or temp, or unlogged.
@@ -567,7 +572,7 @@ export default class Simulator {
             this.repeat(() => {
                 const column = this.getColumn();
 
-                table.columns.push(column);
+                table.columns[column.name] = column;
 
                 return this.findToken([`,`]);
             });
@@ -580,6 +585,8 @@ export default class Simulator {
     }
 
     simulateQuery(sql) {
+        console.log(`simulateQuery ${sql}`);
+
         this.input = sql.replace(/^\s+/, ``);
 
         const token = this.getToken([`CREATE`, `ALTER`, `DROP`]);

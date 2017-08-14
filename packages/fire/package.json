@@ -9,6 +9,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "fire-webpack": "1.0.0",
+    "history": "^4.6.3",
+    "jsonwebtoken": "^7.4.2",
     "koa": "^2.3.0",
     "koa-bodyparser": "^4.2.0",
     "koa-webpack": "^1.0.0",

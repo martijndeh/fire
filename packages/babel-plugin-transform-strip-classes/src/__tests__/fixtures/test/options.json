@@ -1,7 +1,0 @@
-{
-    "plugins": [["transform-strip-classes", {
-        "classes": [
-            "Test"
-        ]
-    }]]
-}

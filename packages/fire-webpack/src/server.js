@@ -7,8 +7,8 @@ export default function createServerBundle(entry) {
         webpack({
             entry: {
                 server: [
-                    `isomorphic-fetch`,
                     `babel-polyfill`,
+                    `isomorphic-fetch`,
                     entry,
                 ],
             },
@@ -45,6 +45,20 @@ export default function createServerBundle(entry) {
                     NODE_ENV: process.env.NODE_ENV,
                 }),
             ],
+            resolveLoader: {
+                modules: [
+                    path.join(__dirname, `..`, `node_modules`),
+                    path.join(process.cwd(), `node_modules`),
+                    `node_modules`,
+                ],
+            },
+            resolve: {
+                modules: [
+                    path.join(__dirname, `..`, `node_modules`),
+                    path.join(process.cwd(), `node_modules`),
+                    `node_modules`,
+                ],
+            },
         }, (error, stats) => {
             if (error) {
                 reject(error);

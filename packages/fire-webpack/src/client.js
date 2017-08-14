@@ -4,6 +4,7 @@ import path from 'path';
 export default function createClientCompiler(entry, serviceNames) {
     const shim = path.join(__dirname, `shim.js`);
     return webpack({
+        stats: `none`,
         // TODO: source-map exposes the server functions. If NODE_ENV=development only set source-map?
         devtool: `source-map`,
         entry: {
@@ -12,7 +13,8 @@ export default function createClientCompiler(entry, serviceNames) {
                 `webpack-hot-middleware/client`,
                 `isomorphic-fetch`,
                 entry,
-                path.join(__dirname, `..`, `client`, `index.js`),
+                // TODO: Or can we do fire/client here as well?
+                `fire/lib/client/index.js`,
             ],
         },
         module: {
@@ -20,6 +22,7 @@ export default function createClientCompiler(entry, serviceNames) {
                 test: /.js$/,
                 exclude: /node_modules/,
                 loader: `babel-loader`,
+                // loader: path.join(__dirname, `..`, `node_modules`, `babel-loader`),
                 options: {
                     presets: [
                         `flow`,
@@ -33,7 +36,7 @@ export default function createClientCompiler(entry, serviceNames) {
                         `stage-2`,
                     ],
                     plugins: [
-                        [path.join(__dirname, `../../../babel-plugin-transform-strip-classes`), {
+                        [path.join(__dirname, `..`, `..`, `babel-plugin-transform-strip-classes`), {
                             classes: serviceNames,
                         }],
                         `transform-decorators-legacy`,
@@ -70,12 +73,25 @@ export default function createClientCompiler(entry, serviceNames) {
             crypto: `empty`,
             path: `empty`,
         },
+        resolveLoader: {
+            modules: [
+                path.join(__dirname, `..`, `node_modules`),
+                path.join(process.cwd(), `node_modules`),
+                `node_modules`,
+            ],
+        },
         resolve: {
+            modules: [
+                path.join(__dirname, `..`, `node_modules`),
+                path.join(process.cwd(), `node_modules`),
+                `node_modules`,
+            ],
             alias: {
                 fsevents: shim,
                 koa: shim,
                 webpack: shim,
                 'koa-webpack': shim,
+                dns: shim,
             },
         },
     });

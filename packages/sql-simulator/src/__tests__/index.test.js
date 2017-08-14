@@ -24,19 +24,23 @@ describe(`Simulator`, () => {
             const tables = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    },{
-                        dataType: `TEXT`,
-                        name: `first_name`,
-                        constraints: {},
-                    }, {
-                        dataType: `MySpecialType`,
-                        name: `last_name`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                        first_name: {
+                            dataType: `TEXT`,
+                            name: `first_name`,
+                            constraints: {},
+                        },
+                        last_name: {
+                            dataType: `MySpecialType`,
+                            name: `last_name`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
@@ -50,13 +54,15 @@ describe(`Simulator`, () => {
             const tables = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {
-                            primaryKey: {},
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {
+                                primaryKey: {},
+                            },
                         },
-                    }],
+                    },
                 },
             };
 
@@ -70,13 +76,15 @@ describe(`Simulator`, () => {
             const tables = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {
-                            notNull: {},
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {
+                                notNull: {},
+                            },
                         },
-                    }],
+                    },
                 },
             };
 
@@ -111,15 +119,17 @@ describe(`Simulator`, () => {
             const tables = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {
-                            check: {
-                                expression: `id > 0`,
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {
+                                check: {
+                                    expression: `id > 0`,
+                                },
                             },
                         },
-                    }],
+                    },
                 },
             };
 
@@ -133,15 +143,42 @@ describe(`Simulator`, () => {
             const tables = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `TIMESTAMP WITHOUT TIME ZONE`,
-                        name: `id`,
-                        constraints: {
-                            default: {
-                                expression: `NOW()`,
+                    columns: {
+                        id: {
+                            dataType: `TIMESTAMP WITHOUT TIME ZONE`,
+                            name: `id`,
+                            constraints: {
+                                default: {
+                                    expression: `NOW()`,
+                                },
                             },
                         },
-                    }],
+                    },
+                },
+            };
+
+            simulate(query, tables);
+        });
+
+        it(`should create table with DEFAULT uuid_generate_v4() and primary key`, () => {
+            const query = `CREATE TABLE account (
+                id UUID DEFAULT uuid_generate_v4() PRIMARY KEY
+            )`;
+            const tables = {
+                account: {
+                    name: `account`,
+                    columns: {
+                        id: {
+                            dataType: `UUID`,
+                            name: `id`,
+                            constraints: {
+                                default: {
+                                    expression: `uuid_generate_v4()`,
+                                },
+                                primaryKey: {},
+                            },
+                        },
+                    },
                 },
             };
 
@@ -155,15 +192,17 @@ describe(`Simulator`, () => {
             const tables = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `TIMESTAMP WITHOUT TIME ZONE`,
-                        name: `id`,
-                        constraints: {
-                            default: {
-                                expression: `1`,
+                    columns: {
+                        id: {
+                            dataType: `TIMESTAMP WITHOUT TIME ZONE`,
+                            name: `id`,
+                            constraints: {
+                                default: {
+                                    expression: `1`,
+                                },
                             },
                         },
-                    }],
+                    },
                 },
             };
 
@@ -177,15 +216,17 @@ describe(`Simulator`, () => {
             const tables = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `TIMESTAMP WITHOUT TIME ZONE`,
-                        name: `id`,
-                        constraints: {
-                            default: {
-                                expression: `"test"`,
+                    columns: {
+                        id: {
+                            dataType: `TIMESTAMP WITHOUT TIME ZONE`,
+                            name: `id`,
+                            constraints: {
+                                default: {
+                                    expression: `"test"`,
+                                },
                             },
                         },
-                    }],
+                    },
                 },
             };
 
@@ -199,15 +240,43 @@ describe(`Simulator`, () => {
             const tables = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `TIMESTAMP WITHOUT TIME ZONE`,
-                        name: `id`,
-                        constraints: {
-                            default: {
-                                expression: `"test"`,
+                    columns: {
+                        id: {
+                            dataType: `TIMESTAMP WITHOUT TIME ZONE`,
+                            name: `id`,
+                            constraints: {
+                                default: {
+                                    expression: `"test"`,
+                                },
                             },
                         },
-                    }],
+                    },
+                },
+            };
+
+            simulate(query, tables);
+        });
+
+        it(`should create table with column with references constraint`, () => {
+            const query = `CREATE TABLE account (
+                id INTEGER REFERENCES test (id)
+            )`;
+
+            const tables = {
+                account: {
+                    name: `account`,
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {
+                                references: {
+                                    tableName: `test`,
+                                    columnName: `id`,
+                                },
+                            },
+                        },
+                    },
                 },
             };
 
@@ -227,11 +296,13 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
@@ -244,18 +315,20 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
             const query = `ALTER TABLE account DROP COLUMN id`;
 
             const after = cloneDeep(before);
-            after.account.columns.splice(0, 1);
+            delete after.account.columns.id;
 
             simulate(before, query, after);
         });
@@ -264,24 +337,26 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
             const query = `ALTER TABLE account ADD COLUMN name TEXT NOT NULL`;
 
             const after = cloneDeep(before);
-            after.account.columns.push({
+            after.account.columns.name = {
                 dataType: `TEXT`,
                 name: `name`,
                 constraints: {
                     notNull: {},
                 },
-            });
+            };
 
             simulate(before, query, after);
         });
@@ -290,18 +365,20 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
             const query = `ALTER TABLE account ADD COLUMN name TEXT DEFAULT "test"`;
 
             const after = cloneDeep(before);
-            after.account.columns.push({
+            after.account.columns.name = {
                 dataType: `TEXT`,
                 name: `name`,
                 constraints: {
@@ -309,7 +386,7 @@ describe(`Simulator`, () => {
                         expression: `"test"`,
                     },
                 },
-            });
+            };
 
             simulate(before, query, after);
         });
@@ -318,18 +395,20 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
             const query = `ALTER TABLE account ALTER COLUMN id TYPE SERIAL`;
 
             const after = cloneDeep(before);
-            after.account.columns[0].dataType = `SERIAL`;
+            after.account.columns.id.dataType = `SERIAL`;
 
             simulate(before, query, after);
         });
@@ -338,18 +417,20 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
             const query = `ALTER TABLE account ALTER COLUMN id SET DATA TYPE SERIAL`;
 
             const after = cloneDeep(before);
-            after.account.columns[0].dataType = `SERIAL`;
+            after.account.columns.id.dataType = `SERIAL`;
 
             simulate(before, query, after);
         });
@@ -358,18 +439,20 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
             const query = `ALTER TABLE account ALTER COLUMN id SET DEFAULT 123`;
 
             const after = cloneDeep(before);
-            after.account.columns[0].constraints = {
+            after.account.columns.id.constraints = {
                 default: {
                     expression: `123`,
                 },
@@ -382,22 +465,24 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {
-                            default: {
-                                expression: `123`,
-                            }
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {
+                                default: {
+                                    expression: `123`,
+                                }
+                            },
                         },
-                    }],
+                    },
                 },
             };
 
             const query = `ALTER TABLE account ALTER COLUMN id DROP DEFAULT`;
 
             const after = cloneDeep(before);
-            after.account.columns[0].constraints = {};
+            after.account.columns.id.constraints = {};
 
             simulate(before, query, after);
         });
@@ -406,18 +491,20 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
             const query = `ALTER TABLE account ALTER COLUMN id SET NOT NULL`;
 
             const after = cloneDeep(before);
-            after.account.columns[0].constraints = {
+            after.account.columns.id.constraints = {
                 notNull: {},
             };
 
@@ -428,20 +515,22 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {
-                            notNull: {},
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {
+                                notNull: {},
+                            },
                         },
-                    }],
+                    },
                 },
             };
 
             const query = `ALTER TABLE account ALTER COLUMN id DROP NOT NULL`;
 
             const after = cloneDeep(before);
-            after.account.columns[0].constraints = {};
+            after.account.columns.id.constraints = {};
 
             simulate(before, query, after);
         });
@@ -450,18 +539,22 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
             const query = `ALTER TABLE account RENAME COLUMN id TO test`;
 
             const after = cloneDeep(before);
-            after.account.columns[0].name = `test`;
+            after.account.columns.id.name = `test`;
+            after.account.columns.test = after.account.columns.id;
+            delete after.account.columns.id;
 
             simulate(before, query, after);
         });
@@ -470,22 +563,48 @@ describe(`Simulator`, () => {
             const before = {
                 account: {
                     name: `account`,
-                    columns: [{
-                        dataType: `INTEGER`,
-                        name: `id`,
-                        constraints: {},
-                    }],
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
                 },
             };
 
             const query = `ALTER TABLE account ALTER COLUMN id SET NOT NULL, ALTER COLUMN id SET DEFAULT 123`;
 
             const after = cloneDeep(before);
-            after.account.columns[0].constraints = {
+            after.account.columns.id.constraints = {
                 notNull: {},
                 default: {
                     expression: `123`,
                 },
+            };
+
+            simulate(before, query, after);
+        });
+
+        it(`should alter table add column`, () => {
+            const before = {
+                test: {
+                    name: `test`,
+                    columns: {
+                        id: {
+                            dataType: `INTEGER`,
+                            name: `id`,
+                            constraints: {},
+                        },
+                    },
+                },
+            };
+            const query = `ALTER TABLE test ADD COLUMN value TEXT`;
+            const after = cloneDeep(before);
+            after.test.columns.value = {
+                dataType: `TEXT`,
+                name: `value`,
+                constraints: {},
             };
 
             simulate(before, query, after);

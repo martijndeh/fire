@@ -2,10 +2,11 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "clean": "",
-    "build": "babel -d ./packages/babel-plugin-transform-strip-classes/lib ./packages/babel-plugin-transform-strip-classes/src && babel -d ./packages/fire-cli/lib ./packages/fire-cli/src && babel -d ./packages/firestarter/lib ./packages/firestarter/src",
-    "test": "jest test",
-    "test:watch": "jest test --watch"
+    "lerna:bootstrap": "lerna bootstrap",
+    "clean": "rimraf ./packages/**/lib",
+    "build": "npm run clean && babel -d ./packages/babel-plugin-transform-strip-classes/lib ./packages/babel-plugin-transform-strip-classes/src && babel -d ./packages/fire-cli/lib ./packages/fire-cli/src && babel -d ./packages/fire/lib ./packages/fire/src && babel -d ./packages/fire-webpack/lib ./packages/fire-webpack/src && babel -d ./packages/sql-simulator/lib ./packages/sql-simulator/src && babel -d ./packages/sql-creator/lib ./packages/sql-creator/src",
+    "test": "jest test --config jest.json",
+    "test:watch": "npm run test -- --watch"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
