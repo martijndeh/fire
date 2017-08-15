@@ -2,6 +2,15 @@ import webpack from 'webpack';
 import path from 'path';
 import nodeExternals from 'webpack-node-externals';
 
+import babelPluginTransformDecoratorsLegacy from 'babel-plugin-transform-decorators-legacy';
+import babelPluginTransformRuntime from 'babel-plugin-transform-runtime';
+
+import babelPresetFlow from 'babel-preset-flow';
+import babelPresetReact from 'babel-preset-react';
+import babelPresetEnv from 'babel-preset-env';
+import babelPresetStage3 from 'babel-preset-stage-3';
+import babelPresetStage2 from 'babel-preset-stage-2';
+
 export default function createServerBundle(entry) {
     return new Promise((resolve, reject) => {
         webpack({
@@ -13,22 +22,24 @@ export default function createServerBundle(entry) {
                 ],
             },
             module: {
-                loaders: [{
+                rules: [{
                     test: /.js$/,
                     exclude: /node_modules/,
-                    loader: `babel-loader`,
-                    options: {
-                        presets: [
-                            `flow`,
-                            `react`,
-                            `env`,
-                            `stage-3`,
-                            `stage-2`,
-                        ],
-                        plugins: [
-                            `transform-decorators-legacy`,
-                            `transform-runtime`,
-                        ],
+                    use: {
+                        loader: `babel-loader`,
+                        options: {
+                            presets: [
+                                babelPresetFlow,
+                                babelPresetReact,
+                                babelPresetEnv,
+                                babelPresetStage3,
+                                babelPresetStage2,
+                            ],
+                            plugins: [
+                                babelPluginTransformDecoratorsLegacy,
+                                babelPluginTransformRuntime,
+                            ],
+                        },
                     },
                 }],
             },

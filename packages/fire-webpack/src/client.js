@@ -1,6 +1,16 @@
 import webpack from 'webpack';
 import path from 'path';
 
+import babelPluginTransformStripClasses from 'babel-plugin-transform-strip-classes';
+import babelPluginTransformDecoratorsLegacy from 'babel-plugin-transform-decorators-legacy';
+import babelPluginTransformRuntime from 'babel-plugin-transform-runtime';
+
+import babelPresetFlow from 'babel-preset-flow';
+import babelPresetReact from 'babel-preset-react';
+import babelPresetEnv from 'babel-preset-env';
+import babelPresetStage3 from 'babel-preset-stage-3';
+import babelPresetStage2 from 'babel-preset-stage-2';
+
 export default function createClientCompiler(entry, serviceNames) {
     const shim = path.join(__dirname, `shim.js`);
     return webpack({
@@ -25,22 +35,22 @@ export default function createClientCompiler(entry, serviceNames) {
                 // loader: path.join(__dirname, `..`, `node_modules`, `babel-loader`),
                 options: {
                     presets: [
-                        `flow`,
-                        [`env`, {
+                        babelPresetFlow,
+                        [babelPresetEnv, {
                             exclude: [
                                 `transform-es2015-classes`,
                             ],
                         }],
-                        `react`,
-                        `stage-3`,
-                        `stage-2`,
+                        babelPresetReact,
+                        babelPresetStage3,
+                        babelPresetStage2,
                     ],
                     plugins: [
-                        [path.join(__dirname, `..`, `..`, `babel-plugin-transform-strip-classes`), {
+                        [babelPluginTransformStripClasses, {
                             classes: serviceNames,
                         }],
-                        `transform-decorators-legacy`,
-                        `transform-runtime`,
+                        babelPluginTransformDecoratorsLegacy,
+                        babelPluginTransformRuntime,
                     ],
                 },
             }],
@@ -73,6 +83,7 @@ export default function createClientCompiler(entry, serviceNames) {
             crypto: `empty`,
             path: `empty`,
         },
+        // TODO: Do we still need these as we import plugins directly now?
         resolveLoader: {
             modules: [
                 path.join(__dirname, `..`, `node_modules`),
