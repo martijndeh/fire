@@ -12,7 +12,7 @@ export default function createServer(entry) {
 
     app.use(bodyParser());
     app.use(async (context, next) => {
-        if (context.path === `/_api`) {
+        if (context.path === `/_api` && context.method === `POST`) {
             try {
                 const [
                     serviceName,
@@ -39,6 +39,17 @@ export default function createServer(entry) {
     });
     app.use(webpackMiddleware({
 		compiler,
+        dev: {
+            noInfo: true,
+            stats: {
+                colors: false,
+            },
+            quiet: true,
+        },
+        hot: {
+            noInfo: true,
+            quiet: true,
+        },
 	}));
     app.use(async (context, next) => {
         await next();
