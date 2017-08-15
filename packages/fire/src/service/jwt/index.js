@@ -32,8 +32,6 @@ function sign(payload, options) {
 }
 
 export async function getPayload(token) {
-    console.log(`getPayload: token = ${token}`);
-
     // TODO: Somewhere, we should link the token to an ip and user agent.
 
     const decoded = await verify(token, {
@@ -42,6 +40,9 @@ export async function getPayload(token) {
         // Just to be sure, we set a maxAge of 14 days.
         maxAge: `14d`,
     });
+
+    //
+
     return decoded;
 }
 

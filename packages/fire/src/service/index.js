@@ -41,10 +41,9 @@ export default function service(Service) {
 
             function createFetch(propertyName) {
                 return async (...args) => {
-                    console.log(`fetch ${propertyName}`);
-
                     try {
                         const token = window.localStorage.getItem(`token`);
+
                         const response = await fetch(`/_api?method=${serviceName}.${propertyName}`, {
                             method: `POST`,
                             body: JSON.stringify(args),
@@ -53,12 +52,7 @@ export default function service(Service) {
                                 'X-Token': token,
                             },
                         });
-
-                        console.log(`after fetch`);
-
                         const json = await response.json();
-
-                        console.log(`Response status = ${response.status}`);
 
                         if (response.ok) {
                             if (json) {
@@ -85,7 +79,7 @@ export default function service(Service) {
                                     history.replace(`${path}?redirect=${history.location.pathname}`);
                                 }
                                 else {
-                                    console.log(`Warning: could not find component for error code ${response.status}`);
+                                    // console.log(`Warning: could not find component for error code ${response.status}`);
                                 }
                             }
 
@@ -93,8 +87,7 @@ export default function service(Service) {
                         }
                     }
                     catch (e) {
-                        console.log(`error here`);
-                        console.log(e);
+                        //
                     }
 
                     return [];
