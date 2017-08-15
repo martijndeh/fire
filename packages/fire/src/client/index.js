@@ -22,12 +22,16 @@ class App extends React.Component {
                     <Switch>
                         {Object.keys(components).map((path) => {
                             const {
-                                props,
+                                props: {
+                                    exact = true,
+                                    error,
+                                    ...props,
+                                },
                                 Component,
                             } = components[path];
 
                             return (
-                                <Route key={path} exact path={path} component={Component} {...props} />
+                                <Route key={path} exact={exact} path={path} component={Component} {...props} />
                             );
                         })}
                     </Switch>
