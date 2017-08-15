@@ -12,7 +12,7 @@ export function getPathForErrorCode(errorCode) {
         } = components[path];
 
         if (props.error) {
-            return Array.isArray(props.error) && props.error.indexof(errorCode) !== -1 || props.error === errorCode;
+            return Array.isArray(props.error) && props.error.indexOf(errorCode) !== -1 || props.error === errorCode;
         }
     });
     return path;
@@ -22,11 +22,9 @@ export function isComponent(Entity) {
     return (Entity && Entity.prototype && !!Entity.prototype.isReactComponent);
 }
 
-function setComponent(OldComponent, NewComponent) {
+export function setComponent(OldComponent, NewComponent) {
     // TODO: Create a proper index so we don't have to loop.
     const paths = Object.keys(components).filter((path) => components[path].Component === OldComponent);
-
-    console.log(`Replace old component with newly wrapped component`);
 
     paths.forEach((path) => {
         components[path].Component = NewComponent;
