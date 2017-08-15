@@ -432,9 +432,6 @@ export default class Simulator {
                     constraint.expression = this.getExpression();
 
                     column.constraints.default = constraint;
-
-                    console.log(`Default is here!`);
-                    console.log(constraint.expression);
                 },
 
                 UNIQUE: () => {
@@ -585,8 +582,6 @@ export default class Simulator {
     }
 
     simulateQuery(sql) {
-        console.log(`simulateQuery ${sql}`);
-
         this.input = sql.replace(/^\s+/, ``);
 
         const token = this.getToken([`CREATE`, `ALTER`, `DROP`]);
