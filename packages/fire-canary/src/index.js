@@ -8,7 +8,7 @@ import {
     isClient,
     isServer,
     login,
-    guarded,
+    allow,
     React,
     style,
     setTheme,
@@ -36,7 +36,7 @@ export class MyService {
         // TODO: Throw some error. Maybe use boom.errors?
     }
 
-    @guarded((payload) => () => payload.id === 123)
+    @allow((payload) => () => payload && payload.id === 123)
     getItems() {
         return [
             `Item #1`,
@@ -57,8 +57,6 @@ class MyStore {
 
     async loadItems() {
         this.items = await this.myService.getItems();
-
-        console.log(this.items);
     }
 }
 
@@ -114,15 +112,10 @@ export class Login extends React.Component {
 @component(`/`)
 export default class App extends React.Component {
     componentDidMount() {
-        console.log(`App#componentDidMount`);
-        console.log(this.props.myStore);
-
         this.props.myStore.loadItems();
     }
 
     render() {
-        console.log(`render again`);
-
         const {
             items,
             numberOfItems,

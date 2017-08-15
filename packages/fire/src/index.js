@@ -1,9 +1,12 @@
+import { Link, Route, Switch } from 'react-router-dom';
+import React from 'react';
 import component from './component/index.js';
 import service from './service/index.js';
 import store from './store/index.js';
 import { inject, registerInjectProvider } from './injector/index.js';
 import createServer from './server/index.js';
-import { exposed, guarded, login } from './service/server-service.js';
+import { allow, deny, login } from './service/server-service.js';
+import { style, setTheme } from './style/index.js';
 
 function isClient() {
     return (typeof window !== `undefined`);
@@ -14,17 +17,21 @@ function isServer() {
 }
 
 export {
+    allow,
     component,
     createServer,
-    exposed,
-    guarded,
+    deny,
+    Link,
     login,
-    service,
-    store,
     inject,
     isClient,
     isServer,
+    React,
     registerInjectProvider,
+    Route,
+    service,
     setTheme,
+    store,
     style,
+    Switch,
 };

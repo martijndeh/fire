@@ -1,44 +1,36 @@
 import { getPayload, createToken } from './jwt/index.js';
-import { isClient } from '..';
+
+const ACCESS_CONTROL_ALLOW = `allow`;
+const ACCESS_CONTROL_DENY = `deny`;
 
 const loginsSymbol = Symbol();
-const guardsSymbol = Symbol();
-const exposesSymbol = Symbol();
+const accessControlSymbol = Symbol();
 
-const noop = () => {};
-
-export function guarded(guardFunc) {
-    if (isClient()) {
-        return noop;
+function setAccessControl(target, key, type, accessControlFunc) {
+    if (!target[accessControlSymbol]) {
+        target[accessControlSymbol] = {};
     }
 
-    return function (target, key) {
-        if (!target[guardsSymbol]) {
-            target[guardsSymbol] = {};
-        }
+    if (target[accessControlSymbol][key]) {
+        throw new Error(`Cannot set access control multiple times.`);
+    }
 
-        if (target[guardsSymbol][key]) {
-            throw new Error(`Cannot set @guarded multiple times.`);
-        }
-
-        target[guardsSymbol][key] = guardFunc;
+    target[accessControlSymbol][key] = {
+        accessControlFunc,
+        type,
     };
 }
 
-export function exposed(target, key) {
-    if (isClient()) {
-        return noop;
-    }
+export function allow(accessControlFunc) {
+    return function (target, key) {
+        setAccessControl(target, key, ACCESS_CONTROL_ALLOW, accessControlFunc);
+    };
+}
 
-    if (target[guardsSymbol] && target[guardsSymbol][key]) {
-        throw new Error(`@exposed(): Cannot set already guarded method as exposed.`);
-    }
-
-    if (!target[exposesSymbol]) {
-        target[exposesSymbol] = {};
-    }
-
-    target[exposesSymbol][key] = true;
+export function deny(accessControlFunc) {
+    return function (target, key) {
+        setAccessControl(target, key, ACCESS_CONTROL_DENY, accessControlFunc);
+    };
 }
 
 const defaultTransformFunc = (result) => {
@@ -52,10 +44,6 @@ const defaultTransformFunc = (result) => {
 };
 
 export function login(target, key) {
-    if (isClient()) {
-        return noop;
-    }
-
     if (!target[loginsSymbol]) {
         target[loginsSymbol] = {};
     }
@@ -64,57 +52,53 @@ export function login(target, key) {
     target[loginsSymbol][key] = defaultTransformFunc;
 }
 
-export default async function callServerService(Service, methodName, context) {
-    console.log(`callServerService ${methodName}`);
+async function getPayloadFromContext(context) {
+    try {
+        const token = context.headers[`x-token`];
+        return getPayload(token);
+    }
+    catch (e) {
+        return null;
+    }
+}
 
-    const service = new Service(context);
-
-    const guardFunc = service[guardsSymbol] && service[guardsSymbol][methodName];
+export async function isAllowed(service, methodName, context) {
+    const accessControl = service[accessControlSymbol] && service[accessControlSymbol][methodName];
     const loginFunc = service[loginsSymbol] && service[loginsSymbol][methodName];
 
-    console.log(`guardFunc = ${!!guardFunc}`);
-    console.log(`loginFunc = ${!!loginFunc}`);
-
-    if (guardFunc) {
-        console.log(`In guardFunc flow`);
-
+    if (accessControl) {
         try {
-            const token = context.headers[`x-token`];
-            const payload = await getPayload(token);
+            const {
+                accessControlFunc,
+                type,
+            } = accessControl;
 
-            console.log(`Payload is`);
-            console.log(payload);
+            const payload = await getPayloadFromContext(context);
+            const authFunc = await accessControlFunc(payload);
+            const result = await authFunc(...context.request.body);
 
-            const authFunc = await guardFunc(payload);
+            // TODO: We should set a 401 or 403 accordingly.
 
-            console.log(`Doing auth func bit`);
-
-            const isAllowed = await authFunc(...context.request.body);
-
-            console.log(`Is allowed: ${isAllowed}`);
-
-            if (isAllowed) {
-                // Continue
-            }
-            else {
-                // TODO: If check if this is a 403 or 401.
-                context.throw(403);
-                return;
-            }
+            return (result === true && type === ACCESS_CONTROL_ALLOW || result === false && type === ACCESS_CONTROL_DENY);
         }
         catch (e) {
             context.throw(401);
-            return;
         }
     }
-    else if (service[exposesSymbol] && service[exposesSymbol][methodName] || loginFunc) {
-        // Exposed!
-        // When set as login the method is automatically considered exposed.
+    else if (loginFunc) {
+        // If a loginFunc is set, this is automatically allowed.
+        return true;
     }
-    else {
-        console.log(`404: no guard, not exposed`);
 
-        context.throw(404);
+    return false;
+}
+
+export default async function callServerService(Service, methodName, context) {
+    const service = new Service(context);
+
+    const allowed = await isAllowed(service, methodName, context);
+    if (!allowed) {
+        context.throw(401);
         return;
     }
 
@@ -128,25 +112,20 @@ export default async function callServerService(Service, methodName, context) {
             response: json,
         };
 
+        const loginFunc = service[loginsSymbol] && service[loginsSymbol][methodName];
         if (loginFunc && json) {
-            console.log(`This is a login call. Create the payload from the json.`);
-
             const payload = loginFunc(json);
-
-            console.log(payload);
 
             // TODO: Also add the ip and user agent to the payload.
 
             const token = await createToken(payload);
-
-            console.log(`Create the token = ${token}`);
 
             // TODO: Check if this is a temporary token or not e.g. set on the session.
             body.auth = {
                 token,
             };
 
-            // TODO: Set the redirect path.
+            // TODO: Set the redirect path?
             body.redirect = true;
         }
 
