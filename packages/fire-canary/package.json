@@ -10,8 +10,7 @@
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "license": "MIT",
   "dependencies": {
-    "fire": "^0.48.0",
-    "react": "^15.6.1"
+    "fire": "^0.48.0"
   },
   "devDependencies": {
     "fire-cli": "^0.48.0"

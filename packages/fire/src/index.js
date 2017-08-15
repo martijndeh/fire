@@ -25,4 +25,6 @@ export {
     isClient,
     isServer,
     registerInjectProvider,
+    setTheme,
+    style,
 };

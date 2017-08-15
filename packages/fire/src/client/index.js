@@ -1,9 +1,11 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
+import { ThemeProvider } from 'react-jss';
 import createBrowserHistory from 'history/createBrowserHistory';
 import { Router, Route, Switch } from 'react-router-dom';
 import { getComponents } from '../component/index.js';
 import { setHistory } from '../service/index.js';
+import { getTheme } from '../style/index.js';
 
 const history = createBrowserHistory();
 
@@ -15,20 +17,22 @@ class App extends React.Component {
         const components = getComponents();
 
         return (
-            <Router history={history}>
-                <Switch>
-                    {Object.keys(components).map((path) => {
-                        const {
-                            props,
-                            Component,
-                        } = components[path];
+            <ThemeProvider theme={getTheme()}>
+                <Router history={history}>
+                    <Switch>
+                        {Object.keys(components).map((path) => {
+                            const {
+                                props,
+                                Component,
+                            } = components[path];
 
-                        return (
-                            <Route key={path} exact path={path} component={Component} {...props} />
-                        );
-                    })}
-                </Switch>
-            </Router>
+                            return (
+                                <Route key={path} exact path={path} component={Component} {...props} />
+                            );
+                        })}
+                    </Switch>
+                </Router>
+            </ThemeProvider>
         );
     }
 }

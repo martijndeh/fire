@@ -3,6 +3,7 @@
   "license": "MIT",
   "scripts": {
     "lerna:bootstrap": "lerna bootstrap",
+    "lerna:publish": "lerna publish",
     "clean": "rimraf ./packages/**/lib",
     "build": "npm run clean && babel -d ./packages/babel-plugin-transform-strip-classes/lib ./packages/babel-plugin-transform-strip-classes/src && babel -d ./packages/fire-cli/lib ./packages/fire-cli/src && babel -d ./packages/fire/lib ./packages/fire/src && babel -d ./packages/fire-webpack/lib ./packages/fire-webpack/src && babel -d ./packages/sql-simulator/lib ./packages/sql-simulator/src && babel -d ./packages/sql-creator/lib ./packages/sql-creator/src",
     "test": "jest test --config jest.json",

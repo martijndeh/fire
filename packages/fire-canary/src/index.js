@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 /* eslint-disable react/no-multi-comp */
-import React from 'react';
 import {
     component,
     service,
@@ -10,6 +9,9 @@ import {
     isServer,
     login,
     guarded,
+    React,
+    style,
+    setTheme,
 } from 'fire';
 
 if (isClient()) {
@@ -18,6 +20,10 @@ if (isClient()) {
 else if (isServer()) {
     // This is running on the server.
 }
+
+setTheme({
+    magenta: `#f0f`,
+});
 
 @service
 export class MyService {
@@ -56,6 +62,11 @@ class MyStore {
     }
 }
 
+@style((theme) => ({
+    button: {
+        background: theme.magenta,
+    },
+}))
 @inject(MyService, `myService`)
 @component(`/login`, { error: 401 })
 export class Login extends React.Component {
@@ -85,11 +96,15 @@ export class Login extends React.Component {
     };
 
     render() {
+        const {
+            classes,
+        } = this.props;
+
         return (
             <form onSubmit={this.handleSubmit}>
                 <h1>Login</h1>
                 <input type="email" onChange={this.handleChange} />
-                <button>Submit</button>
+                <button className={classes.button}>Submit</button>
             </form>
         );
     }
