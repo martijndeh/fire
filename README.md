@@ -1,6 +1,6 @@
 # The fastest way to build your minimal viable product.
 [![Build Status](https://travis-ci.org/martijndeh/fire.svg?branch=master)](https://travis-ci.org/martijndeh/fire)
-[![Coverage Status](https://coveralls.io/repos/martijndeh/lego/badge.svg?branch=master&service=github)](https://coveralls.io/github/martijndeh/lego?branch=master)
+[![Coverage Status](https://coveralls.io/repos/martijndeh/fire/badge.svg?branch=master&service=github)](https://coveralls.io/github/martijndeh/fire?branch=master)
 [![License Badge](https://img.shields.io/github/license/martijndeh/fire.svg)](https://github.com/martijndeh/fire/blob/master/LICENSE)
 
 <br/>
@@ -247,6 +247,7 @@ class MyComponent extends React.Component {
 - `@computed`
 - `@action`
 - `@observer`
+- `@observable`
 - `@model` creates a model.
 - `@worker` adds a worker process and allows to execute tasks over a message queue.
 - `@experiment` defines an experiment and participates the user to the experiment.
