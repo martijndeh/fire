@@ -96,4 +96,58 @@ describe(`ServerService`, () => {
             expect(allowed).toBe(true);
         });
     });
+
+    describe(`multiple @allow, @deny`, () => {
+        it(`should disallow when @allow returns true and @deny returns true`, async () => {
+            class MyService {
+                @allow(() => () => true)
+                @deny(() => () => true)
+                test() {}
+            }
+
+            const myService = new MyService();
+            const allowed = await isAllowed(myService, `test`, context);
+
+            expect(allowed).toBe(false);
+        });
+
+        it(`should disallow when @allow returns false and @deny returns true`, async () => {
+            class MyService {
+                @allow(() => () => false)
+                @deny(() => () => true)
+                test() {}
+            }
+
+            const myService = new MyService();
+            const allowed = await isAllowed(myService, `test`, context);
+
+            expect(allowed).toBe(false);
+        });
+
+        it(`should disallow when @allow returns false and @deny returns false`, async () => {
+            class MyService {
+                @allow(() => () => false)
+                @deny(() => () => false)
+                test() {}
+            }
+
+            const myService = new MyService();
+            const allowed = await isAllowed(myService, `test`, context);
+
+            expect(allowed).toBe(false);
+        });
+
+        it(`should allow when @allow returns true and @deny returns false`, async () => {
+            class MyService {
+                @allow(() => () => true)
+                @deny(() => () => false)
+                test() {}
+            }
+
+            const myService = new MyService();
+            const allowed = await isAllowed(myService, `test`, context);
+
+            expect(allowed).toBe(true);
+        });
+    });
 });

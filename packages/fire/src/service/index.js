@@ -42,8 +42,6 @@ export default function service(Service) {
             function createFetch(propertyName) {
                 return async (...args) => {
                     try {
-                        const token = window.localStorage.getItem(`token`);
-
                         const response = await fetch(`/_api?method=${serviceName}.${propertyName}`, {
                             method: `POST`,
                             body: JSON.stringify(args),
@@ -56,10 +54,6 @@ export default function service(Service) {
 
                         if (response.ok) {
                             if (json) {
-                                if (json.auth) {
-                                    window.localStorage.setItem(`token`, json.auth.token);
-                                }
-
                                 if (json.redirect) {
                                     const search = history.location.search.substring(1);
                                     const redirect = (search.split(`&`).find((key) => key.indexOf(`redirect=`) === 0) || ``).substring(9) || `/`;
@@ -68,7 +62,7 @@ export default function service(Service) {
                                 }
                             }
 
-                            return json.response;
+                            return json.result;
                         }
                         else {
                             if (response.status === 401 || response.status === 403) {

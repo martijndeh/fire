@@ -1,6 +1,7 @@
+import { configureWebpack, addShims } from 'fire-webpack';
 import { Link, Route, Switch } from 'react-router-dom';
 import React from 'react';
-import component from './component/index.js';
+import component, { observer } from './component/index.js';
 import service from './service/index.js';
 import store from './store/index.js';
 import { inject, registerInjectProvider } from './injector/index.js';
@@ -17,8 +18,10 @@ function isServer() {
 }
 
 export {
+    addShims,
     allow,
     component,
+    configureWebpack,
     createServer,
     deny,
     Link,
@@ -26,6 +29,7 @@ export {
     inject,
     isClient,
     isServer,
+    observer,
     React,
     registerInjectProvider,
     Route,

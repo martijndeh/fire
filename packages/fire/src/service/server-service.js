@@ -3,58 +3,74 @@ import { getPayload, createToken } from './jwt/index.js';
 const ACCESS_CONTROL_ALLOW = `allow`;
 const ACCESS_CONTROL_DENY = `deny`;
 
-const loginsSymbol = Symbol();
+// TODO: change this to a generic "after" middleware.
+const handlersSymbol = Symbol();
 const accessControlSymbol = Symbol();
 
-function setAccessControl(target, key, type, accessControlFunc) {
+function addAccessControl(target, key, type, accessControlFunc) {
     if (!target[accessControlSymbol]) {
         target[accessControlSymbol] = {};
     }
 
-    if (target[accessControlSymbol][key]) {
-        throw new Error(`Cannot set access control multiple times.`);
+    if (!target[accessControlSymbol][key]) {
+        target[accessControlSymbol][key] = [];
     }
 
-    target[accessControlSymbol][key] = {
+    target[accessControlSymbol][key].push({
         accessControlFunc,
         type,
-    };
+    });
 }
 
 export function allow(accessControlFunc) {
     return function (target, key) {
-        setAccessControl(target, key, ACCESS_CONTROL_ALLOW, accessControlFunc);
+        addAccessControl(target, key, ACCESS_CONTROL_ALLOW, accessControlFunc);
     };
 }
 
 export function deny(accessControlFunc) {
     return function (target, key) {
-        setAccessControl(target, key, ACCESS_CONTROL_DENY, accessControlFunc);
+        addAccessControl(target, key, ACCESS_CONTROL_DENY, accessControlFunc);
     };
 }
 
-const defaultTransformFunc = (result) => {
-    if (result && result.id) {
-        return {
-            id: result.id,
-        };
-    }
-
-    throw new Error(`@login(): `);
-};
-
 export function login(target, key) {
-    if (!target[loginsSymbol]) {
-        target[loginsSymbol] = {};
+    if (!target[handlersSymbol]) {
+        target[handlersSymbol] = {};
     }
 
-    // TODO: It should be possible to pass your own transform func.
-    target[loginsSymbol][key] = defaultTransformFunc;
+    if (!target[handlersSymbol][key]) {
+        target[handlersSymbol][key] = [];
+    }
+
+    target[handlersSymbol][key].push({
+        type: `login`,
+    });
+
+    // Allow the user to invoke this method.
+    addAccessControl(target, key, ACCESS_CONTROL_ALLOW, () => () => true);
+}
+
+export function logout(target, key) {
+    if (!target[handlersSymbol]) {
+        target[handlersSymbol] = {};
+    }
+
+    if (!target[handlersSymbol][key]) {
+        target[handlersSymbol][key] = [];
+    }
+
+    target[handlersSymbol][key].push({
+        type: `logout`,
+    });
+
+    // Allow logged in users to invoke this method.
+    addAccessControl(target, key, ACCESS_CONTROL_ALLOW, (payload) => Boolean(payload));
 }
 
 async function getPayloadFromContext(context) {
     try {
-        const token = context.headers[`x-token`];
+        const token = context.cookies.get(`t`);
         return getPayload(token);
     }
     catch (e) {
@@ -63,31 +79,29 @@ async function getPayloadFromContext(context) {
 }
 
 export async function isAllowed(service, methodName, context) {
-    const accessControl = service[accessControlSymbol] && service[accessControlSymbol][methodName];
-    const loginFunc = service[loginsSymbol] && service[loginsSymbol][methodName];
+    const accessControls = service[accessControlSymbol] && service[accessControlSymbol][methodName];
 
-    if (accessControl) {
+    if (accessControls && accessControls.length > 0) {
         try {
-            const {
-                accessControlFunc,
-                type,
-            } = accessControl;
+            const results = await Promise.all(accessControls.map(async (accessControl) => {
+                const {
+                    accessControlFunc,
+                    type,
+                } = accessControl;
 
-            const payload = await getPayloadFromContext(context);
-            const authFunc = await accessControlFunc(payload);
-            const result = await authFunc(...context.request.body);
+                const payload = await getPayloadFromContext(context);
+                const authFunc = await accessControlFunc(payload);
 
-            // TODO: We should set a 401 or 403 accordingly.
+                const result = authFunc === true || authFunc && await authFunc(...context.request.body);
 
-            return (result === true && type === ACCESS_CONTROL_ALLOW || result === false && type === ACCESS_CONTROL_DENY);
+                return (result === true && type === ACCESS_CONTROL_ALLOW || result === false && type === ACCESS_CONTROL_DENY);
+            }));
+
+            return results.every((result) => result === true);
         }
         catch (e) {
             context.throw(401);
         }
-    }
-    else if (loginFunc) {
-        // If a loginFunc is set, this is automatically allowed.
-        return true;
     }
 
     return false;
@@ -109,24 +123,39 @@ export default async function callServerService(Service, methodName, context) {
         const json = service[methodName](...args);
 
         const body = {
-            response: json,
+            result: json,
         };
 
-        const loginFunc = service[loginsSymbol] && service[loginsSymbol][methodName];
-        if (loginFunc && json) {
-            const payload = loginFunc(json);
+        const handlers = {
+            login: async (body) => {
+                // TODO: It should be possible to pass a
+                const payload = json && { id: json.id };
 
-            // TODO: Also add the ip and user agent to the payload.
+                // TODO: Also add the ip and user agent to the payload.
 
-            const token = await createToken(payload);
+                const token = await createToken(payload);
+                context.cookies.set(`t`, token, {
+                    httpOnly: true,
+                });
 
-            // TODO: Check if this is a temporary token or not e.g. set on the session.
-            body.auth = {
-                token,
-            };
+                body.redirect = `/`;
+                return body;
+            },
 
-            // TODO: Set the redirect path?
-            body.redirect = true;
+            logout: async (body) => {
+                context.cookies.set(`t`);
+                body.redirect = `/`;
+                return body;
+            },
+        }
+
+        const methodHandlers = service[handlersSymbol] && service[handlersSymbol][methodName];
+        if (methodHandlers.length > 0) {
+            await Promise.all(methodHandlers.map((methodHandler) => {
+                const handler = handlers[methodHandler.type];
+
+                return handler(body);
+            }));
         }
 
         context.type = `json`;

@@ -1,9 +1,13 @@
 import Koa from 'koa';
-import { createClientCompiler } from 'fire-webpack';
+import { createClientCompiler, addShims } from 'fire-webpack';
 import webpackMiddleware from 'koa-webpack';
 import bodyParser from 'koa-bodyparser';
 import { getServiceNames, getService } from '../service/index.js';
 import callServerService from '../service/server-service.js';
+
+export {
+    addShims,
+};
 
 export default function createServer(entry) {
     const app = new Koa();

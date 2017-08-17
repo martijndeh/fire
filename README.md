@@ -267,8 +267,8 @@ The following modules are shimmed in the client bundle by default:
 
 Argument | Type | Description
 ----------|------|-------------
-**type** | *String* | The type, or side, on which to shim. Either client or server.
-**moduleNames** | *String[]* | The module names to shim.
+**type** | `String` | The type, or side, on which to shim. Either client or server.
+**moduleNames** | `String[]` | The module names to shim.
 
 **Example**
 ```js
@@ -285,11 +285,83 @@ class MyComponent extends React.Component {
 }
 ```
 
+#### `@allow(accessControlFunc)`
+Adds an allow rule to the service method. The user is allowed to invoke the service method if the allow rule return true.
+
+`accessControlFunc` is invoked with the authentication token's payload and should return true if the user is allowed to invoke the method, and should return false if the user is not allowed to invoke the method. `accessControlFunc` may also return a function which takes the methods arguments and should, again, return true if the user is allowed or false if the user is not allowed to invoke the method.
+
+See also `@deny(accessControlFunc)`.
+
+Argument | Type | Description
+----------|------|-------------
+**accessControlFunc** | `Function(payload)` | The function which is invoked.
+
+**Example.** Logged in users with role `admin` are allowed to invoke the method.
+```js
+@service
+class MyService {
+    @allow((payload) => payload && payload.role === `admin`)
+    send() {
+        //
+    }
+}
+```
+
+**Example with auth func.** Logged in users who send `Hello, world!` as `text` are allowed.
+```js
+@service
+class MyService {
+    @allow((payload) => (text) => payload && text === `Hello, world!`)
+    send(text) {
+        //
+    }
+}
+```
+
+#### `@deny(accessControlFunc)`
+Adds a deny rule to the service method. The user is **not** allowed to invoke the service method if the deny rule return true. It's possible to add multiple rules to a service method and they all must allow to allow user access. See also `@allow(accessControlFunc)`.
+
+`accessControlFunc` is invoked with the authentication token's payload and should return true if the user is **not** allowed to invoke the method, and should return false if the user is allowed to invoke the method. `accessControlFunc` may also return a function which takes the methods arguments and should, again, return true if the user is **not** allowed or false if the user is allowed to invoke the method.
+
+Argument | Type | Description
+----------|------|-------------
+**accessControlFunc** | `Function(payload)` | The function which is invoked.
+
+**Example.** Logged in users with role `admin` are allowed to invoke the method.
+```js
+@service
+class MyService {
+    @deny((payload) => !payload || payload.role !== `admin`)
+    send() {
+        //
+    }
+}
+```
+
+**Example with auth func.** Logged in users who send `Hello, world!` as `text` are allowed.
+```js
+@service
+class MyService {
+    @allow((payload) => (text) => !payload || text !== `Hello, world!`)
+    send(text) {
+        //
+    }
+}
+```
+
+#### `@login`
+Configures the target service method to be a login method.
+
+The login method's should return the user account, or throw an error. The user account's id is stored is considered the payload, which is stored in a JSON web token, and stored in a httpOnly cookie.
+
+#### `@logout`
+Configures the target service method to be a logout method.
+
+The logout method clears the authentication cookie.
+
 #### `Route`
 #### `Switch`
 #### `Link`
-#### `@exposed`
-#### `@guarded`
 #### `@login`
 #### `isClient`
 #### `isServer`
