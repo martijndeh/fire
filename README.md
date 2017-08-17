@@ -76,10 +76,10 @@ Add the target `React.Component` to a `Route` with `path`.
 
 Argument | Type | Description
 ----------|------|-------------
-**path** | *String* | The path to mount the component on.
-**options** | *Object* |
-**options.exact=true** | *Boolean* | Sets the `Route` exact property. See [React Router](https://reacttraining.com/react-router/web/api/Route/exact-bool). Defaults to true.
-**options.error** | *Number[]/Number* | Links one or more error codes to the component. Whenever a service method returns a matching error code, the client is redirect to the component.
+**path** | `String` | The path to mount the component on.
+**options** | `Object` |
+**options.exact=true** | `Boolean` | Sets the `Route` exact property. See [React Router](https://reacttraining.com/react-router/web/api/Route/exact-bool). Defaults to true.
+**options.error** | `Number[]/Number` | Links one or more error codes to the component. Whenever a service method returns a matching error code, the client is redirect to the component.
 **...options** | | The remaining options are passed to the `Route` component.
 
 **Simple page example.** Mounts the component on `/`.
@@ -130,8 +130,8 @@ Injects an instance of `Class` in the target. In case the target is `React.Compo
 
 Argument | Type | Description
 ----------|------|-------------
-**Class** | *Class* | The Class of the instance to inject.
-**propertyName** | *String* | The name of the property the instance is injected to.
+**Class** | `Class` | The Class of the instance to inject.
+**propertyName** | `String` | The name of the property the instance is injected to.
 
 ```js
 class Foo {
@@ -156,6 +156,10 @@ Creates a basic MobX store: all properties are set as observables, getter functi
 
 #### `@style(classes)`
 Adds a JSS style to a `React.Component`.
+
+Argument | Type | Description
+----------|------|-------------
+**classes** | `Object/Function` | A classes object with key-values, or a function which takes a theme object and returns classes.
 
 **Simple example.**
 ```js
@@ -206,7 +210,7 @@ Sets the theme which is accessible in `@style`.
 
 Argument | Type | Description
 ----------|------|-------------
-**theme** | *Object* | A theme object with key-values.
+**theme** | `Object` | A theme object with key-values.
 
 **Example.** Set a theme and use it in `@style`.
 ```js
@@ -230,6 +234,45 @@ class MyComponent extends React.Component {
         );
     }
 }
+```
+
+#### `configureWebpack(type, reducer)`
+
+Extends the webpack config for the given type.
+
+Argument | Type | Description
+----------|------|-------------
+**type** | `String` | Either `client` or `server`.
+**reducer** | `Function` | A function which takes a config and returns a new config. You may mutate the existing config, just make sure you always return the config.
+
+**Example**
+```js
+configureWebpack(`client`, (config) => {
+    config.devtool = `source-map`;
+    return config;
+});
+```
+
+#### `addShims(type, moduleNames)`
+Configures which 3rd party modules should be shimmed. If type is set to client the modules will be shimmed in the client bundle. If type is set to server the modules will be shimmed on the server side.
+
+Some modules are only designed to work on either the client or the server side, but, in Node on Fire, all your code plus it's modules run on both the client and the server side. To ignore a module on a specific side, you can shim the module.
+
+The following modules are shimmed in the client bundle by default:
+- fsevents
+- koa
+- webpack
+- koa-webpack
+- dns
+
+Argument | Type | Description
+----------|------|-------------
+**type** | *String* | The type, or side, on which to shim. Either client or server.
+**moduleNames** | *String[]* | The module names to shim.
+
+**Example**
+```js
+addShims(`client`, [`foo`, `bar`]);
 ```
 
 #### `Route`
