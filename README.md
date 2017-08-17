@@ -275,6 +275,16 @@ Argument | Type | Description
 addShims(`client`, [`foo`, `bar`]);
 ```
 
+#### @observer
+Sets the target `React.Component` as a MobX observer. This happens already when you call `@component(path, options)` on a component.
+
+```js
+@observer
+class MyComponent extends React.Component {
+    //
+}
+```
+
 #### `Route`
 #### `Switch`
 #### `Link`
@@ -289,7 +299,6 @@ addShims(`client`, [`foo`, `bar`]);
 ## API (in development)
 - `@computed`
 - `@action`
-- `@observer`
 - `@observable`
 - `@model` creates a model.
 - `@worker` adds a worker process and allows to execute tasks over a message queue.

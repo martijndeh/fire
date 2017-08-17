@@ -1,9 +1,19 @@
 import React from 'react';
-import { observer } from 'mobx-react';
+import { observer as mobxObserver } from 'mobx-react';
 import { registerInjectProvider } from '../injector/index.js';
 
 // FIXME: Ideally we don't have module state like this.
 const components = {};
+
+export function observer(Class) {
+    if (!isComponent(Class)) {
+        throw new Error(`@observer must be called on a React.Component`);
+    }
+
+    const NewClass = mobxObserver(Class);
+    setComponent(Class, NewClass);
+    return NewClass;
+}
 
 export function getPathForErrorCode(errorCode) {
     const path = Object.keys(components).find((path) => {
@@ -33,7 +43,7 @@ export function setComponent(OldComponent, NewComponent) {
 
 registerInjectProvider((instance, propertyName, Class) => {
     if (isComponent(Class)) {
-        const ObserverComponent = observer(Class);
+        const ObserverComponent = mobxObserver(Class);
 
         class WrappedComponent extends React.Component {
             render() {
