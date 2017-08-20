@@ -71,6 +71,10 @@ function isEqualTable(fromTable, toTable) {
 }
 
 export default function createSql(from, to) {
+    console.log(`createSql`);
+    console.log(JSON.stringify(from.tables));
+    console.log(JSON.stringify(to.tables));
+
     const queries = [];
 
     getTables(to.tables).forEach((toTable) => {

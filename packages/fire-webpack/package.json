@@ -23,6 +23,7 @@
     "isomorphic-fetch": "^2.2.1",
     "webpack": "^3.5.3",
     "webpack-hot-middleware": "^2.18.2",
-    "webpack-node-externals": "^1.6.0"
+    "webpack-node-externals": "^1.6.0",
+    "lodash": "^4.17.4"
   }
 }

@@ -2,6 +2,7 @@ import minimist from 'minimist';
 import path from 'path';
 import build from './build/index.js';
 import start from './start/index.js';
+import release from './release/index.js';
 
 function main() {
     const argv = minimist(process.argv.slice(2));
@@ -23,12 +24,23 @@ function main() {
 
     const entry = path.join(process.cwd(), packageMain);
 
-    switch (topic) {
-        case `build`:
-            return build(entry);
+    try {
+        switch (topic) {
+            case `build`:
+                return build(entry);
 
-        case `start`:
-            return start(entry);
+            case `start`:
+                return start(entry);
+
+            case `release`:
+                return release(entry);
+        }
+    }
+    catch (e) {
+        console.log(`e`);
+        console.log(e);
+        console.log(e.stack);
+        throw e;
     }
 }
 

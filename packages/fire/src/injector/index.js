@@ -19,6 +19,8 @@ function getClassInstance(Class) {
     let instance = instancesMap.get(Class);
 
     if (!instance) {
+        console.log(`Create instance ${Class.name}`);
+
         instance = new Class();
         instancesMap.set(Class, instance);
     }
@@ -32,15 +34,23 @@ export function registerInjectProvider(injectProvider) {
 
 export function inject(Class, propertyName) {
     return (TargetClass) => {
+        console.log(`Inject class ${Class.name} into ${TargetClass.name}`);
+
         const instance = getClassInstance(Class);
+
+        console.log(`Created class instance of ${Class.name}. Inject!`);
 
         const NewClass = injectProviders.reduceRight((NewClass, injectProvider) => {
             return injectProvider(instance, propertyName, NewClass);
         }, TargetClass);
 
         if (NewClass === TargetClass) {
+            console.log(`Inject failed. Use default injector`);
+
             return defaultInjectProvider(instance, propertyName, TargetClass);
         }
+
+        console.log(`And return class ${NewClass.name}`);
 
         return NewClass;
     };

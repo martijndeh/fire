@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { ThemeProvider } from 'react-jss';
+import { jss, ThemeProvider } from 'react-jss';
+import normalize from 'jss-normalize';
 import createBrowserHistory from 'history/createBrowserHistory';
 import { Router, Route, Switch } from 'react-router-dom';
 import { getComponents } from '../component/index.js';
@@ -11,6 +12,9 @@ const history = createBrowserHistory();
 
 // This is a bit hacky but will do for now.
 setHistory(history);
+
+// TODO: Or should we use JssProvider and create our own jss instance?
+jss.createStyleSheet(normalize, { named: false }).attach();
 
 class App extends React.Component {
     render() {

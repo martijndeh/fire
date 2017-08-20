@@ -359,6 +359,28 @@ Configures the target service method to be a logout method.
 
 The logout method clears the authentication cookie.
 
+
+#### `@model`
+Configures the target class as a model which allows you to declare your schema. All changes to your schema are automatically written in migration files.
+
+```js
+@model
+class Account {
+    constructor(transaction) {
+        transaction.sql `CREATE TABLE account (
+            id SERIAL PRIMARY KEY,
+            first_name TEXT
+        )`;
+    }
+
+    static findByName(firstName) {
+        return sql `SELECT * FROM account WHERE first_name = ${firstName}`;
+    }
+}
+```
+
+In the build stage, the first migration is created with the schema of `account`. Now, whenever you change the schema, for example, add a `NOT NULL` clause to the `first_name` column, the second migration is automatically created.
+
 #### `Route`
 #### `Switch`
 #### `Link`

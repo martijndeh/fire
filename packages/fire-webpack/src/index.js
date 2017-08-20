@@ -10,13 +10,14 @@ import babelPresetReact from 'babel-preset-react';
 import babelPresetEnv from 'babel-preset-env';
 import babelPresetStage3 from 'babel-preset-stage-3';
 import babelPresetStage2 from 'babel-preset-stage-2';
-
-import webpack from './webpack.js';
+import { cloneDeep } from 'lodash';
+import webpack from 'webpack';
+import doWebpack from './webpack.js';
 
 const initialConfig = {
     entry: {},
     module: {
-        rules: [],
+        loaders: [],
     },
     target: null,
     output: null,
@@ -27,10 +28,13 @@ const initialConfig = {
 function addResolveAlias(shims) {
     return (config) => {
         const shimPath = path.join(__dirname, `shim.js`);
+
         config.resolve.alias = shims.reduce((alias, currentShim) => {
             alias[currentShim] = shimPath;
             return alias;
         }, {});
+
+        return config;
     };
 }
 
@@ -38,7 +42,7 @@ function addClientConfig(entry) {
     return (config) => {
         config.target = `web`;
         config.stats = `none`;
-        config.entry.client = {
+        config.entry = {
             client: [
                 `babel-polyfill`,
                 `webpack-hot-middleware/client`,
@@ -77,7 +81,20 @@ function addClientConfig(entry) {
             crypto: `empty`,
             path: `empty`,
         };
-
+        config.resolveLoader = {
+            modules: [
+                path.join(__dirname, `..`, `node_modules`),
+                path.join(process.cwd(), `node_modules`),
+                `node_modules`,
+            ],
+        };
+        config.resolve = {
+            modules: [
+                path.join(__dirname, `..`, `node_modules`),
+                path.join(process.cwd(), `node_modules`),
+                `node_modules`,
+            ],
+        };
         return config;
     };
 }
@@ -104,16 +121,30 @@ function addServerConfig(entry) {
                 NODE_ENV: process.env.NODE_ENV,
             }),
         ];
+        config.resolveLoader = {
+            modules: [
+                path.join(__dirname, `..`, `node_modules`),
+                path.join(process.cwd(), `node_modules`),
+                `node_modules`,
+            ],
+        };
+        config.resolve = {
+            modules: [
+                path.join(__dirname, `..`, `node_modules`),
+                path.join(process.cwd(), `node_modules`),
+                `node_modules`,
+            ],
+        };
         return config;
     };
 }
 
 function addBabelStripClassesPlugin(serviceNames) {
     return (config) => {
-        const rule = config.rules.find((rule) => rule.use.loader === `babel-loader`);
+        const loader = config.module.loaders.find((loader) => loader.loader === `babel-loader`);
 
-        if (rule) {
-            rule.loader.options.plugins.splice(0, 0, [babelPluginTransformStripClasses, {
+        if (loader) {
+            loader.options.plugins.splice(0, 0, [babelPluginTransformStripClasses, {
                 classes: serviceNames,
             }]);
         }
@@ -124,24 +155,22 @@ function addBabelStripClassesPlugin(serviceNames) {
 
 function addBabelLoader(babelPresetEnvOptions = {}) {
     return (config) => {
-        config.rules.push({
+        config.module.loaders.push({
             test: /.js$/,
             exclude: /node_modules/,
-            use: {
-                loader: `babel-loader`,
-                options: {
-                    presets: [
-                        babelPresetFlow,
-                        babelPresetReact,
-                        [babelPresetEnv, babelPresetEnvOptions],
-                        babelPresetStage3,
-                        babelPresetStage2,
-                    ],
-                    plugins: [
-                        babelPluginTransformDecoratorsLegacy,
-                        babelPluginTransformRuntime,
-                    ],
-                },
+            loader: `babel-loader`,
+            options: {
+                presets: [
+                    babelPresetFlow,
+                    babelPresetReact,
+                    [babelPresetEnv, babelPresetEnvOptions],
+                    babelPresetStage3,
+                    babelPresetStage2,
+                ],
+                plugins: [
+                    babelPluginTransformDecoratorsLegacy,
+                    babelPluginTransformRuntime,
+                ],
             },
         });
         return config;
@@ -157,6 +186,9 @@ const shimsInClient = [
     `webpack`,
     `koa-webpack`,
     `dns`,
+    `lego-sql`,
+    `babel-core`,
+    `babel-preset-env`,
 ];
 const shimsInServer = [];
 
@@ -185,7 +217,10 @@ export function configureWebpack(type, reducer) {
 }
 
 function createWebpackConfig(reducers) {
-    return reducers.reduce((config, reducer) => reducer(config), Object.assign({}, initialConfig));
+    return reducers.reduce((config, reducer) => {
+        const nextConfig = reducer(config);
+        return nextConfig;
+    }, cloneDeep(initialConfig));
 }
 
 export function createServerBundle(entry) {
@@ -197,7 +232,10 @@ export function createServerBundle(entry) {
     ];
     const webpackConfig = createWebpackConfig(allReducers);
 
-    return webpack(webpackConfig);
+    console.log(`createServerBundle`);
+    console.log(webpackConfig);
+
+    return doWebpack(webpackConfig);
 }
 
 export function createClientCompiler(entry, serviceNames) {
@@ -205,7 +243,7 @@ export function createClientCompiler(entry, serviceNames) {
         addClientConfig(entry),
         addBabelLoader({
             exclude: [
-                `transform-es2015-classes`,
+                // `transform-es2015-classes`,
             ],
         }),
         addBabelStripClassesPlugin(serviceNames),
@@ -213,6 +251,9 @@ export function createClientCompiler(entry, serviceNames) {
         ...clientReducers,
     ];
     const webpackConfig = createWebpackConfig(allReducers);
+
+    console.log(`createClientCompiler`);
+    console.log(JSON.stringify(webpackConfig, null, 2));
 
     return webpack(webpackConfig);
 }

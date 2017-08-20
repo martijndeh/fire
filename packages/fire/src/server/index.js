@@ -9,7 +9,7 @@ export {
     addShims,
 };
 
-export default function createServer(entry) {
+export default async function createServer(entry) {
     const app = new Koa();
     const serviceNames = getServiceNames();
     const compiler = createClientCompiler(entry, serviceNames);
@@ -41,14 +41,18 @@ export default function createServer(entry) {
             await next();
         }
     });
+
+    console.log(`Compiler is`);
+    console.log(compiler);
+
     app.use(webpackMiddleware({
 		compiler,
         dev: {
-            noInfo: true,
+            // noInfo: true,
             stats: {
                 colors: false,
             },
-            quiet: true,
+            // quiet: true,
         },
         hot: {
             noInfo: true,
@@ -66,10 +70,9 @@ export default function createServer(entry) {
         <head>
           <title></title>
         </head>
-        <body>
-          <div id="root"></div>
-          <script src="/client.js"></script>
+        <body id="root">
         </body>
+        <script src="/client.js"></script>
         </html>`;
     });
 	app.listen(3000);

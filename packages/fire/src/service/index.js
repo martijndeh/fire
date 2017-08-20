@@ -30,8 +30,16 @@ function getPropertyNames(Service) {
 
 export default function service(Service) {
     if (isServer()) {
-        setService(Service.displayName || Service.name, Service);
-        return Service;
+        class ServerService extends Service {
+            constructor(context) {
+                super();
+
+                this.context = context;
+            }
+        }
+        ServerService.displayName = Service.displayName || Service.name;
+        setService(ServerService.displayName, ServerService);
+        return ServerService;
     }
 
     return class ClientService {
@@ -40,52 +48,16 @@ export default function service(Service) {
             const propertyNames = getPropertyNames(Service);
 
             function createFetch(propertyName) {
-                return async (...args) => {
-                    try {
-                        const response = await fetch(`/_api?method=${serviceName}.${propertyName}`, {
-                            method: `POST`,
-                            body: JSON.stringify(args),
-                            headers: {
-                                'Content-Type': `application/json`,
-                                'X-Token': token,
-                            },
-                        });
-                        const json = await response.json();
-
-                        if (response.ok) {
-                            if (json) {
-                                if (json.redirect) {
-                                    const search = history.location.search.substring(1);
-                                    const redirect = (search.split(`&`).find((key) => key.indexOf(`redirect=`) === 0) || ``).substring(9) || `/`;
-
-                                    history.replace(redirect);
-                                }
-                            }
-
-                            return json.result;
-                        }
-                        else {
-                            if (response.status === 401 || response.status === 403) {
-                                const path = getPathForErrorCode(response.status);
-
-                                if (path) {
-                                    // TODO: encodeURIComponent?
-                                    history.replace(`${path}?redirect=${history.location.pathname}`);
-                                }
-                                else {
-                                    // console.log(`Warning: could not find component for error code ${response.status}`);
-                                }
-                            }
-
-                            throw new Error(json);
-                        }
-                    }
-                    catch (e) {
-                        //
-                    }
-
-                    return [];
-                }
+                return (...args) => {
+                    return fetch(`/_api?method=${serviceName}.${propertyName}`, {
+                        credentials: `same-origin`,
+                        method: `POST`,
+                        body: JSON.stringify(args),
+                        headers: {
+                            'Content-Type': `application/json`,
+                        },
+                    });
+                };
             }
 
             propertyNames.forEach((propertyName) => {

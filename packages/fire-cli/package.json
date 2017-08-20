@@ -12,8 +12,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "4.0.0",
     "fire": "^0.48.0",
     "fire-webpack": "^0.48.0",
+    "sql-models": "^0.48.0",
     "minimist": "^1.2.0",
     "rimraf": "^2.6.1"
   }

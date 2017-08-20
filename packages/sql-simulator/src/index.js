@@ -1,9 +1,13 @@
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp, cloneDeep } from 'lodash';
 
 export default class Simulator {
-    constructor() {
+    constructor(simulator) {
         this.tables = {};
         this.input = null;
+
+        if (simulator) {
+            this.tables = cloneDeep(simulator.tables);
+        }
     }
 
     findByRegExp(regexp) {
@@ -29,7 +33,7 @@ export default class Simulator {
     }
 
     findToken(expectedTokens) {
-        const regexp = new RegExp(`^(${expectedTokens.map((token) => escapeRegExp(token)).join(`|`)})(\\b|\\s|$)`, `i`);
+        const regexp = new RegExp(`^(${expectedTokens.map((token) => escapeRegExp(token)).join(`|`)})(\\b|\\s|$|,)`, `i`);
         return this.findByRegExp(regexp);
     }
 
@@ -565,11 +569,15 @@ export default class Simulator {
 
         table.name = this.getIdentifier();
 
+        console.log(`table.name = ${table.name}`);
+
         this.scope(() => {
             this.repeat(() => {
                 const column = this.getColumn();
 
                 table.columns[column.name] = column;
+
+                console.log(`Created column ${column.name}`);
 
                 return this.findToken([`,`]);
             });
@@ -582,6 +590,9 @@ export default class Simulator {
     }
 
     simulateQuery(sql) {
+        console.log(`simulateQuery`);
+        console.log(sql);
+
         this.input = sql.replace(/^\s+/, ``);
 
         const token = this.getToken([`CREATE`, `ALTER`, `DROP`]);

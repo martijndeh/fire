@@ -56,7 +56,8 @@ class MyStore {
     }
 
     async loadItems() {
-        this.items = await this.myService.getItems();
+        const response = await this.myService.getItems();
+        this.items = await response.json();
     }
 }
 

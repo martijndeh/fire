@@ -1,9 +1,19 @@
 import { extendObservable, computed } from 'mobx';
 
 export default function store(Store) {
+    console.log(`@store ${Store.name}`);
+    console.log(Store);
+    console.log(new Store());
+
     class MagicStore extends Store {
         constructor() {
             super();
+
+            if (!(this instanceof MagicStore)) {
+                return new MagicStore();
+            }
+
+            console.log(`In MagicStore construct`);
 
             // TODO: Move this to the decorator.
             let items = Object.getOwnPropertyNames(this).reduce((items, propertyName) => {
@@ -47,7 +57,10 @@ export default function store(Store) {
             // TODO: Find all the functions. Both instance and static. Set them as action?
         }
     }
-    MagicStore.OriginalClass = Store.OriginalStore || Store;
+    MagicStore.OriginalClass = Store.OriginalClass || Store;
     MagicStore.displayName = Store.displayName || Store.name;
+
+    console.log(`Try to create magic store:`);
+    console.log(new MagicStore());
     return MagicStore;
 }

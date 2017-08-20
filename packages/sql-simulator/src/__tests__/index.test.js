@@ -282,6 +282,41 @@ describe(`Simulator`, () => {
 
             simulate(query, tables);
         });
+
+        it(`should create table with column with multiple columns and a references constraint`, () => {
+            const query = `CREATE TABLE account_token (
+                account_id UUID NOT NULL REFERENCES account (id),
+                local_token TEXT NOT NULL
+            )`;
+
+            const tables = {
+                account_token: {
+                    name: `account_token`,
+                    columns: {
+                        account_id: {
+                            dataType: `UUID`,
+                            name: `account_id`,
+                            constraints: {
+                                notNull: {},
+                                references: {
+                                    tableName: `account`,
+                                    columnName: `id`,
+                                },
+                            },
+                        },
+                        local_token: {
+                            dataType: `TEXT`,
+                            name: `local_token`,
+                            constraints: {
+                                notNull: {},
+                            },
+                        },
+                    },
+                },
+            };
+
+            simulate(query, tables);
+        });
     });
 
     describe(`ALTER TABLE`, () => {

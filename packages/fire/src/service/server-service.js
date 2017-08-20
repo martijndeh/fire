@@ -71,11 +71,16 @@ export function logout(target, key) {
 async function getPayloadFromContext(context) {
     try {
         const token = context.cookies.get(`t`);
-        return getPayload(token);
+
+        if (token) {
+            return getPayload(token);
+        }
     }
     catch (e) {
-        return null;
+        //
     }
+
+    return null;
 }
 
 export async function isAllowed(service, methodName, context) {
@@ -100,6 +105,8 @@ export async function isAllowed(service, methodName, context) {
             return results.every((result) => result === true);
         }
         catch (e) {
+            console.log(`exception in not allowed`);
+            console.log(e);
             context.throw(401);
         }
     }
@@ -110,8 +117,11 @@ export async function isAllowed(service, methodName, context) {
 export default async function callServerService(Service, methodName, context) {
     const service = new Service(context);
 
+    console.log(`callServerService`);
+
     const allowed = await isAllowed(service, methodName, context);
     if (!allowed) {
+        console.log(`not allowed!`);
         context.throw(401);
         return;
     }
@@ -119,15 +129,20 @@ export default async function callServerService(Service, methodName, context) {
     // TODO: Check if this is a logout.
 
     try {
+        console.log(`Going to call method`);
+
         const args = context.request.body;
-        const json = service[methodName](...args);
+        const json = await Promise.resolve(service[methodName](...args));
+
+        console.log(`Finished method, next!`);
+        console.log(json);
 
         const body = {
             result: json,
         };
 
         const handlers = {
-            login: async (body) => {
+            login: async () => {
                 // TODO: It should be possible to pass a
                 const payload = json && { id: json.id };
 
@@ -137,20 +152,17 @@ export default async function callServerService(Service, methodName, context) {
                 context.cookies.set(`t`, token, {
                     httpOnly: true,
                 });
-
-                body.redirect = `/`;
-                return body;
             },
 
-            logout: async (body) => {
+            logout: async () => {
                 context.cookies.set(`t`);
-                body.redirect = `/`;
-                return body;
             },
-        }
+        };
+
+        console.log(`Checking handlers`);
 
         const methodHandlers = service[handlersSymbol] && service[handlersSymbol][methodName];
-        if (methodHandlers.length > 0) {
+        if (methodHandlers && methodHandlers.length > 0) {
             await Promise.all(methodHandlers.map((methodHandler) => {
                 const handler = handlers[methodHandler.type];
 
@@ -158,10 +170,15 @@ export default async function callServerService(Service, methodName, context) {
             }));
         }
 
+        console.log(`Set context type`);
+
         context.type = `json`;
         context.body = JSON.stringify(body);
     }
     catch (e) {
+        console.log(`error?!`);
+        console.log(e);
+
         // TODO: Error!
         context.throw(501);
     }
