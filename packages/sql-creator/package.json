@@ -1,6 +1,6 @@
 {
   "name": "sql-creator",
-  "version": "0.48.0",
+  "version": "0.49.0",
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
@@ -10,6 +10,6 @@
   "license": "MIT",
   "devDependencies": {
     "lodash": "^4.17.4",
-    "sql-simulator": "^0.48.0"
+    "sql-simulator": "^0.49.0"
   }
 }
