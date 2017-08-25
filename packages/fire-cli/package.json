@@ -1,6 +1,6 @@
 {
   "name": "fire-cli",
-  "version": "0.49.0",
+  "version": "0.50.0",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -13,10 +13,10 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "4.0.0",
-    "fire": "^0.49.0",
-    "fire-webpack": "^0.49.0",
+    "fire": "^0.50.0",
+    "fire-webpack": "^0.50.0",
     "minimist": "^1.2.0",
     "rimraf": "^2.6.1",
-    "sql-models": "^0.49.0"
+    "sql-models": "^0.50.0"
   }
 }
