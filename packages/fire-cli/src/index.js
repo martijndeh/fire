@@ -25,6 +25,8 @@ function main() {
     const entry = path.join(process.cwd(), packageMain);
 
     try {
+        process.env.FIRE_STAGE = topic;
+
         switch (topic) {
             case `build`:
                 return build(entry);

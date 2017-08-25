@@ -18,12 +18,16 @@ const transaction = Lego.transaction;
 const parse = Lego.parse;
 const raw = Lego.raw;
 
+function isRunning() {
+    return !process.env.FIRE_STAGE || process.env.FIRE_STAGE === `start`;
+}
+
 function isClient() {
-    return (typeof window !== `undefined`);
+    return isRunning() && typeof window !== `undefined`;
 }
 
 function isServer() {
-    return !isClient();
+    return isRunning() && !isClient();
 }
 
 export {
