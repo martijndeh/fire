@@ -5,6 +5,7 @@ import babelPresetEnv from 'babel-preset-env';
 import fs from 'fs';
 import Simulator from 'sql-simulator';
 import createSql from 'sql-creator';
+import Lego from 'lego-sql';
 
 import { zeroPad, createDirectory, getMigrationFileNames, getCurrentVersion, writeMigration, createMigrationContents } from './migrations.js';
 import { getDatabaseVersion, createMigrationsTable, insertMigration } from './release.js';
@@ -30,7 +31,7 @@ export async function runMigrations() {
 
         const migrationsBuildPath = path.join(process.cwd(), `.build`, `migrations`);
 
-        await transaction(async (trans) => {
+        await Lego.transaction(async (trans) => {
             for (let version = databaseVersion + 1; version <= currentVersion; version++) {
                 const migration = require(path.join(migrationsBuildPath, `${zeroPad(version, 100)}.js`));
 
@@ -81,6 +82,8 @@ export async function createMigrations() {
     modelClasses.forEach((Model) => {
         const transaction = {
             sql(strings) {
+                // TODO: How to handle queries with parameters?
+
                 toSimulator.simulateQuery(strings[0]);
             }
         }
@@ -99,5 +102,10 @@ export async function createMigrations() {
         const contents = createMigrationContents(upQueries, downQueries);
 
         await writeMigration(currentVersion + 1, contents);
+
+        const transform = babel.transform(contents, {
+            presets: [babelPresetEnv],
+        });
+        fs.writeFileSync(path.join(migrationsBuildPath, `${zeroPad(currentVersion + 1, 100)}.js`), transform.code);
     }
 }
