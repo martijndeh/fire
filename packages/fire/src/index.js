@@ -1,4 +1,5 @@
 import classNames from 'classnames';
+import check from 'type-check-system';
 import { configureWebpack, addShims } from 'fire-webpack';
 import Lego from 'lego-sql';
 import model from 'sql-models';
@@ -34,6 +35,7 @@ function isServer() {
 export {
     addShims,
     allow,
+    check,
     classNames,
     component,
     configureWebpack,
