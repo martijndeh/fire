@@ -67,21 +67,17 @@ function isEqualColumn(fromColumn, toColumn, includeCheckConstraint) {
 }
 
 function isEqualTable(fromTable, toTable) {
-    return getColumns(fromTable).every((fromColumn) => isEqualColumn(fromColumn, toTable.columns[fromColumn.name], true));
+    return Object.keys(fromTable.columns).length === Object.keys(toTable.columns).length &&
+        getColumns(fromTable).every((fromColumn) => isEqualColumn(fromColumn, toTable.columns[fromColumn.name], true));
 }
 
 export default function createSql(from, to) {
-    console.log(`createSql`);
-    console.log(JSON.stringify(from.tables));
-    console.log(JSON.stringify(to.tables));
-
     const queries = [];
 
     getTables(to.tables).forEach((toTable) => {
         const fromTable = from.tables[toTable.name];
 
         if (!fromTable) {
-            // TODO: Check if this was a rename.
             const tables = getTables(from.tables).filter((fromTable) => isEqualTable(fromTable, toTable));
             if (tables.length === 1) {
                 const table = tables[0];
