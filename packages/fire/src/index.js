@@ -11,6 +11,7 @@ import { inject, registerInjectProvider } from './injector/index.js';
 import createServer from './server/index.js';
 import { allow, deny, login } from './service/server-service.js';
 import { style, setTheme } from './style/index.js';
+import worker from './worker/index.js';
 
 const sql = Lego.sql;
 const transaction = Lego.transaction;
@@ -52,4 +53,5 @@ export {
     style,
     Switch,
     transaction,
+    worker,
 };
