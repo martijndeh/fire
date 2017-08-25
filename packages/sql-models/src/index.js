@@ -87,7 +87,7 @@ export async function createMigrations() {
                 toSimulator.simulateQuery(strings[0]);
             }
         }
-        new Model(transaction);
+        Model.create(transaction);
     });
 
     const fromSimulatorDown = new Simulator(fromSimulator);

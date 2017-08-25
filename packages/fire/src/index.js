@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { configureWebpack, addShims } from 'fire-webpack';
 import Lego from 'lego-sql';
 import model from 'sql-models';
+import Model from './model/index.js';
 import { Link, Route, Switch } from 'react-router-dom';
 import React from 'react';
 import component, { observer } from './component/index.js';
@@ -44,6 +45,7 @@ export {
     Link,
     login,
     model,
+    Model,
     observer,
     parse,
     raw,
