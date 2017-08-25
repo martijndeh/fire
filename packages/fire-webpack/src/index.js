@@ -235,9 +235,6 @@ export function createServerBundle(entry) {
     ];
     const webpackConfig = createWebpackConfig(allReducers);
 
-    console.log(`createServerBundle`);
-    console.log(webpackConfig);
-
     return doWebpack(webpackConfig);
 }
 
@@ -255,8 +252,7 @@ export function createClientCompiler(entry, serviceNames) {
     ];
     const webpackConfig = createWebpackConfig(allReducers);
 
-    console.log(`createClientCompiler`);
-    console.log(JSON.stringify(webpackConfig, null, 2));
+    //
 
     return webpack(webpackConfig);
 }

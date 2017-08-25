@@ -41,7 +41,5 @@ export async function createMigrationsTable() {
 }
 
 export function insertMigration(version) {
-    console.log(`insert migration ${version}`);
-
     return Lego.sql `INSERT INTO lego.migrations (version) VALUES (${version})`;
 }

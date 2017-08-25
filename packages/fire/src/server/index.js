@@ -41,10 +41,6 @@ export default async function createServer(entry) {
             await next();
         }
     });
-
-    console.log(`Compiler is`);
-    console.log(compiler);
-
     app.use(webpackMiddleware({
 		compiler,
         dev: {
