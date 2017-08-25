@@ -1,12 +1,7 @@
 import { isServer } from '..';
-import { getPathForErrorCode } from '../component/index.js';
+import { getPayload } from './jwt/index.js';
 
 const services = {};
-let history = null;
-
-export function setHistory(currentHistory) {
-    history = currentHistory;
-}
 
 export function getServiceNames() {
     return Object.keys(services);
@@ -28,18 +23,31 @@ function getPropertyNames(Service) {
     return Object.getOwnPropertyNames(prototype).filter((propertyName) => propertyName !== `constructor`);
 }
 
-export default function service(Service) {
-    if (isServer()) {
-        class ServerService extends Service {
-            constructor(context) {
-                super();
+export class Service {
+    constructor(context) {
+        this.context = context;
+    }
 
-                this.context = context;
+    getPayload() {
+        try {
+            const token = this.context.cookies.get(`t`);
+
+            if (token) {
+                return getPayload(token);
             }
         }
-        ServerService.displayName = Service.displayName || Service.name;
-        setService(ServerService.displayName, ServerService);
-        return ServerService;
+        catch (e) {
+            //
+        }
+
+        return null;
+    }
+}
+
+export default function service(Service) {
+    if (isServer()) {
+        setService(Service.name, Service);
+        return Service;
     }
 
     return class ClientService {

@@ -117,11 +117,8 @@ export async function isAllowed(service, methodName, context) {
 export default async function callServerService(Service, methodName, context) {
     const service = new Service(context);
 
-    console.log(`callServerService`);
-
     const allowed = await isAllowed(service, methodName, context);
     if (!allowed) {
-        console.log(`not allowed!`);
         context.throw(401);
         return;
     }
@@ -129,22 +126,13 @@ export default async function callServerService(Service, methodName, context) {
     // TODO: Check if this is a logout.
 
     try {
-        console.log(`Going to call method`);
-
         const args = context.request.body;
-        const json = await Promise.resolve(service[methodName](...args));
-
-        console.log(`Finished method, next!`);
-        console.log(json);
-
-        const body = {
-            result: json,
-        };
+        const body = await Promise.resolve(service[methodName](...args));
 
         const handlers = {
-            login: async () => {
+            login: async (body) => {
                 // TODO: It should be possible to pass a
-                const payload = json && { id: json.id };
+                const payload = body && { id: body.id };
 
                 // TODO: Also add the ip and user agent to the payload.
 
@@ -159,8 +147,6 @@ export default async function callServerService(Service, methodName, context) {
             },
         };
 
-        console.log(`Checking handlers`);
-
         const methodHandlers = service[handlersSymbol] && service[handlersSymbol][methodName];
         if (methodHandlers && methodHandlers.length > 0) {
             await Promise.all(methodHandlers.map((methodHandler) => {
@@ -169,8 +155,6 @@ export default async function callServerService(Service, methodName, context) {
                 return handler(body);
             }));
         }
-
-        console.log(`Set context type`);
 
         context.type = `json`;
         context.body = JSON.stringify(body);

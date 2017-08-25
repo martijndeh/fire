@@ -7,7 +7,7 @@ import Model from './model/index.js';
 import { Link, Route, Switch } from 'react-router-dom';
 import React from 'react';
 import component, { observer } from './component/index.js';
-import service from './service/index.js';
+import service, { Service } from './service/index.js';
 import store from './store/index.js';
 import { inject, registerInjectProvider } from './injector/index.js';
 import createServer from './server/index.js';
@@ -55,6 +55,7 @@ export {
     registerInjectProvider,
     Route,
     service,
+    Service,
     setTheme,
     sql,
     store,

@@ -5,13 +5,9 @@ import normalize from 'jss-normalize';
 import createBrowserHistory from 'history/createBrowserHistory';
 import { Router, Route, Switch } from 'react-router-dom';
 import { getComponents } from '../component/index.js';
-import { setHistory } from '../service/index.js';
 import { getTheme } from '../style/index.js';
 
 const history = createBrowserHistory();
-
-// This is a bit hacky but will do for now.
-setHistory(history);
 
 // TODO: Or should we use JssProvider and create our own jss instance?
 jss.createStyleSheet(normalize, { named: false }).attach();
