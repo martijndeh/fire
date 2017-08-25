@@ -109,6 +109,9 @@ function addServerConfig(entry) {
                 entry,
             ],
         };
+        config.node = {
+            __dirname: false,
+        };
         config.output = {
             publicPath: `/`,
             path: path.join(process.cwd(), `.build`),
