@@ -569,15 +569,11 @@ export default class Simulator {
 
         table.name = this.getIdentifier();
 
-        console.log(`table.name = ${table.name}`);
-
         this.scope(() => {
             this.repeat(() => {
                 const column = this.getColumn();
 
                 table.columns[column.name] = column;
-
-                console.log(`Created column ${column.name}`);
 
                 return this.findToken([`,`]);
             });
@@ -590,9 +586,6 @@ export default class Simulator {
     }
 
     simulateQuery(sql) {
-        console.log(`simulateQuery`);
-        console.log(sql);
-
         this.input = sql.replace(/^\s+/, ``);
 
         const token = this.getToken([`CREATE`, `ALTER`, `DROP`]);
