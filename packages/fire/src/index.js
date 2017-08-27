@@ -5,7 +5,7 @@ import { configureWebpack, addShims } from 'fire-webpack';
 import Lego from 'lego-sql';
 import model from 'sql-models';
 import Model from './model/index.js';
-import { Link, Route, Switch } from 'react-router-dom';
+import { Link, Route, Switch, Redirect } from 'react-router-dom';
 import React from 'react';
 import component, { observer } from './component/index.js';
 import service, { Service } from './service/index.js';
@@ -54,6 +54,7 @@ export {
     parse,
     raw,
     React,
+    Redirect,
     registerInjectProvider,
     Route,
     service,
