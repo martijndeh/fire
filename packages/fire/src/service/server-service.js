@@ -117,6 +117,10 @@ export async function isAllowed(service, methodName, context) {
 export default async function callServerService(Service, methodName, context) {
     const service = new Service(context);
 
+    // TODO: Passing properties through the constructor isn't working correctly because of the
+    // higher order components.
+    service.context = context;
+
     const allowed = await isAllowed(service, methodName, context);
     if (!allowed) {
         context.throw(401);
