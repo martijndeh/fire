@@ -20,10 +20,12 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "babel-preset-stage-3": "^6.24.1",
+    "glob": "^7.1.2",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.4",
     "webpack": "^3.5.3",
     "webpack-hot-middleware": "^2.18.2",
-    "webpack-node-externals": "^1.6.0"
+    "webpack-node-externals": "^1.6.0",
+    "write": "^1.0.3"
   }
 }

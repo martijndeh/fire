@@ -1,5 +1,9 @@
 import path from 'path';
+import fs from 'fs';
+import glob from 'glob';
+import writeFile from 'write';
 
+import { transformFileSync } from 'babel-core';
 import nodeExternals from 'webpack-node-externals';
 import babelPluginTransformStripClasses from 'babel-plugin-transform-strip-classes';
 import babelPluginTransformDecoratorsLegacy from 'babel-plugin-transform-decorators-legacy';
@@ -24,6 +28,36 @@ const initialConfig = {
     plugins: [],
     resolve: {},
 };
+
+export function createLib() {
+    const files = glob.sync(`**/*.js`, {
+        cwd: path.join(process.cwd(), `src`),
+    });
+
+    const options = {
+        sourceMaps: `both`,
+        presets: [
+            babelPresetFlow,
+            babelPresetReact,
+            babelPresetEnv,
+            babelPresetStage3,
+            babelPresetStage2,
+        ],
+        plugins: [
+            babelPluginTransformDecoratorsLegacy,
+            babelPluginTransformRuntime,
+        ],
+    };
+    files.forEach((file) => {
+        const {
+            code,
+            map,
+        } = transformFileSync(path.join(process.cwd(), `src`, file), options);
+
+        writeFile.sync(path.join(process.cwd(), `.build`, `lib`, file), code);
+        writeFile.sync(path.join(process.cwd(), `.build`, `lib`, `${file}.map`), JSON.stringify(map));
+    });
+}
 
 function addResolveAlias(shims) {
     return (config) => {
@@ -69,7 +103,7 @@ function addClientConfig(entry) {
         config.node = {
             console: false,
             global: true,
-            process: true,
+            process: `mock`,
             __filename: `mock`,
             __dirname: `mock`,
             Buffer: true,
