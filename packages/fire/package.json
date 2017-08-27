@@ -1,6 +1,6 @@
 {
   "name": "fire",
-  "version": "0.50.1",
+  "version": "0.51.0",
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "dependencies": {
     "aws-sdk": "^2.103.0",
     "classnames": "^2.2.5",
-    "fire-webpack": "^0.50.1",
+    "fire-webpack": "^0.51.0",
     "history": "^4.6.3",
     "jsonwebtoken": "^7.4.2",
     "jss-normalize": "^2.0.0",
@@ -26,7 +26,7 @@
     "react-dom": "^15.6.1",
     "react-jss": "^7.0.2",
     "react-router-dom": "^4.1.2",
-    "sql-models": "^0.50.1",
+    "sql-models": "^0.51.0",
     "type-check-system": "^2.0.0"
   }
 }

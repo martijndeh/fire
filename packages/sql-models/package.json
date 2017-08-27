@@ -1,6 +1,6 @@
 {
   "name": "sql-models",
-  "version": "0.50.1",
+  "version": "0.51.0",
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "babel-core": "^6.26.0",
     "babel-preset-env": "1.6.0",
     "lego-sql": "^4.0.0",
-    "sql-creator": "^0.50.0",
+    "sql-creator": "^0.51.0",
     "sql-simulator": "^0.50.0"
   }
 }
