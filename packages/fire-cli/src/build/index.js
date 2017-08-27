@@ -1,4 +1,4 @@
-import { createServerBundle } from 'fire-webpack';
+import { createServerBundle, createLib } from 'fire-webpack';
 import rimraf from 'rimraf';
 import { createMigrations } from 'sql-models';
 
@@ -10,5 +10,7 @@ export default async function build(entry: string) {
 
     await createServerBundle(entry);
 
-    createMigrations();
+    await createLib(entry);
+
+    await createMigrations();
 }

@@ -29,13 +29,13 @@ function main() {
 
         switch (topic) {
             case `build`:
-                return build(entry);
+                return build(entry, argv);
 
             case `start`:
-                return start(entry);
+                return start(entry, argv);
 
             case `release`:
-                return release(entry);
+                return release(entry, argv);
         }
     }
     catch (e) {
