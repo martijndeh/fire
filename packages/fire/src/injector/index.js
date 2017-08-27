@@ -3,8 +3,8 @@ const injectProviders = [];
 
 function defaultInjectProvider(instance, propertyName, Class) {
     class ClassWrapper extends Class {
-        constructor() {
-            super();
+        constructor(...args) {
+            super(...args);
 
             this[propertyName] = instance;
         }
