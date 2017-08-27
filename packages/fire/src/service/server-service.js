@@ -156,8 +156,15 @@ export default async function callServerService(Service, methodName, context) {
             }));
         }
 
-        context.type = `json`;
-        context.body = JSON.stringify(body);
+        // TODO: Check if we did a redirect?
+
+        if (typeof body !== `undefined`) {
+            context.type = `json`;
+            context.body = JSON.stringify(body);
+        }
+        else {
+            // If the body is undefined, we assume the user handled the context directly.
+        }
     }
     catch (e) {
         console.log(`error?!`);
