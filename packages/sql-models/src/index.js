@@ -77,7 +77,15 @@ export async function createMigrations() {
     });
 
     // Load the models.
-    require(path.join(process.cwd(), `.build`, `server.js`));
+    try {
+        require(path.join(process.cwd(), `.build`, `server.js`));
+    }
+    catch (e) {
+        console.log(e);
+        console.log(e.stack);
+
+        throw e;
+    }
 
     modelClasses.forEach((Model) => {
         const transaction = {
