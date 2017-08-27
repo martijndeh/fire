@@ -41,8 +41,6 @@ export async function getPayload(token) {
         maxAge: `14d`,
     });
 
-    //
-
     return decoded;
 }
 

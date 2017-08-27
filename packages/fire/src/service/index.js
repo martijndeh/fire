@@ -15,10 +15,10 @@ export function setService(serviceName, Service) {
     services[serviceName] = Service;
 }
 
-function getPropertyNames(Service) {
-    const prototype = Service.OriginalComponent
-        ? Service.OriginalComponent.prototype
-        : Service.prototype;
+function getPropertyNames(UserService) {
+    const prototype = UserService.OriginalClass
+        ? UserService.OriginalClass.prototype
+        : UserService.prototype;
 
     return Object.getOwnPropertyNames(prototype).filter((propertyName) => propertyName !== `constructor`);
 }
@@ -37,23 +37,23 @@ export class Service {
             }
         }
         catch (e) {
-            //
+            console.log(e);
         }
 
         return null;
     }
 }
 
-export default function service(Service) {
+export default function service(UserService) {
     if (isServer()) {
-        setService(Service.name, Service);
-        return Service;
+        setService(UserService.displayName || UserService.name, UserService);
+        return UserService;
     }
 
     return class ClientService {
         constructor() {
-            const serviceName = Service.displayName || Service.name;
-            const propertyNames = getPropertyNames(Service);
+            const serviceName = UserService.displayName || UserService.name;
+            const propertyNames = getPropertyNames(UserService);
 
             function createFetch(propertyName) {
                 return (...args) => {

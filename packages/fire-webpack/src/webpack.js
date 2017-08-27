@@ -9,8 +9,6 @@ export default function fireWebpack(config) {
                 reject(error);
             }
             else {
-                console.log(stats);
-
                 resolve(stats);
             }
         });
