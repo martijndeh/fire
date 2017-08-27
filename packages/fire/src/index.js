@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import check from 'type-check-system';
+import fetch from 'node-fetch';
 import { configureWebpack, addShims } from 'fire-webpack';
 import Lego from 'lego-sql';
 import model from 'sql-models';
@@ -41,6 +42,7 @@ export {
     configureWebpack,
     createServer,
     deny,
+    fetch,
     inject,
     isClient,
     isServer,
