@@ -39,7 +39,8 @@ class MyStore {
     items = [];
 
     loadItems() {
-        this.items = await this.myService.loadItems();
+        const response = await this.myService.loadItems();
+        this.items = await response.json();
     }
 }
 
@@ -73,6 +74,8 @@ give you everything you need until your first 100,000 users.
 
 #### `@component(path, options)`
 Add the target `React.Component` to a `Route` with `path`.
+
+This is a convenience decorator. You can also render `Route` components directly.
 
 Argument | Type | Description
 ----------|------|-------------
@@ -365,8 +368,8 @@ Configures the target class as a model which allows you to declare your schema. 
 
 ```js
 @model
-class Account {
-    constructor(transaction) {
+class Account extends Model {
+    static create(transaction) {
         transaction.sql `CREATE TABLE account (
             id SERIAL PRIMARY KEY,
             first_name TEXT
@@ -374,12 +377,27 @@ class Account {
     }
 
     static findByName(firstName) {
-        return sql `SELECT * FROM account WHERE first_name = ${firstName}`;
+        return this.sql `SELECT * FROM account WHERE first_name = ${firstName}`;
     }
 }
 ```
 
 In the build stage, the first migration is created with the schema of `account`. Now, whenever you change the schema, for example, add a `NOT NULL` clause to the `first_name` column, the second migration is automatically created.
+
+#### `Model`
+The base class for your models.
+
+#### `@worker(queueUrl)`
+Creates a worker class on the server.Allows you to transparently execute tasks in a different processes. When you execute a worker method, a message is posted over the internal queue. Currently only AWS SQS is supported, but the idea is to support more queues.
+
+```js
+@worker(process.env.MY_WORKER_QUEUE_URL)
+class MyWorker {
+    doWork(test) {
+        // This is executed on another process.
+    }
+}
+```
 
 #### `Route`
 #### `Switch`
