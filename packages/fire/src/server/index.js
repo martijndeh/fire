@@ -16,7 +16,7 @@ export default async function createServer(entry) {
 
     app.use(bodyParser());
     app.use(async (context, next) => {
-        if (context.path === `/_api` && context.method === `POST`) {
+        if (context.path === `/_api` && (context.method === `POST` || context.method === `GET`)) {
             try {
                 const [
                     serviceName,
@@ -32,6 +32,8 @@ export default async function createServer(entry) {
                 await callServerService(Service, methodName, context);
             }
             catch (e) {
+                console.log(e);
+
                 context.type = `json`;
                 context.body = JSON.stringify({ error: true });
                 context.status = e.status || 500;
