@@ -100,9 +100,9 @@ export default function createSql(from, to) {
                     // column, you also need to change the CHECK constraints. So over here we do not
                     // check if the CHECK constraint is the same.
                     const columns = getColumns(fromTable).filter((fromColumn) => isEqualColumn(fromColumn, toColumn, false));
-                    if (columns.length === 1) {
-                        const column = columns[0];
+                    const column = columns[0];
 
+                    if (columns.length === 1 && !toTable.columns[column.name]) {
                         const query = `ALTER TABLE ${toTable.name} RENAME COLUMN ${column.name} TO ${toColumn.name}`;
                         from.simulateQuery(query);
                         queries.push(query);
