@@ -25,5 +25,6 @@ module.exports = {
         'react/prefer-stateless-function': 0,
         'jsx-quotes': [2, 'prefer-double'],
         'quotes': [2, 'backtick'],
+        'no-cond-assign': 0,
     },
 };
