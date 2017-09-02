@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import injectSheet from 'react-jss';
-import { setComponent } from '../component/index.js';
 
 let theme = {};
 
@@ -13,9 +12,7 @@ export function getTheme() {
 }
 
 const style = (classes) => (Component) => {
-    const NewComponent = injectSheet(classes)(Component);
-    setComponent(Component, NewComponent);
-    return NewComponent;
+    return injectSheet(classes)(Component);
 };
 
 export {

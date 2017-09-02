@@ -1,57 +1,64 @@
 import { extendObservable, computed } from 'mobx';
+import { addRegisterProvider } from '../injector/index.js';
 
-export default function store(Store) {
-    class MagicStore extends Store {
-        constructor() {
-            super();
+export default class Store {
+    static history = null;
 
-            if (!(this instanceof MagicStore)) {
-                return new MagicStore();
+    static setHistory(history) {
+        Store.history = history;
+    }
+
+    get history() {
+        return Store.history;
+    }
+}
+
+addRegisterProvider((Class, store) => {
+    if (store instanceof Store) {
+        const descriptors = new Set();
+        let obj = store;
+        do {
+            // The last prototype in the chain is Object, but we don;t need it's own property names.
+            // So we check if there is another prototype after this object, and if not, we know
+            // this is Object so we're finished.
+            if (!Object.getPrototypeOf(obj)) {
+                break;
             }
 
-            // TODO: Move this to the decorator.
-            let items = Object.getOwnPropertyNames(this).reduce((items, propertyName) => {
-                // TODO: Are there any types we shouldn't set as observable e.g. injected entities?
+            Object.getOwnPropertyNames(obj).forEach((propertyName) => {
                 if (propertyName !== `constructor`) {
-                    items[propertyName] = this[propertyName];
+                    const descriptor = Object.getOwnPropertyDescriptor(obj, propertyName);
+                    descriptors.add({
+                        propertyName,
+                        descriptor,
+                    });
                 }
+            });
+        } while (obj = Object.getPrototypeOf(obj));
 
-                return items;
-            }, {});
+        const items = Array.from(descriptors).reduce((items, { descriptor, propertyName }) => {
+            // TODO: What if there is a descriptor.set?
+            const isComputed = descriptor.get && !descriptor.set && !descriptor.value;
+            const isAction = typeof store[propertyName] === `function`;
 
-            const Class = Store.OriginalClass || Store;
-            items = Object.getOwnPropertyNames(Class.prototype).reduce((items, propertyName) => {
-                const descriptor = Object.getOwnPropertyDescriptor(Class.prototype, propertyName);
+            if (isComputed) {
+                // TODO: What if we have a getter and a setter?
 
-                if (propertyName === `constructor`) {
-                    return items;
-                }
+                items[propertyName] = computed(descriptor.get);
+            }
+            else if (isAction) {
+                // TODO: Properly set this as an action.
 
-                const isComputed = descriptor.get && !descriptor.set && !descriptor.value;
-                const isAction = typeof this[propertyName] === `function`;
+                // items[propertyName] = action(propertyName, store[propertyName]);
+                items[propertyName] = store[propertyName];
+            }
+            else {
+                items[propertyName] = store[propertyName];
+            }
 
-                if (isComputed) {
-                    items[propertyName] = computed(descriptor.get);
-                }
-                else if (isAction) {
-                    // TODO: Properly set this as an action.
+            return items;
+        }, {});
 
-                    // items[propertyName] = action(propertyName, store[propertyName]);
-                    items[propertyName] = this[propertyName];
-                }
-                else {
-                    items[propertyName] = this[propertyName];
-                }
-
-                return items;
-            }, items);
-
-            extendObservable(this, items);
-
-            // TODO: Find all the functions. Both instance and static. Set them as action?
-        }
+        extendObservable(store, items);
     }
-    MagicStore.OriginalClass = Store.OriginalClass || Store;
-    MagicStore.displayName = Store.displayName || Store.name;
-    return MagicStore;
-}
+})

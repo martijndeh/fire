@@ -1,10 +1,11 @@
 import Lego from 'lego-sql';
+import registerModel from 'sql-models';
 
 export default class Model {
     internalTransaction = null;
 
     constructor() {
-        //
+        registerModel(this.constructor);
     }
 
     transaction(transaction) {

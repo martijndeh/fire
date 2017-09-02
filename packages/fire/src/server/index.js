@@ -9,10 +9,10 @@ export {
     addShims,
 };
 
-export default async function createServer(entry) {
+export default async function createServer() {
     const app = new Koa();
     const serviceNames = getServiceNames();
-    const compiler = createClientCompiler(entry, serviceNames);
+    const compiler = createClientCompiler(serviceNames);
 
     app.use(bodyParser());
     app.use(async (context, next) => {
@@ -29,9 +29,15 @@ export default async function createServer(entry) {
                 // allowed.
                 const Service = getService(serviceName);
 
-                await callServerService(Service, methodName, context);
+                if (!Service) {
+                    console.log(`Could not find service with name ${serviceName}`);
+                }
+                else {
+                    await callServerService(Service, methodName, context);
+                }
             }
             catch (e) {
+                console.log(`exception in server api`);
                 console.log(e);
 
                 context.type = `json`;
@@ -46,15 +52,16 @@ export default async function createServer(entry) {
     app.use(webpackMiddleware({
 		compiler,
         dev: {
-            // noInfo: true,
-            stats: {
-                colors: false,
-            },
-            // quiet: true,
+            noInfo: true,
+            stats: false,
+            quiet: true,
+            log: false,
         },
         hot: {
             noInfo: true,
             quiet: true,
+            stats: false,
+            log: false,
         },
 	}));
     app.use(async (context, next) => {
@@ -68,7 +75,8 @@ export default async function createServer(entry) {
         <head>
           <title></title>
         </head>
-        <body id="root">
+        <body>
+            <div id="root"></div>
         </body>
         <script src="/client.js"></script>
         </html>`;

@@ -1,67 +1,76 @@
-import Queue from './queue.js';
 
+import Log from 'fire-log';
+import Queue from './queue.js';
+import { addRegisterProvider, getPropertyNames } from '../injector/index.js';
+import { isClient } from '../index.js';
+
+const log = new Log(`fire:worker`);
 const workers = [];
 
 export function getWorkers() {
     return workers;
 }
 
-function getPropertyNames(Worker) {
-    const prototype = Worker.OriginalClass
-        ? Worker.OriginalClass.prototype
-        : Worker.prototype;
-    return Object.getOwnPropertyNames(prototype).filter((propertyName) => propertyName !== `constructor`);
-}
-
 export function startWorkers() {
+    log.info(`Starting ${workers.length} workers.`);
+
     workers.forEach((Worker) => {
-        new Worker();
+        const worker = new Worker(false);
+        worker.start();
     });
 }
 
-export function worker(queueUrl) {
-    return (Worker) => {
-        class WorkerWrapper {
-            queue = null;
+export default class Worker {
+    queue = null;
 
-            constructor() {
-                this.queue = new Queue(queueUrl);
-                const propertyNames = getPropertyNames(Worker);
+    constructor(replaceProperties = true) {
+        this.queue = new Queue(this.getQueueUrl());
 
-                propertyNames.forEach((propertyName) => {
-                    this[propertyName] = function (...args) {
-                        return this.queue.sendMessage(propertyName, args);
-                    };
-                });
-            }
+        if (replaceProperties) {
+            this.replaceProperties();
         }
+    }
 
-        class WorkerStarter extends Worker {
-            __queue = null;
+    replaceProperties() {
+        log.info(`Replacing property names in worker.`);
 
-            constructor() {
-                super();
+        const propertyNames = getPropertyNames(this.constructor);
 
-                this.__queue = new Queue(queueUrl);
+        propertyNames.forEach((propertyName) => {
+            this[propertyName] = (...args) => {
+                return this.queue.sendMessage(propertyName, args);
+            };
+        });
+    }
 
-                this.__receiveMessage();
-            }
+    start() {
+        log.info(`Start worker ${this.name}`);
 
-            async __receiveMessage() {
-                const didConsumeMessages = await this.__queue.receiveMessage((name, args) => {
-                    return this[name](...args);
-                });
-                const timeout = didConsumeMessages
-                    ? 0
-                    : 1000 * 10;
+        this.receiveMessage();
+    }
 
-                setTimeout(() => {
-                    this.__receiveMessage();
-                }, timeout);
-            }
-        }
+    getQueueUrl() {
+        throw new Error(`Worker#getQueueUrl() should be overridden to return a valid queue url.`);
+    }
 
-        workers.push(WorkerStarter);
-        return WorkerWrapper;
-    };
+    async receiveMessage() {
+        const didConsumeMessages = await this.queue.receiveMessage((name, args) => {
+            return this[name](...args);
+        });
+
+        // TODO: This is very basic. Perhaps we want a nice backoff algorithm?
+        const timeout = didConsumeMessages
+            ? 0
+            : 1000 * 10;
+
+        setTimeout(() => {
+            this.receiveMessage();
+        }, timeout);
+    }
 }
+
+addRegisterProvider((Class, worker) => {
+    if (worker instanceof Worker) {
+        workers.push(Class);
+    }
+});

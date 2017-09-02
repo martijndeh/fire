@@ -107,6 +107,7 @@ export async function isAllowed(service, methodName, context) {
         catch (e) {
             console.log(`exception in not allowed`);
             console.log(e);
+
             context.throw(401);
         }
     }
@@ -115,12 +116,10 @@ export async function isAllowed(service, methodName, context) {
 }
 
 export default async function callServerService(Service, methodName, context) {
+    console.log(`callServerService`);
+    console.log(Service);
+
     const service = new Service(context);
-
-    // TODO: Passing properties through the constructor isn't working correctly because of the
-    // higher order components.
-    service.context = context;
-
     const allowed = await isAllowed(service, methodName, context);
     if (!allowed) {
         context.throw(401);
@@ -130,7 +129,12 @@ export default async function callServerService(Service, methodName, context) {
     // TODO: Check if this is a logout.
 
     try {
-        const args = context.request.body;
+        const args = context.method === `POST`
+            ? context.request.body
+            : JSON.parse(context.request.query.args);
+
+        console.log(args);
+
         const body = await Promise.resolve(service[methodName](...args));
 
         const handlers = {

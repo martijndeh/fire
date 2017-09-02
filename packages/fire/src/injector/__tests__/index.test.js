@@ -1,4 +1,4 @@
-import { registerInjectProvider, inject } from '..';
+import { addInjectProvider, inject } from '..';
 
 describe(`Injector`, () => {
     class Foo {}
@@ -31,7 +31,7 @@ describe(`Injector`, () => {
     it(`should not call default injector provider when injector provider is registered`, () => {
         class NewClass {}
 
-        registerInjectProvider(() => NewClass)
+        addInjectProvider(() => NewClass)
 
         class Bar {}
 
