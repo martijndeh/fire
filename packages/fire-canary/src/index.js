@@ -1,9 +1,11 @@
-/* eslint-disable no-console */
 /* eslint-disable react/no-multi-comp */
 import {
-    component,
-    service,
-    store,
+    startup,
+    Service,
+    Store,
+    Switch,
+    Route,
+    Log,
     inject,
     isClient,
     isServer,
@@ -14,19 +16,28 @@ import {
     setTheme,
 } from 'fire';
 
-if (isClient()) {
-    // This is running on the client.
-}
-else if (isServer()) {
-    // This is running on the server.
-}
+const log = new Log(`fire:canary`);
+
+log.info(`START`);
+
+/*
+startup(() => {
+    if (isClient()) {
+        // This is running on the client.
+        // log.info(`We're running on the client.`);
+    }
+    else if (isServer()) {
+        // This is running on the server.
+        // log.info(`We're running on the server.`);
+    }
+});
+*/
 
 setTheme({
     magenta: `#f0f`,
 });
 
-@service
-export class MyService {
+class MyService extends Service {
     @login
     login(email) {
         if (email === `martijn@ff00ff.nl`) {
@@ -47,8 +58,7 @@ export class MyService {
 }
 
 @inject(MyService, `myService`)
-@store
-class MyStore {
+class MyStore extends Store {
     items = [];
 
     get numberOfItems() {
@@ -57,7 +67,13 @@ class MyStore {
 
     async loadItems() {
         const response = await this.myService.getItems();
-        this.items = await response.json();
+
+        if (response.ok) {
+            this.items = await response.json();
+        }
+        else {
+            this.history.push(`/login`);
+        }
     }
 }
 
@@ -67,8 +83,7 @@ class MyStore {
     },
 }))
 @inject(MyService, `myService`)
-@component(`/login`, { error: 401 })
-export class Login extends React.Component {
+class Login extends React.Component {
     constructor(props) {
         super(props);
 
@@ -83,15 +98,21 @@ export class Login extends React.Component {
         });
     }
 
-    handleSubmit = (event) => {
+    handleSubmit = async (event) => {
         event.preventDefault();
 
         const {
             email,
         } = this.state;
 
-        // TODO: How to handle errors?
-        this.props.myService.login(email);
+        const response = await this.props.myService.login(email);
+
+        if (response.ok) {
+            this.props.history.push(`/`);
+        }
+        else {
+            //
+        }
     };
 
     render() {
@@ -110,8 +131,7 @@ export class Login extends React.Component {
 }
 
 @inject(MyStore, `myStore`)
-@component(`/`)
-export default class App extends React.Component {
+class App extends React.Component {
     componentDidMount() {
         this.props.myStore.loadItems();
     }
@@ -132,3 +152,16 @@ export default class App extends React.Component {
         );
     }
 }
+
+class Router extends React.Component {
+    render() {
+        return (
+            <Switch>
+                <Route path="/login" component={Login} />
+                <Route path="/" component={App} />
+            </Switch>
+        );
+    }
+}
+
+startup(Router);
