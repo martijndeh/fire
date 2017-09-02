@@ -47,6 +47,7 @@ export {
     isClient,
     isServer,
     Link,
+    Log,
     login,
     model,
     Model,
