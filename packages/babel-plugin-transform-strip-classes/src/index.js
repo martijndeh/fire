@@ -1,5 +1,5 @@
 export default function (context) {
-    const classes = {};
+    const classes = new Set();
     const pluginName = `strip-classes`;
     return {
         name: pluginName,
@@ -12,7 +12,7 @@ export default function (context) {
 
             if (options && options.classes && Array.isArray(options.classes)) {
                 options.classes.forEach((className) => {
-                    classes[className] = true;
+                    classes.add(className);
                 });
             }
         },
@@ -24,7 +24,7 @@ export default function (context) {
                 }
 
                 const className = path.node.id.name;
-                if (classes[className]) {
+                if (classes.has(className)) {
                     const methodNames = [];
 
                     path.traverse({
