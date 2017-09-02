@@ -50,7 +50,7 @@ export default function (context) {
                             [],
                             context.types.blockStatement([]),
                         ))),
-                        path.node.decorators,
+                        path.node.decorators || [],
                     );
                     node.seen = true;
                     path.replaceWith(node);
