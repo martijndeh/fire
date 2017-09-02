@@ -3,26 +3,14 @@ import path from 'path';
 import build from './build/index.js';
 import start from './start/index.js';
 import release from './release/index.js';
+import fly from './fly/index.js';
 
 function main() {
     const argv = minimist(process.argv.slice(2));
     const [
-    	topic,
+        topic,
     ] = argv._;
-
-    const {
-        npm_package_name: packageName,
-        npm_package_version: packageVersion,
-        npm_package_main: packageMain,
-    } = process.env;
-
-    if (!packageMain) {
-        // TODO: If there is no main, try a couple of files e.g. first .js file in the dir.
-        console.log(`"main" entry point not found in package.json.`);
-        return;
-    }
-
-    const entry = path.join(process.cwd(), packageMain);
+    const entry = path.join(process.cwd(), `src`, `index.js`);
 
     try {
         process.env.FIRE_STAGE = topic;
@@ -32,14 +20,20 @@ function main() {
                 return build(entry, argv);
 
             case `start`:
-                return start(entry, argv);
+                return start(argv.workers ? `workers` : `web`);
 
             case `release`:
                 return release(entry, argv);
+
+            case `fly`:
+                return fly(entry, argv);
+
+            default:
+                return console.log(`Unknown topic ${fly}.`);
         }
     }
     catch (e) {
-        console.log(`e`);
+        console.log(`exceptionnn`);
         console.log(e);
         console.log(e.stack);
         throw e;
