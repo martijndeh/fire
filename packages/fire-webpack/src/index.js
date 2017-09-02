@@ -112,7 +112,7 @@ function addClientConfig() {
             child_process: `empty`,
             net: `empty`,
             crypto: `empty`,
-            path: `empty`,
+            path: true,
         };
         config.resolveLoader = {
             modules: [
