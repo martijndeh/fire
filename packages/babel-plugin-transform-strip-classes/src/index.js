@@ -42,7 +42,7 @@ export default function (context) {
                     });
 
                     const node = context.types.classDeclaration(
-                        context.types.identifier(path.node.id.name),
+                        path.node.id,
                         path.node.superClass,
                         context.types.classBody(methodNames.map((methodName) => context.types.classMethod(
                             `method`,
