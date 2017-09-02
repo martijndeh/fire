@@ -1,13 +1,5 @@
 {
-  "name": "fire-webpack",
-  "version": "0.51.0",
-  "description": "",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "",
-  "license": "MIT",
   "dependencies": {
     "babel-core": "^6.25.0",
     "babel-loader": "^7.1.1",
@@ -27,5 +19,10 @@
     "webpack-hot-middleware": "^2.18.2",
     "webpack-node-externals": "^1.6.0",
     "write": "^1.0.3"
-  }
+  },
+  "description": "",
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "name": "fire-webpack",
+  "version": "0.51.0"
 }

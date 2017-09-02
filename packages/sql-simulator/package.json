@@ -3,14 +3,8 @@
   "version": "0.50.0",
   "description": "",
   "main": "./lib/index.js",
-  "scripts": {
-    "test": "jest"
-  },
   "author": "",
   "license": "MIT",
-  "devDependencies": {
-    "jest": "^20.0.4"
-  },
   "dependencies": {
     "lodash": "^4.17.4"
   }

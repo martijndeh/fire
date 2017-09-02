@@ -3,9 +3,6 @@
   "version": "0.51.0",
   "description": "",
   "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "",
   "license": "MIT",
   "devDependencies": {
