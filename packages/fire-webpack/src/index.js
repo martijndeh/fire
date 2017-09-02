@@ -1,5 +1,4 @@
 import path from 'path';
-import fs from 'fs';
 import glob from 'glob';
 import writeFile from 'write';
 
@@ -27,6 +26,7 @@ const initialConfig = {
     output: null,
     plugins: [],
     resolve: {},
+    stats: false,
 };
 
 export function createLib() {
@@ -72,16 +72,15 @@ function addResolveAlias(shims) {
     };
 }
 
-function addClientConfig(entry) {
+function addClientConfig() {
     return (config) => {
         config.target = `web`;
-        config.stats = `none`;
         config.entry = {
             client: [
                 `babel-polyfill`,
                 `webpack-hot-middleware/client`,
                 `isomorphic-fetch`,
-                entry,
+                path.join(process.cwd(), `src`, `index.js`),
                 `fire/lib/client/index.js`,
             ],
         };
@@ -272,9 +271,9 @@ export function createServerBundle(entry) {
     return doWebpack(webpackConfig);
 }
 
-export function createClientCompiler(entry, serviceNames) {
+export function createClientCompiler(serviceNames) {
     const allReducers = [
-        addClientConfig(entry),
+        addClientConfig(),
         addBabelLoader({
             exclude: [
                 // `transform-es2015-classes`,
