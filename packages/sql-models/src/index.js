@@ -12,7 +12,7 @@ import { getDatabaseVersion, createMigrationsTable, insertMigration } from './re
 
 const modelClasses = [];
 
-export default function model(Model) {
+export default function registerModel(Model) {
     modelClasses.push(Model);
 }
 
