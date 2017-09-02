@@ -16,14 +16,14 @@ The fastest way to build your minimal viable product. Using React, MobX, Koa and
 <br/>
 
 ```js
-import React from 'react';
 import {
-    component,
-    service,
+    React,
+    Service,
+    startup
+    Store,
 } from 'fire';
 
-@service
-class MyService {
+class MyService extends Service {
     loadItems() {
         return [
             `Item #1`,
@@ -34,8 +34,7 @@ class MyService {
 }
 
 @inject(MyService, `myService`)
-@store
-class MyStore {
+class MyStore extends Store {
     items = [];
 
     loadItems() {
@@ -45,7 +44,6 @@ class MyStore {
 }
 
 @inject(MyStore, `myStore`)
-@component('/')
 class App extends React.Component {
     componentDidMount() {
         this.props.myStore.loadItems();
@@ -65,6 +63,8 @@ class App extends React.Component {
         );
     }
 }
+
+startup(App);
 ```
 
 Node on Fire reduces boilerplate and improves developer productivity significantly. The idea is to
@@ -72,36 +72,7 @@ give you everything you need until your first 100,000 users.
 
 ## API
 
-#### `@component(path, options)`
-Add the target `React.Component` to a `Route` with `path`.
-
-This is a convenience decorator. You can also render `Route` components directly.
-
-Argument | Type | Description
-----------|------|-------------
-**path** | `String` | The path to mount the component on.
-**options** | `Object` |
-**options.exact=true** | `Boolean` | Sets the `Route` exact property. See [React Router](https://reacttraining.com/react-router/web/api/Route/exact-bool). Defaults to true.
-**options.error** | `Number[]/Number` | Links one or more error codes to the component. Whenever a service method returns a matching error code, the client is redirect to the component.
-**...options** | | The remaining options are passed to the `Route` component.
-
-**Simple page example.** Mounts the component on `/`.
-```js
-@component(`/`)
-class MyComponent extends React.Component {
-    //
-}
-```
-
-**Login page example.**
-Mounts the component on `/login`. Additionally, whenever a service method returns a status code 401, the client is redirected to this component.
-```js
-@component(`/login`, { error: 401 })
-class Login extends React.Component {
-    //
-}
-```
-#### `@service`
+#### `Service`
 Creates a back-end service which is invokable on the client and server-side. On the client-side, the service is transparently invoked over HTTP.
 
 By default, because of security concerns, no service method is accessible from the client. You have to allow or deny clients access, see `@allow` and `@deny`.
@@ -110,8 +81,7 @@ On the client, the service methods are stripped from being included in the sourc
 
 **Simple example.**
 ```js
-@service
-class MyService {
+class MyService extends Service {
     @allow(() => () => true)
     test() {
         return 'Hello, world!';
@@ -154,7 +124,7 @@ const test = bar.foo.test();
 // test = `Hello, world!`
 ```
 
-#### `@store`
+#### `Store`
 Creates a basic MobX store: all properties are set as observables, getter functions as computed, and functions as actions. This is a convenience decorator. Alternatively, you can call `@action`, `@observable`, `@computed` et al are also available.
 
 #### `@style(classes)`
@@ -278,8 +248,8 @@ Argument | Type | Description
 addShims(`client`, [`foo`, `bar`]);
 ```
 
-#### @observer
-Sets the target `React.Component` as a MobX observer. This happens already when you call `@component(path, options)` on a component.
+#### `@observer`
+Sets the target `React.Component` as a MobX observer. This happens automatically when you inject a store into the component.
 
 ```js
 @observer
@@ -363,7 +333,7 @@ Configures the target service method to be a logout method.
 The logout method clears the authentication cookie.
 
 
-#### `@model`
+#### `Model`
 Configures the target class as a model which allows you to declare your schema. All changes to your schema are automatically written in migration files.
 
 ```js
@@ -406,7 +376,7 @@ class MyWorker {
 #### `isClient`
 #### `isServer`
 #### `React`
-#### `registerInjectProvider`
+#### `addInjectProvider`
 
 ## API (in development)
 - `@computed`
