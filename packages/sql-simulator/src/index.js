@@ -315,9 +315,13 @@ export default class Simulator {
                                     const column = this.tables[tableName].columns[columnName];
                                     if (token.toLowerCase() === `unique`) {
                                         column.constraints.unique = {};
+
+                                        // TODO: Add this to the table instead.
                                     }
                                     else {
                                         column.constraints.primaryKey = {};
+
+                                        // TODO: Add this as index of the table.
                                     }
 
                                     // TODO: It should be possible here to set multiple columns.
@@ -530,7 +534,7 @@ export default class Simulator {
                         constraint.onUpdate = actionType;
                     });
 
-                    column.constraints.references = constraint;
+                    column.constraints.foreignKey = constraint;
                 },
             });
 

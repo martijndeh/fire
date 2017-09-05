@@ -257,7 +257,7 @@ describe(`Simulator`, () => {
             simulate(query, tables);
         });
 
-        it(`should create table with column with references constraint`, () => {
+        it(`should create table with column with foreign key constraint`, () => {
             const query = `CREATE TABLE account (
                 id INTEGER REFERENCES test (id)
             )`;
@@ -270,7 +270,7 @@ describe(`Simulator`, () => {
                             dataType: `INTEGER`,
                             name: `id`,
                             constraints: {
-                                references: {
+                                foreignKey: {
                                     tableName: `test`,
                                     columnName: `id`,
                                 },
@@ -283,7 +283,7 @@ describe(`Simulator`, () => {
             simulate(query, tables);
         });
 
-        it(`should create table with column with multiple columns and a references constraint`, () => {
+        it(`should create table with column with multiple columns and a foreign key constraint`, () => {
             const query = `CREATE TABLE account_token (
                 account_id UUID NOT NULL REFERENCES account (id),
                 local_token TEXT NOT NULL
@@ -298,7 +298,7 @@ describe(`Simulator`, () => {
                             name: `account_id`,
                             constraints: {
                                 notNull: {},
-                                references: {
+                                foreignKey: {
                                     tableName: `account`,
                                     columnName: `id`,
                                 },

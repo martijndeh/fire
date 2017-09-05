@@ -26,8 +26,8 @@ function getConstraintsSql(columnConstraints) {
     }
 
     // TODO: references? Where is it?
-    if (columnConstraints.references) {
-        constraints.push(`REFERENCES ${columnConstraints.references.tableName}(${columnConstraints.references.columnName})`);
+    if (columnConstraints.foreignKey) {
+        constraints.push(`REFERENCES ${columnConstraints.foreignKey.tableName}(${columnConstraints.foreignKey.columnName})`);
     }
 
     return constraints.join(` `);
@@ -57,9 +57,9 @@ function isEqualColumn(fromColumn, toColumn, includeCheckConstraint) {
             fromConstraints.primaryKey && toConstraints.primaryKey) &&
         (!fromConstraints.default && !toConstraints.default ||
             fromConstraints.default.expression === toConstraints.default.expression) &&
-        (!fromConstraints.references && !toConstraints.references ||
-            fromConstraints.references.tableName === toConstraints.references.tableName &&
-            fromConstraints.references.columnName === toConstraints.references.columnName) &&
+        (!fromConstraints.foreignKey && !toConstraints.foreignKey ||
+            fromConstraints.foreignKey.tableName === toConstraints.foreignKey.tableName &&
+            fromConstraints.foreignKey.columnName === toConstraints.foreignKey.columnName) &&
         (!fromConstraints.unique && !toConstraints.unique || fromConstraints.unique && toConstraints.unique) &&
         (!includeCheckConstraint || !fromConstraints.check && !toConstraints.check ||
             fromConstraints.check.expression === toConstraints.check.expression)
