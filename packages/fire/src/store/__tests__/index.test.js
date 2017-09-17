@@ -1,11 +1,10 @@
-import store from '../index.js';
+import Store from '../index.js';
 
-describe('@store', () => {
-	it('should work', () => {
-		@store
-		class MyStore {}
+describe(`Store`, () => {
+    it(`should construct`, () => {
+        class MyStore extends Store {}
 
         const myStore = new MyStore();
         expect(myStore).toBeTruthy();
-	});
+    });
 });
