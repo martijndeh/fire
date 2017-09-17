@@ -1,8 +1,10 @@
+import assert from 'assert';
 import { escapeRegExp, cloneDeep } from 'lodash';
 
 export default class Simulator {
     constructor(simulator) {
         this.tables = {};
+        this.types = {};
         this.input = null;
 
         if (simulator) {
@@ -33,7 +35,7 @@ export default class Simulator {
     }
 
     findToken(expectedTokens) {
-        const regexp = new RegExp(`^(${expectedTokens.map((token) => escapeRegExp(token)).join(`|`)})(\\b|\\s|$|,)`, `i`);
+        const regexp = new RegExp(`^(${expectedTokens.map((token) => escapeRegExp(token)).join(`|`)})(\\b|\\s|$|,|')`, `i`);
         return this.findByRegExp(regexp);
     }
 
@@ -78,6 +80,42 @@ export default class Simulator {
         }
 
         return result;
+    }
+
+    getString() {
+        assert(this.input[0] === `'`, `Does not start with string opening '.`);
+
+        for (let i = 1; i < this.input.length; i++) {
+            const isEscaped = () => {
+                let search = i - 1;
+                let escaped = false;
+
+                while (search >= 0) {
+                    const character = this.input[search];
+
+                    if (character === `\\`) {
+                        escaped = !escaped;
+                    }
+                    else {
+                        break;
+                    }
+
+                    search--;
+                }
+
+                return escaped;
+            }
+
+            const character = this.input[i];
+
+            if (character === `'` && !isEscaped()) {
+                const found = this.input.slice(1, i);
+                this.input = this.input.slice(found.length + 2).replace(/^\s*/g, ``);
+                return found;
+            }
+        }
+
+        throw new Error(`Could not find end of string character '.`);
     }
 
     getInScope() {
@@ -166,10 +204,13 @@ export default class Simulator {
 
     scope(callback) {
         const openBracket = this.findToken([`(`]);
+
         if (openBracket) {
-            callback();
+            const result = callback();
 
             this.getToken([`)`]);
+
+            return result;
         }
     }
 
@@ -192,9 +233,21 @@ export default class Simulator {
         });
     }
 
-    simulateDropTable() {
-        this.getToken([`TABLE`]);
+    simulateDropType() {
+        this.optionalToken([`IF EXISTS`]);
 
+        const typeName = this.getIdentifier();
+
+        this.ifToken([`CASCADE`, `RESTRICT`], () => {
+            //
+        });
+
+        if (this.types[typeName]) {
+            delete this.types[typeName];
+        }
+    }
+
+    simulateDropTable() {
         this.optionalToken([`IF EXISTS`]);
 
         const tableName = this.getIdentifier();
@@ -208,9 +261,29 @@ export default class Simulator {
         }
     }
 
-    simulateAlterTable() {
-        this.getToken([`TABLE`]);
+    simulateAlterType() {
+        const typeName = this.getIdentifier();
+        const type = this.types[typeName];
 
+        this.getToken([`ADD`]);
+        this.getToken([`VALUE`]);
+
+        const newValue = this.getString();
+
+        this.ifToken([`BEFORE`, `AFTER`], (token) => {
+            const existingValue = this.getString();
+            const index = type.labels.findIndex((label) => label === existingValue);
+
+            if (token.toUpperCase() === `BEFORE`) {
+                type.labels.splice(index, 0, newValue);
+            }
+            else {
+                type.labels.splice(index + 1, 0, newValue);
+            }
+        });
+    }
+
+    simulateAlterTable() {
         this.ifToken([`ALL IN TABLESPACE`], () => {
             const tableName = this.getIdentifier();
 
@@ -239,6 +312,9 @@ export default class Simulator {
         });
 
         const tableName = this.getIdentifier();
+        const table = this.tables[tableName];
+
+        assert(table, `Table ${tableName} does not exist.`);
 
         const found = this.switchToken({
             RENAME: () => {
@@ -251,8 +327,7 @@ export default class Simulator {
 
                         const newConstraintName = this.getIdentifier();
 
-                        // TODO: Actually name the constraint with name. Are these constraints on columns, or
-                        // on tables?
+                        // TODO: rename to constraint.
                     },
                     () => {
                         this.ifToken(
@@ -272,12 +347,12 @@ export default class Simulator {
 
                                 this.getToken([`TO`]);
 
-                                const newColumnname = this.getIdentifier();
+                                const newColumnName = this.getIdentifier();
 
                                 const table = this.tables[tableName];
                                 const column = table.columns[columnName];
-                                column.name = newColumnname;
-                                table.columns[newColumnname] = column;
+                                column.name = newColumnName;
+                                table.columns[newColumnName] = column;
                                 delete table.columns[columnName];
                             });
                     });
@@ -294,6 +369,12 @@ export default class Simulator {
         if (!found) {
             this.repeat(() => {
                 this.switchToken({
+                    'DROP CONSTRAINT': () => {
+                        const constraintName = this.getIdentifier();
+                        const i = table.indexes.findIndex((index) => index.type === `check` && index.name === constraintName);
+                        table.indexes.splice(i, 1);
+                    },
+
                     ADD: () => {
                         this.optionalToken([`COLUMN`]);
 
@@ -301,37 +382,20 @@ export default class Simulator {
                             //
                         });
 
-                        this.ifToken([`CONSTRAINT`], () => {
-                            const constraintName = this.getIdentifier();
-                        });
+                        const table = this.tables[tableName];
 
-                        this.ifToken(
-                            // TODO: Isn't it possible to add a REFERENCES here?
-                            [`UNIQUE`, `PRIMARY KEY`],
-                            (token) => {
-                                this.scope(() => {
-                                    const columnName = this.getIdentifier();
+                        assert(table, `Could not find table ${tableName}.`);
 
-                                    const column = this.tables[tableName].columns[columnName];
-                                    if (token.toLowerCase() === `unique`) {
-                                        column.constraints.unique = {};
+                        const {
+                            column,
+                            indexes,
+                        } = this.getColumn(table);
 
-                                        // TODO: Add this to the table instead.
-                                    }
-                                    else {
-                                        column.constraints.primaryKey = {};
+                        if (column) {
+                            table.columns[column.name] = column;
+                        }
 
-                                        // TODO: Add this as index of the table.
-                                    }
-
-                                    // TODO: It should be possible here to set multiple columns.
-                                });
-                            },
-                            () => {
-                                const column = this.getColumn();
-
-                                this.tables[tableName].columns[column.name] = column;
-                            });
+                        indexes.forEach((index) => this.addIndex(table, index));
                     },
 
                     DROP: () => {
@@ -369,21 +433,19 @@ export default class Simulator {
 
                             'SET DEFAULT': () => {
                                 const expression = this.getExpression();
-                                column.constraints.default = {
-                                    expression,
-                                };
+                                column.modifiers.default = expression;
                             },
 
                             'DROP DEFAULT': () => {
-                                delete column.constraints.default;
+                                delete column.modifiers.default;
                             },
 
                             'SET NOT NULL': () => {
-                                column.constraints.notNull = {};
+                                column.modifiers.notNull = true;
                             },
 
                             'DROP NOT NULL': () => {
-                                delete column.constraints.notNull;
+                                delete column.modifiers.notNull;
                             },
                         });
                     },
@@ -394,178 +456,350 @@ export default class Simulator {
         }
     }
 
-    getColumn() {
-        const column = {
-            // TODO: The name may include the schema.
-            name: this.getIdentifier(),
+    addIndex(table, index) {
+        if (index.type === `primaryKey`) {
+            table.indexes.splice(0, 0, index);
+        }
+        else {
+            table.indexes.push(index);
+        }
+    }
 
-            // TODO: Will this work without any constraint types?
-            dataType: this.getUntil([`COLLATE`, `CONSTRAINT`, `NULL`, `NOT NULL`, `CHECK`, `DEFAULT`, `UNIQUE`, `PRIMARY KEY`, `REFERENCES`, `,`, `)`]),
-            constraints: {},
-        };
+    getColumn(table) {
+        const indexes = [];
+        let column = null;
 
-        this.ifToken([`COLLATE`], () => {
-            column.collation = this.getIdentifier();
+        let constraintName = null;
+
+        this.ifToken([`CONSTRAINT`], () => {
+            constraintName = this.getIdentifier();
         });
 
-        this.repeat(() => {
-            const constraint = {};
+        this.ifToken([`PRIMARY KEY`, `FOREIGN KEY`, `UNIQUE`, `CHECK`], (token) => {
+            const type = ((token) => {
+                if (token === `primary key`) {
+                    return `primaryKey`;
+                }
+                else if (token === `foreign key`) {
+                    return `foreignKey`;
+                }
+                else if (token === `check`) {
+                    return `check`;
+                }
 
-            this.ifToken([`CONSTRAINT`], () => {
-                constraint.name = this.getIdentifier();
+                return `unique`;
+            })(token.toLowerCase());
+
+            const index = {
+                type,
+                columns: [],
+                name: null,
+            };
+
+            this.scope(() => {
+                if (type === `check`) {
+                    index.expression = this.getInScope();
+                }
+                else {
+                    this.repeat(() => {
+                        const columnName = this.getIdentifier();
+
+                        index.columns.push(columnName);
+
+                        return this.findToken([`,`]);
+                    });
+                }
             });
 
-            const found = this.switchToken({
-                [`NOT NULL`]: () => {
-                    column.constraints.notNull = constraint;
-                },
+            if (type === `foreignKey`) {
+                index.name = constraintName || `${table.name}_${index.columns.join(`_`)}_fkey`;
 
-                NULL: () => {
-                    column.constraints.null = constraint;
-                },
+                this.getToken([`REFERENCES`]);
 
-                CHECK: () => {
-                    this.scope(() => {
-                        constraint.expression = this.getInScope();
+                const tableName = this.getIdentifier();
+                const referenceColumns = [];
+
+                this.scope(() => {
+                    this.repeat(() => {
+                        const columnName = this.getIdentifier();
+
+                        referenceColumns.push(columnName);
+
+                        return this.findToken([`,`]);
                     });
-
-                    this.ifToken([`NO INHERIT`], () => {
-                        constraint.noInherit = true;
-                    });
-
-                    column.constraints.check = constraint;
-                },
-
-                DEFAULT: () => {
-                    constraint.expression = this.getExpression();
-
-                    column.constraints.default = constraint;
-                },
-
-                UNIQUE: () => {
-                    this.ifToken([`WITH`], () => {
-                        this.scope(() => {
-                            constraint.parameters = [];
-
-                            this.repeat(() => {
-                                const storageParameter = this.getIdentifier();
-
-                                if (!this.ifToken([`=`], () => {
-                                    const storageValue = this.getIdentifier();
-
-                                    constraint.parameters.push({
-                                        key: storageParameter,
-                                        value: storageValue,
-                                    });
-                                })) {
-                                    constraint.parameters.push({
-                                        key: storageParameter,
-                                        value: null,
-                                    });
-                                }
-
-                                return this.findToken([`,`]);
-                            });
-                        });
-                    });
-
-                    this.ifToken([`USING INDEX TABLESPACE`], () => {
-                        constraint.tablespaceName = this.getIdentifier();
-                    });
-
-                    column.constraints.unique = constraint;
-                },
-
-                [`PRIMARY KEY`]: () => {
-                    this.ifToken([`WITH`], () => {
-                        this.scope(() => {
-                            constraint.parameters = [];
-
-                            this.repeat(() => {
-                                const storageParameter = this.getIdentifier();
-
-                                if (!this.ifToken([`=`], () => {
-                                    const storageValue = this.getIdentifier();
-
-                                    constraint.parameters.push({
-                                        key: storageParameter,
-                                        value: storageValue,
-                                    });
-                                })) {
-                                    constraint.parameters.push({
-                                        key: storageParameter,
-                                        value: null,
-                                    });
-                                }
-
-                                return this.findToken([`,`]);
-                            });
-                        });
-                    });
-
-                    this.ifToken([`USING INDEX TABLESPACE`], () => {
-                        constraint.tablespaceName = this.getIdentifier();
-                    });
-
-                    column.constraints.primaryKey = constraint;
-                },
-
-                REFERENCES: () => {
-                    constraint.tableName = this.getIdentifier();
-
-                    this.scope(() => {
-                        // TODO: What is this in a scope? Is it possible to repeat column names here?
-                        constraint.columnName = this.getIdentifier();
-                    });
-
-                    this.ifToken([`MATCH`], () => {
-                        constraint.matchType = this.getToken([`FULL`, `PARTIAL`, `SIMPLE`]);
-                    });
-
-                    this.ifToken([`ON DELETE`], () => {
-                        const actionType = this.getToken([`NO ACTION`, `RESTRICT`, `CASCADE`, `SET NULL`, `SET DEFAULT`]);
-
-                        constraint.onDelete = actionType;
-                    });
-
-                    this.ifToken([`ON UPDATE`], () => {
-                        const actionType = this.getToken([`NO ACTION`, `RESTRICT`, `CASCADE`, `SET NULL`, `SET DEFAULT`]);
-
-                        constraint.onUpdate = actionType;
-                    });
-
-                    column.constraints.foreignKey = constraint;
-                },
-            });
-
-            if (found) {
-                this.ifToken([`DEFERRABLE`, `NOT DEFERRABLE`], (defferable) => {
-                    constraint.defferable = defferable;
                 });
 
-                this.ifToken([`INITIALLY DEFERRED`, `INITIALLY IMMEDIATE`], (initially) => {
-                    constraint.initially = initially;
-                });
+                index.tableName = tableName;
+                index.referenceColumns = referenceColumns;
+            }
+            else if (type === `primaryKey`) {
+                index.name = constraintName || `${table.name}_${index.columns.join(`_`)}_pkey`;
+            }
+            else if (type === `unique`) {
+                index.name = constraintName || `${table.name}_${index.columns.join(`_`)}_key`;
+            }
+            else if (type === `check`) {
+                // FIXME: the CHECK is actually named based on the expression. If it references one
+                // column it's added to the name. We can't just check if one of the columns is in
+                // the expression, because it checks if it's really a reference.
+                //
+                // Some examples:
+                //  "test_check" CHECK (1 > 0)
+                //  "test_check1" CHECK (123 > 0)
+                //  "test_check2" CHECK (foo_id > val)
+                //  "test_val_check" CHECK (length('foo_id'::text) > val)
+                //  "test_val_check1" CHECK (1 > val AND val < 0)
+
+                if (constraintName) {
+                    index.name = constraintName;
+                }
+                else {
+                    const findIndexName = (indexName, count = 0) => {
+                        const postfix = count === 0
+                            ? ``
+                            : String(count);
+                        const name = indexName + postfix;
+
+                        const exists = table.indexes.find((index) => index.name === name);
+
+                        if (exists) {
+                            return findIndexName(indexName, count + 1);
+                        }
+
+                        return name;
+                    };
+
+                    index.name = findIndexName(`${table.name}_check`);
+                }
             }
 
-            return found;
+            indexes.push(index);
+        }, () => {
+            column = {
+                // TODO: The name may include the schema e.g. my.table (where "my" is the schema name)?
+                name: this.getIdentifier(),
+                dataType: this.getUntil([`COLLATE`, `CONSTRAINT`, `NULL`, `NOT NULL`, `CHECK`, `DEFAULT`, `UNIQUE`, `PRIMARY KEY`, `REFERENCES`, `,`, `)`]),
+                modifiers: {},
+            };
+
+            this.ifToken([`COLLATE`], () => {
+                column.collation = this.getIdentifier();
+            });
+
+            this.repeat(() => {
+                let constraintName = null;
+
+                // TODO: Can you name a constraint like this?
+                this.ifToken([`CONSTRAINT`], () => {
+                    constraintName = this.getIdentifier();
+                });
+
+                const found = this.switchToken({
+                    [`NOT NULL`]: () => {
+                        column.modifiers.notNull = true;
+                    },
+
+                    NULL: () => {
+                        column.modifiers.null = true;
+                    },
+
+                    CHECK: () => {
+                        const expression = this.scope(() => this.getInScope());
+                        const index = {
+                            type: `check`,
+                            name: constraintName || `${table.name}_${column.name}_check`,
+                            columns: [
+                                column.name,
+                            ],
+                            expression,
+                        };
+
+                        this.ifToken([`NO INHERIT`], () => {
+                            index.noInherit = true;
+                        });
+
+                        indexes.push(index);
+                    },
+
+                    DEFAULT: () => {
+                        column.modifiers.default = this.getExpression();
+                    },
+
+                    UNIQUE: () => {
+                        const index = {
+                            type: `unique`,
+                            name: `${table.name}_${column.name}_key`,
+                            columns: [
+                                column.name,
+                            ],
+                        };
+
+                        this.ifToken([`WITH`], () => {
+                            this.scope(() => {
+                                index.parameters = [];
+
+                                this.repeat(() => {
+                                    const storageParameter = this.getIdentifier();
+
+                                    if (!this.ifToken([`=`], () => {
+                                        const storageValue = this.getIdentifier();
+
+                                        index.parameters.push({
+                                            key: storageParameter,
+                                            value: storageValue,
+                                        });
+                                    })) {
+                                        index.parameters.push({
+                                            key: storageParameter,
+                                            value: null,
+                                        });
+                                    }
+
+                                    return this.findToken([`,`]);
+                                });
+                            });
+                        });
+
+                        this.ifToken([`USING INDEX TABLESPACE`], () => {
+                            index.tablespaceName = this.getIdentifier();
+                        });
+
+                        indexes.push(index);
+                    },
+
+                    [`PRIMARY KEY`]: () => {
+                        const index = {
+                            type: `primaryKey`,
+                            name: `${table.name}_pkey`,
+                            columns: [
+                                column.name,
+                            ],
+                        };
+
+                        this.ifToken([`WITH`], () => {
+                            this.scope(() => {
+                                index.parameters = [];
+
+                                this.repeat(() => {
+                                    const storageParameter = this.getIdentifier();
+
+                                    if (!this.ifToken([`=`], () => {
+                                        const storageValue = this.getIdentifier();
+
+                                        index.parameters.push({
+                                            key: storageParameter,
+                                            value: storageValue,
+                                        });
+                                    })) {
+                                        index.parameters.push({
+                                            key: storageParameter,
+                                            value: null,
+                                        });
+                                    }
+
+                                    return this.findToken([`,`]);
+                                });
+                            });
+                        });
+
+                        this.ifToken([`USING INDEX TABLESPACE`], () => {
+                            index.tablespaceName = this.getIdentifier();
+                        });
+
+                        indexes.push(index);
+                    },
+
+                    REFERENCES: () => {
+                        const index = {
+                            type: `foreignKey`,
+                            name: `${table.name}_${column.name}_fkey`,
+                            tableName: this.getIdentifier(),
+                            columns: [
+                                column.name,
+                            ],
+                            referenceColumns: [],
+                        };
+
+                        this.scope(() => {
+                            this.repeat(() => {
+                                index.referenceColumns.push(this.getIdentifier());
+                                return this.findToken([`,`]);
+                            });
+                        });
+
+                        this.ifToken([`MATCH`], () => {
+                            index.matchType = this.getToken([`FULL`, `PARTIAL`, `SIMPLE`]);
+                        });
+
+                        this.ifToken([`ON DELETE`], () => {
+                            const actionType = this.getToken([`NO ACTION`, `RESTRICT`, `CASCADE`, `SET NULL`, `SET DEFAULT`]);
+
+                            index.onDelete = actionType;
+                        });
+
+                        this.ifToken([`ON UPDATE`], () => {
+                            const actionType = this.getToken([`NO ACTION`, `RESTRICT`, `CASCADE`, `SET NULL`, `SET DEFAULT`]);
+
+                            index.onUpdate = actionType;
+                        });
+
+                        indexes.push(index);
+                    },
+                });
+
+                if (found) {
+                    // TODO: Where to apply this to?
+
+                    this.ifToken([`DEFERRABLE`, `NOT DEFERRABLE`], (defferable) => {
+                        constraint.defferable = defferable;
+                    });
+
+                    this.ifToken([`INITIALLY DEFERRED`, `INITIALLY IMMEDIATE`], (initially) => {
+                        constraint.initially = initially;
+                    });
+                }
+
+                return found;
+            });
         });
 
-        return column;
+        return {
+            column,
+            indexes,
+        };
+    }
+
+    simulateCreateType() {
+        const type = {
+            type: `enum`,
+            name: this.getIdentifier(),
+            labels: [],
+        };
+
+        this.getToken([`AS`]);
+        this.getToken([`ENUM`]);
+
+        this.scope(() => {
+            this.repeat(() => {
+                const label = this.getString();
+                type.labels.push(label);
+
+                return this.findToken([`,`]);
+            });
+        });
+
+        // FIXME: type names and table names may not collide. Because we store them separately, we
+        // have no checks for this. Perhaps we should store the tables and types together in a
+        // relations map instead?
+        this.types[type.name] = type;
     }
 
     simulateCreateTable() {
         const table = {
             name: null,
             columns: {},
+            indexes: [],
         };
-
-        // TODO: It's Global or local, temporary or temp, or unlogged.
-        this.ifToken([`GLOBAL`, `LOCAL`, `TEMPORARY`, `TEMP`, `UNLOGGED`], (type) => {
-            table.type = type;
-        });
-
-        this.getToken([`TABLE`]);
 
         this.ifToken([`IF NOT EXISTS`], () => {
             table.ifNotExists = true;
@@ -575,9 +809,16 @@ export default class Simulator {
 
         this.scope(() => {
             this.repeat(() => {
-                const column = this.getColumn();
+                const {
+                    column,
+                    indexes,
+                } = this.getColumn(table);
 
-                table.columns[column.name] = column;
+                if (column) {
+                    table.columns[column.name] = column;
+                }
+
+                indexes.forEach((index) => this.addIndex(table, index));
 
                 return this.findToken([`,`]);
             });
@@ -592,16 +833,51 @@ export default class Simulator {
     simulateQuery(sql) {
         this.input = sql.replace(/^\s+/, ``);
 
-        const token = this.getToken([`CREATE`, `ALTER`, `DROP`]);
+        const token = this.getToken([`CREATE`, `ALTER`, `DROP`, `SELECT`, `WITH`, `UPDATE`, `DELETE`]).toUpperCase();
 
-        if (token === `CREATE`) {
-            this.simulateCreateTable();
+        if (token === `SELECT` || token === `WITH` || token === `UPDATE` || token === `DELETE`) {
+            // These queries do not alter the data structure, so we can ignore them.
+            this.input = null;
+        }
+        else if (token === `CREATE`) {
+            this.ifToken([`GLOBAL`, `LOCAL`, `TEMPORARY`, `TEMP`, `UNLOGGED`], () => {
+                // TODO: It's GLOBAL or LOCAL, TEMPORARY or TEMP, or UNLOGGED. Pass this to the
+                // table.
+            });
+
+            this.switchToken({
+                TABLE: () => {
+                    this.simulateCreateTable();
+                },
+
+                TYPE: () => {
+                    this.simulateCreateType();
+                },
+
+                // TODO: TRIGGER, FUNCTION?
+            });
         }
         else if (token === `ALTER`) {
-            this.simulateAlterTable();
+            this.switchToken({
+                TABLE: () => {
+                    this.simulateAlterTable();
+                },
+
+                TYPE: () => {
+                    this.simulateAlterType();
+                },
+            });
         }
         else if (token === `DROP`) {
-            this.simulateDropTable();
+            this.switchToken({
+                TYPE: () => {
+                    this.simulateDropType();
+                },
+
+                TABLE: () => {
+                    this.simulateDropTable();
+                },
+            });
         }
     }
 }
