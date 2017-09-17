@@ -26,5 +26,6 @@ module.exports = {
         'jsx-quotes': [2, 'prefer-double'],
         'quotes': [2, 'backtick'],
         'no-cond-assign': 0,
+        'no-unused-vars': [2, { varsIgnorePattern: '^_' }],
     },
 };
