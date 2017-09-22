@@ -9,6 +9,7 @@ export default class Simulator {
 
         if (simulator) {
             this.tables = cloneDeep(simulator.tables);
+            this.types = cloneDeep(simulator.types);
         }
     }
 
