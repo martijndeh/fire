@@ -1,6 +1,6 @@
 {
   "name": "fire",
-  "version": "0.52.0",
+  "version": "0.53.0",
   "description": "",
   "main": "./lib/index.js",
   "author": "",
@@ -24,7 +24,7 @@
     "react-dom": "^15.6.1",
     "react-jss": "^7.0.2",
     "react-router-dom": "^4.2.2",
-    "sql-models": "^0.52.0",
+    "sql-models": "^0.53.0",
     "type-check-system": "^3.0.0"
   }
 }
