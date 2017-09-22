@@ -335,8 +335,6 @@ export default class Simulator {
                             [`TO`],
                             () => {
                                 const newTableName = this.getIdentifier();
-
-                                const table = this.tables[tableName];
                                 table.name = newTableName;
                                 this.tables[newTableName] = table;
                                 delete this.tables[tableName];
@@ -382,10 +380,6 @@ export default class Simulator {
                         this.ifToken([`IF NOT EXISTS`], () => {
                             //
                         });
-
-                        const table = this.tables[tableName];
-
-                        assert(table, `Could not find table ${tableName}.`);
 
                         const {
                             column,
