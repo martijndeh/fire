@@ -10,6 +10,15 @@
 
 The fastest way to build your minimal viable product. Using React, MobX, Koa and Postgres. **Under active development.**
 
+#### Features
+
+- Universal JavaScript.
+- React front-end, Node.js back-end.
+- Zero-configuration, similar to create-react-app.
+- Automatic HTTP endpoints.
+- Schema-aware query builder.
+- Automatic database migrations based on changes.
+
 ---
 [nodeonfire.org](http://nodeonfire.org/)
 
@@ -333,8 +342,8 @@ Configures the target service method to be a logout method.
 The logout method clears the authentication cookie.
 
 
-#### `Model`
-Configures the target class as a model which allows you to declare your schema. All changes to your schema are automatically written in migration files.
+#### `Table`
+Configures the target class as a table which allows you to declare your schema. All changes to your schema are automatically written in migration files.
 
 ```js
 @model
@@ -346,16 +355,15 @@ class Account extends Model {
         )`;
     }
 
-    static findByName(firstName) {
-        return this.sql `SELECT * FROM account WHERE first_name = ${firstName}`;
+    findByName(firstName) {
+        return this.select `*`
+                   .where `first_name = ${firstName}`
+                   .limit `1`;
     }
 }
 ```
 
 In the build stage, the first migration is created with the schema of `account`. Now, whenever you change the schema, for example, add a `NOT NULL` clause to the `first_name` column, the second migration is automatically created.
-
-#### `Model`
-The base class for your models.
 
 #### `@worker(queueUrl)`
 Creates a worker class on the server.Allows you to transparently execute tasks in a different processes. When you execute a worker method, a message is posted over the internal queue. Currently only AWS SQS is supported, but the idea is to support more queues.
