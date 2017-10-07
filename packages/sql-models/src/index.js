@@ -95,7 +95,7 @@ export async function createMigrations() {
         throw e;
     }
 
-    // TODO: If there are no tables loaded yet, we assume we can load them from the tables folder.
+    Schema.autoLoadTables();
 
     const tableNames = Schema.loadTables(toSimulator);
     Schema.writeAstSync(toSimulator, tableNames);
