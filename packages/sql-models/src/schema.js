@@ -1,9 +1,10 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
+import Table from './table.js';
 
 const AST_FILE_PATH = path.join(process.cwd(), `.build`, `ast.js`);
-const DEFAULT_TABLES_PATH = path.join(process.cwd(), `src`, `tables`);
+const DEFAULT_TABLES_PATH = path.join(process.cwd(), `.build`, `lib`, `tables`);
 
 const tableClasses = [];
 
@@ -55,11 +56,16 @@ export default class Schema {
             const filePaths = fs.readdirSync(DEFAULT_TABLES_PATH);
 
             filePaths.forEach((filePath) => {
-                /* eslint-disable import/no-dynamic-require */
-                const Table = require(path.join(DEFAULT_TABLES_PATH, filePath));
-                /* eslint-enable import/no-dynamic-require */
+                if (path.extname(filePath) === `.js`) {
+                    /* eslint-disable import/no-dynamic-require */
+                    const file = require(path.join(DEFAULT_TABLES_PATH, filePath));
+                    /* eslint-enable import/no-dynamic-require */
 
-                tableClasses.push(Table);
+                    // TODO: Check if this is a Table class.
+                    assert(file.default, `You should export a default table in ${filePath}.`);
+
+                    tableClasses.push(file.default);
+                }
             });
         }
     }
