@@ -4,12 +4,12 @@
     "babel-core": "^6.26.0",
     "babel-preset-env": "1.6.0",
     "lego-sql": "^5.0.1",
-    "sql-creator": "^0.53.0",
-    "sql-simulator": "^0.53.0"
+    "sql-creator": "^0.54.0",
+    "sql-simulator": "^0.54.0"
   },
   "description": "",
   "license": "MIT",
   "main": "./lib/index.js",
   "name": "sql-models",
-  "version": "0.53.0"
+  "version": "0.54.0"
 }
