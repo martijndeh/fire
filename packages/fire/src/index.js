@@ -6,7 +6,7 @@ import { configureWebpack, addShims } from 'fire-webpack';
 import Lego from 'lego-sql';
 import { Link, Route, Switch, Redirect } from 'react-router-dom';
 import React from 'react';
-import Model from './model/index.js';
+import { Schema, Table } from 'sql-models';
 import component, { observer } from './component/index.js';
 import { Service, registerService } from './service/index.js';
 import Store from './store/index.js';
@@ -58,7 +58,7 @@ export {
     Link,
     Log,
     login,
-    Model,
+    Table,
     observer,
     parse,
     raw,
@@ -67,6 +67,7 @@ export {
     registerInjectProvider,
     registerService,
     Route,
+    Schema,
     Service,
     setTheme,
     sql,

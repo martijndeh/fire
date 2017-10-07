@@ -6,14 +6,21 @@ import fs from 'fs';
 import Simulator from 'sql-simulator';
 import createSql from 'sql-creator';
 import Lego from 'lego-sql';
+import Schema from './schema.js';
+import Table from './table.js';
 
 import { zeroPad, createDirectory, getMigrationFileNames, getCurrentVersion, writeMigration, createMigrationContents } from './migrations.js';
 import { getDatabaseVersion, createMigrationsTable, insertMigration } from './release.js';
 
-const modelClasses = [];
+export {
+    Schema,
+    Table,
+};
 
-export default function registerModel(Model) {
-    modelClasses.push(Model);
+const tableClasses = [];
+
+export default function registerTable(Table) {
+    tableClasses.push(Table);
 }
 
 export async function runMigrations() {
@@ -81,22 +88,17 @@ export async function createMigrations() {
         require(path.join(process.cwd(), `.build`, `server.js`));
     }
     catch (e) {
+        console.log(`something is wrong in user land`);
         console.log(e);
         console.log(e.stack);
 
         throw e;
     }
 
-    modelClasses.forEach((Model) => {
-        const transaction = {
-            sql(strings) {
-                // TODO: How to handle queries with parameters?
+    // TODO: If there are no tables loaded yet, we assume we can load them from the tables folder.
 
-                toSimulator.simulateQuery(strings[0]);
-            }
-        }
-        Model.create(transaction);
-    });
+    const tableNames = Schema.loadTables(toSimulator);
+    Schema.writeAstSync(toSimulator, tableNames);
 
     const fromSimulatorDown = new Simulator(fromSimulator);
     const toSimulatorDown = new Simulator(toSimulator);

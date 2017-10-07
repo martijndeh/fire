@@ -2,6 +2,7 @@ import Koa from 'koa';
 import { createClientCompiler, addShims } from 'fire-webpack';
 import webpackMiddleware from 'koa-webpack';
 import bodyParser from 'koa-bodyparser';
+import { Schema } from 'sql-models';
 import { getServiceNames, getService } from '../service/index.js';
 import callServerService from '../service/server-service.js';
 
@@ -13,6 +14,9 @@ export default async function createServer() {
     const app = new Koa();
     const serviceNames = getServiceNames();
     const compiler = createClientCompiler(serviceNames);
+
+    Schema.autoLoadTables();
+    const schema = new Schema();
 
     app.use(bodyParser());
     app.use(async (context, next) => {
@@ -33,7 +37,7 @@ export default async function createServer() {
                     console.log(`Could not find service with name ${serviceName}`);
                 }
                 else {
-                    await callServerService(Service, methodName, context);
+                    await callServerService(Service, methodName, context, schema);
                 }
             }
             catch (e) {

@@ -1,4 +1,4 @@
-import { isClient, isServer } from '..';
+import { isClient } from '..';
 import { getPayload } from './jwt/index.js';
 import { addRegisterProvider, getPropertyNames } from '../injector/index.js';
 
@@ -23,8 +23,9 @@ export function setHistory(history) {
 export class Service {
     static history = null;
 
-    constructor(context) {
+    constructor(context, schema) {
         this.context = context;
+        this.schema = schema;
 
         if (isClient()) {
             const serviceName = this.constructor.displayName || this.constructor.name;

@@ -1,11 +1,12 @@
 /* eslint-disable react/no-multi-comp */
 import {
     startup,
+    Schema,
     Service,
     Store,
     Switch,
+    Table,
     Route,
-    Log,
     inject,
     isClient,
     isServer,
@@ -16,22 +17,29 @@ import {
     setTheme,
 } from 'fire';
 
-const log = new Log(`fire:canary`);
-
-log.info(`START`);
-
-/*
 startup(() => {
     if (isClient()) {
         // This is running on the client.
-        // log.info(`We're running on the client.`);
     }
     else if (isServer()) {
         // This is running on the server.
-        // log.info(`We're running on the server.`);
     }
 });
-*/
+
+class Item extends Table {
+    static create(transaction) {
+        transaction.sql `CREATE TABLE item (
+            id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+            created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+            name TEXT NOT NULL,
+            count INTEGER NOT NULL DEFAULT 1
+        )`;
+    }
+}
+
+Schema.addTableClasses([
+    Item,
+]);
 
 setTheme({
     magenta: `#f0f`,
@@ -49,11 +57,9 @@ class MyService extends Service {
 
     @allow((payload) => () => payload && payload.id === 123)
     getItems() {
-        return [
-            `Item #1`,
-            `Item #2`,
-            `Item #3`,
-        ];
+        return this.schema.item.select `id, name, count`
+                               .orderBy `created_at`
+                               .limit `1000`;
     }
 }
 

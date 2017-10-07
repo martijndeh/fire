@@ -57,12 +57,13 @@ export async function getCurrentVersion() {
 export function createMigrationContents(upQueries, downQueries) {
     // TODO: We should add tabs accordingly.
 
+    const tab = `\t`;
     return `export function up(transaction) {
-    ${upQueries.map((query) => `transaction.sql \`${query}\`;`).join(`\n\n`)}
+    ${upQueries.map((query) => `transaction.sql \`${query.split(`\n`).join(`\n${tab}`)}\`;`).join(`\n\n`)}
 }
 
 export function down(transaction) {
-    ${downQueries.map((query) => `transaction.sql \`${query}\`;`).join(`\n\n`)}
+    ${downQueries.map((query) => `transaction.sql \`${query.split(`\n`).join(`\n${tab}`)}\`;`).join(`\n\n`)}
 }
 `;
 }

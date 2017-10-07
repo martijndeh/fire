@@ -2,12 +2,20 @@ import assert from 'assert';
 import Lego from 'lego-sql';
 
 export default class Builder {
-    constructor(ast, tableName) {
-        this.ast = ast;
-        this.tableName = tableName;
+    constructor(table) {
+        this.ast = table.ast;
+        this.tableName = table.name;
 
         this.internal = Lego.sql([]);
     }
+
+    then(callback, errback) {
+		return this.internal.exec().then(callback, errback);
+	}
+
+	catch(errback) {
+		return this.internal.exec().catch(errback);
+	}
 
     control(sql) {
         if (this.registree.sql === sql) {
@@ -24,12 +32,17 @@ export default class Builder {
         }
 
         this.internal.append([sql]);
-        this.internal.append(strings, ...parameters);
+
+        if (strings) {
+            this.internal.append(strings, ...parameters);
+        }
+
         return this;
     }
 
     sql(strings, ...parameters) {
-        // TODO: Add generic sql plus parameters.
+        this.internal.append(strings, ...parameters);
+        return this;
     }
 
     register(sql, callback) {
@@ -52,7 +65,28 @@ export default class Builder {
     }
 
     insert(values) {
-        // `INSERT INTO ${tableNames[0]} () VALUES ()`;
+        this._add(`INSERT INTO ${this.tableName}`);
+
+        const columnNames = values && Object.keys(values);
+
+        if (columnNames && columnNames.length > 0) {
+            this._add(`(${columnNames.join(`, `)}) VALUES (`);
+
+            columnNames.forEach((columnName, index) => {
+                if (index > 0) {
+                    this.sql `, `;
+                }
+
+                this.sql `${values[columnName]}`;
+            });
+
+            this._add(`)`);
+        }
+        else {
+            this._add(`DEFAULT VALUES`);
+        }
+
+        return this;
     }
 
     returning(strings, ...parameters) {
@@ -72,9 +106,9 @@ export default class Builder {
             const primaryKey = table.indexes[0];
             const foreignKey = referenceTable.indexes.find((foreignKey) => foreignKey.type === `foreignKey` && foreignKey.tableName === table.name);
 
-            assert(primaryKey.type, `primaryKey`);
+            assert(primaryKey.type === `primaryKey`);
 
-            // TODO: What if there are multiple columns? We;re not covering that case yet.
+            // TODO: What if there are multiple columns? We're not covering that case yet.
 
             this.on `(${Lego.raw(table.name)}.${Lego.raw(primaryKey.columns[0])} = ${Lego.raw(referenceTable.name)}.${Lego.raw(foreignKey.columns[0])})`;
         });
@@ -163,9 +197,8 @@ export default class Builder {
             parameters,
         } = this.internal.toQuery();
 
-        // FIXME: get rid of this substring.
         return {
-            text: text.substring(1),
+            text,
             parameters,
         };
     }

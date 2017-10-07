@@ -13,6 +13,13 @@ export default class Simulator {
         }
     }
 
+    toJSON() {
+        return {
+            tables: this.tables,
+            types: this.types,
+        };
+    }
+
     findByRegExp(regexp) {
         const result = regexp.exec(this.input);
 
@@ -746,11 +753,11 @@ export default class Simulator {
                     // TODO: Where to apply this to?
 
                     this.ifToken([`DEFERRABLE`, `NOT DEFERRABLE`], (defferable) => {
-                        constraint.defferable = defferable;
+                        // constraint.defferable = defferable;
                     });
 
                     this.ifToken([`INITIALLY DEFERRED`, `INITIALLY IMMEDIATE`], (initially) => {
-                        constraint.initially = initially;
+                        // constraint.initially = initially;
                     });
                 }
 

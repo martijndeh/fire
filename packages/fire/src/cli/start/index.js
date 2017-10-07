@@ -1,13 +1,8 @@
 /* eslint-disable import/no-dynamic-require */
 import path from 'path';
-import { createServer, startWorkers } from 'fire';
-import dotenv from 'dotenv';
+import { createServer, startWorkers } from '../..';
 
 export default function start(type) {
-    dotenv.load({
-        silent: true,
-    });
-
     require(path.join(process.cwd(), `.build`, `lib`, `index.js`));
 
     if (type === `workers`) {

@@ -5,14 +5,12 @@
   "main": "src/index.js",
   "scripts": {
     "start": "fire start",
-    "build": "fire build"
+    "build": "fire build",
+    "release": "fire release"
   },
   "author": "Martijn de Haan <martijn@ff00ff.nl>",
   "license": "MIT",
   "dependencies": {
     "fire": "^0.53.0"
-  },
-  "devDependencies": {
-    "fire-cli": "^0.53.0"
   }
 }

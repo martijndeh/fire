@@ -1,8 +1,9 @@
 import Simulator from 'sql-simulator';
-import Model from '../model.js';
+import Table from '../table.js';
+import Schema from '../schema.js';
 
-describe(`models`, () => {
-    class Foo extends Model {
+describe(`tables`, () => {
+    class Foo extends Table {
         static create(transaction) {
             transaction.sql `CREATE TABLE foo (
                 id INTEGER PRIMARY KEY,
@@ -11,7 +12,7 @@ describe(`models`, () => {
         }
     }
 
-    class Bar extends Model {
+    class Bar extends Table {
         static create(transaction) {
             transaction.sql `CREATE TABLE bar (
                 id INTEGER PRIMARY KEY,
@@ -20,18 +21,21 @@ describe(`models`, () => {
         }
     }
 
-    const ast = new Simulator();
-    const transaction = {
-        sql(strings) {
-            ast.simulateQuery(strings[0]);
-        }
-    };
+    Schema.addTableClasses([
+        Foo,
+        Bar,
+    ]);
+    const simulator = new Simulator();
+    const tableNames = Schema.loadTables(simulator);
 
-    const foo = Foo.simulate(ast, transaction);
-    const _bar = Bar.simulate(ast, transaction);
+    const ast = {
+        ...simulator.toJSON(),
+        tableNames,
+    };
+    const schema = new Schema(ast);
 
     it(`select with schema-aware from`, () => {
-        const query = foo.select `*`
+        const query = schema.foo.select `*`
             .where `value > 10`
             .toQuery();
 
@@ -39,7 +43,7 @@ describe(`models`, () => {
     });
 
     it(`select with manual from`, () => {
-        const query = foo.select `*`
+        const query = schema.foo.select `*`
             .from `test`
             .where `value > 10`
             .toQuery();
@@ -48,11 +52,34 @@ describe(`models`, () => {
     });
 
     it(`select with schema-aware inner join`, () => {
-        const query = foo.select `*`
+        const query = schema.foo.select `*`
             .innerJoin `bar`
             .where `value > 10`
             .toQuery();
 
         expect(query.text).toEqual(`SELECT * FROM foo INNER JOIN bar ON (foo.id = bar.foo_id) WHERE value > 10`);
+    });
+
+    it(`insert with a value`, () => {
+        const value = 123;
+        const query = schema.foo.insert({
+                value,
+            })
+            .toQuery();
+
+        expect(query).toEqual({
+            text: `INSERT INTO foo (value) VALUES ($1)`,
+            parameters: [value],
+        });
+    });
+
+    it(`insert without values`, () => {
+        const query = schema.foo.insert()
+            .toQuery();
+
+        expect(query).toEqual({
+            text: `INSERT INTO foo DEFAULT VALUES`,
+            parameters: [],
+        });
     });
 });

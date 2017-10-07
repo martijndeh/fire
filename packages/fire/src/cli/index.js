@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import minimist from 'minimist';
 import path from 'path';
 import build from './build/index.js';
@@ -12,6 +13,12 @@ function main() {
     ] = argv._;
     const entry = path.join(process.cwd(), `src`, `index.js`);
 
+    dotenv.load({
+        silent: true,
+    });
+
+    const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === `development`;
+
     try {
         process.env.FIRE_STAGE = topic;
 
@@ -20,7 +27,9 @@ function main() {
                 return build(entry, argv);
 
             case `start`:
-                return start(argv.workers ? `workers` : `web`);
+                return isDevelopment && !argv.web && !argv.workers
+                    ? fly(entry)
+                    : start(argv.workers ? `workers` : `web`);
 
             case `release`:
                 return release(entry, argv);

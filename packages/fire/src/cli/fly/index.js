@@ -4,6 +4,7 @@ import { createMigrations } from 'sql-models';
 import { createServerBundle, createLib } from 'fire-webpack';
 import { spawn } from 'child_process';
 import Log from 'fire-log';
+import rimraf from 'rimraf';
 
 const log = new Log(`fire-cli:fly`);
 
@@ -90,11 +91,13 @@ export default async function fly(entry, argv) {
         }
     });
 
+    rimraf.sync(`.build`);
+
     await Promise.all([
         createServerBundle(entry),
         createLib(entry),
     ]);
+    await createMigrations();
 
-    // Restart.
-    startWeb();
+    await startWeb();
 }

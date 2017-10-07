@@ -115,11 +115,8 @@ export async function isAllowed(service, methodName, context) {
     return false;
 }
 
-export default async function callServerService(Service, methodName, context) {
-    console.log(`callServerService`);
-    console.log(Service);
-
-    const service = new Service(context);
+export default async function callServerService(Service, methodName, context, schema) {
+    const service = new Service(context, schema);
     const allowed = await isAllowed(service, methodName, context);
     if (!allowed) {
         context.throw(401);
@@ -133,10 +130,7 @@ export default async function callServerService(Service, methodName, context) {
             ? context.request.body
             : JSON.parse(context.request.query.args);
 
-        console.log(args);
-
         const body = await Promise.resolve(service[methodName](...args));
-
         const handlers = {
             login: async (body) => {
                 // TODO: It should be possible to pass a

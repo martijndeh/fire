@@ -3,7 +3,7 @@
   "dependencies": {
     "babel-core": "^6.26.0",
     "babel-preset-env": "1.6.0",
-    "lego-sql": "^4.0.0",
+    "lego-sql": "^5.0.1",
     "sql-creator": "^0.53.0",
     "sql-simulator": "^0.53.0"
   },

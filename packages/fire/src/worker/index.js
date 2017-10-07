@@ -1,8 +1,8 @@
 
 import Log from 'fire-log';
+import { Schema } from 'sql-models';
 import Queue from './queue.js';
 import { addRegisterProvider, getPropertyNames } from '../injector/index.js';
-import { isClient } from '../index.js';
 
 const log = new Log(`fire:worker`);
 const workers = [];
@@ -14,17 +14,23 @@ export function getWorkers() {
 export function startWorkers() {
     log.info(`Starting ${workers.length} workers.`);
 
+    Schema.autoLoadTables();
+
+    const schema = new Schema();
+
     workers.forEach((Worker) => {
-        const worker = new Worker(false);
+        const worker = new Worker(false, schema);
         worker.start();
     });
 }
 
 export default class Worker {
     queue = null;
+    schema = null;
 
-    constructor(replaceProperties = true) {
+    constructor(replaceProperties = true, schema) {
         this.queue = new Queue(this.getQueueUrl());
+        this.schema = schema;
 
         if (replaceProperties) {
             this.replaceProperties();
