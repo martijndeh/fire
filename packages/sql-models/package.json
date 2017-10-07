@@ -11,5 +11,5 @@
   "license": "MIT",
   "main": "./lib/index.js",
   "name": "sql-models",
-  "version": "0.54.0"
+  "version": "0.55.0"
 }
